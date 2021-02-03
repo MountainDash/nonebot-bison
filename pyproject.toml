@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "nonebot-hk-reporter"
+version = "0.1.0"
+description = "Subscribe message from social medias"
+authors = ["felinae98 <felinae225@qq.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+nonebot2 = "^2.0.0-alpha.8"
+httpx = "^0.16.1"
+bs4 = "^0.0.1"
+tinydb = "^4.3.0"
+nonebot_plugin_apscheduler = "^0.1.2"
+feedparser = "^6.0.2"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.6.0"
+jedi = "^0.18.0"
+nb-cli = "^0.3.2"
+ipdb = "^0.13.4"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true

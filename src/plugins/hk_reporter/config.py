@@ -9,9 +9,10 @@ import os
 
 def get_config_path() -> str:
     if plugin_config.hk_reporter_config_path:
-        return plugin_config.hk_reporter_config_path
-    working_dir = os.getcwd()
-    data_dir = path.join(working_dir, 'data')
+        data_dir = plugin_config.hk_reporter_config_path
+    else:
+        working_dir = os.getcwd()
+        data_dir = path.join(working_dir, 'data')
     if not path.isdir(data_dir):
         os.makedirs(data_dir)
     return path.join(data_dir, 'hk_reporter.json')

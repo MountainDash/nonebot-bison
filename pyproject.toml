@@ -4,6 +4,11 @@ version = "0.1.0"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"
+homepage = "https://github.com/felinae98/nonebot-hk-reporter"
+keywords = ["nonebot", "nonebot2", "qqbot"]
+packages = [
+    { include = "hk_reporter/*.py", from = "./src/plugins/" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"

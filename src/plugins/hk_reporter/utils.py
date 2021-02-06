@@ -16,7 +16,7 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-supported_target_type = ('weibo', 'bilibili', 'rss')
+supported_target_type = ('weibo', 'bilibili', 'rss', 'arknights')
 
 class Render(metaclass=Singleton):
 

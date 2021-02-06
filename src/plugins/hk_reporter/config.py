@@ -1,4 +1,5 @@
 from .utils import Singleton, supported_target_type
+from . import plugin_config
 from os import path
 import nonebot
 from tinydb import TinyDB, Query
@@ -7,6 +8,8 @@ import os
 
 
 def get_config_path() -> str:
+    if plugin_config.hk_reporter_config_path:
+        return plugin_config.hk_reporter_config_path
     working_dir = os.getcwd()
     data_dir = path.join(working_dir, 'data')
     if not path.isdir(data_dir):

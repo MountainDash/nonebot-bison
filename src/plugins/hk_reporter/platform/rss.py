@@ -15,7 +15,8 @@ async def get_rss_raw_data(url) -> str:
 
 async def get_rss_info(url) -> str:
     data = await get_rss_raw_data(url)
-    return data.feed.title
+    feed = feedparser.parse(data.text)
+    return feed.feed.title
 
 @Singleton
 class Rss:

@@ -89,4 +89,4 @@ async def get_user_info(mid):
         res_data = json.loads(res.text)
         if res_data['code']:
             return None
-        return res['data']['name']
+        return res_data['data']['name']

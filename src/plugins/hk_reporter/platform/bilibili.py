@@ -6,8 +6,7 @@ import httpx
 import json
 import time
 
-@Singleton
-class Bilibili:
+class Bilibili(metaclass=Singleton):
     
     def __init__(self):
         self.exists_posts = defaultdict(set)

@@ -23,8 +23,7 @@ class NoSuchUserException(Exception):
 class NoSuchSubscribeException(Exception):
     pass
 
-@Singleton
-class Config():
+class Config(metaclass=Singleton):
 
     migrate_version = 1
     

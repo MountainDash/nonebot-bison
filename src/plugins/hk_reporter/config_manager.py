@@ -7,6 +7,7 @@ from nonebot import on_command
 
 from .platform.utils import check_sub_target
 from .config import Config, NoSuchSubscribeException
+from .utils import parse_text
 
 async def check_is_owner_or_admin(bot: Bot, event: Event):
     return await (GROUP_ADMIN | GROUP_OWNER)(bot, event)
@@ -36,7 +37,7 @@ async def _(bot: Bot, event: Event, state: T_State):
     res = '订阅的帐号为：\n'
     for sub in sub_list:
         res += '{} {} {}\n'.format(sub['target_type'], sub['target_name'], sub['target'])
-    await query_sub.finish(res)
+    await query_sub.finish(await parse_text(res))
 
 del_sub = on_command("删除订阅", rule=to_me(), priority=5)
 @del_sub.handle()

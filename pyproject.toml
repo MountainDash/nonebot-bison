@@ -18,6 +18,7 @@ bs4 = "^0.0.1"
 tinydb = "^4.3.0"
 nonebot_plugin_apscheduler = "^0.1.2"
 feedparser = "^6.0.2"
+pyppeteer = "^0.2.5"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.6.0"

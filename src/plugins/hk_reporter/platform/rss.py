@@ -18,8 +18,7 @@ async def get_rss_info(url) -> str:
     feed = feedparser.parse(data)
     return feed.feed.title
 
-@Singleton
-class Rss:
+class Rss(metaclass=Singleton):
 
     def __init__(self):
         self.exists_posts = defaultdict(set)

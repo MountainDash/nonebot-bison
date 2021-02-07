@@ -9,8 +9,7 @@ from nonebot import logger
 from ..utils import Singleton
 from ..post import Post
 
-@Singleton
-class Weibo:
+class Weibo(metaclass=Singleton):
 
     def __init__(self):
         self.exists_posts = defaultdict(set)

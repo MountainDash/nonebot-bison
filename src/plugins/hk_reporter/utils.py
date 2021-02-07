@@ -20,7 +20,7 @@ class Render(metaclass=Singleton):
         self.page = None
 
     async def init(self):
-        browser = await launch(execublePath='/usr/bin/chromium')
+        browser = await launch(executablePath='/usr/bin/chromium')
         self.page = await browser.newPage()
 
     async def text_to_pic(self, text: str) -> str:

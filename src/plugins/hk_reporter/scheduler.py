@@ -31,7 +31,7 @@ async def weibo_check():
             logger.warning('no bot connected')
         else:
             for to_send in send_list:
-                send_msgs(bot, to_send['user'], to_send['user_type'], new_weibo.generate_messages())
+                send_msgs(bot, to_send['user'], to_send['user_type'], await new_weibo.generate_messages())
 
 @scheduler.scheduled_job('interval', seconds=10)
 async def bilibili_check():
@@ -50,7 +50,7 @@ async def bilibili_check():
             logger.warning('no bot connected')
         else:
             for to_send in send_list:
-                send_msgs(bot, to_send['user'], to_send['user_type'], new_post.generate_messages())
+                send_msgs(bot, to_send['user'], to_send['user_type'], await new_post.generate_messages())
 
 @scheduler.scheduled_job('interval', seconds=30)
 async def rss_check():
@@ -69,7 +69,7 @@ async def rss_check():
             logger.warning('no bot connected')
         else:
             for to_send in send_list:
-                send_msgs(bot, to_send['user'], to_send['user_type'], new_post.generate_messages())
+                send_msgs(bot, to_send['user'], to_send['user_type'], await new_post.generate_messages())
 
 @scheduler.scheduled_job('interval', seconds=1)
 async def _():

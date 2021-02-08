@@ -6,8 +6,16 @@ authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"
 homepage = "https://github.com/felinae98/nonebot-hk-reporter"
 keywords = ["nonebot", "nonebot2", "qqbot"]
+readme = "README.md"
 packages = [
-    { include = "hk_reporter/*.py", from = "./src/plugins/" }
+    { include = "hk_reporter/*.py", from = "./src/plugins/" },
+    { include = "hk_reporter/platform/*.py", from = "./src/plugins/" }
+]
+classifiers = [
+    Development Status :: 2 - Pre-Alpha
+    Operating System :: POSIX :: Linux
+    Programming Language :: Python :: 3.9
+    Programming Language :: Python :: Implementation :: CPython
 ]
 
 [tool.poetry.dependencies]

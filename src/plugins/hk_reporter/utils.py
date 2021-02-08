@@ -1,4 +1,5 @@
 import nonebot
+from nonebot import logger
 import base64
 from pyppeteer import launch
 from html import escape
@@ -36,11 +37,14 @@ class Render(metaclass=Singleton):
             f.write(html_text)
         await self.page.goto('file:///tmp/text-{}.html'.format(hash_text))
         div = await self.page.querySelector('div')
-        return await div.screenshot()
+        return await div.screenshot(type='jpeg')
 
     async def text_to_pic_cqcode(self, text:str) -> str:
         data = await self.text_to_pic(text)
-        return '[CQ:image,file=base64://{}]'.format(base64.b64encode(data).decode())
+        logger.debug('file size: {}'.format(len(data)))
+        code = '[CQ:image,file=base64://{}]'.format(base64.b64encode(data).decode())
+        logger.debug(code)
+        return code
 
 async def _start():
     r = Render()

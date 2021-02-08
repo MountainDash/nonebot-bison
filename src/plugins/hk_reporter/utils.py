@@ -20,7 +20,10 @@ class Render(metaclass=Singleton):
         self.page = None
 
     async def init(self):
-        browser = await launch(executablePath='/usr/bin/chromium')
+        if plugin_config.hk_reporter_use_local:
+            browser = await launch(executablePath='/usr/bin/chromium')
+        else:
+            browser = await launch()
         self.page = await browser.newPage()
 
     async def text_to_pic(self, text: str) -> str:
@@ -46,7 +49,7 @@ async def _start():
 
 nonebot.get_driver().on_startup(_start)
 async def parse_text(text: str):
-    if plugin_config.use_pic:
+    if plugin_config.hk_reporter_use_pic:
         r = Render()
         return await r.text_to_pic_cqcode(text)
     else:

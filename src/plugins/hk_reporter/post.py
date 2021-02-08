@@ -1,3 +1,6 @@
+from . import plugin_config
+from .utils import parse_text
+
 class Post:
 
     target_type: str
@@ -6,8 +9,12 @@ class Post:
     pics: list[str]
 
     def generate_messages(self):
-        first_msg = '来源: {}\n{}\n详情：{}'.format(self.target_type, self.text, self.url)
-        res = [first_msg]
+        if plugin_config.hk_reporter_use_pic:
+            text_msg = '来源: {}\n{}'.format(self.target_type, self.text)
+            res = [await parse_text(text_msg), self.url]
+        else:
+            first_msg = '来源: {}\n{}\n详情：{}'.format(self.target_type, self.text, self.url)
+            res = [first_msg]
         for pic in self.pics:
             res.append("[CQ:image,file={url}]".format(url=pic))
         return res

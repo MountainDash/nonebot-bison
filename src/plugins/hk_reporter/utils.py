@@ -51,12 +51,6 @@ class Render(metaclass=Singleton):
         # logger.debug(code)
         return code
 
-async def _start():
-    if plugin_config.hk_reporter_use_pic:
-        r = Render()
-        await r.init()
-
-nonebot.get_driver().on_startup(_start)
 async def parse_text(text: str):
     if plugin_config.hk_reporter_use_pic:
         r = Render()

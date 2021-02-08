@@ -10,25 +10,20 @@ from .config import Config, NoSuchSubscribeException
 from .utils import parse_text
 from .send import send_msgs
 
-async def check_is_owner_or_admin(bot: Bot, event: Event):
-    return await (GROUP_ADMIN | GROUP_OWNER)(bot, event)
-
-# add_sub = on_command("添加订阅", rule=to_me(), permission=Permission(check_is_owner_or_admin), priority=5)
 add_sub = on_command("添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER, priority=5)
-# add_sub = on_command("添加订阅", rule=to_me() & check_is_owner_or_admin, priority=5)
 @add_sub.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     args = str(event.get_message()).strip().split()
     if len(args) != 2:
-        await add_sub.reject("使用方法为： 添加订阅 平台 id")
+        await add_sub.finish("使用方法为： 添加订阅 平台 id")
         return
     target_type, target = args
-    if (name := await check_sub_target(target_type, target)):
+    if name := await check_sub_target(target_type, target):
         config: Config = Config()
         config.add_subscribe(event.group_id, "group", target, name, target_type)
         await add_sub.finish("成功添加 {}".format(name))
     else:
-        await add_sub.reject("平台或者id不存在")
+        await add_sub.finish("平台或者id不存在")
     
 query_sub = on_command("查询订阅", rule=to_me(), priority=5)
 @query_sub.handle()
@@ -46,13 +41,13 @@ del_sub = on_command("删除订阅", rule=to_me(), permission=GROUP_ADMIN | GROU
 async def _(bot: Bot, event: Event, state: T_State):
     args = str(event.get_message()).strip().split()
     if len(args) != 2:
-        await del_sub.reject("使用方法为： 删除订阅 平台 id")
+        await del_sub.finish("使用方法为： 删除订阅 平台 id")
         return
     target_type, target = args
     config = Config()
     try:
         config.del_subscribe(event.group_id, "group", target, target_type)
     except NoSuchSubscribeException:
-        await del_sub.reject('平台或id不存在')
+        await del_sub.finish('平台或id不存在')
     await del_sub.finish('删除成功')
 

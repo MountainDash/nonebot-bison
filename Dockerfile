@@ -6,6 +6,6 @@ RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
 COPY ./pyproject.toml ./poetry.lock* /app/
 RUN poetry install --no-root --no-dev
-RUN PYPPETEER_DOWNLOAD_HOST='http://npm.taobao.org/mirrors' pyppeteer-install
+# RUN PYPPETEER_DOWNLOAD_HOST='http://npm.taobao.org/mirrors' pyppeteer-install
 COPY . /app/
 CMD ["python", "bot.py"]

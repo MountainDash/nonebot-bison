@@ -1,4 +1,5 @@
 import nonebot
+import base64
 from pyppeteer import launch
 from html import escape
 from hashlib import sha256
@@ -26,7 +27,7 @@ class Render(metaclass=Singleton):
             browser = await launch(args=['--no-sandbox'])
         self.page = await browser.newPage()
 
-    async def text_to_pic(self, text: str) -> str:
+    async def text_to_pic(self, text: str) -> bytes:
         hash_text = sha256(text.encode()).hexdigest()[:20]
         lines = text.split('\n')
         parsed_lines = list(map(lambda x: '<p>{}</p>'.format(escape(x)), lines))
@@ -35,13 +36,11 @@ class Render(metaclass=Singleton):
             f.write(html_text)
         await self.page.goto('file:///tmp/text-{}.html'.format(hash_text))
         div = await self.page.querySelector('div')
-        path = '/tmp/img-{}.png'.format(hash_text)
-        await div.screenshot(path=path)
-        return path
+        return await div.screenshot()
 
     async def text_to_pic_cqcode(self, text:str) -> str:
-        path = await self.text_to_pic(text)
-        return '[CQ:image,file=file://{}]'.format(path)
+        data = await self.text_to_pic(text)
+        return '[CQ:image,file=base64://{}]'.format(base64.b64encode(data).decode())
 
 async def _start():
     r = Render()

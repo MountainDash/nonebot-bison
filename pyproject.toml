@@ -12,10 +12,10 @@ packages = [
     { include = "hk_reporter/platform/*.py", from = "./src/plugins/" }
 ]
 classifiers = [
-    Development Status :: 2 - Pre-Alpha
-    Operating System :: POSIX :: Linux
-    Programming Language :: Python :: 3.9
-    Programming Language :: Python :: Implementation :: CPython
+    "Development Status :: 2 - Pre-Alpha",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: CPython"
 ]
 
 [tool.poetry.dependencies]

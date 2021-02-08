@@ -14,7 +14,7 @@ async def check_is_owner_or_admin(bot: Bot, event: Event):
     return await (GROUP_ADMIN | GROUP_OWNER)(bot, event)
 
 # add_sub = on_command("添加订阅", rule=to_me(), permission=Permission(check_is_owner_or_admin), priority=5)
-add_sub = on_command("添加订阅", rule=to_me(), priority=5)
+add_sub = on_command("添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER, priority=5)
 # add_sub = on_command("添加订阅", rule=to_me() & check_is_owner_or_admin, priority=5)
 @add_sub.handle()
 async def _(bot: Bot, event: Event, state: T_State):
@@ -41,7 +41,7 @@ async def _(bot: Bot, event: Event, state: T_State):
     send_msgs(bot, event.group_id, 'group', [await parse_text(res)])
     await query_sub.finish()
 
-del_sub = on_command("删除订阅", rule=to_me(), priority=5)
+del_sub = on_command("删除订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER, priority=5)
 @del_sub.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     args = str(event.get_message()).strip().split()

@@ -28,7 +28,7 @@ class Render(metaclass=Singleton):
             browser = await launch(args=['--no-sandbox'])
         self.page = await browser.newPage()
 
-    async def text_to_pic(self, text: str) -> bytes:
+    async def text_to_pic(self, text: str) -> str:
         hash_text = sha256(text.encode()).hexdigest()[:20]
         lines = text.split('\n')
         parsed_lines = list(map(lambda x: '<p>{}</p>'.format(escape(x)), lines))
@@ -37,12 +37,12 @@ class Render(metaclass=Singleton):
             f.write(html_text)
         await self.page.goto('file:///tmp/text-{}.html'.format(hash_text))
         div = await self.page.querySelector('div')
-        return await div.screenshot(type='jpeg')
+        return await div.screenshot(type='jpeg', encoding='base64')
 
     async def text_to_pic_cqcode(self, text:str) -> str:
         data = await self.text_to_pic(text)
         logger.debug('file size: {}'.format(len(data)))
-        code = '[CQ:image,file=base64://{}]'.format(base64.b64encode(data).decode())
+        code = '[CQ:image,file=base64://{}]'.format(data)
         logger.debug(code)
         return code
 

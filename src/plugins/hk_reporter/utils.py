@@ -21,9 +21,9 @@ class Render(metaclass=Singleton):
 
     async def init(self):
         if plugin_config.hk_reporter_use_local:
-            browser = await launch(executablePath='/usr/bin/chromium')
+            browser = await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
         else:
-            browser = await launch()
+            browser = await launch(args=['--no-sandbox'])
         self.page = await browser.newPage()
 
     async def text_to_pic(self, text: str) -> str:

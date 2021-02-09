@@ -30,6 +30,7 @@ class Arknights(metaclass=Singleton):
             if announce['announceId'] in self.exists_posts['default']:
                 continue
             res.append(await self.parse(announce['webUrl']))
+            self.exists_posts['default'].add(announce['announceId'])
         if None in res:
             res.remove(None)
         return res
@@ -49,6 +50,7 @@ class Arknights(metaclass=Singleton):
             pics.append(pic['src'])
         else:
             return None
+        return Post('arknights', '', announce_url, pics=pics)
     
     async def fetch_new_post(self, _) -> list[Post]:
         try:

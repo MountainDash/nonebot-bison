@@ -13,6 +13,8 @@ class Post:
             text_msg = '来源: {}\n{}'.format(self.target_type, self.text)
             if self.target_type == 'rss':
                 res = [await parse_text(text_msg)]
+            elif self.target_type == 'arknights':
+                res = []
             else:
                 res = [await parse_text(text_msg), self.url]
         else:

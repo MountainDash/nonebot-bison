@@ -55,7 +55,7 @@ class Arknights(metaclass=Singleton):
     async def fetch_new_post(self, _) -> list[Post]:
         try:
             data = await self.get_announce_list()
-            if self.inited['default'] or True:
+            if self.inited['default'] or True: # FIXME
                 return await self.filter(data)
             else:
                 await self.filter(data, True)

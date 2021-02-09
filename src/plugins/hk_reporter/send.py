@@ -10,7 +10,7 @@ LAST_SEND_TIME = time.time()
 
 async def do_send_msgs():
     global LAST_SEND_TIME
-    if time.time() - LAST_SEND_TIME < 1.4:
+    if time.time() - LAST_SEND_TIME < 15: # FIXME
         return
     if QUEUE:
         bot, user, user_type, msg, retry_time = QUEUE.pop(0)

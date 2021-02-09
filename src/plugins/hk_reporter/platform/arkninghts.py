@@ -36,7 +36,7 @@ class Arknights(metaclass=Singleton):
 
     async def parse(self, announce_url: str) -> Post:
         async with httpx.AsyncClient() as client:
-            raw_html = client.get(announce_url)
+            raw_html = await client.get(announce_url)
         soup = bs(raw_html, 'html.parser')
         pics = []
         if soup.find("div", class_="standerd-container"):

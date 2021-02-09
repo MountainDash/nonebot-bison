@@ -596,7 +596,7 @@ reference = "aliyun"
 
 [[package]]
 name = "nonebot2"
-version = "2.0.0a9"
+version = "2.0.0a10"
 description = "An asynchronous python bot framework."
 category = "main"
 optional = false
@@ -610,6 +610,10 @@ pydantic = {version = ">=1.7.3,<2.0.0", extras = ["dotenv", "typing_extensions"]
 pygtrie = ">=2.4.1,<3.0.0"
 uvicorn = ">=0.11.5,<0.12.0"
 websockets = ">=8.1,<9.0"
+
+[package.extras]
+quart = ["Quart (>=0.14.1,<0.15.0)"]
+all = ["Quart (>=0.14.1,<0.15.0)"]
 
 [package.source]
 type = "legacy"
@@ -1253,7 +1257,7 @@ reference = "aliyun"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "02d96d899638d0a8f2ecb5fa430b8fa03c5303ef503d3f906fe9cebfafba64f2"
+content-hash = "cc910d2170cfbfb59c5a8de03ebb0882bd5aa522a8b90eff0e56af5811d60cde"
 
 [metadata.files]
 appdirs = [
@@ -1452,8 +1456,8 @@ nonebot-plugin-apscheduler = [
     {file = "nonebot_plugin_apscheduler-0.1.2-py3-none-any.whl", hash = "sha256:eed7b9e60d08826ae4919f82dc240fc7ec469185271c2271e14438a3e0ca7692"},
 ]
 nonebot2 = [
-    {file = "nonebot2-2.0.0a9-py3-none-any.whl", hash = "sha256:71d71fbfe364b08509e66519504a5723cc7148cff489c9a620541f3bea9f6296"},
-    {file = "nonebot2-2.0.0a9.tar.gz", hash = "sha256:62f2a24b9539aa72bfee2bed3ab1efe9831653ffd660f03cb1d173796df7224d"},
+    {file = "nonebot2-2.0.0a10-py3-none-any.whl", hash = "sha256:e4d75367b89a978b6f620a7de1c7fe598059868c8a9034936b9b471dd8c7c1a7"},
+    {file = "nonebot2-2.0.0a10.tar.gz", hash = "sha256:db3b7edd9119b77b0201fa9ca71c71c2cc95ae0df06506748ef5f13b172fdab6"},
 ]
 parso = [
     {file = "parso-0.8.1-py2.py3-none-any.whl", hash = "sha256:15b00182f472319383252c18d5913b69269590616c947747bc50bf4ac768f410"},

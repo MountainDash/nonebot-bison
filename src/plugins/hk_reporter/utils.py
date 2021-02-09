@@ -32,7 +32,7 @@ class Render(metaclass=Singleton):
             page = await browser.newPage()
             await page.goto(url)
             if viewport:
-                await page.setViewport(target)
+                await page.setViewport(viewport)
             if target:
                 target_ele = await page.querySelector(target)
                 data = await target_ele.screenshot(type='jpeg', encoding='base64')

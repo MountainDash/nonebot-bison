@@ -17,7 +17,7 @@ class Arknights(metaclass=Singleton):
 
     async def get_announce_list(self):
         async with httpx.AsyncClient() as client:
-            raw_data = client.get('http://ak-fs.hypergryph.com/announce/IOS/announcement.meta.json')
+            raw_data = await client.get('http://ak-fs.hypergryph.com/announce/IOS/announcement.meta.json')
             return json.loads(raw_data.text)
 
     async def filter(self, announce_data, inited=False) -> list[Post]:

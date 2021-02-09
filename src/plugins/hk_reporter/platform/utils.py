@@ -6,6 +6,7 @@ from collections import defaultdict
 from .weibo import Weibo, get_user_info as weibo_user_info
 from .bilibili import Bilibili, get_user_info as bilibili_user_info
 from .rss import Rss, get_rss_info as rss_info
+from .arkninghts import Arknights
 from ..config import Config
 from ..post import Post
 from ..send import send_msgs
@@ -17,6 +18,8 @@ async def check_sub_target(target_type, target):
         return await bilibili_user_info(target)
     elif target_type == 'rss':
         return await rss_info(target)
+    elif target_type == 'arknights':
+        return '明日方舟游戏公告'
     else:
         return None
 
@@ -35,7 +38,8 @@ async def fetch_and_send(target_type: str):
     platform_manager = {
             'bilibili': Bilibili(),
             'weibo': Weibo(),
-            'rss': Rss()
+            'rss': Rss(),
+            'arkninghts': Arknights()
         }
     target = config.get_next_target(target_type)
     if not target:

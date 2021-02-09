@@ -47,7 +47,7 @@ async def fetch_and_send(target_type: str):
     bot = bot_list[0] if bot_list else None
     for new_post in new_posts:
         logger.warning('get new {} dynamic: {}'.format(target_type, new_post.url))
-        logger.warning(new_post)
+        logger.warning(new_post[:50])
         if not bot:
             logger.warning('no bot connected')
         else:

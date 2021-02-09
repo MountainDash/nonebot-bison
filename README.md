@@ -22,22 +22,35 @@
 ## 使用方法
 
 ### 使用以及部署
-本项目可作为单独插件使用（绝对simple和stupid），也可直接克隆项目进行使用  
+本项目可作为单独插件使用，仅包含订阅相关功能（绝对simple和stupid），也可直接克隆项目进行使用（包含自动同意superuser，自动接受入群邀请等功能）  
 作为插件使用请安装`nonebot-hk-reporter`包，并在`bot.py`中加载`nonebot_hk_reporter`插件；或直接克隆本项目进行使用  
 配置与安装请参考[nonebot2文档](https://v2.nonebot.dev/)
 
 ### 配置变量
-* `HK_REPORTER_CONFIG_PATH` 配置文件保存目录，如果不设置，则为当前目录下的`data`文件夹
-* `HK_REPORTER_USE_PIC` 以图片形式发送文字（推荐在帐号被风控时使用）
-* `HK_REPORTER_USE_LOCAL` 使用本地chromium（文字转图片时需要），否则第一次启动会下载chromium
+* `HK_REPORTER_CONFIG_PATH` (str) 配置文件保存目录，如果不设置，则为当前目录下的`data`文件夹
+* `HK_REPORTER_USE_PIC` (bool) 以图片形式发送文字（推荐在帐号被风控时使用）
+* `HK_REPORTER_USE_LOCAL` (bool) 使用本地chromium（文字转图片时需要），否则第一次启动会下载chromium
 
 ### 命令
 所有命令都需要@bot触发
-* 添加订阅（仅管理员和群主）：`添加订阅 [平台代码] uid`
+* 添加订阅（仅管理员和群主）：`添加订阅 平台代码 uid`
 * 查询订阅：`查询订阅`
-* 删除订阅（仅管理员和群主）：`删除订阅 [平台代码] uid`
+* 删除订阅（仅管理员和群主）：`删除订阅 平台代码 uid`
 
 平台代码包含：weibo，bilibili，rss
+<details>
+<summary>各平台uid</summary>
+
+下面均以pc站点为例
+* weibo
+    * 对于一般用户主页`https://weibo.com/u/6441489862?xxxxxxxxxxxxxxx`，`/u/`后面的数字即为uid
+    * 对于有个性域名的用户如：`https://weibo.com/arknights`，需要点击左侧信息标签下“更多”，链接为`https://weibo.com/6279793937/about`，其中中间数字即为uid
+* bilibili
+    * 主页链接一般为`https://space.bilibili.com/161775300?xxxxxxxxxx`，数字即为uid
+* rss
+    * rss链接即为uid
+</details>
+
 ### 文字转图片
 因为可能要发送长文本，所以bot很可能被风控，如有需要请开启以图片形式发送文字，本项目使用的图片转文字方法是chromium（经典杀鸡用牛刀）。
 

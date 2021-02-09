@@ -31,4 +31,4 @@ class Post:
         self.pics = pics
 
     def __str__(self):
-        return 'type: {}\ntext: {}\nurl: {}\npic: {}'.format(self.target_type, self.text, self.url, ','.join(self.pics))
+        return 'type: {}\ntext: {}\nurl: {}\npic: {}'.format(self.target_type, self.text[:50], self.url, ','.join(map(lambda x: 'b64img' if x.startswith('base64') else x, self.pics)))

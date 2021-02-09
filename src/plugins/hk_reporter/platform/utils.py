@@ -39,7 +39,7 @@ async def fetch_and_send(target_type: str):
             'bilibili': Bilibili(),
             'weibo': Weibo(),
             'rss': Rss(),
-            'arkninghts': Arknights()
+            'arknights': Arknights()
         }
     target = config.get_next_target(target_type)
     if not target:

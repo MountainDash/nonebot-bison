@@ -259,7 +259,7 @@ class PlatformNoTarget(PlatformProto):
             res.append(raw_post)
         return res
 
-    async def fetch_new_post(self, users: list[User]) -> list[tuple[User, list[Post]]]:
+    async def fetch_new_post(self, _: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
         try:
             config = Config()
             post_list = await self.get_sub_list()

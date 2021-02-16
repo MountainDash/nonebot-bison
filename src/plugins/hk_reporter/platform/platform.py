@@ -236,6 +236,8 @@ class PlatformNoTarget(PlatformProto):
                 self.get_category(raw_post)
             except CategoryNotSupport:
                 continue
+            except NotImplementedError:
+                pass
             res.append(raw_post)
             self.exists_posts.add(post_id)
         return res

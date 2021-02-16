@@ -11,7 +11,7 @@ from ..post import Post
 from ..send import send_msgs
 
 async def check_sub_target(target_type, target):
-    return platform_manager[target_type].get_account_name(target)
+    return await platform_manager[target_type].get_account_name(target)
 
 platform_manager: dict[str, PlatformProto] = {
         'bilibili': Bilibili(),

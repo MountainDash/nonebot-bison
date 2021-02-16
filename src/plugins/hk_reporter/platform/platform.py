@@ -260,22 +260,26 @@ class PlatformNoTarget(PlatformProto):
         return res
 
     async def fetch_new_post(self, users: list[User]) -> list[tuple[User, list[Post]]]:
-        config = Config()
-        post_list = await self.get_sub_list()
-        new_posts = await self.filter_common(post_list)
-        res: list[tuple[User, list[Post]]] = []
-        if not new_posts:
+        try:
+            config = Config()
+            post_list = await self.get_sub_list()
+            new_posts = await self.filter_common(post_list)
+            res: list[tuple[User, list[Post]]] = []
+            if not new_posts:
+                return []
+            else:
+                for post in new_posts:
+                    logger.info('fetch new post from {}: {}'.format(self.platform_name, self.get_id(post)))
+            for user in users:
+                required_tags = config.get_sub_tags(self.platform_name, 'default', user.user_type, user.user) if self.enable_tag else []
+                cats = config.get_sub_category(self.platform_name, 'default', user.user_type, user.user)
+                user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
+                user_post: list[Post] = []
+                for raw_post in user_raw_post:
+                    user_post.append(await self._parse_with_cache(raw_post))
+                res.append((user, user_post))
+            self.cache = {}
+            return res
+        except httpx.RequestError as err:
+            logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))
             return []
-        else:
-            for post in new_posts:
-                logger.info('fetch new post from {}: {}'.format(self.platform_name, self.get_id(post)))
-        for user in users:
-            required_tags = config.get_sub_tags(self.platform_name, 'default', user.user_type, user.user) if self.enable_tag else []
-            cats = config.get_sub_category(self.platform_name, 'default', user.user_type, user.user)
-            user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
-            user_post: list[Post] = []
-            for raw_post in user_raw_post:
-                user_post.append(await self._parse_with_cache(raw_post))
-            res.append((user, user_post))
-        self.cache = {}
-        return res

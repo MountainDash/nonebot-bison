@@ -174,7 +174,7 @@ class PlatformNoTarget(PlatformProto):
             self.reverse_category[val] = key
 
     @staticmethod
-    async def get_account_name() -> Optional[str]:
+    async def get_account_name(target: Target) -> Optional[str]:
         "return the username(name) of the target"
         raise NotImplementedError()
 

@@ -77,7 +77,7 @@ class Arknights(PlatformNoTarget):
     enable_tag = False
 
     @staticmethod
-    async def get_account_name() -> str:
+    async def get_account_name(_: Target) -> str:
         return '明日方舟游戏内公告'
 
     async def get_sub_list(self) -> list[RawPost]:

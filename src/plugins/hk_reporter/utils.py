@@ -1,5 +1,6 @@
 import os
 import asyncio
+from typing import Optional
 import nonebot
 from nonebot import logger
 import base64
@@ -7,7 +8,7 @@ from pyppeteer import launch
 from html import escape
 from hashlib import sha256
 
-from . import plugin_config
+from .plugin_config import plugin_config
 
 class Singleton(type):
     _instances = {}
@@ -23,7 +24,7 @@ class Render(metaclass=Singleton):
     def __init__(self):
         self.lock = asyncio.Lock()
 
-    async def render(self, url: str, viewport: dict = None, target: str = None) -> str:
+    async def render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None) -> str:
         async with self.lock:
             if plugin_config.hk_reporter_use_local:
                 browser = await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
@@ -40,7 +41,7 @@ class Render(metaclass=Singleton):
                 data = await page.screenshot(type='jpeg', encoding='base64')
             await page.close()
             await browser.close()
-            return data
+            return str(data)
 
     async def text_to_pic(self, text: str) -> str:
         hash_text = sha256(text.encode()).hexdigest()[:20]

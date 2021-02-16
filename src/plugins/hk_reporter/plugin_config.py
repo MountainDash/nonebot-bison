@@ -1,4 +1,5 @@
 from pydantic import BaseSettings
+import nonebot
 
 class PlugConfig(BaseSettings):
 
@@ -8,3 +9,6 @@ class PlugConfig(BaseSettings):
 
     class Config:
         extra = 'ignore'
+
+global_config = nonebot.get_driver().config
+plugin_config = PlugConfig(**global_config.dict())

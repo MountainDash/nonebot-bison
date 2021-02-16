@@ -2,6 +2,7 @@ import nonebot
 from nonebot import logger
 from collections import defaultdict
 from typing import Type
+from .arkninghts import Arknights
 from .weibo import Weibo
 from .bilibili import Bilibili
 from .rss import Rss
@@ -16,7 +17,8 @@ async def check_sub_target(target_type, target):
 platform_manager: dict[str, PlatformProto] = {
         'bilibili': Bilibili(),
         'weibo': Weibo(),
-        'rss': Rss()
+        'rss': Rss(),
+        'arknights': Arknights()
     }
 
 async def fetch_and_send(target_type: str):

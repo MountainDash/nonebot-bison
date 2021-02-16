@@ -1,4 +1,3 @@
-from _typeshed import NoneType
 from typing import Any
 import httpx
 import json

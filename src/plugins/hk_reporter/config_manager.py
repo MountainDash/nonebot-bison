@@ -12,6 +12,12 @@ from .platform.utils import check_sub_target
 from .send import send_msgs
 from .utils import parse_text
 
+help_match = on_command('help', rule=to_me(), priority=5)
+@help_match.handle()
+async def send_help(bot: Bot, event: Event, state: T_State):
+    message = '使用方法：\n@bot 添加订阅（仅管理员）\n@bot 查询订阅\n@bot 删除订阅(仅管理员)'
+    await help_match.finish(Message(await parse_text(message)))
+
 add_sub = on_command("添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5)
 @add_sub.got('platform', '请输入想要订阅的平台，目前支持：{}'.format(', '.join(platform_manager.keys())))
 # @add_sub.got('id', '请输入订阅用户的id，详情查阅https://github.com/felinae98/nonebot-hk-reporter')

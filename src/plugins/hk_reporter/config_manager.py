@@ -11,6 +11,7 @@ from .platform import platform_manager
 from .platform.utils import check_sub_target
 from .send import send_msgs
 from .utils import parse_text
+from .types import Target
 
 help_match = on_command('help', rule=to_me(), priority=5)
 @help_match.handle()
@@ -85,9 +86,12 @@ async def add_sub_parse_tag(bot: Bot, event: Event, state: T_State):
 
 @add_sub.handle()
 async def add_sub_process(bot: Bot, event: GroupMessageEvent, state: T_State):
+    if not platform_manager[state['platform']].has_target:
+        state['name'] = await platform_manager[state['platform']].get_account_name(Target(''))
+        state['id'] = 'default'
     config = Config()
     config.add_subscribe(event.group_id, user_type='group',
-            target=state['id'] if platform_manager[state['platform']].has_target else 'default',
+            target=state['id'],
             target_name=state['name'], target_type=state['platform'],
             cats=state.get('cats', []), tags=state.get('tags', []))
     await add_sub.finish('添加 {} 成功'.format(state['name']))

@@ -3,7 +3,7 @@ from nonebot.typing import T_State
 from nonebot.adapters.cqhttp import Bot, Event, GroupMessageEvent
 from nonebot.permission import Permission, SUPERUSER
 from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_MEMBER, GROUP_OWNER
-from nonebot import on_command, logger
+from nonebot import on_command
 
 from .platform.utils import check_sub_target
 from .platform import platform_manager
@@ -32,16 +32,15 @@ async def add_sub_parse_id(bot: Bot, event: Event, state: T_State):
     state['id'] = target
     state['name'] = name
 
+@add_sub.handle()
 async def add_sub_handle_cat(bot: Bot, event: Event, state: T_State):
     if not platform_manager[state['platform']].categories:
         return
     if 'cats' in state:
         return
-    msg = '请输入要订阅的类别，以空格分隔，支持的类别有：{}'.format(
+    await bot.send(event=event, message='请输入要订阅的类别，以空格分隔，支持的类别有：{}'.format(
             ','.join(list(platform_manager[state['platform']].categories.values()))
-        )
-    logger.debug('send' + msg)
-    await bot.send(event=event, message=msg)
+        ))
     await add_sub.pause()
 
 @add_sub.handle()

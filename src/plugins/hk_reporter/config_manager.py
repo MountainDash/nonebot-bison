@@ -23,14 +23,14 @@ add_sub = on_command("添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROU
 # @add_sub.got('id', '请输入订阅用户的id，详情查阅https://github.com/felinae98/nonebot-hk-reporter')
 @add_sub.handle()
 async def add_sub_handle_id(bot: Bot, event: Event, state: T_State):
-    if 'id' in state:
+    if not platform_manager[state['platform']].has_target or 'id' in state:
         return
     await bot.send(event=event, message='请输入订阅用户的id，详情查阅https://github.com/felinae98/nonebot-hk-reporter')
     await add_sub.pause()
 
 @add_sub.handle()
 async def add_sub_parse_id(bot: Bot, event: Event, state: T_State):
-    if 'id' in state:
+    if not platform_manager[state['platform']].has_target or 'id' in state:
         return
     target = str(event.get_message()).strip()
     name = await check_sub_target(state['platform'], target)
@@ -84,9 +84,10 @@ async def add_sub_parse_tag(bot: Bot, event: Event, state: T_State):
         state['tags'] = str(event.get_message()).strip().split()
 
 @add_sub.handle()
-async def add_sub_process(bot: Bot, event: Event, state: T_State):
+async def add_sub_process(bot: Bot, event: GroupMessageEvent, state: T_State):
     config = Config()
-    config.add_subscribe(event.group_id, user_type='group', target=state['id'],
+    config.add_subscribe(event.group_id, user_type='group',
+            target=state['id'] if platform_manager[state['platform']].has_target else 'default',
             target_name=state['name'], target_type=state['platform'],
             cats=state.get('cats', []), tags=state.get('tags', []))
     await add_sub.finish('添加 {} 成功'.format(state['name']))

@@ -1,9 +1,11 @@
 from .utils import Singleton, supported_target_type
-from . import plugin_config
+from .types import User
+from .plugin_config import plugin_config
 from os import path
 import nonebot
 from tinydb import TinyDB, Query
 from collections import defaultdict
+from typing import DefaultDict
 import os
 
 
@@ -25,30 +27,32 @@ class NoSuchSubscribeException(Exception):
 
 class Config(metaclass=Singleton):
 
-    migrate_version = 1
+    migrate_version = 2
     
     def __init__(self):
         self.db = TinyDB(get_config_path(), encoding='utf-8') 
         self.kv_config = self.db.table('kv')
         self.user_target = self.db.table('user_target')
         self.target_user_cache = {}
+        self.target_user_cat_cache = {}
+        self.target_user_tag_cache = {}
         self.target_list = {}
-        self.next_index = defaultdict(lambda: 0)
+        self.next_index: DefaultDict[str, int] = defaultdict(lambda: 0)
          
-    def add_subscribe(self, user, user_type, target, target_name, target_type):
+    def add_subscribe(self, user, user_type, target, target_name, target_type, cats, tags):
         user_query = Query()
         query = (user_query.user == user) & (user_query.user_type == user_type)
         if (user_data := self.user_target.get(query)):
             # update
             subs: list = user_data.get('subs', [])
-            subs.append({"target": target, "target_type": target_type, 'target_name': target_name})
+            subs.append({"target": target, "target_type": target_type, 'target_name': target_name, 'cats': cats, 'tags': tags})
             self.user_target.update({"subs": subs}, query)
         else:
             # insert
             self.user_target.insert({'user': user, 'user_type': user_type, 'subs': [{'target': target, 'target_type': target_type, 'target_name': target_name}]})
         self.update_send_cache()
 
-    def list_subscribe(self, user, user_type): 
+    def list_subscribe(self, user, user_type):
         query = Query()
         return self.user_target.get((query.user == user) & (query.user_type ==user_type))['subs']
     
@@ -68,15 +72,27 @@ class Config(metaclass=Singleton):
 
     def update_send_cache(self):
         res = {target_type: defaultdict(list) for target_type in supported_target_type}
+        cat_res = {target_type: defaultdict(lambda: defaultdict(list)) for target_type in supported_target_type}
+        tag_res = {target_type: defaultdict(lambda: defaultdict(list)) for target_type in supported_target_type}
         # res = {target_type: defaultdict(lambda: defaultdict(list)) for target_type in supported_target_type}
         for user in self.user_target.all():
             for sub in user.get('subs', []):
                 if not sub.get('target_type') in supported_target_type:
                     continue
-                res[sub['target_type']][sub['target']].append({"user": user['user'], "user_type": user['user_type']})
+                res[sub['target_type']][sub['target']].append(User(user['user'], user['user_type']))
+                cat_res[sub['target_type']][sub['target']]['{}-{}'.format(user['user_type'], user['user'])] = sub['cats']
+                tag_res[sub['target_type']][sub['target']]['{}-{}'.format(user['user_type'], user['user'])] = sub['tags']
         self.target_user_cache = res
+        self.target_user_cat_cache = cat_res
+        self.target_user_tag_cache = tag_res
         for target_type in self.target_user_cache:
             self.target_list[target_type] = list(self.target_user_cache[target_type].keys())
+
+    def get_sub_category(self, target_type, target, user_type, user):
+        return self.target_user_cat_cache[target_type][target]['{}-{}'.format(user_type, user)]
+
+    def get_sub_tags(self, target_type, target, user_type, user):
+        return self.target_user_tag_cache[target_type][target]['{}-{}'.format(user_type, user)]
 
     def get_next_target(self, target_type):
         # FIXME 插入或删除target后对队列的影响（但是并不是大问题
@@ -92,7 +108,19 @@ def start_up():
     if not (search_res := config.kv_config.search(Query().name=="version")):
         config.kv_config.insert({"name": "version", "value": config.migrate_version})
     elif search_res[0].get("value") < config.migrate_version:
-        pass
+        query = Query()
+        version_query = (query.name == 'version')
+        cur_version = search_res[0].get("value")
+        if cur_version == 1:
+            cur_version = 2
+            for user_conf in config.user_target.all():
+                conf_id = user_conf.doc_id
+                subs = user_conf['subs']
+                for sub in subs:
+                    sub['cats'] = []
+                    sub['tags'] = []
+                config.user_target.update({'subs': subs}, doc_ids=[conf_id])
+        config.kv_config.update({"value": config.migrate_version}, version_query)
         # do migration
     config.update_send_cache()
 

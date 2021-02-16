@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from . import plugin_config
+from .plugin_config import plugin_config
 from .utils import parse_text
 
 @dataclass

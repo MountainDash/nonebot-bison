@@ -49,7 +49,10 @@ class Config(metaclass=Singleton):
             self.user_target.update({"subs": subs}, query)
         else:
             # insert
-            self.user_target.insert({'user': user, 'user_type': user_type, 'subs': [{'target': target, 'target_type': target_type, 'target_name': target_name}]})
+            self.user_target.insert({
+                'user': user, 'user_type': user_type,
+                'subs': [{'target': target, 'target_type': target_type, 'target_name': target_name, 'cats': cats, 'tags': tags }]
+            })
         self.update_send_cache()
 
     def list_subscribe(self, user, user_type):

@@ -55,7 +55,7 @@ async def add_sub_parse_cat(bot: Bot, event: Event, state: T_State):
         if cat not in platform_manager[state['platform']].reverse_category:
             await add_sub.reject('不支持 {}'.format(cat))
         res.append(platform_manager[state['platform']].reverse_category[cat])
-    state['cat'] = res
+    state['cats'] = res
 
 @add_sub.handle()
 async def add_sub_handle_tag(bot: Bot, event: Event, state: T_State):

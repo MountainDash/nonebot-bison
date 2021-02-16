@@ -1,13 +1,14 @@
 import time
 from collections import defaultdict
-from typing import Any, Literal, Optional, Protocol
+from typing import Any, Optional
 
+import httpx
 from nonebot import logger
 
 from ..config import Config
 from ..post import Post
+from ..types import Category, RawPost, Tag, Target, User
 from ..utils import Singleton
-from ..types import Category, Tag, RawPost, Target, User
 
 
 class CategoryNotSupport(Exception):
@@ -82,7 +83,7 @@ class Platform(PlatformProto):
         return self.cache[post_id]
 
     async def filter_common(self, target: Target, raw_post_list: list[RawPost]) -> list[RawPost]:
-        if False and not self.inited.get(target, False):
+        if not self.inited.get(target, False):
             # target not init
             for raw_post in raw_post_list:
                 post_id = self.get_id(raw_post)
@@ -95,8 +96,8 @@ class Platform(PlatformProto):
             post_id = self.get_id(raw_post)
             if post_id in self.exists_posts[target]:
                 continue
-            # if (post_time := self.get_date(raw_post)) and time.time() - post_time > 2 * 60 * 60:
-            #     continue
+            if (post_time := self.get_date(raw_post)) and time.time() - post_time > 2 * 60 * 60:
+                continue
             try:
                 if not self.filter_platform_custom(raw_post):
                     continue
@@ -132,25 +133,30 @@ class Platform(PlatformProto):
         return res
 
     async def fetch_new_post(self, target: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
-        config = Config()
-        post_list = await self.get_sub_list(target)
-        new_posts = await self.filter_common(target, post_list)
-        res: list[tuple[User, list[Post]]] = []
-        if not new_posts:
+        try:
+            config = Config()
+            post_list = await self.get_sub_list(target)
+            new_posts = await self.filter_common(target, post_list)
+            res: list[tuple[User, list[Post]]] = []
+            if not new_posts:
+                return []
+            else:
+                for post in new_posts:
+                    logger.info('fetch new post from {} {}: {}'.format(self.platform_name, target, self.get_id(post)))
+            for user in users:
+                required_tags = config.get_sub_tags(self.platform_name, target, user.user_type, user.user) if self.enable_tag else []
+                cats = config.get_sub_category(self.platform_name, target, user.user_type, user.user)
+                user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
+                user_post: list[Post] = []
+                for raw_post in user_raw_post:
+                    user_post.append(await self._parse_with_cache(raw_post))
+                res.append((user, user_post))
+            self.cache = {}
+            return res
+        except httpx.RequestError as err:
+            logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))
             return []
-        else:
-            for post in new_posts:
-                logger.info('fetch new post from {} {}: {}'.format(self.platform_name, target, self.get_id(post)))
-        for user in users:
-            required_tags = config.get_sub_tags(self.platform_name, target, user.user_type, user.user) if self.enable_tag else []
-            cats = config.get_sub_category(self.platform_name, target, user.user_type, user.user)
-            user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
-            user_post: list[Post] = []
-            for raw_post in user_raw_post:
-                user_post.append(await self._parse_with_cache(raw_post))
-            res.append((user, user_post))
-        self.cache = {}
-        return res
+
 
 class PlatformNoTarget(PlatformProto):
 

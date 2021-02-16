@@ -1,12 +1,14 @@
-from .utils import Singleton, supported_target_type
-from .types import User
-from .plugin_config import plugin_config
-from os import path
-import nonebot
-from tinydb import TinyDB, Query
 from collections import defaultdict
-from typing import DefaultDict
+from os import path
 import os
+from typing import DefaultDict
+
+import nonebot
+from tinydb import Query, TinyDB
+
+from .plugin_config import plugin_config
+from .types import User
+from .utils import Singleton, supported_target_type
 
 
 def get_config_path() -> str:

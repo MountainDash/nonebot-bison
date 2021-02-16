@@ -1,16 +1,16 @@
-from nonebot.rule import to_me
-from nonebot.typing import T_State
+from nonebot import logger, on_command
 from nonebot.adapters.cqhttp import Bot, Event, GroupMessageEvent
 from nonebot.adapters.cqhttp.message import Message
-from nonebot.permission import Permission, SUPERUSER
 from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_MEMBER, GROUP_OWNER
-from nonebot import on_command, logger
+from nonebot.permission import Permission, SUPERUSER
+from nonebot.rule import to_me
+from nonebot.typing import T_State
 
-from .platform.utils import check_sub_target
-from .platform import platform_manager
 from .config import Config, NoSuchSubscribeException
-from .utils import parse_text
+from .platform import platform_manager
+from .platform.utils import check_sub_target
 from .send import send_msgs
+from .utils import parse_text
 
 add_sub = on_command("添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5)
 @add_sub.got('platform', '请输入想要订阅的平台，目前支持：{}'.format(', '.join(platform_manager.keys())))

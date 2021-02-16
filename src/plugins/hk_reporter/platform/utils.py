@@ -28,12 +28,11 @@ async def fetch_and_send(target_type: str):
     send_list = config.target_user_cache[target_type][target]
     bot_list = list(nonebot.get_bots().values())
     bot = bot_list[0] if bot_list else None
-    if target_type == 'rss':
-        to_send = await platform_manager[target_type].fetch_new_post(target, send_list)
-        for user, send_list in to_send:
-            for send_post in send_list:
-                logger.debug('send to {}: {}'.format(user, send_post))
-                if not bot:
-                    logger.warning('no bot connected')
-                else:
-                    send_msgs(bot, user.user, user.user_type, await send_post.generate_messages())
+    to_send = await platform_manager[target_type].fetch_new_post(target, send_list)
+    for user, send_list in to_send:
+        for send_post in send_list:
+            logger.debug('send to {}: {}'.format(user, send_post))
+            if not bot:
+                logger.warning('no bot connected')
+            else:
+                send_msgs(bot, user.user, user.user_type, await send_post.generate_messages())

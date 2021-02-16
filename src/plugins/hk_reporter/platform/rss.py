@@ -1,15 +1,13 @@
+import calendar
 from typing import Any, Optional
-from ..types import RawPost, Target
-from ..utils import Singleton
-from ..post import Post
-from .platform import Platform
-from collections import defaultdict
+
 from bs4 import BeautifulSoup as bs
-from nonebot import logger
 import feedparser
 import httpx
-import time
-import calendar
+
+from ..post import Post
+from ..types import RawPost, Target
+from .platform import Platform
 
 class Rss(Platform):
 

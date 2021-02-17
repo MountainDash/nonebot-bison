@@ -69,7 +69,7 @@ class Weibo(Platform):
     def _get_text(self, raw_text: str) -> str:
         text = raw_text.replace('<br />', '\n')
         return bs(text).text
- 
+
     async def parse(self, raw_post: RawPost) -> Post:
         info = raw_post['mblog']
         if info['isLongText'] or info['pic_num'] > 9:
@@ -81,4 +81,4 @@ class Weibo(Platform):
         pic_urls = [img['large']['url'] for img in info.get('pics', [])]
         detail_url = 'https://weibo.com/{}/{}'.format(info['user']['id'], info['bid'])
         # return parsed_text, detail_url, pic_urls
-        return Post('weibo', parsed_text, detail_url, pic_urls)
+        return Post('weibo', text=parsed_text, url=detail_url, pics=pic_urls, target_name=info['user']['screen_name'])

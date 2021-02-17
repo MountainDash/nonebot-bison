@@ -38,4 +38,4 @@ class Rss(Platform):
         soup = bs(raw_post.description, 'html.parser')
         text = soup.text
         pics = list(map(lambda x: x.attrs['src'], soup('img')))
-        return Post('rss', text, raw_post.link, pics)
+        return Post('rss', text=text, url=raw_post.link, pics=pics)

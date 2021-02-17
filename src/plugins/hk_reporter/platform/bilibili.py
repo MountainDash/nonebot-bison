@@ -66,6 +66,7 @@ class Bilibili(Platform):
     async def parse(self, raw_post: RawPost) -> Post:
         card_content = json.loads(raw_post['card'])
         post_type = self.get_category(raw_post)
+        target_name = raw_post['desc']['user_profile']['info']['uname']
         if post_type == 1:
             # 一般动态
             text = card_content['item']['description']
@@ -88,5 +89,5 @@ class Bilibili(Platform):
             pic = []
         else:
             raise CategoryNotSupport(post_type)
-        return Post('bilibili', text, url, pic)
+        return Post('bilibili', text=text, url=url, pics=pic, target_name=target_name)
 

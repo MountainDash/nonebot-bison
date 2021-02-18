@@ -18,7 +18,7 @@ class Post:
         msgs = []
         text = '来源: {}'.format(self.target_type)
         if self.target_name:
-            text += '\n{}'.format(self.target_name)
+            text += ' {}'.format(self.target_name)
         if self.text:
             text += '\n{}'.format(self.text)
         if plugin_config.hk_reporter_use_pic:
@@ -35,8 +35,9 @@ class Post:
         return msgs
 
     def __str__(self):
-        return 'type: {}\ntext: {}\nurl: {}\npic: {}'.format(
+        return 'type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}'.format(
                 self.target_type,
+                self.target_name,
                 self.text,
                 self.url,
                 ', '.join(map(lambda x: 'b64img' if x.startswith('base64') else x, self.pics))

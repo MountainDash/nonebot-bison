@@ -29,10 +29,11 @@ class Post:
             text += '\n{}'.format(self.text)
         if self._use_pic():
             msgs.append(await parse_text(text))
-            if not self.target_type == 'rss':
+            if not self.target_type == 'rss' and self.url:
                 msgs.append(self.url)
         else:
-            text += '详情: {}'.format(self.url)
+            if self.url:
+                text += '详情: {}'.format(self.url)
             msgs.append(text)
         for pic in self.pics:
             msgs.append("[CQ:image,file={url}]".format(url=pic))

@@ -10,26 +10,28 @@ class Post:
     text: str
     url: str
     target_name: Optional[str] = None
-    show_text: bool = True
+    compress: bool = False
+
     pics: list[str] = field(default_factory=list)
 
     async def generate_messages(self):
         msgs = []
-        if self.show_text:
-            text = '来源: {}'.format(self.target_type)
-            if self.target_name:
-                text += '\n{}'.format(self.target_name)
-            if self.text:
-                text += '\n{}'.format(self.text)
-            if plugin_config.hk_reporter_use_pic:
-                msgs.append(await parse_text(text))
-                if not self.target_type == 'rss':
-                    msgs.append(self.url)
-            else:
-                text += '详情: {}'.format(self.url)
-                msgs.append(text)
+        text = '来源: {}'.format(self.target_type)
+        if self.target_name:
+            text += '\n{}'.format(self.target_name)
+        if self.text:
+            text += '\n{}'.format(self.text)
+        if plugin_config.hk_reporter_use_pic:
+            msgs.append(await parse_text(text))
+            if not self.target_type == 'rss':
+                msgs.append(self.url)
+        else:
+            text += '详情: {}'.format(self.url)
+            msgs.append(text)
         for pic in self.pics:
             msgs.append("[CQ:image,file={url}]".format(url=pic))
+        if not self.compress:
+            msgs = [''.join(msgs)]
         return msgs
 
     def __str__(self):

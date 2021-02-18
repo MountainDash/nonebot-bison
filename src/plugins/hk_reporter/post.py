@@ -16,7 +16,7 @@ class Post:
     pics: list[str] = field(default_factory=list)
 
     def _use_pic(self):
-        if self.override_use_pic != None:
+        if not self.override_use_pic is None:
             return self.override_use_pic
         return plugin_config.hk_reporter_use_pic
 

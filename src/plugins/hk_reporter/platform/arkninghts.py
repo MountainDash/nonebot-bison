@@ -52,4 +52,4 @@ class Arknights(PlatformNoTarget):
             pics.append(pic['src'])
         else:
             raise CategoryNotSupport()
-        return Post('arknights', '', announce_url, pics=pics, show_text=False)
+        return Post('arknights', '', announce_url, pics=pics, compress=True)

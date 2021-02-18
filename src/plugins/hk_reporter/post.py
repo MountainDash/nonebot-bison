@@ -11,8 +11,14 @@ class Post:
     url: str
     target_name: Optional[str] = None
     compress: bool = False
+    override_use_pic: Optional[bool] = None
 
     pics: list[str] = field(default_factory=list)
+
+    def _use_pic(self):
+        if self.override_use_pic != None:
+            return self.override_use_pic
+        return plugin_config.hk_reporter_use_pic
 
     async def generate_messages(self):
         msgs = []
@@ -21,7 +27,7 @@ class Post:
             text += ' {}'.format(self.target_name)
         if self.text:
             text += '\n{}'.format(self.text)
-        if plugin_config.hk_reporter_use_pic:
+        if self._use_pic():
             msgs.append(await parse_text(text))
             if not self.target_type == 'rss':
                 msgs.append(self.url)

@@ -30,7 +30,7 @@ class Post:
             msgs.append(text)
         for pic in self.pics:
             msgs.append("[CQ:image,file={url}]".format(url=pic))
-        if not self.compress:
+        if self.compress:
             msgs = [''.join(msgs)]
         return msgs
 

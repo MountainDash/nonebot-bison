@@ -8,7 +8,7 @@ class Post:
 
     target_type: str
     text: str
-    url: str
+    url: Optional[str]
     target_name: Optional[str] = None
     compress: bool = False
     override_use_pic: Optional[bool] = None
@@ -26,14 +26,14 @@ class Post:
         if self.target_name:
             text += ' {}'.format(self.target_name)
         if self.text:
-            text += '\n{}'.format(self.text)
+            text += ' \n{}'.format(self.text)
         if self._use_pic():
             msgs.append(await parse_text(text))
             if not self.target_type == 'rss' and self.url:
                 msgs.append(self.url)
         else:
             if self.url:
-                text += '详情: {}'.format(self.url)
+                text += ' \n详情: {}'.format(self.url)
             msgs.append(text)
         for pic in self.pics:
             msgs.append("[CQ:image,file={url}]".format(url=pic))

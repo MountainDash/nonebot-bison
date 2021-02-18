@@ -52,4 +52,4 @@ class Arknights(PlatformNoTarget):
             pics.append(pic['src'])
         else:
             raise CategoryNotSupport()
-        return Post('arknights', '', '', pics=pics, compress=True, override_use_pic=False)
+        return Post('arknights', text='', url='', target_name="明日方舟游戏内公告", pics=pics, compress=True, override_use_pic=False)

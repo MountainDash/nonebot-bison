@@ -2,6 +2,7 @@ import base64
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import NoReturn, Optional
+from nonebot import logger
 import httpx
 from PIL import Image
 from .plugin_config import plugin_config
@@ -47,11 +48,12 @@ class Post:
         if len(images) == 6:
             matrix = (3, 2)
             self.pics = self.pics[6:]
-        elif len(images) == 9:
+        elif len(images) >= 9:
             matrix = (3, 3)
             self.pics = self.pics[9:]
         else:
             return
+        logger.info('trigger merge image')
         target = Image.new('RGB', (matrix[0] * pic_size, matrix[1] * pic_size))
         for y in range(matrix[1]):
             for x in range(matrix[0]):

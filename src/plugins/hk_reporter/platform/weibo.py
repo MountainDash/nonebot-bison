@@ -68,7 +68,7 @@ class Weibo(Platform):
 
     def _get_text(self, raw_text: str) -> str:
         text = raw_text.replace('<br />', '\n')
-        return bs(text).text
+        return bs(text, 'html.parser').text
 
     async def parse(self, raw_post: RawPost) -> Post:
         info = raw_post['mblog']

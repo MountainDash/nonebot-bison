@@ -1,5 +1,4 @@
 import base64
-import math
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import NoReturn, Optional
@@ -37,26 +36,24 @@ class Post:
         if len(self.pics) < 6:
             return
         first_image = await self._pic_url_to_image(self.pics[0])
-        if abs(first_image.size[0] - first_image.size[1]) / first_image.size[0] > 0.05:
+        if first_image.size[0] != first_image.size[1]:
             return
         pic_size = first_image.size[0]
         images = [first_image]
         for pic in self.pics[1:]:
             cur_image = await self._pic_url_to_image(pic)
-            if abs(first_image.size[0] - pic_size) / pic_size > 0.05 or \
-                    abs(first_image.size[1] - pic_size) / pic_size > 0.05:
+            if cur_image.size[0] != pic_size or cur_image.size[1] != pic_size:
                 break
             images.append(cur_image)
-        logger.debug('{} images is same size'.format(len(images)))
         if len(images) == 6:
             matrix = (3, 2)
             self.pics = self.pics[6:]
-        elif len(images) == 9:
+        elif len(images) >= 9:
             matrix = (3, 3)
             self.pics = self.pics[9:]
         else:
             return
-        logger.info('trigger merge image with {} imgs'.format(len(images)))
+        logger.info('trigger merge image')
         target = Image.new('RGB', (matrix[0] * pic_size, matrix[1] * pic_size))
         for y in range(matrix[1]):
             for x in range(matrix[0]):

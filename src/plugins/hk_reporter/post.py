@@ -1,5 +1,9 @@
+import base64
 from dataclasses import dataclass, field
-from typing import Optional
+from io import BytesIO
+from typing import NoReturn, Optional
+import httpx
+from PIL import Image
 from .plugin_config import plugin_config
 from .utils import parse_text
 
@@ -20,7 +24,47 @@ class Post:
             return self.override_use_pic
         return plugin_config.hk_reporter_use_pic
 
+    async def _pic_url_to_image(self, url: str) -> Image.Image:
+        async with httpx.AsyncClient() as client:
+            res = await client.get(url)
+        pic_buffer = BytesIO()
+        pic_buffer.write(res.content)
+        return Image.open(pic_buffer)
+
+    async def _pic_merge(self) -> None:
+        if len(self.pics) < 6:
+            return
+        first_image = await self._pic_url_to_image(self.pics[0])
+        if first_image.size[0] != first_image.size[1]:
+            return
+        pic_size = first_image.size[0]
+        images = [first_image]
+        for pic in self.pics[1:]:
+            cur_image = await self._pic_url_to_image(pic)
+            if cur_image.size[0] != pic_size or cur_image.size[1] != pic_size:
+                break
+            images.append(cur_image)
+        if len(images) == 6:
+            matrix = (3, 2)
+            self.pics = self.pics[6:]
+        elif len(images) == 9:
+            matrix = (3, 3)
+            self.pics = self.pics[9:]
+        else:
+            return
+        target = Image.new('RGB', (matrix[0] * pic_size, matrix[1] * pic_size))
+        for y in range(matrix[1]):
+            for x in range(matrix[0]):
+                target.paste(images[y * matrix[0] + x], (
+                    x * pic_size, y * pic_size, (x + 1) * pic_size, (y + 1) * pic_size
+                    ))
+        target_io = BytesIO()
+        target.save(target_io, 'JPEG')
+        b64image = 'base64://' + base64.b64encode(target_io.getvalue()).decode()
+        self.pics.insert(0, b64image)
+
     async def generate_messages(self):
+        await self._pic_merge()
         msgs = []
         text = '来源: {}'.format(self.target_type)
         if self.target_name:

@@ -17,13 +17,13 @@
     * 文字
     * 不支持视频
     * 不支持转发的内容
-* bilibili
+* Bilibili
     * 图片
     * 专栏
     * 文字
     * 视频链接
     * 不支持转发的内容
-* rss
+* RSS
     * 从description中提取图片
     * 文字
 
@@ -53,26 +53,26 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
 * 查询订阅：`查询订阅`
 * 删除订阅（仅管理员和群主）：`删除订阅`
 
-平台代码包含：weibo，bilibili，rss
+平台代码包含：Weibo，Bilibili，RSS
 <details>
 <summary>各平台uid</summary>
 
 下面均以pc站点为例
-* weibo
+* Weibo
     * 对于一般用户主页`https://weibo.com/u/6441489862?xxxxxxxxxxxxxxx`，`/u/`后面的数字即为uid
     * 对于有个性域名的用户如：`https://weibo.com/arknights`，需要点击左侧信息标签下“更多”，链接为`https://weibo.com/6279793937/about`，其中中间数字即为uid
-* bilibili
+* Bilibili
     * 主页链接一般为`https://space.bilibili.com/161775300?xxxxxxxxxx`，数字即为uid
-* rss
-    * rss链接即为uid
+* RSS
+    * RSS链接即为uid
 </details>
 
 ### 文字转图片
-因为可能要发送长文本，所以bot很可能被风控，如有需要请开启以图片形式发送文字，本项目使用的图片转文字方法是chromium（经典杀鸡用牛刀）。
+因为可能要发送长文本，所以bot很可能被风控，如有需要请开启以图片形式发送文字，本项目使用的文字转图片方法是Chromium（经典杀鸡用牛刀）。
 
-如果确定要开启推荐自行安装chromium，设置使用本地chromium，并且保证服务器有比较大的内存。
+如果确定要开启推荐自行安装Chromium，设置使用本地Chromium，并且保证服务器有比较大的内存。
 ## 功能
-* 定时爬取制定网站
+* 定时爬取指定网站
 * 通过图片发送文本，防止风控
 * 使用队列限制发送频率
 

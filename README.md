@@ -1,4 +1,8 @@
-# hk-reporter  通用订阅推送插件
+<div align="center">
+<h1>hk-reporter </br>通用订阅推送插件</h1>
+![https://badgen.net/github/license/felinae98/nonebot-hk-reporter]()
+![https://badgen.net/pypi/v/nonebot-hk-reporter](https://pypi.org/project/nonebot-hk-reporter/)
+</div>
 
 ## 简介
 一款自动爬取各种站点，社交平台更新动态，并将信息推送到QQ的机器人。基于 [`NoneBot2`](https://github.com/nonebot/nonebot2 ) 开发（诞生于明日方舟的蹲饼活动）
@@ -25,6 +29,14 @@
 本项目可作为单独插件使用，仅包含订阅相关功能（绝对simple和stupid），也可直接克隆项目进行使用（包含自动同意superuser，自动接受入群邀请等功能）  
 作为插件使用请安装`nonebot-hk-reporter`包，并在`bot.py`中加载`nonebot_hk_reporter`插件；或直接克隆本项目进行使用  
 配置与安装请参考[nonebot2文档](https://v2.nonebot.dev/)
+<details>
+<summary>Docker部署方法</summary>
+Docker镜像地址为`felinae98/nonebot-hk-reporter`对应main分支，`felinae98/nonebot-hk-reporter:arknights`对应arknights分支。例子：
+```bash
+docker run --name nonebot-hk-reporter --network <network name> -d -e 'SUPERUSERS=[<Your QQ>]' -v <config dir>:/data -e 'hk_reporter_config_path=/data' -e 'HK_REPORTER_USE_PIC=True' -e 'HK_REPORTER_USE_LOCAL=True'
+```
+go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`），需要注意，两个容器需要在同一个network中。
+</details>
 
 ### 配置变量
 * `HK_REPORTER_CONFIG_PATH` (str) 配置文件保存目录，如果不设置，则为当前目录下的`data`文件夹

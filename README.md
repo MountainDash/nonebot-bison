@@ -38,7 +38,7 @@
    
 Docker镜像地址为`felinae98/nonebot-hk-reporter`对应main分支，`felinae98/nonebot-hk-reporter:arknights`对应arknights分支。例子：
 ```bash
-docker run --name nonebot-hk-reporter --network <network name> -d -e 'SUPERUSERS=[<Your QQ>]' -v <config dir>:/data -e 'hk_reporter_config_path=/data' -e 'HK_REPORTER_USE_PIC=True' -e 'HK_REPORTER_USE_LOCAL=True felinae98/nonebot-hk-reporter'
+docker run --name nonebot-hk-reporter --network <network name> -d -e 'SUPERUSERS=[<Your QQ>]' -v <config dir>:/data -e 'hk_reporter_config_path=/data' -e 'HK_REPORTER_USE_PIC=True' -e 'HK_REPORTER_USE_LOCAL=True' felinae98/nonebot-hk-reporter
 ```
 go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`），需要注意，两个容器需要在同一个network中。
 </details>

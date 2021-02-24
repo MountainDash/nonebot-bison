@@ -1,9 +1,12 @@
 <div align="center">
 <h1>hk-reporter </br>通用订阅推送插件</h1>
-</div>
-![LICENSE](https://badgen.net/github/license/felinae98/nonebot-hk-reporter)
-![https://badgen.net/pypi/v/nonebot-hk-reporter](https://pypi.org/project/nonebot-hk-reporter/)
 
+
+
+[![pypi](https://badgen.net/pypi/v/nonebot-hk-reporter)](https://pypi.org/project/nonebot-hk-reporter/)
+[![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange )](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)
+
+</div>
 
 ## 简介
 一款自动爬取各种站点，社交平台更新动态，并将信息推送到QQ的机器人。基于 [`NoneBot2`](https://github.com/nonebot/nonebot2 ) 开发（诞生于明日方舟的蹲饼活动）

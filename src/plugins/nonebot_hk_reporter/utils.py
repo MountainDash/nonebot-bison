@@ -5,6 +5,7 @@ import nonebot
 from nonebot import logger
 import base64
 from pyppeteer import launch
+from pyppeteer.chromium_downloader import check_chromium, download_chromium
 from html import escape
 from hashlib import sha256
 from tempfile import NamedTemporaryFile
@@ -19,6 +20,10 @@ class Singleton(type):
         return cls._instances[cls]
 
 supported_target_type = ('weibo', 'bilibili', 'rss')
+
+if not plugin_config.hk_reporter_use_local and not check_chromium():
+    os.environ['PYPPETEER_DOWNLOAD_HOST'] = 'http://npm.taobao.org/mirrors'
+    download_chromium()
 
 class Render(metaclass=Singleton):
 
@@ -62,15 +67,10 @@ class Render(metaclass=Singleton):
         # logger.debug(code)
         return code
 
-async def parse_text(text: str):
+async def parse_text(text: str) -> str:
+    'return raw text if don\'t use pic, otherwise return rendered opcode'
     if plugin_config.hk_reporter_use_pic:
-        r = Render()
-        return await r.text_to_pic_cqcode(text)
+        render = Render()
+        return await render.text_to_pic_cqcode(text)
     else:
         return text
-
-async def test():
-    ren = Render()
-    res = await ren.text_to_pic('12333333')
-    logger.debug(res)
-nonebot.get_driver().on_startup(test)

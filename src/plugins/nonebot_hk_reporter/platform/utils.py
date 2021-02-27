@@ -19,7 +19,7 @@ platform_manager: dict[str, PlatformProto] = {
         'bilibili': Bilibili(),
         'weibo': Weibo(),
         'rss': Rss(),
-        'arknights': Arknights()
+        'arknights': Arknights(),
         'wechat': Wechat(),
     }
 

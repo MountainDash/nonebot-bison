@@ -1,17 +1,13 @@
-from collections import defaultdict
 from datetime import datetime
 import json
 import re
-import time
 from typing import Any, Optional
 
 from bs4 import BeautifulSoup as bs
 import httpx
-from nonebot import logger
 
 from ..post import Post
 from ..types import *
-from ..utils import Singleton
 from .platform import Platform
 
 class Weibo(Platform):

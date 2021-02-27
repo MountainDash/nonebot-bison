@@ -5,6 +5,7 @@ from typing import Type
 from .weibo import Weibo
 from .bilibili import Bilibili
 from .rss import Rss
+from .wechat import Wechat
 from .platform import PlatformProto
 from ..config import Config
 from ..post import Post
@@ -16,7 +17,8 @@ async def check_sub_target(target_type, target):
 platform_manager: dict[str, PlatformProto] = {
         'bilibili': Bilibili(),
         'weibo': Weibo(),
-        'rss': Rss()
+        'rss': Rss(),
+        'wechat': Wechat(),
     }
 
 async def fetch_and_send(target_type: str):

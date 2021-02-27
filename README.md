@@ -30,6 +30,7 @@
 ## 使用方法
 
 ### 使用以及部署
+**!!本项目需要Python3.9及以上**  
 本项目可作为单独插件使用，仅包含订阅相关功能（绝对simple和stupid），也可直接克隆项目进行使用（包含自动同意superuser，自动接受入群邀请等功能）  
 作为插件使用请安装`nonebot-hk-reporter`包，并在`bot.py`中加载`nonebot_hk_reporter`插件；或直接克隆本项目进行使用  
 配置与安装请参考[nonebot2文档](https://v2.nonebot.dev/)

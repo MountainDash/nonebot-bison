@@ -77,6 +77,12 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
 * 通过图片发送文本，防止风控
 * 使用队列限制发送频率
 
+# FAQ
+1. 报错`TypeError: 'type' object is not subscriptable`  
+    本项目使用了Python 3.9的语法，请将Python版本升级到3.9及以上，推荐使用docker部署
+2. bot不理我  
+    请确认自己是群主或者管理员，并且检查`COMMAND_START`环境变量是否设为`[""]`
+
 ## 鸣谢
 * [`go-cqhttp`](https://github.com/Mrs4s/go-cqhttp)：简单又完善的 cqhttp 实现
 * [`NoneBot2`](https://github.com/nonebot/nonebot2)：超好用的开发框架

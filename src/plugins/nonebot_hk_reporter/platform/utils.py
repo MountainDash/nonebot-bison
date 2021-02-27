@@ -6,6 +6,7 @@ from .arkninghts import Arknights
 from .weibo import Weibo
 from .bilibili import Bilibili
 from .rss import Rss
+from .wechat import Wechat
 from .platform import PlatformProto
 from ..config import Config
 from ..post import Post
@@ -19,6 +20,7 @@ platform_manager: dict[str, PlatformProto] = {
         'weibo': Weibo(),
         'rss': Rss(),
         'arknights': Arknights()
+        'wechat': Wechat(),
     }
 
 async def fetch_and_send(target_type: str):

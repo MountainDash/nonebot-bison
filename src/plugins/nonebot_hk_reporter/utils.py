@@ -1,10 +1,11 @@
 import os
 import asyncio
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 import nonebot
 from nonebot import logger
 import base64
 from pyppeteer import launch
+from pyppeteer.page import Page
 from pyppeteer.chromium_downloader import check_chromium, download_chromium
 from html import escape
 from hashlib import sha256
@@ -19,7 +20,7 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-supported_target_type = ('weibo', 'bilibili', 'rss', 'arknights')
+supported_target_type = ('weibo', 'bilibili', 'rss', 'arknights', 'wechat')
 
 if not plugin_config.hk_reporter_use_local and not check_chromium():
     os.environ['PYPPETEER_DOWNLOAD_HOST'] = 'http://npm.taobao.org/mirrors'
@@ -30,14 +31,18 @@ class Render(metaclass=Singleton):
     def __init__(self):
         self.lock = asyncio.Lock()
 
-    async def render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None) -> str:
+    async def render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
+            operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> str:
         async with self.lock:
             if plugin_config.hk_reporter_use_local:
                 browser = await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
             else:
                 browser = await launch(args=['--no-sandbox'])
             page = await browser.newPage()
-            await page.goto(url)
+            if operation:
+                await operation(page)
+            else:
+                await page.goto(url)
             if viewport:
                 await page.setViewport(viewport)
             if target:

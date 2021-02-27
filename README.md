@@ -30,6 +30,7 @@
 ## 使用方法
 
 ### 使用以及部署
+**!!本项目需要Python3.9及以上**  
 本项目可作为单独插件使用，仅包含订阅相关功能（绝对simple和stupid），也可直接克隆项目进行使用（包含自动同意superuser，自动接受入群邀请等功能）  
 作为插件使用请安装`nonebot-hk-reporter`包，并在`bot.py`中加载`nonebot_hk_reporter`插件；或直接克隆本项目进行使用  
 配置与安装请参考[nonebot2文档](https://v2.nonebot.dev/)
@@ -76,6 +77,12 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
 * 定时爬取指定网站
 * 通过图片发送文本，防止风控
 * 使用队列限制发送频率
+
+# FAQ
+1. 报错`TypeError: 'type' object is not subscriptable`  
+    本项目使用了Python 3.9的语法，请将Python版本升级到3.9及以上，推荐使用docker部署
+2. bot不理我  
+    请确认自己是群主或者管理员，并且检查`COMMAND_START`环境变量是否设为`[""]`
 
 ## 鸣谢
 * [`go-cqhttp`](https://github.com/Mrs4s/go-cqhttp)：简单又完善的 cqhttp 实现

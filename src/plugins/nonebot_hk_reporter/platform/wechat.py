@@ -45,7 +45,8 @@ class Wechat(Platform):
             post = {
                     'title': last_post_dt.find_parent().find('a').text,
                     'target': target,
-                    'page_url': self._get_query_url(target)
+                    'page_url': self._get_query_url(target),
+                    'name': block.find('p', class_='tit').find('a').text
                     }
             return [post]
         else:
@@ -67,6 +68,7 @@ class Wechat(Platform):
         # TODO get content of post
         return Post(target_type='wechat',
                 text='{}\n详细内容请自行查看公众号'.format(raw_post['title']),
+                target_name=raw_post['name'],
                 pics=[],
                 url=''
                 )

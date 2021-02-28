@@ -2,7 +2,7 @@ import nonebot
 from nonebot import logger
 from collections import defaultdict
 from typing import Type
-from .arkninghts import Arknights
+from .arknights import Arknights
 from .weibo import Weibo
 from .bilibili import Bilibili
 from .rss import Rss

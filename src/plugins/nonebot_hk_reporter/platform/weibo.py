@@ -15,10 +15,15 @@ class Weibo(Platform):
     categories = {
             1: '转发',
             2: '视频',
-            3: '图文'
+            3: '图文',
+            50: '撤置顶'
         }
     enable_tag = False
     platform_name = 'weibo'
+
+    def __init__(self):
+        self.top : dict[Target, RawPost] = dict()
+        super().__init__()
 
     @staticmethod
     async def get_account_name(target: Target) -> Optional[str]:
@@ -41,6 +46,8 @@ class Weibo(Platform):
             return res_data['data']['cards']
 
     def get_id(self, post: RawPost) -> Any:
+        if post.get('_type'):
+            return None
         return post['mblog']['id']
 
     def filter_platform_custom(self, raw_post: RawPost) -> bool:
@@ -55,6 +62,8 @@ class Weibo(Platform):
         return None
 
     def get_category(self, raw_post: RawPost) -> Category:
+        if (custom_cat := raw_post.get('_type')):
+            return Category(custom_cat)
         if raw_post['mblog'].get('retweeted_status'):
             return Category(1)
         elif raw_post['mblog'].get('page_info') and raw_post['mblog']['page_info'].get('type') == 'video':
@@ -66,7 +75,31 @@ class Weibo(Platform):
         text = raw_text.replace('<br />', '\n')
         return bs(text, 'html.parser').text
 
+    def _get_top(self, raw_post_list: list[RawPost]) -> Optional[RawPost]:
+        for raw_post in raw_post_list:
+            if raw_post['card_type'] == 9:
+                if raw_post['mblog'].get('isTop'):
+                    return raw_post
+                else:
+                    return None
+
+    async def filter_common(self, target: Target, raw_post_list: list[RawPost]) -> list[RawPost]:
+        if not self.inited.get(target, False):
+            self.top[target] = self._get_top(raw_post_list)
+            await super().filter_common(target, raw_post_list)
+            return []
+        else:
+            new_post_id = self._get_top(raw_post_list)
+            res = await super().filter_common(target, raw_post_list)
+            if self.get_id(new_post_id) != self.get_id(self.top[target]) and self.top[target] is not None:
+                res.append({'_type': 50, 'target': self.top[target]['mblog']['user']['screen_name']})
+            self.top[target] = new_post_id
+            return res
+
     async def parse(self, raw_post: RawPost) -> Post:
+        if raw_post.get('_type') == 50:
+            # cancel top
+            return Post('weibo', text="撤置顶", url='', pics=[], target_name=raw_post['target'], override_use_pic=False)
         info = raw_post['mblog']
         if info['isLongText'] or info['pic_num'] > 9:
             async with httpx.AsyncClient() as client:

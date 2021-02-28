@@ -20,7 +20,7 @@ platform_manager: dict[str, PlatformProto] = {
         'weibo': Weibo(),
         'rss': Rss(),
         'arknights': Arknights(),
-        'wechat': Wechat(),
+        # 'wechat': Wechat(),
     }
 
 async def fetch_and_send(target_type: str):

@@ -22,9 +22,9 @@ async def rss_check():
 async def arknights_check():
     await fetch_and_send('arknights')
 
-@scheduler.scheduled_job('interval', seconds=30)
-async def wechat_check():
-    await fetch_and_send('wechat')
+# @scheduler.scheduled_job('interval', seconds=30)
+# async def wechat_check():
+#     await fetch_and_send('wechat')
 
 @scheduler.scheduled_job('interval', seconds=1)
 async def _():

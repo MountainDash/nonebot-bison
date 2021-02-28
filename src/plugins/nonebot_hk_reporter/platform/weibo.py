@@ -89,11 +89,12 @@ class Weibo(Platform):
             await super().filter_common(target, raw_post_list)
             return []
         else:
-            new_post_id = self._get_top(raw_post_list)
+            new_post = self._get_top(raw_post_list)
             res = await super().filter_common(target, raw_post_list)
-            if self.get_id(new_post_id) != self.get_id(self.top[target]) and self.top[target] is not None:
+            if (self.top[target] is not None and new_post is None) or \
+                    (self.top[target] is not None and new_post is not None and self.get_id(self.top[target]) != self.get_id(new_post)):
                 res.append({'_type': 50, 'target': self.top[target]['mblog']['user']['screen_name']})
-            self.top[target] = new_post_id
+            self.top[target] = new_post
             return res
 
     async def parse(self, raw_post: RawPost) -> Post:

@@ -35,7 +35,7 @@ async def fetch_and_send(target_type: str):
     to_send = await platform_manager[target_type].fetch_new_post(target, send_list)
     for user, send_list in to_send:
         for send_post in send_list:
-            logger.debug('send to {}: {}'.format(user, send_post))
+            logger.info('send to {}: {}'.format(user, send_post))
             if not bot:
                 logger.warning('no bot connected')
             else:

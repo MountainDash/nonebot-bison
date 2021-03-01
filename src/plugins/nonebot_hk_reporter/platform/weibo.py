@@ -80,8 +80,7 @@ class Weibo(Platform):
             if raw_post['card_type'] == 9:
                 if raw_post['mblog'].get('isTop'):
                     return raw_post
-                else:
-                    return None
+        return None
 
     async def filter_common(self, target: Target, raw_post_list: list[RawPost]) -> list[RawPost]:
         if not self.inited.get(target, False):

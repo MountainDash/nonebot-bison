@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 from bs4 import BeautifulSoup as bs
 import httpx
+from nonebot import logger
 
 from ..post import Post
 from ..types import *
@@ -92,6 +93,10 @@ class Weibo(Platform):
             res = await super().filter_common(target, raw_post_list)
             if (self.top[target] is not None and new_post is None) or \
                     (self.top[target] is not None and new_post is not None and self.get_id(self.top[target]) != self.get_id(new_post)):
+                if new_post:
+                    logger.info('cancel top: {}'.format(new_post))
+                else:
+                    logger.info('cancel top: {}'.format(raw_post_list))
                 res.append({'_type': 50, 'target': self.top[target]['mblog']['user']['screen_name']})
             self.top[target] = new_post
             return res

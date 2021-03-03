@@ -89,6 +89,8 @@ class Weibo(Platform):
             await super().filter_common(target, raw_post_list)
             return []
         else:
+            if not raw_post_list:
+                return []
             new_post = self._get_top(raw_post_list)
             res = await super().filter_common(target, raw_post_list)
             if (self.top[target] is not None and new_post is None) or \

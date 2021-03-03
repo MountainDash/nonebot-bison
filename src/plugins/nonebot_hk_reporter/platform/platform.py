@@ -208,7 +208,15 @@ class PlatformNoTarget(PlatformProto):
     async def _parse_with_cache(self, post: RawPost) -> Post:
         post_id = self.get_id(post)
         if post_id not in self.cache:
-            self.cache[post_id] = await self.parse(post)
+            retry_times = 3
+            while retry_times:
+                try:
+                    self.cache[post_id] = await self.parse(post)
+                    break
+                except Exception as err:
+                    if not retry_times:
+                        raise err
+                    retry_times -= 1
         return self.cache[post_id]
 
     async def filter_common(self, raw_post_list: list[RawPost]) -> list[RawPost]:

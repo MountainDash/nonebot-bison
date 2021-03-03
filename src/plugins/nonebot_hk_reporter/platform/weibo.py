@@ -89,6 +89,8 @@ class Weibo(Platform):
             await super().filter_common(target, raw_post_list)
             return []
         else:
+            if not raw_post_list:
+                return []
             new_post = self._get_top(raw_post_list)
             res = await super().filter_common(target, raw_post_list)
             if (self.top[target] is not None and new_post is None) or \
@@ -102,15 +104,30 @@ class Weibo(Platform):
             return res
 
     async def parse(self, raw_post: RawPost) -> Post:
+        header = {
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                'accept-language': 'zh-CN,zh;q=0.9',
+                'authority': 'm.weibo.cn',
+                'cache-control': 'max-age=0',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'same-origin',
+                'sec-fetch-site': 'same-origin',
+                'upgrade-insecure-requests': '1',
+                'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) '
+                               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 '
+                               'Mobile Safari/537.36'}
         if raw_post.get('_type') == 50:
             # cancel top
             return Post('weibo', text="撤置顶", url='', pics=[], target_name=raw_post['target'], override_use_pic=False)
         info = raw_post['mblog']
         if info['isLongText'] or info['pic_num'] > 9:
             async with httpx.AsyncClient() as client:
-                res = await client.get('https://m.weibo.cn/detail/{}'.format(info['mid']))
-            full_json_text = re.search(r'"status": ([\s\S]+),\s+"hotScheme"', res.text).group(1)
-            info = json.loads(full_json_text)
+                res = await client.get('https://m.weibo.cn/detail/{}'.format(info['mid']), headers=header)
+            try:
+                full_json_text = re.search(r'"status": ([\s\S]+),\s+"hotScheme"', res.text).group(1)
+                info = json.loads(full_json_text)
+            except:
+                logger.info('detail message error: https://m.weibo.cn/detail/{}'.format(info['mid']))
         parsed_text = self._get_text(info['text'])
         pic_urls = [img['large']['url'] for img in info.get('pics', [])]
         detail_url = 'https://weibo.com/{}/{}'.format(info['user']['id'], info['bid'])

@@ -5,6 +5,7 @@ from typing import Type
 from .arknights import Arknights
 from .weibo import Weibo
 from .bilibili import Bilibili
+from .monster_siren import MonsterSiren
 from .rss import Rss
 from .wechat import Wechat
 from .platform import PlatformProto
@@ -20,6 +21,7 @@ platform_manager: dict[str, PlatformProto] = {
         'weibo': Weibo(),
         'rss': Rss(),
         'arknights': Arknights(),
+        'monster-siren': MonsterSiren(),
         # 'wechat': Wechat(),
     }
 

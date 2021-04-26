@@ -516,16 +516,16 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
 
 [[package]]
-name = "nonebot-plugin-apscheduler"
-version = "0.1.2"
-description = "APScheduler Support for NoneBot2"
+name = "nonebot-adapter-cqhttp"
+version = "2.0.0a13"
+description = "OneBot(CQHTTP) adapter for nonebot2"
 category = "main"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.7.3,<4.0.0"
 
 [package.dependencies]
-apscheduler = ">=3.7.0,<4.0.0"
-nonebot2 = ">=2.0.0-alpha.8,<3.0.0"
+httpx = ">=0.17.0,<0.18.0"
+nonebot2 = ">=2.0.0-alpha.13,<3.0.0"
 
 [package.source]
 type = "legacy"
@@ -1209,7 +1209,7 @@ reference = "aliyun"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "70dbb30bab11d4bfaa175b456d9954a5b711eb34469ea86b73359de2895d6712"
+content-hash = "c04348d384696367062ad407aa72ded2221d016de175ba6abf66b6653ebfae7a"
 
 [metadata.files]
 appdirs = [
@@ -1368,9 +1368,9 @@ nb-cli = [
     {file = "nb-cli-0.3.2.tar.gz", hash = "sha256:e8e39e1105ae32ae4e871b32a5197811b394ce739e0f57ab24c99787c5c18888"},
     {file = "nb_cli-0.3.2-py3-none-any.whl", hash = "sha256:b05a5502551d3636c6f579ebd118ecc5412a67ddbcdb59f617e8f624be4c3a77"},
 ]
-nonebot-plugin-apscheduler = [
-    {file = "nonebot-plugin-apscheduler-0.1.2.tar.gz", hash = "sha256:1765336cd388dde15f723ed12dbca942b04e4c25d5d7786878e447b09e68b909"},
-    {file = "nonebot_plugin_apscheduler-0.1.2-py3-none-any.whl", hash = "sha256:eed7b9e60d08826ae4919f82dc240fc7ec469185271c2271e14438a3e0ca7692"},
+nonebot-adapter-cqhttp = [
+    {file = "nonebot-adapter-cqhttp-2.0.0a13.tar.gz", hash = "sha256:906891c318d394d358331c15ed6d8b1a6a4df75d9ceb43a2d0115ebfb204b5d2"},
+    {file = "nonebot_adapter_cqhttp-2.0.0a13-py3-none-any.whl", hash = "sha256:17ec3217cdd884c0b76d72cfd994b8cc877d4c7140993c6e7a83f9c562729091"},
 ]
 nonebot2 = [
     {file = "nonebot2-2.0.0a13-py3-none-any.whl", hash = "sha256:08422f31e42a705270a0c0dd5704febc9c929f4e7b9e94146c56faf926733536"},

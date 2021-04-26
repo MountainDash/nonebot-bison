@@ -6,6 +6,7 @@ class PlugConfig(BaseSettings):
     hk_reporter_config_path: str = ""
     hk_reporter_use_pic: bool = False
     hk_reporter_use_local: bool = False
+    hk_reporter_init_filter: bool = True
 
     class Config:
         extra = 'ignore'

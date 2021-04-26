@@ -21,6 +21,10 @@ class Weibo(Platform):
         }
     enable_tag = False
     platform_name = 'weibo'
+    name = '新浪微博'
+    enabled = True
+    is_common = True
+    schedule_interval = 10
 
     def __init__(self):
         self.top : dict[Target, RawPost] = dict()

@@ -1,6 +1,6 @@
-from nonebot import require, get_driver
+from nonebot import get_driver, logger
 from .send import do_send_msgs
-from .platform.utils import fetch_and_send
+from .platform import fetch_and_send, platform_manager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 scheduler = AsyncIOScheduler()
@@ -11,23 +11,12 @@ async def _start():
 
 get_driver().on_startup(_start)
 
-@scheduler.scheduled_job('interval', seconds=10)
-async def weibo_check():
-    await fetch_and_send('weibo')
-
-@scheduler.scheduled_job('interval', seconds=10)
-async def bilibili_check():
-    await fetch_and_send('bilibili')
-
-
-@scheduler.scheduled_job('interval', seconds=30)
-async def rss_check():
-    await fetch_and_send('rss')
-
-
-# @scheduler.scheduled_job('interval', seconds=30)
-# async def wechat_check():
-#     await fetch_and_send('wechat')
+for platform_name, platform in platform_manager.items():
+    if isinstance(platform.schedule_interval, int):
+        logger.info(f'start scheduler for {platform_name} with interval {platform.schedule_interval}')
+        scheduler.add_job(
+                fetch_and_send, 'interval', seconds=platform.schedule_interval,
+                args=(platform_name,))
 
 @scheduler.scheduled_job('interval', seconds=1)
 async def _send_msgs():

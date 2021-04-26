@@ -9,21 +9,43 @@ from ..config import Config
 from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target, User
-from ..utils import Singleton
 
 
 class CategoryNotSupport(Exception):
     "raise in get_category, when post category is not supported"
-    pass
 
-class PlatformProto(metaclass=Singleton):
+
+class RegistryMeta(type):
+
+    def __new__(cls, name, bases, namespace, **kwargs):
+        if name not in ['PlatformProto', 'Platform', 'PlatformNoTarget'] and \
+                'platform_name' not in namespace:
+            raise TypeError('Platform has no `platform_name`')
+        return super().__new__(cls, name, bases, namespace, **kwargs)
+
+    def __init__(cls, name, bases, namespace, **kwargs):
+        if not hasattr(cls, 'registory'):
+            # this is the base class
+            cls.registory = []
+        elif name not in ['Platform', 'PlatformNoTarget']:
+            # this is the subclass
+            cls.registory.append(cls)
+
+        super().__init__(name, bases, namespace, **kwargs)
+
+
+class PlatformProto(metaclass=RegistryMeta):
 
     categories: dict[Category, str]
     reverse_category: dict[str, Category]
     has_target: bool
     platform_name: str
+    name: str
     enable_tag: bool
     cache: dict[Any, Post]
+    enabled: bool
+    is_common: bool
+    schedule_interval: int
 
     async def fetch_new_post(self, target: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
         ...

@@ -1,10 +1,12 @@
 import base64
 from dataclasses import dataclass, field
 from io import BytesIO
-from typing import NoReturn, Optional
-from nonebot import logger
-import httpx
+from typing import Optional
+
 from PIL import Image
+import httpx
+from nonebot import logger
+
 from .plugin_config import plugin_config
 from .utils import parse_text
 

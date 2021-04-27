@@ -41,7 +41,7 @@ async def add_sub_parse_platform(bot: Bot, event: Event, state: T_State):
         return
     platform = str(event.get_message()).strip()
     if platform == '全部':
-        message = '全部平台' + \
+        message = '全部平台\n' + \
             '\n'.join(['{}：{}'.format(platform_name, platform.name) \
                     for platform_name, platform in platform_manager.items()])
         await add_sub.reject(message)

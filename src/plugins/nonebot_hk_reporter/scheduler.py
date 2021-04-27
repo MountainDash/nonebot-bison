@@ -1,10 +1,11 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import nonebot
 from nonebot import get_driver, logger
-from .send import do_send_msgs
-from .platform import platform_manager
+
 from .config import Config
+from .platform import platform_manager
+from .send import do_send_msgs
 from .send import send_msgs
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 scheduler = AsyncIOScheduler()
 
@@ -39,6 +40,4 @@ for platform_name, platform in platform_manager.items():
                 fetch_and_send, 'interval', seconds=platform.schedule_interval,
                 args=(platform_name,))
 
-@scheduler.scheduled_job('interval', seconds=1)
-async def _send_msgs():
-    await do_send_msgs()
+scheduler.add_job(do_send_msgs, 'interval', seconds=0.3)

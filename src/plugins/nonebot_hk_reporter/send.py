@@ -1,8 +1,5 @@
-from nonebot.adapters.cqhttp import Bot
-import nonebot
 from nonebot import logger
 import time
-import asyncio
 
 QUEUE = []
 LAST_SEND_TIME = time.time()

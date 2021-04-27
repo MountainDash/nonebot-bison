@@ -1,15 +1,12 @@
-import os
 import asyncio
-from typing import Awaitable, Callable, Optional
-import nonebot
-from nonebot import logger
-import base64
-from pyppeteer import launch
-from pyppeteer.page import Page
-from pyppeteer.chromium_downloader import check_chromium, download_chromium
 from html import escape
-from hashlib import sha256
+import os
 from tempfile import NamedTemporaryFile
+from typing import Awaitable, Callable, Optional
+
+from pyppeteer import launch
+from pyppeteer.chromium_downloader import check_chromium, download_chromium
+from pyppeteer.page import Page
 
 from .plugin_config import plugin_config
 

@@ -12,6 +12,10 @@ class MonsterSiren(PlatformNoTarget):
     categories = {}
     platform_name = 'monster-siren'
     enable_tag = False
+    enabled = True
+    is_common = False
+    schedule_interval = 30
+    name = '塞壬唱片官网新闻'
 
     @staticmethod
     async def get_account_name(_) -> str:

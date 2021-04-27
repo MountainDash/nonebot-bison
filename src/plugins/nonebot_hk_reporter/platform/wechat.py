@@ -17,6 +17,9 @@ class Wechat(Platform):
     categories = {}
     enable_tag = False
     platform_name = 'wechat'
+    enabled = False
+    is_common = False
+    name = '微信公众号'
 
     @classmethod
     def _get_query_url(cls, target: Target):

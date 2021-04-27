@@ -19,6 +19,10 @@ class Bilibili(Platform):
         }
     platform_name = 'bilibili'
     enable_tag = False
+    enabled = True
+    is_common = True
+    schedule_interval = 10
+    name = 'B站'
 
     @staticmethod
     async def get_account_name(target: Target) -> Optional[str]:

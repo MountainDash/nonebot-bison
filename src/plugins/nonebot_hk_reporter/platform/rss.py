@@ -14,6 +14,10 @@ class Rss(Platform):
     categories = {}
     enable_tag = False
     platform_name = 'rss'
+    name = "Rss"
+    enabled = True
+    is_common = True
+    schedule_interval = 30
 
     @staticmethod
     async def get_account_name(target: Target) -> Optional[str]:

@@ -7,11 +7,15 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 
 from .config import Config, NoSuchSubscribeException
-from .platform import platform_manager
-from .platform.utils import check_sub_target
+from .platform import platform_manager, check_sub_target
 from .send import send_msgs
 from .utils import parse_text
 from .types import Target
+
+common_platform = [p.platform_name for p in \
+        filter(lambda platform: platform.enabled and platform.is_common,
+            platform_manager.values())
+    ]
 
 help_match = on_command('help', rule=to_me(), priority=5)
 @help_match.handle()
@@ -20,7 +24,32 @@ async def send_help(bot: Bot, event: Event, state: T_State):
     await help_match.finish(Message(await parse_text(message)))
 
 add_sub = on_command("添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5)
-@add_sub.got('platform', '请输入想要订阅的平台，目前支持：{}'.format(', '.join(platform_manager.keys())))
+@add_sub.handle()
+async def add_sub_handle_platform(bot: Bot, event: Event, state: T_State):
+    if 'platform' in state:
+        return
+    await bot.send(event=event, message='请输入想要订阅的平台，目前支持：\n' +
+            ''.join(['{}：{}\n'.format(platform_name, platform_manager[platform_name].name) \
+                    for platform_name in common_platform]) +
+            '要查看全部平台请输入：“全部”'
+            )
+    await add_sub.pause()
+
+@add_sub.handle()
+async def add_sub_parse_platform(bot: Bot, event: Event, state: T_State):
+    if 'platform' in state:
+        return
+    platform = str(event.get_message()).strip()
+    if platform == '全部':
+        message = '全部平台' + \
+            '\n'.join(['{}：{}'.format(platform_name, platform.name) \
+                    for platform_name, platform in platform_manager.items()])
+        await add_sub.reject(message)
+    elif platform in platform_manager:
+        state['platform'] = platform
+    else:
+        await add_sub.reject('平台输入错误')
+# @add_sub.got('platform', '请输入想要订阅的平台，目前支持：{}'.format(', '.join(platform_manager.keys())))
 # @add_sub.got('id', '请输入订阅用户的id，详情查阅https://github.com/felinae98/nonebot-hk-reporter')
 @add_sub.handle()
 async def add_sub_handle_id(bot: Bot, event: Event, state: T_State):

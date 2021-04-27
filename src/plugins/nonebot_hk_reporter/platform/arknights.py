@@ -19,7 +19,11 @@ class Arknights(PlatformNoTarget):
 
     categories = {}
     platform_name = 'arknights'
+    name = '明日方舟游戏内公告'
     enable_tag = False
+    enabled = True
+    is_common = False
+    schedule_interval = 30
 
     @staticmethod
     async def get_account_name(_: Target) -> str:

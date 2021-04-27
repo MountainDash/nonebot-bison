@@ -2,12 +2,6 @@ import nonebot
 from nonebot import logger
 from collections import defaultdict
 from typing import Type
-from .arknights import Arknights
-from .weibo import Weibo
-from .bilibili import Bilibili
-from .monster_siren import MonsterSiren
-from .rss import Rss
-from .wechat import Wechat
 from .platform import PlatformProto
 from ..config import Config
 from ..post import Post
@@ -17,12 +11,8 @@ async def check_sub_target(target_type, target):
     return await platform_manager[target_type].get_account_name(target)
 
 platform_manager: dict[str, PlatformProto] = {
-        'bilibili': Bilibili(),
-        'weibo': Weibo(),
-        'rss': Rss(),
-        'arknights': Arknights(),
-        'monster-siren': MonsterSiren(),
-        # 'wechat': Wechat(),
+        obj.platform_name: obj() for obj in \
+                filter(lambda platform: platform.enabled, PlatformProto.registory)
     }
 
 async def fetch_and_send(target_type: str):

@@ -68,6 +68,7 @@ class PlatformProto(metaclass=RegistryMeta):
     @abstractmethod
     def get_category(self, post: RawPost) -> Optional[Category]:
         "Return category of given Rawpost"
+        raise NotImplementedError()
 
     @abstractmethod
     def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
@@ -80,6 +81,7 @@ class PlatformProto(metaclass=RegistryMeta):
     @abstractmethod
     def filter_platform_custom(self, post: RawPost) -> bool:
         "a customed filter"
+        raise NotImplementedError()
 
     async def _parse_with_cache(self, post: RawPost) -> Post:
         post_id = self.get_id(post)

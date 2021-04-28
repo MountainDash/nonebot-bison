@@ -1,4 +1,3 @@
-from collections import defaultdict
 import json
 from typing import Any, Optional
 
@@ -18,7 +17,7 @@ class Bilibili(Platform):
             # 5: "短视频"
         }
     platform_name = 'bilibili'
-    enable_tag = False
+    enable_tag = True
     enabled = True
     is_common = True
     schedule_interval = 10
@@ -65,7 +64,7 @@ class Bilibili(Platform):
         raise CategoryNotSupport()
 
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
-        return []
+        return [*map(lambda tp: tp['topic_name'], raw_post['display']['topic_info']['topic_details'])]
 
     async def parse(self, raw_post: RawPost) -> Post:
         card_content = json.loads(raw_post['card'])

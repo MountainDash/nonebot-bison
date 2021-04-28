@@ -1,6 +1,7 @@
+from abc import abstractmethod
 import time
 from collections import defaultdict
-from typing import Any, Optional
+from typing import Any, Collection, Optional
 
 import httpx
 from nonebot import logger
@@ -47,36 +48,38 @@ class PlatformProto(metaclass=RegistryMeta):
     is_common: bool
     schedule_interval: int
 
+    @abstractmethod
     async def fetch_new_post(self, target: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
         ...
 
     @staticmethod
+    @abstractmethod
     async def get_account_name(target: Target) -> Optional[str]:
         "return the username(name) of the target"
-        raise NotImplementedError()
 
+    @abstractmethod
     def get_id(self, post: RawPost) -> Any:
         "Get post id of given RawPost"
-        raise NotImplementedError()
 
+    @abstractmethod
     def get_date(self, post: RawPost) -> Optional[int]:
         "Get post timestamp and return, return None if can't get the time"
-        raise NotImplementedError()
 
+    @abstractmethod
     def get_category(self, post: RawPost) -> Optional[Category]:
         "Return category of given Rawpost"
-        raise NotImplementedError()
 
-    def get_tags(self, raw_post: RawPost) -> Optional[list[Tag]]:
+    @abstractmethod
+    def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
         "Return Tag list of given RawPost"
-        raise NotImplementedError()
 
+    @abstractmethod
     async def parse(self, raw_post: RawPost) -> Post:
         "parse RawPost into post"
-        raise NotImplementedError()
 
+    @abstractmethod
     def filter_platform_custom(self, post: RawPost) -> bool:
-        raise NotImplementedError()
+        "a customed filter"
 
     async def _parse_with_cache(self, post: RawPost) -> Post:
         post_id = self.get_id(post)
@@ -93,6 +96,7 @@ class PlatformProto(metaclass=RegistryMeta):
         return self.cache[post_id]
 
     def _do_filter_common(self, raw_post_list: list[RawPost], exists_posts_set: set) -> list[RawPost]:
+        import ipdb; ipdb.set_trace()
         res = []
         for raw_post in raw_post_list:
             post_id = self.get_id(raw_post)
@@ -152,9 +156,9 @@ class Platform(PlatformProto):
         for key, val in self.categories.items():
             self.reverse_category[val] = key
 
+    @abstractmethod
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         "Get post list of the given target"
-        raise NotImplementedError()
 
     async def filter_common(self, target: Target, raw_post_list: list[RawPost]) -> list[RawPost]:
         if not self.inited.get(target, False) and plugin_config.hk_reporter_init_filter:

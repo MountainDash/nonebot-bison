@@ -96,7 +96,6 @@ class PlatformProto(metaclass=RegistryMeta):
         return self.cache[post_id]
 
     def _do_filter_common(self, raw_post_list: list[RawPost], exists_posts_set: set) -> list[RawPost]:
-        import ipdb; ipdb.set_trace()
         res = []
         for raw_post in raw_post_list:
             post_id = self.get_id(raw_post)

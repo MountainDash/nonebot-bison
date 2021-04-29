@@ -8,8 +8,10 @@ from tinydb import Query, TinyDB
 
 from .plugin_config import plugin_config
 from .types import User
-from .utils import Singleton, supported_target_type
+from .utils import Singleton
+from .platform import platform_manager
 
+supported_target_type = platform_manager.keys()
 
 def get_config_path() -> str:
     if plugin_config.hk_reporter_config_path:

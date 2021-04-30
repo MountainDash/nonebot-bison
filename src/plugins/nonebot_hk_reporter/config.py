@@ -1,13 +1,13 @@
 from collections import defaultdict
 from os import path
 import os
-from typing import DefaultDict
+from typing import DefaultDict, Mapping
 
 import nonebot
 from tinydb import Query, TinyDB
 
 from .plugin_config import plugin_config
-from .types import User
+from .types import Target, User
 from .utils import Singleton
 from .platform import platform_manager
 
@@ -37,7 +37,7 @@ class Config(metaclass=Singleton):
         self.db = TinyDB(get_config_path(), encoding='utf-8') 
         self.kv_config = self.db.table('kv')
         self.user_target = self.db.table('user_target')
-        self.target_user_cache = {}
+        self.target_user_cache: dict[str, defaultdict[Target, list[User]]] = {}
         self.target_user_cat_cache = {}
         self.target_user_tag_cache = {}
         self.target_list = {}

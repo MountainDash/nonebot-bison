@@ -6,10 +6,9 @@ from typing import Any, Collection, Optional
 import httpx
 from nonebot import logger
 
-from ..config import Config
 from ..plugin_config import plugin_config
 from ..post import Post
-from ..types import Category, RawPost, Tag, Target, User
+from ..types import Category, RawPost, Tag, Target, User, UserSubInfo
 
 
 class CategoryNotSupport(Exception):
@@ -49,7 +48,7 @@ class PlatformProto(metaclass=RegistryMeta):
     schedule_interval: int
 
     @abstractmethod
-    async def fetch_new_post(self, target: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
         ...
 
     @staticmethod
@@ -172,9 +171,8 @@ class Platform(PlatformProto):
             return []
         return self._do_filter_common(raw_post_list, self.exists_posts[target])
 
-    async def fetch_new_post(self, target: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
         try:
-            config = Config()
             post_list = await self.get_sub_list(target)
             new_posts = await self.filter_common(target, post_list)
             res: list[tuple[User, list[Post]]] = []
@@ -183,9 +181,9 @@ class Platform(PlatformProto):
             else:
                 for post in new_posts:
                     logger.info('fetch new post from {} {}: {}'.format(self.platform_name, target, self.get_id(post)))
-            for user in users:
-                required_tags = config.get_sub_tags(self.platform_name, target, user.user_type, user.user) if self.enable_tag else []
-                cats = config.get_sub_category(self.platform_name, target, user.user_type, user.user)
+            for user, category_getter, tag_getter in users:
+                required_tags = tag_getter(target) if self.enable_tag else []
+                cats = category_getter(target)
                 user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
                 user_post: list[Post] = []
                 for raw_post in user_raw_post:
@@ -228,9 +226,8 @@ class PlatformNoTarget(PlatformProto):
             return []
         return self._do_filter_common(raw_post_list, self.exists_posts)
 
-    async def fetch_new_post(self, _: Target, users: list[User]) -> list[tuple[User, list[Post]]]:
+    async def fetch_new_post(self, _: Target, users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
         try:
-            config = Config()
             post_list = await self.get_sub_list()
             new_posts = await self.filter_common(post_list)
             res: list[tuple[User, list[Post]]] = []
@@ -239,9 +236,9 @@ class PlatformNoTarget(PlatformProto):
             else:
                 for post in new_posts:
                     logger.info('fetch new post from {}: {}'.format(self.platform_name, self.get_id(post)))
-            for user in users:
-                required_tags = config.get_sub_tags(self.platform_name, 'default', user.user_type, user.user) if self.enable_tag else []
-                cats = config.get_sub_category(self.platform_name, 'default', user.user_type, user.user)
+            for user, category_getter, tag_getter in users:
+                required_tags = tag_getter(Target('default'))
+                cats = category_getter(Target('default'))
                 user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
                 user_post: list[Post] = []
                 for raw_post in user_raw_post:

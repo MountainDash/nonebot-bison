@@ -6,6 +6,7 @@ from .config import Config
 from .platform import platform_manager
 from .send import do_send_msgs
 from .send import send_msgs
+from .types import UserSubInfo
 
 scheduler = AsyncIOScheduler()
 
@@ -21,10 +22,16 @@ async def fetch_and_send(target_type: str):
     if not target:
         return
     logger.debug('try to fecth new posts from {}, target: {}'.format(target_type, target))
-    send_list = config.target_user_cache[target_type][target]
+    send_user_list = config.target_user_cache[target_type][target]
+    send_userinfo_list = list(map(
+        lambda user: UserSubInfo(
+            user,
+            lambda target: config.get_sub_category(target_type, target, user.user_type, user.user),
+            lambda target: config.get_sub_tags(target_type, target, user.user_type, user.user)
+        ), send_user_list))
     bot_list = list(nonebot.get_bots().values())
     bot = bot_list[0] if bot_list else None
-    to_send = await platform_manager[target_type].fetch_new_post(target, send_list)
+    to_send = await platform_manager[target_type].fetch_new_post(target, send_userinfo_list)
     for user, send_list in to_send:
         for send_post in send_list:
             logger.info('send to {}: {}'.format(user, send_post))

@@ -33,6 +33,7 @@ apscheduler = "^3.7.0"
 [tool.poetry.dev-dependencies]
 nb-cli = "^0.3.2"
 ipdb = "^0.13.4"
+pytest = "^6.2.4"
 
 [build-system]
 requires = ["poetry>=0.12"]

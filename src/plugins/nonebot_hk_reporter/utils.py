@@ -36,7 +36,7 @@ class Render(metaclass=Singleton):
         retry_times = 0
         while retry_times < 3:
             try:
-                return await asyncio.wait_for(self.do_render(url, viewport, target, operation), 10)
+                return await asyncio.wait_for(self.do_render(url, viewport, target, operation), 20)
             except asyncio.TimeoutError:
                 retry_times += 1
                 logger.warning("render error {}\n".format(retry_times) + self.interval_log)

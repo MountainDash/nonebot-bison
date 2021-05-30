@@ -142,7 +142,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State):
     # send_msgs(bot, event.group_id, 'group', [await parse_text(res)])
     await query_sub.finish(Message(await parse_text(res)))
 
-del_sub = on_command("删除订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER, priority=5)
+del_sub = on_command("删除订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5)
 @del_sub.handle()
 async def send_list(bot: Bot, event: GroupMessageEvent, state: T_State):
     config: Config = Config()

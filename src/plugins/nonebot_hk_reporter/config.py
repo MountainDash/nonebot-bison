@@ -61,7 +61,9 @@ class Config(metaclass=Singleton):
 
     def list_subscribe(self, user, user_type):
         query = Query()
-        return self.user_target.get((query.user == user) & (query.user_type ==user_type))['subs']
+        if user_sub := self.user_target.get((query.user == user) & (query.user_type ==user_type)):
+            return user_sub['subs']
+        return []
     
     def del_subscribe(self, user, user_type, target, target_type):
         user_query = Query()

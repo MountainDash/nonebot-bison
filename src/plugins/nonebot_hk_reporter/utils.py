@@ -43,6 +43,7 @@ class Render(metaclass=Singleton):
                 self.interval_log = ''
                 if self.browser:
                     await self.browser.close()
+                    self.lock.release()
 
     def _inter_log(self, message: str) -> None:
         # self.interval_log += asctime() + '' + message + '\n'

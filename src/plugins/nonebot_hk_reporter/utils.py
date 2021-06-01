@@ -2,7 +2,6 @@ import asyncio
 from html import escape
 import os
 from tempfile import NamedTemporaryFile
-from time import asctime
 from typing import Awaitable, Callable, Optional
 
 from pyppeteer import launch
@@ -41,9 +40,9 @@ class Render(metaclass=Singleton):
                 retry_times += 1
                 logger.warning("render error {}\n".format(retry_times) + self.interval_log)
                 self.interval_log = ''
-                if self.browser:
-                    await self.browser.close()
-                    self.lock.release()
+                # if self.browser:
+                #     await self.browser.close()
+                #     self.lock.release()
 
     def _inter_log(self, message: str) -> None:
         # self.interval_log += asctime() + '' + message + '\n'
@@ -65,7 +64,7 @@ class Render(metaclass=Singleton):
             self._inter_log('open page')
             if viewport:
                 await page.setViewport(viewport)
-                logger._inter_log('set viewport')
+                self._inter_log('set viewport')
             if target:
                 target_ele = await page.querySelector(target)
                 data = await target_ele.screenshot(type='jpeg', encoding='base64')

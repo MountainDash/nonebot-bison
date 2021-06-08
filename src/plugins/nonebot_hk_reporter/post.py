@@ -102,7 +102,7 @@ class Post:
         if self.target_name:
             text += ' {}'.format(self.target_name)
         if self.text:
-            text += ' \n{}'.format(self.text)
+            text += ' \n{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
         if self._use_pic():
             msgs.append(await parse_text(text))
             if not self.target_type == 'rss' and self.url:
@@ -122,6 +122,6 @@ class Post:
                 self.target_type,
                 self.target_name,
                 self.text,
-                self.url,
+                self.text if len(self.text) < 500 else self.text[:500] + '...',
                 ', '.join(map(lambda x: 'b64img' if x.startswith('base64') else x, self.pics))
             )

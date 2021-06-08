@@ -36,10 +36,13 @@ class Rss(Platform):
         async with httpx.AsyncClient() as client:
             res = await client.get(target, timeout=10.0)
             feed = feedparser.parse(res)
+            entries = feed.entries
+            for entry in entries:
+                entry['_target_name'] = feed.feed.title
             return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
         soup = bs(raw_post.description, 'html.parser')
         text = soup.text
         pics = list(map(lambda x: x.attrs['src'], soup('img')))
-        return Post('rss', text=text, url=raw_post.link, pics=pics)
+        return Post('rss', text=text, url=raw_post.link, pics=pics, target_name=raw_post['_target_name'])

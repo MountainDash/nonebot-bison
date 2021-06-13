@@ -4,6 +4,7 @@
 
 
 [![pypi](https://badgen.net/pypi/v/nonebot-hk-reporter)](https://pypi.org/project/nonebot-hk-reporter/)
+[![felinae98](https://circleci.com/gh/felinae98/nonebot-hk-reporter.svg?style=svg)](https://circleci.com/gh/felinae98/nonebot-hk-reporter)
 [![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange )](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)
 
 </div>

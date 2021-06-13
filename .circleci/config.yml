@@ -36,4 +36,3 @@ jobs:
       - poetry/shell:
           args: pytest
 
-

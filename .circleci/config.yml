@@ -7,32 +7,55 @@ orbs:
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.2
   poetry: frameio/poetry@0.21.0
+  swissknife: roopakv/swissknife@0.59.0
 
 workflows:
-  sample:  # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run. 
-    # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
+  build-test-publish:
     jobs:
-      - build-and-test
-
+      - install
+      - test:
+          requires:
+            - install
+      - build:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v.*/
+      - publish:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
 
 jobs:
-  build-and-test:  # This is the name of the job, feel free to change it to better match what you're trying to do!
-    # These next lines defines a Docker executors: https://circleci.com/docs/2.0/executor-types/
-    # You can specify an image from Dockerhub or use one of the convenience images from CircleCI's Developer Hub
-    # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
-    # The executor is the environment in which the steps below will be executed - below will use a python 3.9 container
-    # Change the version below to your required version of python
+  install:
     docker:
       - image: cimg/python:3.9
-    # Checkout the code as the first step. This is a dedicated CircleCI step.
-    # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
-    # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
-    # Then run your tests!
-    # CircleCI will report the results back to your VCS provider.
     steps:
       - checkout
       - poetry/install
+  test:
+    docker:
+      - image: cimg/python:3.9
+    steps:
       - poetry/shell:
-          args: pytest
+          args: pytest --junitxml=test-results/junit.xml
+      - store_test_results:
+          path: test-results
+  build:
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - run: poetry build
+      - store_artifacts:
+          path: dist
+      - swissknife/publish_github_release:
+          tag: ${CIRCLE_TAG}
+  publish:
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - run: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
 

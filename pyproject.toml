@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-hk-reporter"
-version = "0.2.10"
+version = "0.2.11"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"

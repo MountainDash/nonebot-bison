@@ -43,7 +43,7 @@ jobs:
       - save_cache:
           paths:
             - .venv
-          key: venv-cache-{{ checksum "poetry.locl" }}
+          key: venv-cache-{{ checksum "poetry.lock" }}
       - run:
           name: pytest
           command: poetry run pytest --junitxml=test-results/junit.xml

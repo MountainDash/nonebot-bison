@@ -26,6 +26,7 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - checkout
+      - run: sed -e '41,45d' -i pyproject.toml
       - poetry/install
       - poetry/shell:
           args: pytest --junitxml=test-results/junit.xml
@@ -35,6 +36,7 @@ jobs:
     docker:
       - image: cimg/python:3.9
     steps:
+      - checkout
       - run: poetry build
       - store_artifacts:
           path: dist

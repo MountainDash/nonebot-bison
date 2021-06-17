@@ -91,6 +91,8 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
     本项目使用了Python 3.9的语法，请将Python版本升级到3.9及以上，推荐使用docker部署
 2. bot不理我  
     请确认自己是群主或者管理员，并且检查`COMMAND_START`环境变量是否设为`[""]`
+3. 微博漏订阅了
+    微博更新了新的风控措施，某些含有某些关键词的微博会获取不到。
 
 ## 鸣谢
 * [`go-cqhttp`](https://github.com/Mrs4s/go-cqhttp)：简单又完善的 cqhttp 实现

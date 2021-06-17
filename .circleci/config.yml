@@ -12,39 +12,26 @@ orbs:
 workflows:
   build-test-publish:
     jobs:
-      - install
-      - test:
-          requires:
-            - install
-      - build:
+      - test
+      - build-publish:
           requires:
             - test
           filters:
             tags:
               only: /^v.*/
-      - publish:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /^v.*/
 
 jobs:
-  install:
+  test:
     docker:
       - image: cimg/python:3.9
     steps:
       - checkout
       - poetry/install
-  test:
-    docker:
-      - image: cimg/python:3.9
-    steps:
       - poetry/shell:
           args: pytest --junitxml=test-results/junit.xml
       - store_test_results:
           path: test-results
-  build:
+  build-publish:
     docker:
       - image: cimg/python:3.9
     steps:
@@ -53,9 +40,5 @@ jobs:
           path: dist
       - swissknife/publish_github_release:
           tag: ${CIRCLE_TAG}
-  publish:
-    docker:
-      - image: cimg/python:3.9
-    steps:
       - run: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
 

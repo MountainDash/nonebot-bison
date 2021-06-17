@@ -38,7 +38,7 @@
 <details>
 <summary>Docker部署方法</summary>
    
-Docker镜像地址为`felinae98/nonebot-hk-reporter`对应main分支，`felinae98/nonebot-hk-reporter:arknights`对应arknights分支。例子：
+Docker镜像地址为`felinae98/nonebot-hk-reporter`。例子：
 ```bash
 docker run --name nonebot-hk-reporter --network <network name> -d -e 'SUPERUSERS=[<Your QQ>]' -v <config dir>:/data -e 'hk_reporter_config_path=/data' -e 'HK_REPORTER_USE_PIC=True' -e 'HK_REPORTER_USE_LOCAL=True' felinae98/nonebot-hk-reporter
 ```
@@ -50,11 +50,18 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
 * `HK_REPORTER_USE_PIC` (bool) 以图片形式发送文字（推荐在帐号被风控时使用）
 * `HK_REPORTER_USE_LOCAL` (bool) 使用本地chromium（文字转图片时需要），否则第一次启动会下载chromium
 
+同时，建议配置`SUPERUSERS`环境变量便于机器人管理
+
 ### 命令
+#### 在本群中进行配置
 所有命令都需要@bot触发
-* 添加订阅（仅管理员和群主）：`添加订阅`
+* 添加订阅（仅管理员和群主和SUPERUSER）：`添加订阅`
 * 查询订阅：`查询订阅`
-* 删除订阅（仅管理员和群主）：`删除订阅`
+* 删除订阅（仅管理员和群主和SUPERUSER）：`删除订阅`
+#### 私聊机器人进行配置（需要SUPERUER权限）
+* 添加订阅：`管理-添加订阅`
+* 查询订阅：`管理-查询订阅`
+* 删除订阅：`管理-删除订阅`
 
 平台代码包含：Weibo，Bilibili，RSS
 <details>
@@ -89,6 +96,7 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
 * [`go-cqhttp`](https://github.com/Mrs4s/go-cqhttp)：简单又完善的 cqhttp 实现
 * [`NoneBot2`](https://github.com/nonebot/nonebot2)：超好用的开发框架
 * [`HarukaBot`](https://github.com/SK-415/HarukaBot/): 借鉴了大体的实现思路
+* [`rsshub`](https://github.com/DIYgod/RSSHub)：提供了大量的api
 
 ## License
 MIT

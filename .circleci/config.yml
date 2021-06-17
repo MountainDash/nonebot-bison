@@ -38,7 +38,7 @@ jobs:
       - run:
           name: Poetry install
           command: |
-            poetry config settings.virtualenvs.in-project true
+            poetry config virtualenvs.in-project true
             poetry install -v
       - save_cache:
           paths:

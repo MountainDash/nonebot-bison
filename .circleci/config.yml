@@ -12,7 +12,10 @@ orbs:
 workflows:
   build-test-publish:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              only: /.*/
       - build-publish:
           requires:
             - test

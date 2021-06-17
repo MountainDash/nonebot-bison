@@ -26,7 +26,7 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - checkout
-      - run: sed -e '41,45d' -i pyproject.toml
+      # - run: sed -e '41,45d' -i pyproject.toml
       - poetry/install
       - poetry/shell:
           args: pytest --junitxml=test-results/junit.xml

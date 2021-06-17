@@ -5,20 +5,23 @@ orbs:
   # Orb commands and jobs help you with common scripting around a language/tool
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
-  python: circleci/python@1.2
+  python: circleci/python@1.4
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
 
 workflows:
   build-test-publish:
     jobs:
-      - test:
+      - python/test:
+          pkg-manager: poetry
+          test-tool: pytest
+          version: "3.9"
           filters:
             tags:
               only: /.*/
       - build-publish:
           requires:
-            - test
+            - python/test
           filters:
             branches:
               ignore: /.*/
@@ -26,29 +29,29 @@ workflows:
               only: /^v.*/
 
 jobs:
-  test:
-    docker:
-      - image: cimg/python:3.9
-    steps:
-      - checkout
-      # - run: sed -e '41,45d' -i pyproject.toml
-      - restore_cache:
-          keys:
-            - venv-cache-{{ checksum "poetry.lock" }}
-      - run:
-          name: Poetry install
-          command: |
-            poetry config virtualenvs.in-project true
-            poetry install -v
-      - save_cache:
-          paths:
-            - .venv
-          key: venv-cache-{{ checksum "poetry.lock" }}
-      - run:
-          name: pytest
-          command: poetry run pytest --junitxml=test-results/junit.xml
-      - store_test_results:
-          path: test-results
+  # test:
+  #   docker:
+  #     - image: cimg/python:3.9
+  #   steps:
+  #     - checkout
+  #     # - run: sed -e '41,45d' -i pyproject.toml
+  #     - restore_cache:
+  #         keys:
+  #           - venv-cache-{{ checksum "poetry.lock" }}
+  #     - run:
+  #         name: Poetry install
+  #         command: |
+  #           poetry config virtualenvs.in-project true
+  #           poetry install -v
+  #     - save_cache:
+  #         paths:
+  #           - .venv
+  #         key: venv-cache-{{ checksum "poetry.lock" }}
+  #     - run:
+  #         name: pytest
+  #         command: poetry run pytest --junitxml=test-results/junit.xml
+  #     - store_test_results:
+  #         path: test-results
   build-publish:
     docker:
       - image: cimg/python:3.9

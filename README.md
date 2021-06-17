@@ -43,6 +43,8 @@ Docker镜像地址为`felinae98/nonebot-hk-reporter`。例子：
 docker run --name nonebot-hk-reporter --network <network name> -d -e 'SUPERUSERS=[<Your QQ>]' -v <config dir>:/data -e 'hk_reporter_config_path=/data' -e 'HK_REPORTER_USE_PIC=True' -e 'HK_REPORTER_USE_LOCAL=True' felinae98/nonebot-hk-reporter
 ```
 go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`），需要注意，两个容器需要在同一个network中。
+
+并且docker版本中提供了自动同意SUPERUSER好友申请和自动同意SUPERUSER的入群邀请的功能。
 </details>
 
 ### 配置变量

@@ -6,7 +6,7 @@ orbs:
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.2
-  poetry: frameio/poetry@0.21.0
+  # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
 
 workflows:
@@ -32,9 +32,21 @@ jobs:
     steps:
       - checkout
       # - run: sed -e '41,45d' -i pyproject.toml
-      - poetry/install
-      - poetry/shell:
-          args: pytest --junitxml=test-results/junit.xml
+      - restore_cache:
+          keys:
+            - venv-cache-{{ checksum "poetry.lock" }}
+      - run:
+          name: Poetry install
+          command: |
+            poetry config settings.virtualenvs.in-project true
+            poetry install -v
+      - save_cache:
+          paths:
+            - .venv
+          key: venv-cache-{{ checksum "poetry.locl" }}
+      - run:
+          name: pytest
+          command: poetry run pytest --junitxml=test-results/junit.xml
       - store_test_results:
           path: test-results
   build-publish:
@@ -47,5 +59,7 @@ jobs:
           path: dist
       - swissknife/publish_github_release:
           tag: ${CIRCLE_TAG}
-      - run: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
+      - run:
+          command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
+          name: publish to pypi
 

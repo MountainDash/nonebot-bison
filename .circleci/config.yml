@@ -18,7 +18,7 @@ workflows:
               only: /.*/
       - build-publish:
           requires:
-            - python/test
+            - test
           filters:
             branches:
               ignore: /.*/

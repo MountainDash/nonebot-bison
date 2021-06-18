@@ -41,7 +41,7 @@ jobs:
           path: test-results
       - run:
           name: Collect coverage
-          command: coverage html --include='src/*'
+          command: poetry run coverage html --include='src/*'
       - store_artifacts:
           path: htmlcov
   build-publish:

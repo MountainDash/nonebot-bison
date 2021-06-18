@@ -74,5 +74,6 @@ async def test_parse_long(weibo):
     assert(not '全文' in post.text)
     assert(detail_router.called)
 
-def text_tag(weibo, weibo_ak_list_1):
-    assert(weibo.get_tags(weibo_ak_list_1) == ['明日方舟', '音律联觉'])
+def test_tag(weibo, weibo_ak_list_1):
+    raw_post = weibo_ak_list_1['data']['cards'][0]
+    assert(weibo.get_tags(raw_post) == ['明日方舟', '音律联觉'])

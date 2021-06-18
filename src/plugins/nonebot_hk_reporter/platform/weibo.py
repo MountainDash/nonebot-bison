@@ -62,11 +62,12 @@ class Weibo(Platform):
     def get_tags(self, raw_post: RawPost) -> Optional[list[Tag]]:
         "Return Tag list of given RawPost"
         text = raw_post['mblog']['text']
+        soup = bs(text, 'html.parser')
         return list(map(
             lambda x: x[1:-1],
             filter(
                 lambda s: s[0] == '#' and s[-1] == '#',
-                map(lambda x:x.text, text.find_all('span', class_='surl-text'))
+                map(lambda x:x.text, soup.find_all('span', class_='surl-text'))
                 )
             ))
 

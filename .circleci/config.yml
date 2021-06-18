@@ -12,10 +12,7 @@ orbs:
 workflows:
   build-test-publish:
     jobs:
-      - python/test:
-          pkg-manager: poetry
-          test-tool: pytest
-          version: "3.9"
+      - test:
           filters:
             tags:
               only: /.*/
@@ -29,29 +26,24 @@ workflows:
               only: /^v.*/
 
 jobs:
-  # test:
-  #   docker:
-  #     - image: cimg/python:3.9
-  #   steps:
-  #     - checkout
-  #     # - run: sed -e '41,45d' -i pyproject.toml
-  #     - restore_cache:
-  #         keys:
-  #           - venv-cache-{{ checksum "poetry.lock" }}
-  #     - run:
-  #         name: Poetry install
-  #         command: |
-  #           poetry config virtualenvs.in-project true
-  #           poetry install -v
-  #     - save_cache:
-  #         paths:
-  #           - .venv
-  #         key: venv-cache-{{ checksum "poetry.lock" }}
-  #     - run:
-  #         name: pytest
-  #         command: poetry run pytest --junitxml=test-results/junit.xml
-  #     - store_test_results:
-  #         path: test-results
+  test:
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - checkout
+      # - run: sed -e '41,45d' -i pyproject.toml
+      - python/install-packages:
+          pkg-manager: poetry
+      - run:
+          name: Coverage test
+          command: poetry run coverage run -m pytest --junitxml=test-results/junit.xml
+      - store_test_results:
+          path: test-results
+      - run:
+          name: Collect coverage
+          command: coverage html --include='src/*'
+      - store_artifacts:
+          path: htmlcov
   build-publish:
     docker:
       - image: cimg/python:3.9

@@ -16,6 +16,10 @@ from .utils import get_json, get_file
 def weibo(plugin_module: 'nonebot_hk_reporter'):
     return plugin_module.platform.platform_manager['weibo']
 
+@pytest.fixture(scope='module')
+def weibo_ak_list_1():
+    return get_json('weibo_ak_list_1.json')
+
 @pytest.mark.asyncio
 async def test_get_name(weibo):
     name = await weibo.get_account_name('6279793937')
@@ -42,6 +46,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     ak_list_router.mock(return_value=Response(200, json=mock_data))
     res3 = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert(len(res3[0][1]) == 1)
+    assert(not detail_router.called)
     post = res3[0][1][0]
     assert(post.target_type == 'weibo')
     assert(post.text == '#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ ')
@@ -58,3 +63,16 @@ async def test_classification(weibo):
     assert(weibo.get_category(retweet) == 1)
     assert(weibo.get_category(video) == 2)
     assert(weibo.get_category(tuwen) == 3)
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_parse_long(weibo):
+    detail_router = respx.get("https://m.weibo.cn/detail/4645748019299849")
+    detail_router.mock(return_value=Response(200, text=get_file('weibo_detail_4645748019299849.html')))
+    raw_post = get_json('weibo_ak_list_1.json')['data']['cards'][0]
+    post = await weibo.parse(raw_post)
+    assert(not '全文' in post.text)
+    assert(detail_router.called)
+
+def text_tag(weibo, weibo_ak_list_1):
+    assert(weibo.get_tags(weibo_ak_list_1) == ['明日方舟', '音律联觉'])

@@ -18,7 +18,7 @@ class Weibo(Platform):
             2: '视频',
             3: '图文',
         }
-    enable_tag = False
+    enable_tag = True
     platform_name = 'weibo'
     name = '新浪微博'
     enabled = True
@@ -50,8 +50,6 @@ class Weibo(Platform):
             return res_data['data']['cards']
 
     def get_id(self, post: RawPost) -> Any:
-        if post.get('_type'):
-            return None
         return post['mblog']['id']
 
     def filter_platform_custom(self, raw_post: RawPost) -> bool:
@@ -63,7 +61,14 @@ class Weibo(Platform):
 
     def get_tags(self, raw_post: RawPost) -> Optional[list[Tag]]:
         "Return Tag list of given RawPost"
-        return None
+        text = raw_post['mblog']['text']
+        return list(map(
+            lambda x: x[1:-1],
+            filter(
+                lambda s: s[0] == '#' and s[-1] == '#',
+                map(lambda x:x.text, text.find_all('span', class_='surl-text'))
+                )
+            ))
 
     def get_category(self, raw_post: RawPost) -> Category:
         if raw_post['mblog'].get('retweeted_status'):

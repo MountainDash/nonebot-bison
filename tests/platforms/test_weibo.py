@@ -4,6 +4,7 @@ import respx
 from datetime import datetime
 from pytz import timezone
 from httpx import Response
+import feedparser
 
 if typing.TYPE_CHECKING:
     import sys
@@ -77,3 +78,16 @@ async def test_parse_long(weibo):
 def test_tag(weibo, weibo_ak_list_1):
     raw_post = weibo_ak_list_1['data']['cards'][0]
     assert(weibo.get_tags(raw_post) == ['明日方舟', '音律联觉'])
+
+@pytest.mark.asyncio
+async def test_rsshub_compare(weibo, dummy_user_subinfo):
+    target = '6279793937'
+    raw_posts = filter(weibo.filter_platform_custom, await weibo.get_sub_list(target))
+    posts = []
+    for raw_post in raw_posts:
+        posts.append(await weibo.parse(raw_post))
+    url_set = set(map(lambda x: x.url, posts))
+    feedres = feedparser.parse('https://rsshub.app/weibo/user/6279793937')
+    for entry in feedres.entries[:5]:
+        # print(entry)
+        assert(entry.link in url_set)

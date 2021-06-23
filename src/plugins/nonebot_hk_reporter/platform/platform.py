@@ -130,7 +130,7 @@ class PlatformProto(metaclass=RegistryMeta):
             if self.enable_tag and tags:
                 flag = False
                 post_tags = self.get_tags(raw_post)
-                for tag in post_tags:
+                for tag in post_tags or []:
                     if tag in tags:
                         flag = True
                         break

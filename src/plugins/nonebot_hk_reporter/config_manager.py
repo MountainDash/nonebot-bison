@@ -49,7 +49,11 @@ def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.got('platform', '{_prompt}', parse_platform)
     @add_sub.handle()
     async def init_id(bot: Bot, event: Event, state: T_State):
-        state['_prompt'] = '请输入订阅用户的id，详情查阅https://github.com/felinae98/nonebot-hk-reporter'
+        if platform_manager[state['platform']].has_target:
+            state['_prompt'] = '请输入订阅用户的id，详情查阅https://github.com/felinae98/nonebot-hk-reporter'
+        else:
+            state['id'] = 'default'
+            state['name'] = await platform_manager[state['platform']].get_account_name(Target(''))
 
     async def parse_id(bot: Bot, event: Event, state: T_State):
         target = str(event.get_message()).strip()
@@ -93,9 +97,6 @@ def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.got('tags', '{_prompt}', parser_tags)
     @add_sub.handle()
     async def add_sub_process(bot: Bot, event: Event, state: T_State):
-        if not platform_manager[state['platform']].has_target:
-            state['name'] = await platform_manager[state['platform']].get_account_name(Target(''))
-            state['id'] = 'default'
         config = Config()
         config.add_subscribe(state.get('_user_id') or event.group_id, user_type='group',
                 target=state['id'],

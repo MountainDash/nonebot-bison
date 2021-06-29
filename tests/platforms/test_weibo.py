@@ -81,6 +81,7 @@ def test_tag(weibo, weibo_ak_list_1):
     assert(weibo.get_tags(raw_post) == ['明日方舟', '音律联觉'])
 
 @pytest.mark.asyncio
+@pytest.mark.compare
 async def test_rsshub_compare(weibo):
     target = '6279793937'
     raw_posts = filter(weibo.filter_platform_custom, await weibo.get_sub_list(target))

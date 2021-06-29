@@ -45,3 +45,8 @@ build-backend = "poetry.masonry.api"
 name = "aliyun"
 url = "https://mirrors.aliyun.com/pypi/simple/"
 default = true
+
+[tool.pytest.ini_options]
+markers = [
+    "compare: compare fetching result with rsshub"
+]

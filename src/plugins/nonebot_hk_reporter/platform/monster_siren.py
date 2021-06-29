@@ -20,7 +20,7 @@ class MonsterSiren(NewMessage, NoTargetMixin):
     async def get_target_name(_) -> str:
         return '塞壬唱片新闻'
 
-    async def get_sub_list(self) -> list[RawPost]:
+    async def get_sub_list(self, _) -> list[RawPost]:
         async with httpx.AsyncClient() as client:
             raw_data = await client.get('https://monster-siren.hypergryph.com/api/news')
             return raw_data.json()['data']['list']

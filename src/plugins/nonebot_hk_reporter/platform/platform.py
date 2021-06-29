@@ -84,7 +84,14 @@ class CategoryMixin(metaclass=RegistryABCMeta, abstract=True):
         "Return category of given Rawpost"
         raise NotImplementedError()
 
-class MessageProcessMixin(PlaformNameMixin, CategoryMixin, abstract=True):
+class ParsePostMixin(metaclass=RegistryABCMeta, abstract=True):
+
+    @abstractmethod
+    async def parse(self, raw_post: RawPost) -> Post:
+        "parse RawPost into post"
+        ...
+
+class MessageProcessMixin(PlaformNameMixin, CategoryMixin, ParsePostMixin, abstract=True):
     "General message process fetch, parse, filter progress"
 
     def __init__(self):
@@ -95,10 +102,6 @@ class MessageProcessMixin(PlaformNameMixin, CategoryMixin, abstract=True):
     def get_id(self, post: RawPost) -> Any:
         "Get post id of given RawPost"
 
-    @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post:
-        "parse RawPost into post"
-        ...
 
     async def _parse_with_cache(self, raw_post: RawPost) -> Post:
         post_id = self.get_id(raw_post)
@@ -168,7 +171,7 @@ class NewMessageProcessMixin(StorageMixinProto, MessageProcessMixin, abstract=Tr
         self.set_stored_data(target, store)
         return res
 
-class UserCustomFilterMixin(CategoryMixin, abstract=True):
+class UserCustomFilterMixin(CategoryMixin, ParsePostMixin, abstract=True):
 
     categories: dict[Category, str]
     enable_tag: bool
@@ -196,6 +199,21 @@ class UserCustomFilterMixin(CategoryMixin, abstract=True):
             res.append(raw_post)
         return res
 
+    async def dispatch_user_post(self, target: Target, new_posts: list[RawPost], users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
+        res: list[tuple[User, list[Post]]] = []
+        for user, category_getter, tag_getter in users:
+            required_tags = tag_getter(target) if self.enable_tag else []
+            cats = category_getter(target)
+            user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
+            user_post: list[Post] = []
+            for raw_post in user_raw_post:
+                if isinstance(self, MessageProcessMixin):
+                    user_post.append(await self._parse_with_cache(raw_post))
+                else:
+                    user_post.append(await self.parse(raw_post))
+            res.append((user, user_post))
+        return res
+
 class Platform(metaclass=RegistryABCMeta, base=True):
     
     # schedule_interval: int
@@ -220,12 +238,12 @@ class NewMessage(
         UserCustomFilterMixin,
         abstract=True
         ):
+    "Fetch a list of messages, filter the new messages, dispatch it to different users"
     
     async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
         try:
             post_list = await self.get_sub_list(target)
             new_posts = await self.filter_common_with_diff(target, post_list)
-            res: list[tuple[User, list[Post]]] = []
             if not new_posts:
                 return []
             else:
@@ -234,17 +252,44 @@ class NewMessage(
                         self.platform_name,
                         target if self.has_target else '-',
                         self.get_id(post)))
-            for user, category_getter, tag_getter in users:
-                required_tags = tag_getter(target) if self.enable_tag else []
-                cats = category_getter(target)
-                user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
-                user_post: list[Post] = []
-                for raw_post in user_raw_post:
-                    user_post.append(await self._parse_with_cache(raw_post))
-                res.append((user, user_post))
+            res = await self.dispatch_user_post(target, new_posts, users)
             self.parse_cache = {}
             return res
         except httpx.RequestError as err:
             logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))
             return []
 
+class StatusChange(
+        Platform,
+        StorageMixinProto,
+        PlaformNameMixin,
+        UserCustomFilterMixin,
+        abstract=True
+        ):
+    "Watch a status, and fire a post when status changes"
+
+    @abstractmethod
+    async def get_status(self, target: Target) -> Any:
+        ...
+
+    @abstractmethod
+    def compare_status(self, target: Target, old_status, new_status) -> Optional[RawPost]:
+        ...
+
+    @abstractmethod
+    async def parse(self, raw_post: RawPost) -> Post:
+        ...
+
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
+        try:
+            new_status = await self.get_status(target)
+            res = []
+            if old_status := self.get_stored_data(target):
+                diff = self.compare_status(target, old_status, new_status)
+                if diff:
+                    res = await self.dispatch_user_post(target, [diff], users)
+            self.set_stored_data(target, new_status)
+            return res
+        except httpx.RequestError as err:
+            logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))
+            return []

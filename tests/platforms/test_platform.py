@@ -1,6 +1,6 @@
 import sys
 import typing
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 
@@ -172,6 +172,52 @@ def mock_platform_no_target(plugin_module: 'nonebot_hk_reporter'):
 
     return MockPlatform()
 
+@pytest.fixture
+def mock_status_change(plugin_module: 'nonebot_hk_reporter'):
+    class MockPlatform(plugin_module.platform.platform.StatusChange,
+            plugin_module.platform.platform.NoTargetMixin):
+
+        platform_name = 'mock_platform'
+        name = 'Mock Platform'
+        enabled = True
+        is_common = True
+        enable_tag = False
+        schedule_type = 'interval'
+        schedule_kw = {'seconds': 10}
+        categories = {
+                1: '转发',
+                2: '视频',
+            }
+        def __init__(self):
+            self.sub_index = 0
+            super().__init__()
+
+        async def get_status(self, _: 'Target'):
+            if self.sub_index == 0:
+                self.sub_index += 1
+                return {'s': False}
+            elif self.sub_index == 1:
+                self.sub_index += 1
+                return {'s': True}
+            else:
+                return {'s': False}
+
+        def compare_status(self, target, old_status, new_status) -> Optional['RawPost']:
+            if old_status['s'] == False and new_status['s'] == True:
+                return {'text': 'on', 'cat': 1}
+            elif old_status['s'] == True and new_status['s'] == False:
+                return {'text': 'off', 'cat': 2}
+            return None
+
+        async def parse(self, raw_post) -> 'Post':
+            return plugin_module.post.Post('mock_status', raw_post['text'], '')
+
+        def get_category(self, raw_post):
+            return raw_post['cat']
+
+    return MockPlatform()
+
+
 @pytest.mark.asyncio
 async def test_new_message_target_without_cats_tags(mock_platform_without_cats_tags, user_info_factory):
     res1 = await mock_platform_without_cats_tags.fetch_new_post('dummy', [user_info_factory(lambda _: [1,2], lambda _: [])])
@@ -230,3 +276,25 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert('p2' in id_set_1 and 'p3' in id_set_1)
     assert('p2' in id_set_2)
     assert('p2' in id_set_3)
+
+@pytest.mark.asyncio
+async def test_status_change(mock_status_change, user_info_factory):
+    res1 = await mock_status_change.fetch_new_post('dummy', [user_info_factory(lambda _: [1,2], lambda _: [])])
+    assert(len(res1) == 0)
+    res2 = await mock_status_change.fetch_new_post('dummy', [
+        user_info_factory(lambda _: [1,2], lambda _:[])
+        ])
+    assert(len(res2) == 1)
+    posts = res2[0][1]
+    assert(len(posts) == 1)
+    assert(posts[0].text == 'on')
+    res3 = await mock_status_change.fetch_new_post('dummy', [
+        user_info_factory(lambda _: [1,2], lambda _: []),
+        user_info_factory(lambda _: [1], lambda _: []),
+        ])
+    assert(len(res3) == 2)
+    assert(len(res3[0][1]) == 1)
+    assert(res3[0][1][0].text == 'off')
+    assert(len(res3[1][1]) == 0)
+    res4 = await mock_status_change.fetch_new_post('dummy', [user_info_factory(lambda _: [1,2], lambda _: [])])
+    assert(len(res4) == 0)

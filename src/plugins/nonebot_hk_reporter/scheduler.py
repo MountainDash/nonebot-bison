@@ -10,11 +10,12 @@ from .types import UserSubInfo
 
 scheduler = AsyncIOScheduler()
 
+@get_driver().on_startup
 async def _start():
     scheduler.configure({"apscheduler.timezone": "Asia/Shanghai"})
     scheduler.start()
 
-get_driver().on_startup(_start)
+# get_driver().on_startup(_start)
 
 async def fetch_and_send(target_type: str):
     config = Config()
@@ -41,10 +42,10 @@ async def fetch_and_send(target_type: str):
                 send_msgs(bot, user.user, user.user_type, await send_post.generate_messages())
 
 for platform_name, platform in platform_manager.items():
-    if isinstance(platform.schedule_interval, int):
-        logger.info(f'start scheduler for {platform_name} with interval {platform.schedule_interval}')
+    if platform.schedule_type in ['cron', 'interval', 'date']:
+        logger.info(f'start scheduler for {platform_name} with {platform.schedule_type} {platform.schedule_kw}')
         scheduler.add_job(
-                fetch_and_send, 'interval', seconds=platform.schedule_interval,
+                fetch_and_send, platform.schedule_type, **platform.schedule_kw,
                 args=(platform_name,))
 
 scheduler.add_job(do_send_msgs, 'interval', seconds=0.3)

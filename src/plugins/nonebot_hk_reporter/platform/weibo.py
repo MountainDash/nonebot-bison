@@ -9,9 +9,9 @@ from nonebot import logger
 
 from ..post import Post
 from ..types import *
-from .platform import Platform
+from .platform import NewMessage, TargetMixin
 
-class Weibo(Platform):
+class Weibo(NewMessage, TargetMixin):
 
     categories = {
             1: '转发',
@@ -23,14 +23,11 @@ class Weibo(Platform):
     name = '新浪微博'
     enabled = True
     is_common = True
-    schedule_interval = 10
-
-    def __init__(self):
-        self.top : dict[Target, RawPost] = dict()
-        super().__init__()
+    schedule_type = 'interval'
+    schedule_kw = {'seconds': 10}
 
     @staticmethod
-    async def get_account_name(target: Target) -> Optional[str]:
+    async def get_target_name(target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             param = {'containerid': '100505' + target}
             res = await client.get('https://m.weibo.cn/api/container/getIndex', params=param)
@@ -47,7 +44,8 @@ class Weibo(Platform):
             res_data = json.loads(res.text)
             if not res_data['ok']:
                 return []
-            return res_data['data']['cards']
+            custom_filter: Callable[[RawPost], bool] = lambda d: d['card_type'] == 9
+            return list(filter(custom_filter, res_data['data']['cards']))
 
     def get_id(self, post: RawPost) -> Any:
         return post['mblog']['id']

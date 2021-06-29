@@ -5,9 +5,9 @@ import httpx
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from .platform import CategoryNotSupport, Platform
+from .platform import NewMessage, TargetMixin, CategoryNotSupport
 
-class Bilibili(Platform):
+class Bilibili(NewMessage, TargetMixin):
 
     categories = {
             1: "一般动态",
@@ -20,11 +20,12 @@ class Bilibili(Platform):
     enable_tag = True
     enabled = True
     is_common = True
-    schedule_interval = 10
+    schedule_type = 'interval'
+    schedule_kw = {'seconds': 10}
     name = 'B站'
 
     @staticmethod
-    async def get_account_name(target: Target) -> Optional[str]:
+    async def get_target_name(target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             res = await client.get('https://api.bilibili.com/x/space/acc/info', params={'mid': target})
             res_data = json.loads(res.text)

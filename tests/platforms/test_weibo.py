@@ -23,7 +23,7 @@ def weibo_ak_list_1():
 
 @pytest.mark.asyncio
 async def test_get_name(weibo):
-    name = await weibo.get_account_name('6279793937')
+    name = await weibo.get_target_name('6279793937')
     assert(name == "明日方舟Arknights")
 
 @pytest.mark.asyncio
@@ -40,6 +40,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert(not detail_router.called)
     mock_data = get_json('weibo_ak_list_1.json')
     ak_list_router.mock(return_value=Response(200, json=mock_data))
+    # import ipdb; ipdb.set_trace()
     res2 = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert(len(res2) == 0)
     mock_data['data']['cards'][1]['mblog']['created_at'] = \
@@ -80,7 +81,7 @@ def test_tag(weibo, weibo_ak_list_1):
     assert(weibo.get_tags(raw_post) == ['明日方舟', '音律联觉'])
 
 @pytest.mark.asyncio
-async def test_rsshub_compare(weibo, dummy_user_subinfo):
+async def test_rsshub_compare(weibo):
     target = '6279793937'
     raw_posts = filter(weibo.filter_platform_custom, await weibo.get_sub_list(target))
     posts = []

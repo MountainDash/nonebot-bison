@@ -276,6 +276,8 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert('p2' in id_set_1 and 'p3' in id_set_1)
     assert('p2' in id_set_2)
     assert('p2' in id_set_3)
+    res3 = await mock_platform_no_target.fetch_new_post('dummy', [user_info_factory(lambda _: [1,2], lambda _: [])])
+    assert(len(res3) == 0)
 
 @pytest.mark.asyncio
 async def test_status_change(mock_status_change, user_info_factory):

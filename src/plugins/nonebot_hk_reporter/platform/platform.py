@@ -168,6 +168,7 @@ class NewMessageProcessMixin(StorageMixinProto, MessageProcessMixin, abstract=Tr
                 if post_id in store.exists_posts:
                     continue
                 res.append(raw_post)
+                store.exists_posts.add(post_id)
         self.set_stored_data(target, store)
         return res
 

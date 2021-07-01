@@ -177,6 +177,12 @@ class UserCustomFilterMixin(CategoryMixin, ParsePostMixin, abstract=True):
     categories: dict[Category, str]
     enable_tag: bool
 
+    def __init__(self):
+        super().__init__()
+        self.reverse_category = {}
+        for key, val in self.categories.items():
+           self.reverse_category[val] = key
+
     @abstractmethod
     def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
         "Return Tag list of given RawPost"

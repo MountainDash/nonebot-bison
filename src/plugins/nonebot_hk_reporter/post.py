@@ -98,7 +98,7 @@ class Post:
     async def generate_messages(self):
         await self._pic_merge()
         msgs = []
-        text = '来源: {}'.format(self.target_type)
+        text = ''
         if self.target_name:
             text += ' {}'.format(self.target_name)
         if self.text:
@@ -111,6 +111,7 @@ class Post:
             if self.url:
                 text += ' \n详情: {}'.format(self.url)
             msgs.append(text)
+        text += '来源: {}'.format(self.target_type)
         for pic in self.pics:
             msgs.append("[CQ:image,file={url}]".format(url=pic))
         if self.compress:

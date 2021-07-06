@@ -9,28 +9,26 @@ from nonebot import logger
 
 from ..post import Post
 from ..types import *
-from .platform import Platform
+from .platform import NewMessage, TargetMixin
 
-class Weibo(Platform):
+class Weibo(NewMessage, TargetMixin):
 
     categories = {
             1: '转发',
             2: '视频',
             3: '图文',
+            4: '文字',
         }
     enable_tag = True
     platform_name = 'weibo'
     name = '新浪微博'
     enabled = True
     is_common = True
-    schedule_interval = 10
-
-    def __init__(self):
-        self.top : dict[Target, RawPost] = dict()
-        super().__init__()
+    schedule_type = 'interval'
+    schedule_kw = {'seconds': 10}
 
     @staticmethod
-    async def get_account_name(target: Target) -> Optional[str]:
+    async def get_target_name(target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             param = {'containerid': '100505' + target}
             res = await client.get('https://m.weibo.cn/api/container/getIndex', params=param)
@@ -47,7 +45,8 @@ class Weibo(Platform):
             res_data = json.loads(res.text)
             if not res_data['ok']:
                 return []
-            return res_data['data']['cards']
+            custom_filter: Callable[[RawPost], bool] = lambda d: d['card_type'] == 9
+            return list(filter(custom_filter, res_data['data']['cards']))
 
     def get_id(self, post: RawPost) -> Any:
         return post['mblog']['id']
@@ -63,21 +62,30 @@ class Weibo(Platform):
         "Return Tag list of given RawPost"
         text = raw_post['mblog']['text']
         soup = bs(text, 'html.parser')
-        return list(map(
+        res = list(map(
             lambda x: x[1:-1],
             filter(
                 lambda s: s[0] == '#' and s[-1] == '#',
                 map(lambda x:x.text, soup.find_all('span', class_='surl-text'))
                 )
             ))
+        super_topic_img = soup.find('img', src=re.compile(r'timeline_card_small_super_default')) 
+        if super_topic_img:
+            try:
+                res.append(super_topic_img.parent.parent.find('span', class_='surl-text').text + '超话')
+            except:
+                logger.info('super_topic extract error: {}'.format(text))
+        return res
 
     def get_category(self, raw_post: RawPost) -> Category:
         if raw_post['mblog'].get('retweeted_status'):
             return Category(1)
         elif raw_post['mblog'].get('page_info') and raw_post['mblog']['page_info'].get('type') == 'video':
             return Category(2)
-        else:
+        elif raw_post['mblog'].get('pics'):
             return Category(3)
+        else:
+            return Category(4)
 
     def _get_text(self, raw_text: str) -> str:
         text = raw_text.replace('<br />', '\n')

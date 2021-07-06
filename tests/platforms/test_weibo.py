@@ -23,7 +23,7 @@ def weibo_ak_list_1():
 
 @pytest.mark.asyncio
 async def test_get_name(weibo):
-    name = await weibo.get_account_name('6279793937')
+    name = await weibo.get_target_name('6279793937')
     assert(name == "明日方舟Arknights")
 
 @pytest.mark.asyncio
@@ -40,6 +40,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert(not detail_router.called)
     mock_data = get_json('weibo_ak_list_1.json')
     ak_list_router.mock(return_value=Response(200, json=mock_data))
+    # import ipdb; ipdb.set_trace()
     res2 = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert(len(res2) == 0)
     mock_data['data']['cards'][1]['mblog']['created_at'] = \
@@ -61,9 +62,12 @@ async def test_classification(weibo):
     tuwen = mock_data['data']['cards'][1]
     retweet = mock_data['data']['cards'][3]
     video = mock_data['data']['cards'][0]
+    mock_data_ys = get_json('weibo_ys_list_0.json')
+    text = mock_data_ys['data']['cards'][2]
     assert(weibo.get_category(retweet) == 1)
     assert(weibo.get_category(video) == 2)
     assert(weibo.get_category(tuwen) == 3)
+    assert(weibo.get_category(text) == 4)
 
 @pytest.mark.asyncio
 @respx.mock
@@ -80,7 +84,8 @@ def test_tag(weibo, weibo_ak_list_1):
     assert(weibo.get_tags(raw_post) == ['明日方舟', '音律联觉'])
 
 @pytest.mark.asyncio
-async def test_rsshub_compare(weibo, dummy_user_subinfo):
+@pytest.mark.compare
+async def test_rsshub_compare(weibo):
     target = '6279793937'
     raw_posts = filter(weibo.filter_platform_custom, await weibo.get_sub_list(target))
     posts = []
@@ -91,3 +96,15 @@ async def test_rsshub_compare(weibo, dummy_user_subinfo):
     for entry in feedres.entries[:5]:
         # print(entry)
         assert(entry.link in url_set)
+
+test_post = {
+  "mblog": {
+    "text": "<a  href=\"https://m.weibo.cn/search?containerid=231522type%3D1%26t%3D10%26q%3D%23%E5%88%9A%E5%87%BA%E7%94%9F%E7%9A%84%E5%B0%8F%E7%BE%8A%E9%A9%BC%E9%95%BF%E5%95%A5%E6%A0%B7%23&extparam=%23%E5%88%9A%E5%87%BA%E7%94%9F%E7%9A%84%E5%B0%8F%E7%BE%8A%E9%A9%BC%E9%95%BF%E5%95%A5%E6%A0%B7%23&luicode=10000011&lfid=1076036003966749\" data-hide=\"\"><span class=\"surl-text\">#刚出生的小羊驼长啥样#</span></a> <br />小羊驼三三来也<span class=\"url-icon\"><img alt=[好喜欢] src=\"https://h5.sinaimg.cn/m/emoticon/icon/lxh/lxh_haoxihuan-51860b62e6.png\" style=\"width:1em; height:1em;\" /></span><br /><a  href=\"https://m.weibo.cn/p/index?extparam=%E5%B0%8F%E7%BE%8A%E9%A9%BC%E4%B8%89%E4%B8%89&containerid=1008085ae16d2046db677de1b8491d2b708597&luicode=10000011&lfid=1076036003966749\" data-hide=\"\"><span class='url-icon'><img style='width: 1rem;height: 1rem' src='https://n.sinaimg.cn/photo/5213b46e/20180926/timeline_card_small_super_default.png'></span><span class=\"surl-text\">小羊驼三三</span></a> ",
+    "bid": "KnssqeqKK"
+  }
+}
+def test_chaohua_tag(weibo):
+    tags = weibo.get_tags(test_post)
+    assert('刚出生的小羊驼长啥样' in tags)
+    assert('小羊驼三三超话' in tags)
+

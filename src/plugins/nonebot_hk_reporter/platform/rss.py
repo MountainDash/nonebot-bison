@@ -7,9 +7,9 @@ import httpx
 
 from ..post import Post
 from ..types import RawPost, Target
-from .platform import Platform
+from .platform import NewMessage, TargetMixin
 
-class Rss(Platform):
+class Rss(NewMessage, TargetMixin):
 
     categories = {}
     enable_tag = False
@@ -17,10 +17,11 @@ class Rss(Platform):
     name = "Rss"
     enabled = True
     is_common = True
-    schedule_interval = 30
+    schedule_type = 'interval'
+    schedule_kw = {'seconds': 30}
 
     @staticmethod
-    async def get_account_name(target: Target) -> Optional[str]:
+    async def get_target_name(target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             res = await client.get(target, timeout=10.0)
             feed = feedparser.parse(res.text)
@@ -43,6 +44,6 @@ class Rss(Platform):
 
     async def parse(self, raw_post: RawPost) -> Post:
         soup = bs(raw_post.description, 'html.parser')
-        text = soup.text
+        text = soup.text.strip()
         pics = list(map(lambda x: x.attrs['src'], soup('img')))
         return Post('rss', text=text, url=raw_post.link, pics=pics, target_name=raw_post['_target_name'])

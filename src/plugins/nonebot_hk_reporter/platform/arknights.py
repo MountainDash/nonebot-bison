@@ -1,21 +1,17 @@
 from typing import Any
 import httpx
 import json
-import time
-from collections import defaultdict
 from bs4 import BeautifulSoup as bs
-from datetime import datetime
-from nonebot import logger
 
-from ..types import Category, RawPost, Tag, Target
+from ..types import RawPost, Target
 
-from .platform import PlatformNoTarget, CategoryNotSupport
+from .platform import NewMessage, NoTargetMixin, CategoryNotSupport
 
-from ..utils import Singleton, Render
+from ..utils import Render
 from ..post import Post
 
 
-class Arknights(PlatformNoTarget):
+class Arknights(NewMessage, NoTargetMixin):
 
     categories = {}
     platform_name = 'arknights'
@@ -23,13 +19,14 @@ class Arknights(PlatformNoTarget):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_interval = 30
+    schedule_type = 'interval'
+    schedule_kw = {'seconds': 30}
 
     @staticmethod
-    async def get_account_name(_: Target) -> str:
+    async def get_target_name(_: Target) -> str:
         return '明日方舟游戏内公告'
 
-    async def get_sub_list(self) -> list[RawPost]:
+    async def get_sub_list(self, _) -> list[RawPost]:
         async with httpx.AsyncClient() as client:
             raw_data = await client.get('http://ak-fs.hypergryph.com/announce/IOS/announcement.meta.json')
             return json.loads(raw_data.text)['announceList']
@@ -37,7 +34,7 @@ class Arknights(PlatformNoTarget):
     def get_id(self, post: RawPost) -> Any:
         return post['announceId']
 
-    def get_date(self, post: RawPost) -> None:
+    def get_date(self, _: RawPost) -> None:
         return None
 
     async def parse(self, raw_post: RawPost) -> Post:

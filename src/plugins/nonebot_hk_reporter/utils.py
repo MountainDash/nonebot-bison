@@ -1,14 +1,12 @@
 import asyncio
 from html import escape
-import os
-from tempfile import NamedTemporaryFile
 from typing import Awaitable, Callable, Optional
+from urllib.parse import quote
 
-from pyppeteer import launch
-from pyppeteer.browser import Browser
-from pyppeteer.chromium_downloader import check_chromium, download_chromium
-from pyppeteer.page import Page
 from nonebot.log import logger
+from pyppeteer import connect, launch
+from pyppeteer.browser import Browser
+from pyppeteer.page import Page
 
 from .plugin_config import plugin_config
 
@@ -19,9 +17,6 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-if not plugin_config.hk_reporter_use_local and not check_chromium():
-    
-    download_chromium()
 
 class Render(metaclass=Singleton):
 
@@ -29,6 +24,24 @@ class Render(metaclass=Singleton):
         self.lock = asyncio.Lock()
         self.browser: Browser
         self.interval_log = ''
+        self.remote_browser = False
+
+    async def get_browser(self) -> Browser:
+        if plugin_config.hk_reporter_browser:
+            if plugin_config.hk_reporter_browser.startswith('local:'):
+                path = plugin_config.hk_reporter_browser.split('local:', 1)[1]
+                return await launch(executablePath=path, args=['--no-sandbox'])
+            if plugin_config.hk_reporter_browser.startswith('ws:'):
+                self.remote_browser = True
+                return await connect(browserWSEndpoint=plugin_config.hk_reporter_browser)
+            raise RuntimeError('HK_REPORTER_BROWSER error')
+        if plugin_config.hk_reporter_use_local:
+            return await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
+        return await launch(args=['--no-sandbox'])
+
+    async def close_browser(self):
+        if not self.remote_browser:
+            await self.browser.close()
 
     async def render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
             operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> Optional[str]:
@@ -51,10 +64,7 @@ class Render(metaclass=Singleton):
     async def do_render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
             operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> str:
         async with self.lock:
-            if plugin_config.hk_reporter_use_local:
-                self.browser = await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
-            else:
-                self.browser = await launch(args=['--no-sandbox'])
+            self.browser = await self.get_browser()
             self._inter_log('open browser')
             page = await self.browser.newPage()
             if operation:
@@ -73,7 +83,7 @@ class Render(metaclass=Singleton):
             self._inter_log('screenshot')
             await page.close()
             self._inter_log('close page')
-            await self.browser.close()
+            await self.close_browser()
             self._inter_log('close browser')
             return str(data)
 
@@ -81,11 +91,8 @@ class Render(metaclass=Singleton):
         lines = text.split('\n')
         parsed_lines = list(map(lambda x: '<p>{}</p>'.format(escape(x)), lines))
         html_text = '<div style="width:17em;padding:1em">{}</div>'.format(''.join(parsed_lines))
-        with NamedTemporaryFile('wt', suffix='.html', delete=False) as tmp:
-            tmp_path = tmp.name
-            tmp.write(html_text)
-        data = await self.render('file://{}'.format(tmp_path), target='div')
-        os.remove(tmp_path)
+        url = 'data:text/html,{}'.format(quote(html_text))
+        data = await self.render(url, target='div')
         return data
 
     async def text_to_pic_cqcode(self, text:str) -> str:

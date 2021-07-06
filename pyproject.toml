@@ -48,5 +48,6 @@ default = true
 
 [tool.pytest.ini_options]
 markers = [
-    "compare: compare fetching result with rsshub"
+    "compare: compare fetching result with rsshub",
+    "render: render img by chrome"
 ]

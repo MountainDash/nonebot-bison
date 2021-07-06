@@ -50,7 +50,11 @@ go-cqhttp镜像可使用`felinae98/go-cqhttp-ffmpeg`（数据目录为`/data`）
 ### 配置变量
 * `HK_REPORTER_CONFIG_PATH` (str) 配置文件保存目录，如果不设置，则为当前目录下的`data`文件夹
 * `HK_REPORTER_USE_PIC` (bool) 以图片形式发送文字（推荐在帐号被风控时使用）
-* `HK_REPORTER_USE_LOCAL` (bool) 使用本地chromium（文字转图片时需要），否则第一次启动会下载chromium
+* ~~`HK_REPORTER_USE_LOCAL` (bool) 使用本地chromium（文字转图片时需要），否则第一次启动会下载chromium~~
+* `HK_REPORTER_BROWSER` (str) 明日方舟游戏公告和以以图片形式发送文字需要浏览器支持，如果不设置会在使用到
+    功能的时候自动下载Chromium（不推荐）
+    * 使用本地安装的Chromiun: 设置为`local:<chromium path>`
+    * 使用browserless提供的服务浏览器管理服务（推荐）:设置为`ws://********`
 
 同时，建议配置`SUPERUSERS`环境变量便于机器人管理
 

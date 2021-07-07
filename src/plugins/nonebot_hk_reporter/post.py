@@ -99,11 +99,11 @@ class Post:
         await self._pic_merge()
         msgs = []
         text = ''
+        if self.text:
+            text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
+        text += '\n来源: {}'.format(self.target_type)
         if self.target_name:
             text += ' {}'.format(self.target_name)
-        if self.text:
-            text += ' \n{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
-        text += '来源: {}'.format(self.target_type)
         if self._use_pic():
             msgs.append(await parse_text(text))
             if not self.target_type == 'rss' and self.url:

@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  cq-http:
+    image: felinae98/go-cqhttp-ffmpeg
+    volumes:
+      - ./bot-data:/data
+  browserless:
+    image: browserless/chrome
+  nonebot:
+    image: felinae98/nonebot-hk-reporter
+    volumes:
+      - ./nonebot-data:/data
+    environment:
+      TZ: Asia/Shanghai
+      HOST: 0.0.0.0
+      # SUPERUSERS: '[<your QQ>]'
+      HK_REPORTER_CONFIG_PATH: /data
+      HK_REPORTER_BROWSER: ws://browserless:3000
+    depends_on:
+      - browserless
+      - cq-http

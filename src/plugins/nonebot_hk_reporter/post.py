@@ -103,6 +103,7 @@ class Post:
             text += ' {}'.format(self.target_name)
         if self.text:
             text += ' \n{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
+        text += '来源: {}'.format(self.target_type)
         if self._use_pic():
             msgs.append(await parse_text(text))
             if not self.target_type == 'rss' and self.url:
@@ -111,7 +112,6 @@ class Post:
             if self.url:
                 text += ' \n详情: {}'.format(self.url)
             msgs.append(text)
-        text += '来源: {}'.format(self.target_type)
         for pic in self.pics:
             msgs.append("[CQ:image,file={url}]".format(url=pic))
         if self.compress:

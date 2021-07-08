@@ -1,6 +1,9 @@
+import logging
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import nonebot
 from nonebot import get_driver, logger
+from nonebot.log import LoguruHandler
 
 from .config import Config
 from .platform import platform_manager
@@ -49,3 +52,8 @@ for platform_name, platform in platform_manager.items():
                 args=(platform_name,))
 
 scheduler.add_job(do_send_msgs, 'interval', seconds=0.3)
+
+aps_logger = logging.getLogger("apscheduler")
+aps_logger.setLevel(30)
+aps_logger.handlers.clear()
+aps_logger.addHandler(LoguruHandler())

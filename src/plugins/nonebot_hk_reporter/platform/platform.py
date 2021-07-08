@@ -74,7 +74,7 @@ class NoTargetMixin(StorageMixinProto, abstract=True):
     def set_stored_data(self, _: Target, data: Any):
         self.store = data
 
-class PlaformNameMixin(metaclass=RegistryABCMeta, abstract=True):
+class PlatformNameMixin(metaclass=RegistryABCMeta, abstract=True):
     platform_name: str
     
 class CategoryMixin(metaclass=RegistryABCMeta, abstract=True):
@@ -91,7 +91,7 @@ class ParsePostMixin(metaclass=RegistryABCMeta, abstract=True):
         "parse RawPost into post"
         ...
 
-class MessageProcessMixin(PlaformNameMixin, CategoryMixin, ParsePostMixin, abstract=True):
+class MessageProcessMixin(PlatformNameMixin, CategoryMixin, ParsePostMixin, abstract=True):
     "General message process fetch, parse, filter progress"
 
     def __init__(self):
@@ -221,7 +221,7 @@ class UserCustomFilterMixin(CategoryMixin, ParsePostMixin, abstract=True):
             res.append((user, user_post))
         return res
 
-class Platform(metaclass=RegistryABCMeta, base=True):
+class Platform(PlatformNameMixin, base=True):
     
     # schedule_interval: int
     schedule_type: Literal['date', 'interval', 'cron']
@@ -269,7 +269,6 @@ class NewMessage(
 class StatusChange(
         Platform,
         StorageMixinProto,
-        PlaformNameMixin,
         UserCustomFilterMixin,
         abstract=True
         ):

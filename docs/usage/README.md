@@ -1,6 +1,5 @@
 ---
 sidebar: auto
-sidebarDepth: 4
 ---
 # 部署和使用
 本节将教你快速部署和使用一个nonebot-hk-reporter，如果你不知道要选择哪种部署方式，推荐使用[docker-compose](#docker-compose部署-推荐)
@@ -44,12 +43,23 @@ sidebarDepth: 4
     docker-compose up -d
     ```
 #### docker部署
+本项目的docker镜像为`felinae98/nonebot-hk-reporter`，可以直接pull后run进行使用，
+相关配置参数可以使用`-e`作为环境变量传入
 #### 直接运行（不推荐）
 ::: danger
 本项目中使用了Python 3.9的语法，如果出现问题，请检查Python版本
 :::
+1. 首先安装poetry：[安装方法](https://python-poetry.org/docs/#installation)
+2. clone本项目，在项目中`poetry install`安装依赖
+3. 编辑`.env.prod`配置各种环境变量，见[Nonebot2配置](https://v2.nonebot.dev/guide/basic-configuration.html)
+4. 运行`poetry run python bot.py`启动机器人
 ### 作为插件使用
 本部分假设大家会部署nonebot2
+#### 手动安装
+1. 安装pip包`nonebot-hk-reporter`
+2. 在`bot.py`中导入插件`nonebot_hk_reporter`
+### 自动安装
+使用`nb-cli`执行：`nb plugin install nonebot_hk_reporter`
 ## 配置
 * `HK_REPORTER_CONFIG_PATH`: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录
 * `HK_REPORTER_USE_PIC`: 将文字渲染成图片后进行发送，多用于规避风控

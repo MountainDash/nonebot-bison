@@ -51,7 +51,7 @@ for platform_name, platform in platform_manager.items():
                 fetch_and_send, platform.schedule_type, **platform.schedule_kw,
                 args=(platform_name,))
 
-scheduler.add_job(do_send_msgs, 'interval', seconds=0.3)
+scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalescing=True)
 
 aps_logger = logging.getLogger("apscheduler")
 aps_logger.setLevel(30)

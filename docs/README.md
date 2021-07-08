@@ -1,7 +1,7 @@
 ---
 home: true
 heroText: Nonebot HK Reporter
-tagline: 全网跑到什么地方，比其他的....bot跑得还快
+tagline: 本bot励志做全世界跑得最快的记者
 actionText: 快速部署
 actionLink: /usage/
 features:

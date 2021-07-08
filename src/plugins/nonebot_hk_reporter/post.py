@@ -122,7 +122,7 @@ class Post:
         return 'type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}'.format(
                 self.target_type,
                 self.target_name,
-                self.text,
                 self.text if len(self.text) < 500 else self.text[:500] + '...',
+                self.url,
                 ', '.join(map(lambda x: 'b64img' if x.startswith('base64') else x, self.pics))
             )

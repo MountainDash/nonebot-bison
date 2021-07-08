@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  cq-http:
+  go-cqhttp:
     image: felinae98/go-cqhttp-ffmpeg
     volumes:
       - ./bot-data:/data
@@ -19,4 +19,4 @@ services:
       HK_REPORTER_BROWSER: ws://browserless:3000
     depends_on:
       - browserless
-      - cq-http
+      - go-cqhttp

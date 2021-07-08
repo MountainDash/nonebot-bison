@@ -14,9 +14,9 @@ sidebar: auto
     ```bash
     wget https://raw.githubusercontent.com/felinae98/nonebot-hk-reporter/main/docker-compose.yml
     ```
-2. 运行配置cq-http
+2. 运行配置go-cqhttp
     ```bash
-    docker-compose run cq-http
+    docker-compose run go-cqhttp
     ```
     通信方式选择：`3: 反向 Websocket 通信`  
     编辑`bot-data/config.yml`，更改下面字段：
@@ -25,18 +25,21 @@ sidebar: auto
       uin: <QQ号> # QQ账号
       password: "<QQ密码>" # 密码为空时使用扫码登录
 
+    message:
+      post-format: array
+
     ............
 
     servers:
       - ws-reverse:
           universal: ws://nonebot:8080/cqhttp/ws # 将这个字段写为这个值
     ```
-3. 登录cq-http
+3. 登录go-cqhttp
     再次
     ```bash
-    docker-compose run cq-http
+    docker-compose run go-cqhttp
     ```
-    参考[cq-http文档](https://docs.go-cqhttp.org/faq/slider.html#%E6%96%B9%E6%A1%88a-%E8%87%AA%E8%A1%8C%E6%8A%93%E5%8C%85)
+    参考[go-cqhttp文档](https://docs.go-cqhttp.org/faq/slider.html#%E6%96%B9%E6%A1%88a-%E8%87%AA%E8%A1%8C%E6%8A%93%E5%8C%85)
     完成登录
 4. 确定完成登录后，启动bot：
     ```bash
@@ -46,6 +49,7 @@ sidebar: auto
 本项目的docker镜像为`felinae98/nonebot-hk-reporter`，可以直接pull后run进行使用，
 相关配置参数可以使用`-e`作为环境变量传入
 #### 直接运行（不推荐）
+可以参考[nonebot的运行方法](https://v2.nonebot.dev/guide/getting-started.html)
 ::: danger
 本项目中使用了Python 3.9的语法，如果出现问题，请检查Python版本
 :::
@@ -61,6 +65,7 @@ sidebar: auto
 ### 自动安装
 使用`nb-cli`执行：`nb plugin install nonebot_hk_reporter`
 ## 配置
+可参考[源文件](https://github.com/felinae98/nonebot-hk-reporter/blob/main/src/plugins/nonebot_hk_reporter/plugin_config.py)  
 * `HK_REPORTER_CONFIG_PATH`: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录
 * `HK_REPORTER_USE_PIC`: 将文字渲染成图片后进行发送，多用于规避风控
 * `HK_REPORTER_BROWSER`: 在某些情况下需要使用到chrome进行渲染

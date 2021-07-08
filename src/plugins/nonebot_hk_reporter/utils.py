@@ -93,7 +93,6 @@ class Render(metaclass=Singleton):
         parsed_lines = list(map(lambda x: '<p>{}</p>'.format(escape(x)), lines))
         html_text = '<div style="width:17em;padding:1em">{}</div>'.format(''.join(parsed_lines))
         url = 'data:text/html;charset=UTF-8;base64,{}'.format(base64.b64encode(html_text.encode()).decode())
-        logger.info(url)
         data = await self.render(url, target='div')
         return data
 

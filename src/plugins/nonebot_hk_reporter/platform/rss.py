@@ -43,7 +43,8 @@ class Rss(NewMessage, TargetMixin):
             return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
+        text = raw_post.get('title', '') + '\n' if raw_post.get('title') else ''
         soup = bs(raw_post.description, 'html.parser')
-        text = soup.text.strip()
+        text += soup.text.strip()
         pics = list(map(lambda x: x.attrs['src'], soup('img')))
         return Post('rss', text=text, url=raw_post.link, pics=pics, target_name=raw_post['_target_name'])

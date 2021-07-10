@@ -7,12 +7,12 @@
 [![felinae98](https://circleci.com/gh/felinae98/nonebot-hk-reporter.svg?style=shield)](https://circleci.com/gh/felinae98/nonebot-hk-reporter)
 [![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange )](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)
 
+[文档](https://nonebot-hk-reporter.vercel.app)|[开发文档](https://nonebot-hk-reporter.vercel.app/dev)
 </div>
 
 ## 简介
 一款自动爬取各种站点，社交平台更新动态，并将信息推送到QQ的机器人。基于 [`NoneBot2`](https://github.com/nonebot/nonebot2 ) 开发（诞生于明日方舟的蹲饼活动）
 
-安装配置见[文档](https://nonebot-hk-reporter.vercel.app)
 
 支持的平台：
 * 微博

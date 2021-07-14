@@ -28,7 +28,7 @@ class Arknights(NewMessage, NoTargetMixin):
 
     async def get_sub_list(self, _) -> list[RawPost]:
         async with httpx.AsyncClient() as client:
-            raw_data = await client.get('http://ak-fs.hypergryph.com/announce/IOS/announcement.meta.json')
+            raw_data = await client.get('https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/announcement.meta.json')
             return json.loads(raw_data.text)['announceList']
 
     def get_id(self, post: RawPost) -> Any:

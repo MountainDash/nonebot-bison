@@ -221,7 +221,7 @@ class UserCustomFilterMixin(CategoryMixin, ParsePostMixin, abstract=True):
             res.append((user, user_post))
         return res
 
-class Platform(PlatformNameMixin, base=True):
+class Platform(PlatformNameMixin, UserCustomFilterMixin, base=True):
     
     # schedule_interval: int
     schedule_type: Literal['date', 'interval', 'cron']

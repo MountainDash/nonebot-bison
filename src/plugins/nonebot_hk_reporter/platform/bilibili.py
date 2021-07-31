@@ -24,8 +24,7 @@ class Bilibili(NewMessage, TargetMixin):
     schedule_kw = {'seconds': 10}
     name = 'B站'
 
-    @staticmethod
-    async def get_target_name(target: Target) -> Optional[str]:
+    async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             res = await client.get('https://api.bilibili.com/x/space/acc/info', params={'mid': target})
             res_data = json.loads(res.text)

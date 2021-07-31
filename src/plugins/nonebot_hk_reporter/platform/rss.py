@@ -20,8 +20,7 @@ class Rss(NewMessage, TargetMixin):
     schedule_type = 'interval'
     schedule_kw = {'seconds': 30}
 
-    @staticmethod
-    async def get_target_name(target: Target) -> Optional[str]:
+    async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             res = await client.get(target, timeout=10.0)
             feed = feedparser.parse(res.text)

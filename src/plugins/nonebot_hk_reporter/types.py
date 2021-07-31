@@ -6,7 +6,7 @@ Target = NewType('Target', str)
 Category = NewType('Category', int)
 Tag = NewType('Tag', str)
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class User:
     user: str
     user_type: str

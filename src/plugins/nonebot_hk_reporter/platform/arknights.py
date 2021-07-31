@@ -22,8 +22,7 @@ class Arknights(NewMessage, NoTargetMixin):
     schedule_type = 'interval'
     schedule_kw = {'seconds': 30}
 
-    @staticmethod
-    async def get_target_name(_: Target) -> str:
+    async def get_target_name(self, _: Target) -> str:
         return '明日方舟游戏内公告'
 
     async def get_sub_list(self, _) -> list[RawPost]:

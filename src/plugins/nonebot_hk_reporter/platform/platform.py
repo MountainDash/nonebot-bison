@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
+from collections import defaultdict
 from dataclasses import dataclass
+from functools import reduce
 import time
 from typing import Any, Collection, Optional, Literal
 
@@ -230,9 +232,8 @@ class Platform(PlatformNameMixin, UserCustomFilterMixin, base=True):
     enabled: bool
     name: str
 
-    @staticmethod
     @abstractmethod
-    async def get_target_name(target: Target) -> Optional[str]:
+    async def get_target_name(self, target: Target) -> Optional[str]:
         ...
 
     @abstractmethod
@@ -299,3 +300,50 @@ class StatusChange(
         except httpx.RequestError as err:
             logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))
             return []
+
+class NoTargetGroup(
+        Platform,
+        NoTargetMixin,
+        UserCustomFilterMixin,
+        abstract=True
+        ):
+    enable_tag = False
+    DUMMY_STR = '_DUMMY'
+    enabled = True
+
+    class PlatformProto(Platform, NoTargetMixin, UserCustomFilterMixin, abstract=True):
+        ...
+
+    def __init__(self, platform_list: list[PlatformProto]):
+        self.platform_list = platform_list
+        name = self.DUMMY_STR
+        self.categories = {}
+        categories_keys = set()
+        self.schedule_type = platform_list[0].schedule_type
+        self.schedule_kw = platform_list[0].schedule_kw
+        for platform in platform_list:
+            if name == self.DUMMY_STR:
+                name = platform.name
+            elif name != platform.name:
+                raise RuntimeError('Platform name for {} not fit'.format(self.platform_name))
+            platform_category_key_set = set(platform.categories.keys())
+            if platform_category_key_set & categories_keys:
+                raise RuntimeError('Platform categories for {} duplicate'.format(self.platform_name))
+            categories_keys |= platform_category_key_set
+            self.categories.update(platform.categories)
+            if platform.schedule_kw != self.schedule_kw or platform.schedule_type != self.schedule_type:
+                raise RuntimeError('Platform scheduler for {} not fit'.format(self.platform_name))
+        self.name = name
+        self.is_common = platform_list[0].is_common
+        super().__init__()
+
+    async def get_target_name(self, _):
+        return await self.platform_list[0].get_target_name(_)
+
+    async def fetch_new_post(self, target, users):
+        res = defaultdict(list)
+        for platform in self.platform_list:
+            platform_res = await platform.fetch_new_post(target, users)
+            for user, posts in platform_res:
+                res[user].extend(posts)
+        return [[key, val] for key, val in res.items()]

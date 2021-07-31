@@ -131,7 +131,8 @@ def mock_platform_no_target(plugin_module: 'nonebot_hk_reporter'):
         name = 'Mock Platform'
         enabled = True
         is_common = True
-        schedule_interval = 10
+        schedule_type = 'interval'
+        schedule_kw = {'seconds': 30}
         enable_tag = True
         categories = {
                 1: '转发',
@@ -169,6 +170,62 @@ def mock_platform_no_target(plugin_module: 'nonebot_hk_reporter'):
                 return raw_post_list_1
             else:
                 return raw_post_list_2
+
+    return MockPlatform()
+
+@pytest.fixture
+def mock_platform_no_target_2(plugin_module: 'nonebot_hk_reporter'):
+    class MockPlatform(plugin_module.platform.platform.NewMessage,
+            plugin_module.platform.platform.NoTargetMixin):
+
+        platform_name = 'mock_platform'
+        name = 'Mock Platform'
+        enabled = True
+        schedule_type = 'interval'
+        schedule_kw = {'seconds': 30}
+        is_common = True
+        enable_tag = True
+        categories = {
+                4: 'leixing4',
+                5: 'leixing5',
+            }
+        def __init__(self):
+            self.sub_index = 0
+            super().__init__()
+        
+        @staticmethod
+        async def get_target_name(_: 'Target'):
+            return 'MockPlatform'
+
+        def get_id(self, post: 'RawPost') -> Any:
+            return post['id']
+
+        def get_date(self, raw_post: 'RawPost') -> float:
+            return raw_post['date']
+
+        def get_tags(self, raw_post: 'RawPost') -> list['Tag']:
+            return raw_post['tags']
+
+        def get_category(self, raw_post: 'RawPost') -> 'Category':
+            return raw_post['category']
+
+        async def parse(self, raw_post: 'RawPost') -> 'Post':
+            return plugin_module.post.Post('mock_platform_2', raw_post['text'], 'http://t.tt/' + str(self.get_id(raw_post)), target_name='Mock')
+
+        async def get_sub_list(self, _: 'Target'):
+            list_1 = [
+                    {'id': 5, 'text': 'p5', 'date': now, 'tags': ['tag1'], 'category': 4}
+                    ]
+
+            list_2 = list_1 + [
+                    {'id': 6, 'text': 'p6', 'date': now, 'tags': ['tag1'], 'category': 4},
+                    {'id': 7, 'text': 'p7', 'date': now, 'tags': ['tag2'], 'category': 5},
+                    ]
+            if self.sub_index == 0:
+                self.sub_index += 1
+                return list_1
+            else:
+                return list_2
 
     return MockPlatform()
 
@@ -300,3 +357,17 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert(len(res3[1][1]) == 0)
     res4 = await mock_status_change.fetch_new_post('dummy', [user_info_factory(lambda _: [1,2], lambda _: [])])
     assert(len(res4) == 0)
+
+@pytest.mark.asyncio
+async def test_group(plugin_module: 'nonebot_hk_reporter', mock_platform_no_target, mock_platform_no_target_2, user_info_factory):
+    group_platform = plugin_module.platform.platform.NoTargetGroup([mock_platform_no_target, mock_platform_no_target_2])
+    res1 = await group_platform.fetch_new_post('dummy', [user_info_factory(lambda _: [1,4], lambda _: [])])
+    assert(len(res1) == 0)
+    res2 = await group_platform.fetch_new_post('dummy', [user_info_factory(lambda _: [1,4], lambda _: [])])
+    assert(len(res2) == 1)
+    posts = res2[0][1]
+    assert(len(posts) == 2)
+    id_set_2 = set(map(lambda x: x.text, posts))
+    assert('p2' in id_set_2 and 'p6' in id_set_2)
+    res3 = await group_platform.fetch_new_post('dummy', [user_info_factory(lambda _: [1,4], lambda _: [])])
+    assert(len(res3) == 0)

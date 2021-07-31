@@ -27,8 +27,7 @@ class Weibo(NewMessage, TargetMixin):
     schedule_type = 'interval'
     schedule_kw = {'seconds': 10}
 
-    @staticmethod
-    async def get_target_name(target: Target) -> Optional[str]:
+    async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
             param = {'containerid': '100505' + target}
             res = await client.get('https://m.weibo.cn/api/container/getIndex', params=param)

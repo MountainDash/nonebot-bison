@@ -346,7 +346,7 @@ class NoTargetGroup(
     async def fetch_new_post(self, target, users):
         res = defaultdict(list)
         for platform in self.platform_list:
-            platform_res = await platform.fetch_new_post(target, users)
+            platform_res = await platform.fetch_new_post(target=target, users=users)
             for user, posts in platform_res:
                 res[user].extend(posts)
         return [[key, val] for key, val in res.items()]

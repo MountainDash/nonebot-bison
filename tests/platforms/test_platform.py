@@ -259,12 +259,12 @@ def mock_status_change(plugin_module: 'nonebot_hk_reporter'):
             else:
                 return {'s': False}
 
-        def compare_status(self, target, old_status, new_status) -> Optional['RawPost']:
+        def compare_status(self, target, old_status, new_status) -> list['RawPost']:
             if old_status['s'] == False and new_status['s'] == True:
-                return {'text': 'on', 'cat': 1}
+                return [{'text': 'on', 'cat': 1}]
             elif old_status['s'] == True and new_status['s'] == False:
-                return {'text': 'off', 'cat': 2}
-            return None
+                return [{'text': 'off', 'cat': 2}]
+            return []
 
         async def parse(self, raw_post) -> 'Post':
             return plugin_module.post.Post('mock_status', raw_post['text'], '')

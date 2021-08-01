@@ -14,16 +14,15 @@ async def check_sub_target(target_type, target):
     return await platform_manager[target_type].get_target_name(target)
 
 _platform_list = defaultdict(list)
-for platform in Platform.registory:
-    if not platform.enabled:
+for _platform in Platform.registory:
+    if not _platform.enabled:
         continue
-    _platform_list[platform.platform_name].append(platform)
+    _platform_list[_platform.platform_name].append(_platform)
 
 platform_manager: dict[str, Platform] = dict()
 for name, platform_list in _platform_list.items():
     if len(platform_list) == 1:
         platform_manager[name] = platform_list[0]()
     else:
-        platform_manager[name] = NoTargetGroup(platform_list)
+        platform_manager[name] = NoTargetGroup([_platform() for _platform in platform_list])
 
-print(platform_manager)

@@ -28,8 +28,12 @@ def arknights_list_1():
 async def test_fetch_new(arknights, dummy_user_subinfo, arknights_list_0, arknights_list_1):
     ak_list_router = respx.get("https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/announcement.meta.json")
     detail_router = respx.get("https://ak-fs.hypergryph.com/announce/IOS/announcement/675.html")
+    version_router = respx.get('https://ak-conf.hypergryph.com/config/prod/official/IOS/version')
+    preannouncement_router = respx.get('https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/preannouncement.meta.json')
     ak_list_router.mock(return_value=Response(200, json=arknights_list_0))
     detail_router.mock(return_value=Response(200, text=get_file('arknights-detail-675.html')))
+    version_router.mock(return_value=Response(200, json=get_json('arknights-version-0.json')))
+    preannouncement_router.mock(return_value=Response(200, json=get_json('arknights-pre-0.json')))
     target = ''
     res = await arknights.fetch_new_post(target, [dummy_user_subinfo])
     assert(ak_list_router.called)

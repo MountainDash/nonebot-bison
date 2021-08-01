@@ -79,7 +79,7 @@ class AkVersion(NoTargetMixin, StatusChange):
         res.update(res_preanounce.json())
         return res
 
-    async def compare_status(self, _, old_status, new_status):
+    def compare_status(self, _, old_status, new_status):
         res = []
         if old_status.get('preAnnounceType') == 2 and new_status.get('preAnnounceType') == 0:
             res.append(Post('arknights', text='开始维护！', target_name='明日方舟更新信息'))

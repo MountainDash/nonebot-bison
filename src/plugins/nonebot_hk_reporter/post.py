@@ -15,7 +15,7 @@ class Post:
 
     target_type: str
     text: str
-    url: Optional[str]
+    url: Optional[str] = None
     target_name: Optional[str] = None
     compress: bool = False
     override_use_pic: Optional[bool] = None

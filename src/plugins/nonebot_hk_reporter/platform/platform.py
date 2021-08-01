@@ -280,7 +280,7 @@ class StatusChange(
         ...
 
     @abstractmethod
-    def compare_status(self, target: Target, old_status, new_status) -> Optional[RawPost]:
+    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
         ...
 
     @abstractmethod
@@ -294,7 +294,7 @@ class StatusChange(
             if old_status := self.get_stored_data(target):
                 diff = self.compare_status(target, old_status, new_status)
                 if diff:
-                    res = await self.dispatch_user_post(target, [diff], users)
+                    res = await self.dispatch_user_post(target, diff, users)
             self.set_stored_data(target, new_status)
             return res
         except httpx.RequestError as err:
@@ -336,6 +336,9 @@ class NoTargetGroup(
         self.name = name
         self.is_common = platform_list[0].is_common
         super().__init__()
+
+    def __str__(self):
+        return '[' + ' '.join(map(lambda x: x.name, self.platform_list)) + ']'
 
     async def get_target_name(self, _):
         return await self.platform_list[0].get_target_name(_)

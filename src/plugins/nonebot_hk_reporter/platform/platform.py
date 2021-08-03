@@ -294,6 +294,11 @@ class StatusChange(
             if old_status := self.get_stored_data(target):
                 diff = self.compare_status(target, old_status, new_status)
                 if diff:
+                    logger.info("status changes {} {}: {} -> {}".format(
+                        self.platform_name,
+                        target if self.has_target else '-',
+                        old_status, new_status
+                        ))
                     res = await self.dispatch_user_post(target, diff, users)
             self.set_stored_data(target, new_status)
             return res

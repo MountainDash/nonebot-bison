@@ -1,6 +1,7 @@
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import logging
 import nonebot
 from nonebot import get_driver, logger
 from nonebot.log import LoguruHandler
@@ -53,7 +54,13 @@ for platform_name, platform in platform_manager.items():
 
 scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalesce=True)
 
+class SchedulerLogFilter(logging.Filter):
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return not (record.name == "apscheduler" and 'skipped: maximum number of running instances reached' in record.getMessage())
+
 aps_logger = logging.getLogger("apscheduler")
 aps_logger.setLevel(30)
+aps_logger.addFilter(SchedulerLogFilter())
 aps_logger.handlers.clear()
 aps_logger.addHandler(LoguruHandler())

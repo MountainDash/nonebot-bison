@@ -57,6 +57,7 @@ scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalesce=True)
 class SchedulerLogFilter(logging.Filter):
 
     def filter(self, record: logging.LogRecord) -> bool:
+        logger.debug("logRecord", record, record.getMessage())
         return not (record.name == "apscheduler" and 'skipped: maximum number of running instances reached' in record.getMessage())
 
 aps_logger = logging.getLogger("apscheduler")

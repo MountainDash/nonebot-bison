@@ -38,7 +38,7 @@ class Post:
         return abs(size[0] - size[1]) / size[0] < 0.01
 
     async def _pic_merge(self) -> None:
-        if len(self.pics) < 6:
+        if len(self.pics) < 3:
             return
         first_image = await self._pic_url_to_image(self.pics[0])
         if not self._check_image_square(first_image.size):
@@ -77,9 +77,10 @@ class Post:
             images.extend(image_row)
             y_coord.append(y_coord[-1] + row_first_img.size[1])
             return True
-        if not await process_row(1):
-            return
-        matrix = (3,2)
+        if await process_row(1):
+            matrix = (3,2)
+        else:
+            matrix = (3,1)
         if await process_row(2):
             matrix = (3,3)
         logger.info('trigger merge image')

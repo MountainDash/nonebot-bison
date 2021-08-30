@@ -33,3 +33,9 @@ async def test_6_merge(plugin_module):
     post = plugin_module.post.Post('', '', '', pics=merge_source_9[0:6]+merge_source_9[9:])
     await post._pic_merge() 
     assert len(post.pics) == 5
+
+@pytest.mark.asyncio
+async def test_3_merge(plugin_module):
+    post = plugin_module.post.Post('', '', '', pics=merge_source_9[0:3]+merge_source_9[9:])
+    await post._pic_merge() 
+    assert len(post.pics) == 5

@@ -19,8 +19,9 @@ class Post:
     target_name: Optional[str] = None
     compress: bool = False
     override_use_pic: Optional[bool] = None
-
     pics: list[str] = field(default_factory=list)
+
+    _message: Optional[list] = None
 
     def _use_pic(self):
         if not self.override_use_pic is None:
@@ -97,27 +98,29 @@ class Post:
         self.pics.insert(0, b64image)
 
     async def generate_messages(self):
-        await self._pic_merge()
-        msgs = []
-        text = ''
-        if self.text:
-            text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
-        text += '\n来源: {}'.format(self.target_type)
-        if self.target_name:
-            text += ' {}'.format(self.target_name)
-        if self._use_pic():
-            msgs.append(await parse_text(text))
-            if not self.target_type == 'rss' and self.url:
-                msgs.append(self.url)
-        else:
-            if self.url:
-                text += ' \n详情: {}'.format(self.url)
-            msgs.append(text)
-        for pic in self.pics:
-            msgs.append("[CQ:image,file={url}]".format(url=pic))
-        if self.compress:
-            msgs = [''.join(msgs)]
-        return msgs
+        if self._message is None:
+            await self._pic_merge()
+            msgs = []
+            text = ''
+            if self.text:
+                text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
+            text += '\n来源: {}'.format(self.target_type)
+            if self.target_name:
+                text += ' {}'.format(self.target_name)
+            if self._use_pic():
+                msgs.append(await parse_text(text))
+                if not self.target_type == 'rss' and self.url:
+                    msgs.append(self.url)
+            else:
+                if self.url:
+                    text += ' \n详情: {}'.format(self.url)
+                msgs.append(text)
+            for pic in self.pics:
+                msgs.append("[CQ:image,file={url}]".format(url=pic))
+            if self.compress:
+                msgs = [''.join(msgs)]
+            self._message = msgs
+        return self._message
 
     def __str__(self):
         return 'type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}'.format(

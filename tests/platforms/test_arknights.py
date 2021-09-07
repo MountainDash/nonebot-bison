@@ -51,3 +51,4 @@ async def test_fetch_new(arknights, dummy_user_subinfo, arknights_list_0, arknig
     assert(post.target_name == '明日方舟游戏内公告')
     assert(len(post.pics) == 1)
     assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
+    r = await post.generate_messages()

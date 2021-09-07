@@ -1,5 +1,6 @@
 import base64
 from dataclasses import dataclass, field
+from functools import reduce
 from io import BytesIO
 from typing import Optional, Union
 
@@ -125,7 +126,7 @@ class Post:
                 # msgs.append(Message("[CQ:image,file={url}]".format(url=pic)))
                 msgs.append(MessageSegment.image(pic))
             if self.compress:
-                msgs = [Message([msgs])]
+                msgs = [reduce(lambda x, y: x.append(y), msgs, Message())]
             msgs.extend(self.extra_msg)
             self._message = msgs
         return self._message

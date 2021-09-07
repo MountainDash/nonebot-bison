@@ -27,6 +27,7 @@ async def test_9_merge(plugin_module: 'nonebot_hk_reporter'):
     post = plugin_module.post.Post('', '', '', pics=merge_source_9)
     await post._pic_merge() 
     assert len(post.pics) == 5
+    await post.generate_messages()
 
 @pytest.mark.asyncio
 async def test_6_merge(plugin_module):

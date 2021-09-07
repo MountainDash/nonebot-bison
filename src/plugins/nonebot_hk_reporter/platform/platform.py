@@ -114,9 +114,9 @@ class MessageProcessMixin(PlatformNameMixin, CategoryMixin, ParsePostMixin, abst
                     self.parse_cache[post_id] = await self.parse(raw_post)
                     break
                 except Exception as err:
+                    retry_times -= 1
                     if not retry_times:
                         raise err
-                    retry_times -= 1
         return self.parse_cache[post_id]
 
     @abstractmethod

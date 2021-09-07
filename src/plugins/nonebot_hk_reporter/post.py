@@ -21,7 +21,7 @@ class Post:
     compress: bool = False
     override_use_pic: Optional[bool] = None
     pics: list[Union[str,bytes]] = field(default_factory=list)
-    extra_msg = list[Message]
+    extra_msg: list[Message] = field(default_factory=list)
 
     _message: Optional[list] = None
 
@@ -125,8 +125,8 @@ class Post:
                 # msgs.append(Message("[CQ:image,file={url}]".format(url=pic)))
                 msgs.append(MessageSegment.image(pic))
             if self.compress:
-                msgs = Message([msgs])
-            msgs += self.extra_msg
+                msgs = [Message([msgs])]
+            msgs.extend(self.extra_msg)
             self._message = msgs
         return self._message
 

@@ -39,7 +39,7 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Coverage test
-          command: poetry run coverage run -m pytest --junitxml=test-results/junit.xml
+          command: poetry run coverage run -m pytest --junitxml=test-results/junit.xml -k 'not compare'
       - store_test_results:
           path: test-results
       - run:

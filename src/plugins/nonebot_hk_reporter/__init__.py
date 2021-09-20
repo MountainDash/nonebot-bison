@@ -8,3 +8,4 @@ from . import post
 from . import platform
 from . import types
 from . import utils
+from . import admin_page

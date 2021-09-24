@@ -10,6 +10,7 @@ class PlugConfig(BaseSettings):
     hk_reporter_use_local: bool = False
     hk_reporter_browser: str = ''
     hk_reporter_init_filter: bool = True
+    hk_reporter_outer_url: str = 'http://localhost:8080/hk_reporter/'
 
     class Config:
         extra = 'ignore'

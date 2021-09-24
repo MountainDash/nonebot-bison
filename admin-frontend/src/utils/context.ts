@@ -5,7 +5,10 @@ export const loginContextDefault: LoginContextType = {
   login: {
     login: false,
     type: '',
-    name: ''
+    name: '',
+    id: '123',
+    // groups: [],
+    token: ''
   },
   save: () => {}
 };

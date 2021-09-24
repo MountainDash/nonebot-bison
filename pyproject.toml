@@ -29,6 +29,8 @@ pyppeteer = "^0.2.5"
 pillow = "^8.1.0"
 nonebot-adapter-cqhttp = "^2.0.0-alpha.15"
 apscheduler = "^3.7.0"
+expiringdict = "^1.2.1"
+pyjwt = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.4"

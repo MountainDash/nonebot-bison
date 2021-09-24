@@ -1,7 +1,15 @@
+interface QQGroup {
+  id: string,
+  name: string,
+}
+
 export interface LoginStatus {
   login: boolean
-  type: String
-  name: String
+  type: string
+  name: string
+  id: string
+  // groups: Array<QQGroup>
+  token: string
 }
 
 export type LoginContextType = {
@@ -10,10 +18,10 @@ export type LoginContextType = {
 }
 
 export interface SubscribeConfig {
-  platform: String
-  target?: String
+  platform: string
+  target?: string
   catetories: Array<number>
-  tags: Array<String>
+  tags: Array<string>
 }
 
 export interface GlobalConf {
@@ -26,4 +34,12 @@ export interface PlatformConfig {
   enableTag: boolean,
   platformName: string,
   hasTarget: boolean
+}
+
+export interface TokenResp {
+  status: number,
+  token: string,
+  type: string,
+  id: string
+  name: string
 }

@@ -246,6 +246,22 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
 
 [[package]]
+name = "expiringdict"
+version = "1.2.1"
+description = "Dictionary with auto-expiring values for caching purposes"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+tests = ["dill", "coverage", "coveralls", "mock", "nose"]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
 name = "fastapi"
 version = "0.68.1"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -799,6 +815,25 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
 
 [[package]]
+name = "pyjwt"
+version = "2.1.0"
+description = "JSON Web Token implementation in Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+crypto = ["cryptography (>=3.3.1,<4.0.0)"]
+dev = ["sphinx", "sphinx-rtd-theme", "zope.interface", "cryptography (>=3.3.1,<4.0.0)", "pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)", "mypy", "pre-commit"]
+docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
+tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
 name = "pyparsing"
 version = "2.4.7"
 description = "Python parsing module"
@@ -1266,7 +1301,7 @@ reference = "aliyun"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "b1d377eac7e32ca08bd703b2f2a3094d6b72dead8c731902d38762da3b1dd7a2"
+content-hash = "e485e40f6187e8125f78e7595072280c2a67830ef8cfc3718ecd5f89c0d1064a"
 
 [metadata.files]
 anyio = [
@@ -1378,6 +1413,9 @@ coverage = [
 decorator = [
     {file = "decorator-5.0.9-py3-none-any.whl", hash = "sha256:6e5c199c16f7a9f0e3a61a4a54b3d27e7dad0dbdde92b944426cb20914376323"},
     {file = "decorator-5.0.9.tar.gz", hash = "sha256:72ecfba4320a893c53f9706bebb2d55c270c1e51a28789361aa93e4a21319ed5"},
+]
+expiringdict = [
+    {file = "expiringdict-1.2.1.tar.gz", hash = "sha256:fe2ba427220425c3c8a3d29f6d2e2985bcee323f8bcd4021e68ebefbd90d8250"},
 ]
 fastapi = [
     {file = "fastapi-0.68.1-py3-none-any.whl", hash = "sha256:94d2820906c36b9b8303796fb7271337ec89c74223229e3cfcf056b5a7d59e23"},
@@ -1588,6 +1626,10 @@ pygments = [
 ]
 pygtrie = [
     {file = "pygtrie-2.4.2.tar.gz", hash = "sha256:43205559d28863358dbbf25045029f58e2ab357317a59b11f11ade278ac64692"},
+]
+pyjwt = [
+    {file = "PyJWT-2.1.0-py3-none-any.whl", hash = "sha256:934d73fbba91b0483d3857d1aff50e96b2a892384ee2c17417ed3203f173fca1"},
+    {file = "PyJWT-2.1.0.tar.gz", hash = "sha256:fba44e7898bbca160a2b2b501f492824fc8382485d3a6f11ba5d0c1937ce6130"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},

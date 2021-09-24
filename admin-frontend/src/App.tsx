@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { HashRouter as Router, Route, Switch } from 'react-router-dom';
 import './App.css';
 import { LoginContext, loginContextDefault, GlobalConfContext } from './utils/context';
 import { LoginStatus, GlobalConf } from './utils/type';
 import { Admin } from './pages/admin';
 import { getGlobalConf } from './api/config';
+import { Auth } from './pages/auth';
 import 'antd/dist/antd.css';
 
 
@@ -15,7 +17,9 @@ function LoginSwitch() {
     return (
       <div>
         not login
-        <button onClick={() => save({login: true, type: 'admin', name: ''})}>1</button>
+        <button onClick={() => save({
+            login: true, type: 'admin', name: '', id: '123', token: ''
+            })}>1</button>
       </div>
     )
   }
@@ -35,9 +39,18 @@ function App() {
   }, []);
   return (
     <LoginContext.Provider value={{login: loginStatus, save}}>
-    <GlobalConfContext.Provider value={globalConf}>
-      <LoginSwitch /> 
-    </GlobalConfContext.Provider>
+      <GlobalConfContext.Provider value={globalConf}>
+        <Router>
+          <Switch>
+            <Route path="/auth/:code">
+              <Auth />   
+            </Route>
+            <Route path="/admin/">
+              <LoginSwitch /> 
+            </Route>
+          </Switch>
+        </Router>
+      </GlobalConfContext.Provider>
     </LoginContext.Provider>
   );
 }

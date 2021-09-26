@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { HashRouter as Router, Route, Switch } from 'react-router-dom';
 import './App.css';
 import { LoginContext, loginContextDefault, GlobalConfContext } from './utils/context';
-import { LoginStatus, GlobalConf } from './utils/type';
+import { LoginStatus, GlobalConf, AllPlatformConf } from './utils/type';
 import { Admin } from './pages/admin';
 import { getGlobalConf } from './api/config';
 import { Auth } from './pages/auth';
@@ -27,19 +27,20 @@ function LoginSwitch() {
 
 function App() {
   const [loginStatus, setLogin] = useState(loginContextDefault.login);
-  const [globalConf, setGlobalConf] = useState<GlobalConf>({platformConf: []});
+  const [globalConf, setGlobalConf] = useState<GlobalConf>({platformConf: {} as AllPlatformConf, loaded: false});
   // const globalConfContext = useContext(GlobalConfContext);
   const save = (login: LoginStatus) => setLogin(_ => login);
   useEffect(() => {
     const fetchGlobalConf = async () => {
       const res = await getGlobalConf();
-      setGlobalConf(_ => res);
+      setGlobalConf(_ => {return {...res, loaded: true}});
     };
     fetchGlobalConf();
   }, []);
   return (
     <LoginContext.Provider value={{login: loginStatus, save}}>
       <GlobalConfContext.Provider value={globalConf}>
+      { globalConf.loaded &&
         <Router>
           <Switch>
             <Route path="/auth/:code">
@@ -50,6 +51,7 @@ function App() {
             </Route>
           </Switch>
         </Router>
+      }
       </GlobalConfContext.Provider>
     </LoginContext.Provider>
   );

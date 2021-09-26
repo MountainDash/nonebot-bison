@@ -14,4 +14,4 @@ export const loginContextDefault: LoginContextType = {
 };
 
 export const LoginContext = createContext(loginContextDefault);
-export const GlobalConfContext = createContext<GlobalConf>({platformConf: []});
+export const GlobalConfContext = createContext<GlobalConf>({platformConf: {}, loaded: false});

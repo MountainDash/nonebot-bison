@@ -1,5 +1,6 @@
 import importlib
 from pathlib import Path
+from typing import Callable
 
 from fastapi.staticfiles import StaticFiles
 from nonebot import get_driver, on_command
@@ -11,25 +12,49 @@ from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 import socketio
+import functools
 
-from .api import test, get_global_conf, auth
+from .api import test, get_global_conf, auth, get_subs_info, get_target_name
 from .token_manager import token_manager as tm
+from .jwt import load_jwt
 from ..plugin_config import plugin_config
 
 URL_BASE = '/hk_reporter/'
 GLOBAL_CONF_URL = f'{URL_BASE}api/global_conf'
 AUTH_URL = f'{URL_BASE}api/auth'
+SUBSCRIBE_URL = f'{URL_BASE}api/subs'
+GET_TARGET_NAME_URL = f'{URL_BASE}api/target_name'
 TEST_URL = f'{URL_BASE}test'
 
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 socket_app = socketio.ASGIApp(sio, socketio_path="socket")
 
+
 def register_router_fastapi(driver: Driver, socketio):
+    from fastapi.security import OAuth2PasswordBearer
+    from fastapi.param_functions import Depends
+    from fastapi import HTTPException, status
+
+    oath_scheme = OAuth2PasswordBearer(tokenUrl='token')
+
+    async def get_jwt_obj(token: str = Depends(oath_scheme)):
+        obj = load_jwt(token)
+        if not obj:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        return obj
+
     app = driver.server_app
     static_path = str((Path(__file__).parent / "dist").resolve())
     app.get(TEST_URL)(test)
     app.get(GLOBAL_CONF_URL)(get_global_conf)
     app.get(AUTH_URL)(auth)
+
+    @app.get(SUBSCRIBE_URL)
+    async def subs(jwt_obj: dict = Depends(get_jwt_obj)):
+        return await get_subs_info(jwt_obj)
+    @app.get(GET_TARGET_NAME_URL)
+    async def _get_target_name(platformName: str, target: str, jwt_obj: dict = Depends(get_jwt_obj)):
+        return await get_target_name(platformName, target, jwt_obj)
     app.mount(URL_BASE, StaticFiles(directory=static_path, html=True), name="hk_reporter")
 
 def init():

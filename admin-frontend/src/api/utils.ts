@@ -18,4 +18,23 @@ axios.interceptors.request.use(function (config) {
   return config;
 }, function (error) {
   return Promise.reject(error);
-})
+});
+
+axios.interceptors.response.use(function (response) {
+  // const data = response.data;
+  // const parseToMap = (item: any): any => {
+  //   if (item instanceof Array) {
+  //     return item.map(parseToMap);
+  //   } else if (item instanceof Object) {
+  //     let res = new Map();
+  //     for (const key of Object.keys(item)) {
+  //       res.set(key, parseToMap(item[key]));
+  //     }
+  //     return res;
+  //   } else {
+  //     return item;
+  //   }
+  // }
+  // response.data = parseToMap(data);
+  return response;
+});

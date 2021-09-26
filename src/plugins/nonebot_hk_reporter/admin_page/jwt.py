@@ -14,7 +14,7 @@ def pack_jwt(obj: dict) -> str:
 
 def load_jwt(token: str) -> Optional[dict]:
     try:
-        return jwt.decode(token, _key, algorithm='HS256')
+        return jwt.decode(token, _key, algorithms=['HS256'])
     except:
         return None
 

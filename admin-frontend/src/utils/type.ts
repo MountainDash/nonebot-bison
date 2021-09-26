@@ -18,20 +18,30 @@ export type LoginContextType = {
 }
 
 export interface SubscribeConfig {
-  platform: string
+  targetType: string
   target?: string
-  catetories: Array<number>
+  targetName: string
+  cats: Array<number>
   tags: Array<string>
 }
 
 export interface GlobalConf {
-  platformConf: Array<PlatformConfig>
+  platformConf: AllPlatformConf,
+  loaded: boolean
+}
+
+export interface AllPlatformConf {
+  [idx: string]: PlatformConfig;
+}
+
+interface CategoryConfig {
+  [idx: number]: string
 }
 
 export interface PlatformConfig {
   name: string
-  catetories: Map<number, string>,
-  enableTag: boolean,
+  categories: CategoryConfig
+  enabledTag: boolean,
   platformName: string,
   hasTarget: boolean
 }
@@ -42,4 +52,17 @@ export interface TokenResp {
   type: string,
   id: string
   name: string
+}
+
+export interface SubscribeGroupDetail {
+  name: string,
+  subscribes: Array<SubscribeConfig>
+}
+
+export interface SubscribeResp {
+  [idx: string]: SubscribeGroupDetail
+}
+
+export interface TargetNameResp {
+  targetName: string
 }

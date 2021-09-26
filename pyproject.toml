@@ -31,6 +31,8 @@ nonebot-adapter-cqhttp = "^2.0.0-alpha.15"
 apscheduler = "^3.7.0"
 expiringdict = "^1.2.1"
 pyjwt = "^2.1.0"
+aiofiles = "^0.7.0"
+python-socketio = "^5.4.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.4"

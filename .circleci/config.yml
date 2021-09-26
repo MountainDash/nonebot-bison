@@ -6,6 +6,7 @@ orbs:
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.4
+  node: circleci/node@4.7.0
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
 
@@ -37,6 +38,12 @@ jobs:
       # - run: sed -e '41,45d' -i pyproject.toml
       - python/install-packages:
           pkg-manager: poetry
+      - node/install-packages:
+          app-dir: ./admin-frontend
+          pkg-manager: yarn
+      - node/run:
+          app-dir: ./adin-frontend
+          yarn-run: build
       - run:
           name: Coverage test
           command: poetry run coverage run -m pytest --junitxml=test-results/junit.xml -k 'not compare'

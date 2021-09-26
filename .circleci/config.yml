@@ -13,7 +13,13 @@ orbs:
 workflows:
   build-test-publish:
     jobs:
+      - build-frontend:
+          filters:
+            tags:
+              only: /.*/
       - test:
+          requires:
+            - build-frontend
           filters:
             tags:
               only: /.*/
@@ -27,6 +33,22 @@ workflows:
               only: /^v.*/
 
 jobs:
+  build-frontend:
+    docker:
+      - image: cimg/node
+    steps:
+      - checkout
+      - node/install-packages:
+          app-dir: ./admin-frontend
+          pkg-manager: yarn
+      - run:
+          name: yarn build
+          working_directory: ./admin-frontend
+          command: yarn build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "src/plugins/nonebot_hk_reporter/admin_page/dist/"
   test:
     docker:
       - image: cimg/python:3.9
@@ -38,11 +60,8 @@ jobs:
       # - run: sed -e '41,45d' -i pyproject.toml
       - python/install-packages:
           pkg-manager: poetry
-      - node/install-packages:
-          app-dir: ./admin-frontend
-          pkg-manager: yarn
       - node/run:
-          app-dir: ./adin-frontend
+          app-dir: ./admin-frontend
           yarn-run: build
       - run:
           name: Coverage test

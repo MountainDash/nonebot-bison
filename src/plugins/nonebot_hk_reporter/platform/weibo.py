@@ -117,3 +117,4 @@ class Weibo(NewMessage, TargetMixin):
         detail_url = 'https://weibo.com/{}/{}'.format(info['user']['id'], info['bid'])
         # return parsed_text, detail_url, pic_urls
         return Post('weibo', text=parsed_text, url=detail_url, pics=pic_urls, target_name=info['user']['screen_name'])
+

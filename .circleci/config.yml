@@ -18,8 +18,6 @@ workflows:
             tags:
               only: /.*/
       - build-publish:
-          context: 
-            - docker
           requires:
             - test
           filters:
@@ -27,6 +25,21 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
+      - docker/publish:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          context: 
+            - docker
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: latest,${CIRCLE_TAG}
+          update-description: true
+          docker-username: $DOCKERHUB_USERNAME
+          docker-password: $DOCKERHUB_PASSWORD
 
 jobs:
   test:
@@ -63,9 +76,4 @@ jobs:
       - run:
           command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
           name: publish to pypi
-      - docker/publish:
-          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-          update-description: true
-          docker-username: $DOCKERHUB_USERNAME
-          docker-password: $DOCKERHUB_PASSWORD
 

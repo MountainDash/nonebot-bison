@@ -8,6 +8,7 @@ orbs:
   python: circleci/python@1.4
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
+  docker: circleci/docker@1.7.0
 
 workflows:
   build-test-publish:
@@ -17,6 +18,8 @@ workflows:
             tags:
               only: /.*/
       - build-publish:
+          context: 
+            - docker
           requires:
             - test
           filters:
@@ -60,4 +63,9 @@ jobs:
       - run:
           command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
           name: publish to pypi
+      - docker/publish:
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          update-description: true
+          docker-username: $DOCKERHUB_USERNAME
+          docker-password: $DOCKERHUB_PASSWORD
 

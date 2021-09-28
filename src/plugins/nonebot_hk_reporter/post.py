@@ -21,7 +21,7 @@ class Post:
     target_name: Optional[str] = None
     compress: bool = False
     override_use_pic: Optional[bool] = None
-    pics: list[Union[str,bytes]] = field(default_factory=list)
+    pics: Union[list[Union[str,bytes]], list[str], list[bytes]] = field(default_factory=list)
     extra_msg: list[Message] = field(default_factory=list)
 
     _message: Optional[list] = None
@@ -66,6 +66,8 @@ class Post:
             x_coord.append(_tmp)
         y_coord = [0, first_image.size[1]]
         async def process_row(row: int) -> bool:
+            if len(self.pics) < (row + 1) * 3:
+                return False
             row_first_img = await self._pic_url_to_image(self.pics[row * 3])
             if not self._check_image_square(row_first_img.size):
                 return False

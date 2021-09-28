@@ -38,8 +38,8 @@ workflows:
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
           tag: latest,${CIRCLE_TAG}
           update-description: true
-          docker-username: $DOCKERHUB_USERNAME
-          docker-password: $DOCKERHUB_PASSWORD
+          docker-username: DOCKERHUB_USERNAME
+          docker-password: DOCKERHUB_PASSWORD
 
 jobs:
   test:

@@ -10,7 +10,6 @@ from nonebot.matcher import Matcher
 
 from .config import Config, NoSuchSubscribeException
 from .platform import platform_manager, check_sub_target
-from .send import send_msgs
 from .utils import parse_text
 from .types import Target
 
@@ -118,7 +117,6 @@ def do_query_sub(query_sub: Type[Matcher]):
             if platform.enable_tag:
                 res += ' {}'.format(', '.join(sub['tags']))
             res += '\n'
-        # send_msgs(bot, event.group_id, 'group', [await parse_text(res)])
         await query_sub.finish(Message(await parse_text(res)))
 
 def do_del_sub(del_sub: Type[Matcher]):

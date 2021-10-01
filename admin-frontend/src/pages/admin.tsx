@@ -2,9 +2,11 @@ import React, { ReactElement, useContext, useEffect, useState } from "react";
 import { LoginContext, GlobalConfContext } from "../utils/context";
 import { Layout, Menu, Empty, Collapse, Card, Tag, Row, Col, Form, Tooltip, Button, Modal, Select,
   Input} from 'antd';
-import { SubscribeConfig, SubscribeResp, PlatformConfig } from '../utils/type';
+import { SubscribeConfig, SubscribeResp, PlatformConfig, CategoryConfig } from '../utils/type';
 import { SettingOutlined, BugOutlined, DeleteOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { getSubscribe, getTargetName } from '../api/config';
+import { InputTag } from '../component/inputTag';
+import _ from "lodash";
 import './admin.css';
 
 export function Admin() {
@@ -63,7 +65,7 @@ function ConfigPage(prop: ConfigPageProp) {
           <Tooltip title="删除"><DeleteOutlined /></Tooltip>,
           <Tooltip title="添加到其他群"><CopyOutlined /></Tooltip>
           ]}>
-        <Form labelCol={{ span: 4 }}>
+        <Form labelCol={{ span: 6 }}>
         <Form.Item label="订阅类型">
           {Object.keys(platformConf.categories).length > 0 ? 
           config.cats.map((catKey: number) => (<Tag color="green" key={catKey}>{platformConf.categories[catKey]}</Tag>)) :
@@ -103,6 +105,28 @@ function ConfigPage(prop: ConfigPageProp) {
   }
 }
 
+interface InputTagCustomProp {
+  value?: Array<string>,
+  onChange?: (value: Array<string>) => void
+}
+function InputTagCustom(prop: InputTagCustomProp) {
+  const [value, setValue] = useState(prop.value || []);
+  const handleSetValue = (newVal: Array<string>) => {
+    setValue(() => newVal);
+    if (prop.onChange) {
+      prop.onChange(newVal);
+    }
+  }
+  return (
+    <>
+      {value.length === 0 &&
+        <Tag color="green">全部标签</Tag>
+      }
+      <InputTag color="blue" addText="添加标签" value={value} onChange={handleSetValue} />
+    </>
+  )
+}
+
 interface AddModalProp {
   showModal: boolean,
   setShowModal: (s: boolean) => void
@@ -111,26 +135,39 @@ function AddModal(prop: AddModalProp) {
   const [ confirmLoading, setConfirmLoading ] = useState<boolean>(false);
   const { platformConf } = useContext(GlobalConfContext);
   const [ hasTarget, setHasTarget ] = useState(false);
+  const [ categories, setCategories ] = useState({} as CategoryConfig);
   const [ form ] = Form.useForm();
   const changePlatformSelect = (platform: string) => {
     setHasTarget(_ => platformConf[platform].hasTarget);
+    setCategories(_ => platformConf[platform].categories);
     if (! platformConf[platform].hasTarget) {
       getTargetName(platform, 'default')
         .then(res => {
           console.log(res)
-          form.setFieldsValue(() => { return {
-            targetName: res.targetName
-          }})
+          form.setFieldsValue({
+            targetName: res.targetName,
+            target: ''
           })
+        })
+    } else {
+      form.setFieldsValue({
+        targetName: '',
+        target: ''
+      })
     }
   }
   const handleSubmit = (value: any) => {
     console.log(value);
   }
+  const handleModleFinish = () => {
+    form.submit();
+    setConfirmLoading(() => true);
+  }
 
   return <Modal title="添加订阅" visible={prop.showModal} 
-    confirmLoading={confirmLoading} onCancel={() => prop.setShowModal(false)}>
-    <Form form={form} labelCol={{ span: 6 }} name="b">
+    confirmLoading={confirmLoading} onCancel={() => prop.setShowModal(false)}
+    onOk={handleModleFinish}>
+    <Form form={form} labelCol={{ span: 6 }} name="b" onFinish={handleSubmit}>
       <Form.Item label="平台" name="platformType" rules={[]}>
         <Select style={{ width: '80%' }} onChange={changePlatformSelect}>
           {Object.keys(platformConf).map(platformName => 
@@ -138,11 +175,50 @@ function AddModal(prop: AddModalProp) {
             )}
         </Select>
       </Form.Item>
-      <Form.Item label="账号" name="target" rules={[]}>
-        <Input placeholder={hasTarget ? "获取方式见文档" : "此平台不需要账号"} disabled={! hasTarget} style={{ width: "80%" }} />
+      <Form.Item label="账号" name="target" rules={[
+        {required: hasTarget, message: "请输入账号"},
+        {validator: async (_, value) => {
+          try {
+            const res = await getTargetName(form.getFieldValue('platformType'), value);
+            if (res.targetName) {
+                form.setFieldsValue({
+                  targetName: res.targetName
+                })
+                return Promise.resolve()
+            } else {
+                form.setFieldsValue({
+                  targetName: ''
+                })
+              return Promise.reject("账号不正确，请重新检查账号")
+            }
+          } catch {
+            return Promise.reject('服务器错误，请稍后再试')
+          }
+        }
+        }
+      ]}>
+        <Input placeholder={hasTarget ? "获取方式见文档" : "此平台不需要账号"} 
+          disabled={! hasTarget} style={{ width: "80%" }}/>
       </Form.Item>
       <Form.Item label="账号名称" name="targetName">
-        <Input style={{ width: "80%" }} />
+        <Input style={{ width: "80%" }} disabled />
+      </Form.Item>
+      <Form.Item label="订阅分类" name="categories">
+        <Select style={{ width: '80%' }} mode="multiple" 
+          disabled={Object.keys(categories).length === 0}
+          placeholder={Object.keys(categories).length > 0 ?
+            "请选择要订阅的分类" : "本平台不支持分类"}>
+          {Object.keys(categories).length > 0 &&
+            Object.keys(categories).map((indexStr) => 
+              <Select.Option key={indexStr} value={parseInt(indexStr)}>
+                {categories[parseInt(indexStr)]}
+              </Select.Option>
+            )
+          }
+        </Select>
+      </Form.Item>
+      <Form.Item label="订阅Tag" name="tags">
+        <InputTagCustom/>
       </Form.Item>
     </Form>
     </Modal>

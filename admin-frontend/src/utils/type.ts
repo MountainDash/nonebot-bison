@@ -34,7 +34,7 @@ export interface AllPlatformConf {
   [idx: string]: PlatformConfig;
 }
 
-interface CategoryConfig {
+export interface CategoryConfig {
   [idx: number]: string
 }
 
@@ -65,4 +65,12 @@ export interface SubscribeResp {
 
 export interface TargetNameResp {
   targetName: string
+}
+
+export interface CreateSubscribeReq {
+  platformName: string,
+  targetName: string,
+  target: string,
+  categories: Array<string>,
+  tags: Array<string>
 }

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { HashRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import './App.css';
 import { LoginContext, loginContextDefault, GlobalConfContext } from './utils/context';
 import { LoginStatus, GlobalConf, AllPlatformConf } from './utils/type';
@@ -41,7 +41,7 @@ function App() {
     <LoginContext.Provider value={{login: loginStatus, save}}>
       <GlobalConfContext.Provider value={globalConf}>
       { globalConf.loaded &&
-        <Router>
+        <Router basename="/hk_reporter">
           <Switch>
             <Route path="/auth/:code">
               <Auth />   

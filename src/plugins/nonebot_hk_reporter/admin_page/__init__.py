@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 import importlib
 from pathlib import Path
 from typing import Callable
 
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from nonebot import get_driver, on_command
 import nonebot
 from nonebot.adapters.cqhttp.bot import Bot
@@ -14,7 +16,9 @@ from nonebot.typing import T_State
 import socketio
 import functools
 
-from .api import test, get_global_conf, auth, get_subs_info, get_target_name
+from starlette.requests import Request
+
+from .api import test, get_global_conf, auth, get_subs_info, get_target_name, add_group_sub
 from .token_manager import token_manager as tm
 from .jwt import load_jwt
 from ..plugin_config import plugin_config
@@ -43,6 +47,19 @@ def register_router_fastapi(driver: Driver, socketio):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
         return obj
 
+    async def check_group_permission(groupNumber: str, token_obj: dict = Depends(get_jwt_obj)):
+        groups = token_obj['groups']
+        if groupNumber not in groups:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    @dataclass
+    class AddSubscribeReq:
+        platformName: str
+        target: str
+        targetName: str
+        categories: list[str]
+        tags: list[str]
+
     app = driver.server_app
     static_path = str((Path(__file__).parent / "dist").resolve())
     app.get(TEST_URL)(test)
@@ -55,7 +72,17 @@ def register_router_fastapi(driver: Driver, socketio):
     @app.get(GET_TARGET_NAME_URL)
     async def _get_target_name(platformName: str, target: str, jwt_obj: dict = Depends(get_jwt_obj)):
         return await get_target_name(platformName, target, jwt_obj)
+    @app.post(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
+    async def _add_group_subs(groupNumber: str, req: AddSubscribeReq):
+        return await add_group_sub(group_number=groupNumber, platform_name=req.platformName,
+                target=req.target, target_name=req.targetName, cats=req.categories, tags=req.tags)
     app.mount(URL_BASE, StaticFiles(directory=static_path, html=True), name="hk_reporter")
+    templates = Jinja2Templates(directory=static_path)
+
+    @app.get(f'{URL_BASE}{{rest_path:path}}')
+    async def serve_sap(request: Request, rest_path: str):
+        return templates.TemplateResponse("index.html", {"request": request})
+
 
 def init():
     driver = get_driver()

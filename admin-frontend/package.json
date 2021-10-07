@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && mv -f build ../src/plugins/nonebot_hk_reporter/admin_page/dist",
+    "build": "react-scripts build && cp -r -f build/* ../src/plugins/nonebot_hk_reporter/admin_page/dist",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

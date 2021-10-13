@@ -1,10 +1,10 @@
 import asyncio
 import base64
 from html import escape
+from time import asctime
 from typing import Awaitable, Callable, Optional
-from urllib.parse import quote
-from nonebot.adapters.cqhttp.message import MessageSegment
 
+from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import logger
 from pyppeteer import connect, launch
 from pyppeteer.browser import Browser
@@ -60,8 +60,7 @@ class Render(metaclass=Singleton):
                 #     self.lock.release()
 
     def _inter_log(self, message: str) -> None:
-        # self.interval_log += asctime() + '' + message + '\n'
-        logger.debug(message)
+        self.interval_log += asctime() + '' + message + '\n'
 
     async def do_render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
             operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> Optional[bytes]:

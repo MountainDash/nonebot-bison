@@ -20,7 +20,10 @@ async def do_send_msgs():
             if retry_time > 0:
                 QUEUE.insert(0, (bot, user, user_type, msg, retry_time - 1))
             else:
-                logger.warning('send msg err {}'.format(msg))
+                msg_str = str(msg)
+                if len(msg_str) > 50:
+                    msg_str = msg_str[:50] + '...'
+                logger.warning(f'send msg err {msg_str}')
         LAST_SEND_TIME = time.time()
 
 def send_msgs(bot, user, user_type, msgs):

@@ -16,14 +16,14 @@ async def do_send_msgs():
                 await bot.call_api('send_group_msg', group_id=user, message=msg)
             elif user_type == 'private':
                 await bot.call_api('send_private_msg', user_id=user, message=msg)
-        except:
+        except Exception as e:
             if retry_time > 0:
                 QUEUE.insert(0, (bot, user, user_type, msg, retry_time - 1))
             else:
                 msg_str = str(msg)
                 if len(msg_str) > 50:
                     msg_str = msg_str[:50] + '...'
-                logger.warning(f'send msg err {msg_str}')
+                logger.warning(f'send msg err {e} {msg_str}')
         LAST_SEND_TIME = time.time()
 
 def send_msgs(bot, user, user_type, msgs):

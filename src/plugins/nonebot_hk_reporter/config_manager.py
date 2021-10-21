@@ -14,6 +14,11 @@ from .send import send_msgs
 from .utils import parse_text
 from .types import Target
 
+def _gen_prompt_template(prompt: str):
+    if hasattr(Message, 'template'):
+        return Message.template(prompt)
+    return prompt
+
 common_platform = [p.platform_name for p in \
         filter(lambda platform: platform.enabled and platform.is_common,
             platform_manager.values())
@@ -46,7 +51,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         else:
             await add_sub.reject('平台输入错误')
 
-    @add_sub.got('platform', '{_prompt}', parse_platform)
+    @add_sub.got('platform', _gen_prompt_template('{_prompt}'), parse_platform)
     @add_sub.handle()
     async def init_id(bot: Bot, event: Event, state: T_State):
         if platform_manager[state['platform']].has_target:
@@ -63,7 +68,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         state['id'] = target
         state['name'] = name
 
-    @add_sub.got('id', '{_prompt}', parse_id)
+    @add_sub.got('id', _gen_prompt_template('{_prompt}'), parse_id)
     @add_sub.handle()
     async def init_cat(bot: Bot, event: Event, state: T_State):
         if not platform_manager[state['platform']].categories:
@@ -80,7 +85,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             res.append(platform_manager[state['platform']].reverse_category[cat])
         state['cats'] = res
 
-    @add_sub.got('cats', '{_prompt}', parser_cats)
+    @add_sub.got('cats', _gen_prompt_template('{_prompt}'), parser_cats)
     @add_sub.handle()
     async def init_tag(bot: Bot, event: Event, state: T_State):
         if not platform_manager[state['platform']].enable_tag:
@@ -94,7 +99,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         else:
             state['tags'] = str(event.get_message()).strip().split()
 
-    @add_sub.got('tags', '{_prompt}', parser_tags)
+    @add_sub.got('tags', _gen_prompt_template('{_prompt}'), parser_tags)
     @add_sub.handle()
     async def add_sub_process(bot: Bot, event: Event, state: T_State):
         config = Config()

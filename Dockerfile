@@ -5,6 +5,7 @@ WORKDIR /app
 COPY ./pyproject.toml ./poetry.lock* /app/
 RUN poetry install --no-root --no-dev
 # RUN PYPPETEER_DOWNLOAD_HOST='http://npm.taobao.org/mirrors' pyppeteer-install
-COPY ./src ./bot.py /app/
+ADD src /app/src
+ADD bot.py /app/
 ENV HOST=0.0.0.0
 CMD ["python", "bot.py"]

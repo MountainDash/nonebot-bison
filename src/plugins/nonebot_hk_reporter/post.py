@@ -110,7 +110,10 @@ class Post:
             msgs = []
             text = ''
             if self.text:
-                text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
+                if self._use_pic():
+                    text += '{}'.format(self.text)
+                else:
+                    text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
             text += '\n来源: {}'.format(self.target_type)
             if self.target_name:
                 text += ' {}'.format(self.target_name)

@@ -1,13 +1,15 @@
 import asyncio
 import base64
 from html import escape
+import os
+from time import asctime
 from typing import Awaitable, Callable, Optional
-from urllib.parse import quote
-from nonebot.adapters.cqhttp.message import MessageSegment
 
+from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import logger
 from pyppeteer import connect, launch
 from pyppeteer.browser import Browser
+from pyppeteer.chromium_downloader import check_chromium, download_chromium
 from pyppeteer.page import Page
 
 from .plugin_config import plugin_config
@@ -19,6 +21,10 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+if not plugin_config.hk_reporter_browser and not plugin_config.hk_reporter_use_local \
+        and not check_chromium():
+    os.environ['PYPPETEER_DOWNLOAD_HOST'] = 'http://npm.taobao.org/mirrors'
+    download_chromium()
 
 class Render(metaclass=Singleton):
 
@@ -60,8 +66,7 @@ class Render(metaclass=Singleton):
                 #     self.lock.release()
 
     def _inter_log(self, message: str) -> None:
-        # self.interval_log += asctime() + '' + message + '\n'
-        logger.debug(message)
+        self.interval_log += asctime() + '' + message + '\n'
 
     async def do_render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
             operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> Optional[bytes]:

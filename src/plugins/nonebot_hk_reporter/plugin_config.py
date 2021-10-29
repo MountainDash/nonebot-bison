@@ -10,7 +10,7 @@ class PlugConfig(BaseSettings):
     hk_reporter_use_local: bool = False
     hk_reporter_browser: str = ''
     hk_reporter_init_filter: bool = True
-    hk_reporter_use_queue: bool = False
+    hk_reporter_use_queue: bool = True
 
     class Config:
         extra = 'ignore'

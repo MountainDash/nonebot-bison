@@ -1,14 +1,13 @@
-from typing import Any
-import httpx
 import json
+from typing import Any
+
 from bs4 import BeautifulSoup as bs
+import httpx
 
-from ..types import Category, RawPost, Target
-
-from .platform import NewMessage, NoTargetMixin, CategoryNotSupport, StatusChange
-
-from ..utils import Render
 from ..post import Post
+from ..types import Category, RawPost, Target
+from ..utils import Render
+from .platform import CategoryNotSupport, NewMessage, NoTargetMixin, StatusChange
 
 
 class Arknights(NewMessage, NoTargetMixin):
@@ -96,3 +95,42 @@ class AkVersion(NoTargetMixin, StatusChange):
 
     async def parse(self, raw_post):
         return raw_post
+
+class MonsterSiren(NewMessage, NoTargetMixin):
+
+    categories = {3: '塞壬唱片新闻'}
+    platform_name = 'arknights'
+    name = '明日方舟游戏信息'
+    enable_tag = False
+    enabled = True
+    is_common = False
+    schedule_type = 'interval'
+    schedule_kw = {'seconds': 30}
+
+    async def get_target_name(self, _: Target) -> str:
+        return '明日方舟游戏信息'
+
+    async def get_sub_list(self, _) -> list[RawPost]:
+        async with httpx.AsyncClient() as client:
+            raw_data = await client.get('https://monster-siren.hypergryph.com/api/news')
+            return raw_data.json()['data']['list']
+
+    def get_id(self, post: RawPost) -> Any:
+        return post['cid']
+
+    def get_date(self, _) -> None:
+        return None
+
+    async def parse(self, raw_post: RawPost) -> Post:
+        url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
+        async with httpx.AsyncClient() as client:
+            res = await client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
+            raw_data = res.json()
+            content = raw_data['data']['content']
+            content = content.replace('</p>', '</p>\n')
+            soup = bs(content, 'html.parser')
+            imgs = list(map(lambda x: x['src'], soup('img')))
+            text = f'{raw_post["title"]}\n{soup.text.strip()}'
+        return Post('monster-siren', text=text, pics=imgs,
+                url=url, target_name="塞壬唱片新闻", compress=True,
+                override_use_pic=False)

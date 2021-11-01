@@ -40,6 +40,7 @@ class Arknights(NewMessage, NoTargetMixin):
 
     async def parse(self, raw_post: RawPost) -> Post:
         announce_url = raw_post['webUrl']
+        text = ''
         async with httpx.AsyncClient() as client:
             raw_html = await client.get(announce_url)
         soup = bs(raw_html, 'html.parser')
@@ -49,12 +50,14 @@ class Arknights(NewMessage, NoTargetMixin):
             render = Render()
             viewport = {'width': 320, 'height': 6400, 'deviceScaleFactor': 3}
             pic_data = await render.render(announce_url, viewport=viewport, target='div.main')
-            pics.append(pic_data)
+            if pic_data:
+                pics.append(pic_data)
+                text = '图片渲染失败'
         elif (pic := soup.find('img', class_='banner-image')):
             pics.append(pic['src'])
         else:
             raise CategoryNotSupport()
-        return Post('arknights', text='', url='', target_name="明日方舟游戏内公告", pics=pics, compress=True, override_use_pic=False)
+        return Post('arknights', text=text, url='', target_name="明日方舟游戏内公告", pics=pics, compress=True, override_use_pic=False)
 
 class AkVersion(NoTargetMixin, StatusChange):
 
@@ -81,9 +84,13 @@ class AkVersion(NoTargetMixin, StatusChange):
     def compare_status(self, _, old_status, new_status):
         res = []
         if old_status.get('preAnnounceType') == 2 and new_status.get('preAnnounceType') == 0:
-            res.append(Post('arknights', text='开始维护！', target_name='明日方舟更新信息'))
+            res.append(Post('arknights',
+                text='登录界面维护公告上线（大概是开始维护了)',
+                target_name='明日方舟更新信息'))
         elif old_status.get('preAnnounceType') == 0 and new_status.get('preAnnounceType') == 2:
-            res.append(Post('arknights', text='维护结束！冲！（可能不太准确）', target_name='明日方舟更新信息'))
+            res.append(Post('arknights',
+                text='登录界面维护公告下线（大概是开服了，冲！）',
+                target_name='明日方舟更新信息'))
         if old_status.get('clientVersion') != new_status.get('clientVersion'):
             res.append(Post('arknights', text='游戏本体更新（大更新）', target_name='明日方舟更新信息'))
         if old_status.get('resVersion') != new_status.get('resVersion'):

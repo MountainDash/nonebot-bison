@@ -121,6 +121,9 @@ class MonsterSiren(NewMessage, NoTargetMixin):
     def get_date(self, _) -> None:
         return None
 
+    def get_category(self, _) -> Category:
+        return Category(3)
+
     async def parse(self, raw_post: RawPost) -> Post:
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
         async with httpx.AsyncClient() as client:

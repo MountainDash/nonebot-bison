@@ -41,6 +41,7 @@ class Arknights(NewMessage, NoTargetMixin):
 
     async def parse(self, raw_post: RawPost) -> Post:
         announce_url = raw_post['webUrl']
+        text = ''
         async with httpx.AsyncClient() as client:
             raw_html = await client.get(announce_url)
         soup = bs(raw_html, 'html.parser')
@@ -50,12 +51,14 @@ class Arknights(NewMessage, NoTargetMixin):
             render = Render()
             viewport = {'width': 320, 'height': 6400, 'deviceScaleFactor': 3}
             pic_data = await render.render(announce_url, viewport=viewport, target='div.main')
-            pics.append(pic_data)
+            if pic_data:
+                pics.append(pic_data)
+                text = '图片渲染失败'
         elif (pic := soup.find('img', class_='banner-image')):
             pics.append(pic['src'])
         else:
             raise CategoryNotSupport()
-        return Post('arknights', text='', url='', target_name="明日方舟游戏内公告", pics=pics, compress=True, override_use_pic=False)
+        return Post('arknights', text=text, url='', target_name="明日方舟游戏内公告", pics=pics, compress=True, override_use_pic=False)
 
 class AkVersion(NoTargetMixin, StatusChange):
 

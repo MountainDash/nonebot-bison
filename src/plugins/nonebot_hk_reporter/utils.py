@@ -3,6 +3,7 @@ import base64
 from html import escape
 import os
 from time import asctime
+import re
 from typing import Awaitable, Callable, Optional
 
 from nonebot.adapters.cqhttp.message import MessageSegment
@@ -11,6 +12,8 @@ from pyppeteer import connect, launch
 from pyppeteer.browser import Browser
 from pyppeteer.chromium_downloader import check_chromium, download_chromium
 from pyppeteer.page import Page
+
+from bs4 import BeautifulSoup as bs
 
 from .plugin_config import plugin_config
 
@@ -121,3 +124,15 @@ async def parse_text(text: str) -> MessageSegment:
         return await render.text_to_pic_cqcode(text)
     else:
         return MessageSegment.text(text)
+
+def html_to_text(html: str, query_dict: dict = {}) -> str:
+    html = re.sub(r'<br\s*/?>', '<br>\n', html)
+    html = html.replace('</p>', '</p>\n')
+    soup = bs(html, 'html.parser')
+    if query_dict:
+        node = soup.find(**query_dict)
+    else:
+        node = soup
+    assert node is not None
+    return node.text.strip()
+

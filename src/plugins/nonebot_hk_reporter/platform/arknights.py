@@ -82,9 +82,13 @@ class AkVersion(NoTargetMixin, StatusChange):
     def compare_status(self, _, old_status, new_status):
         res = []
         if old_status.get('preAnnounceType') == 2 and new_status.get('preAnnounceType') == 0:
-            res.append(Post('arknights', text='开始维护！', target_name='明日方舟更新信息'))
+            res.append(Post('arknights',
+                text='登录界面维护公告上线（大概是开始维护了)',
+                target_name='明日方舟更新信息'))
         elif old_status.get('preAnnounceType') == 0 and new_status.get('preAnnounceType') == 2:
-            res.append(Post('arknights', text='维护结束！冲！（可能不太准确）', target_name='明日方舟更新信息'))
+            res.append(Post('arknights',
+                text='登录界面维护公告下线（大概是开服了，冲！）',
+                target_name='明日方舟更新信息'))
         if old_status.get('clientVersion') != new_status.get('clientVersion'):
             res.append(Post('arknights', text='游戏本体更新（大更新）', target_name='明日方舟更新信息'))
         if old_status.get('resVersion') != new_status.get('resVersion'):

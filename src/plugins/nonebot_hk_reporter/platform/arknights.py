@@ -53,6 +53,7 @@ class Arknights(NewMessage, NoTargetMixin):
             pic_data = await render.render(announce_url, viewport=viewport, target='div.main')
             if pic_data:
                 pics.append(pic_data)
+            else:
                 text = '图片渲染失败'
         elif (pic := soup.find('img', class_='banner-image')):
             pics.append(pic['src'])

@@ -241,7 +241,7 @@ class Platform(PlatformNameMixin, UserCustomFilterMixin, base=True):
         ...
 
 class NewMessage(
-        Platform, 
+        Platform,
         NewMessageProcessMixin,
         UserCustomFilterMixin,
         abstract=True
@@ -301,6 +301,33 @@ class StatusChange(
                         ))
                     res = await self.dispatch_user_post(target, diff, users)
             self.set_stored_data(target, new_status)
+            return res
+        except httpx.RequestError as err:
+            logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))
+            return []
+
+class SimplePost(
+        Platform,
+        MessageProcessMixin,
+        UserCustomFilterMixin,
+        StorageMixinProto,
+        abstract=True
+        ):
+    "Fetch a list of messages, dispatch it to different users"
+
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[User, list[Post]]]:
+        try:
+            new_posts = await self.get_sub_list(target)
+            if not new_posts:
+                return []
+            else:
+                for post in new_posts:
+                    logger.info('fetch new post from {} {}: {}'.format(
+                        self.platform_name,
+                        target if self.has_target else '-',
+                        self.get_id(post)))
+            res = await self.dispatch_user_post(target, new_posts, users)
+            self.parse_cache = {}
             return res
         except httpx.RequestError as err:
             logger.warning("network connection error: {}, url: {}".format(type(err), err.request.url))

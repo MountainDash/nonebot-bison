@@ -8,10 +8,10 @@ from httpx import Response
 if typing.TYPE_CHECKING:
     import sys
     sys.path.append('./src/plugins')
-    import nonebot_hk_reporter
+    import nonebot_bison
 
 @pytest.fixture
-def ncm_artist(plugin_module: 'nonebot_hk_reporter'):
+def ncm_artist(plugin_module: 'nonebot_bison'):
     return plugin_module.platform.platform_manager['ncm-artist']
 
 @pytest.fixture(scope='module')

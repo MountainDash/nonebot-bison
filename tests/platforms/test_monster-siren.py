@@ -7,12 +7,12 @@ import feedparser
 if typing.TYPE_CHECKING:
     import sys
     sys.path.append('./src/plugins')
-    import nonebot_hk_reporter
+    import nonebot_bison
 
 from .utils import get_json, get_file
 
 @pytest.fixture
-def monster_siren(plugin_module: 'nonebot_hk_reporter'):
+def monster_siren(plugin_module: 'nonebot_bison'):
     return plugin_module.platform.platform_manager['monster-siren']
 
 @pytest.fixture(scope='module')

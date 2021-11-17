@@ -21,7 +21,11 @@ def get_config_path() -> str:
         data_dir = path.join(working_dir, 'data')
     if not path.isdir(data_dir):
         os.makedirs(data_dir)
-    return path.join(data_dir, 'bison.json')
+    old_path = path.join(data_dir, 'hk_reporter.json')
+    new_path = path.join(data_dir, 'bison.json')
+    if os.path.exists(old_path) and not os.path.exists(new_path):
+        os.rename(old_path, new_path)
+    return new_path
 
 class NoSuchUserException(Exception):
     pass

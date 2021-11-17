@@ -33,7 +33,7 @@ async def do_send_msgs():
         LAST_SEND_TIME = time.time()
 
 async def send_msgs(bot, user, user_type, msgs):
-    if plugin_config.hk_reporter_use_queue:
+    if plugin_config.bison_use_queue:
         for msg in msgs:
             QUEUE.append((bot, user, user_type, msg, 2))
     else:

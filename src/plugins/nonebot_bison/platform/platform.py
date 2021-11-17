@@ -134,7 +134,7 @@ class MessageProcessMixin(PlatformNameMixin, CategoryMixin, ParsePostMixin, abst
             # if post_id in exists_posts_set:
             #     continue
             if (post_time := self.get_date(raw_post)) and time.time() - post_time > 2 * 60 * 60 and \
-                    plugin_config.hk_reporter_init_filter:
+                    plugin_config.bison_init_filter:
                 continue
             try:
                 self.get_category(raw_post)
@@ -157,7 +157,7 @@ class NewMessageProcessMixin(StorageMixinProto, MessageProcessMixin, abstract=Tr
         filtered_post = await self.filter_common(raw_post_list)
         store = self.get_stored_data(target) or self.MessageStorage(False, set())
         res = []
-        if not store.inited and plugin_config.hk_reporter_init_filter:
+        if not store.inited and plugin_config.bison_init_filter:
             # target not init
             for raw_post in filtered_post:
                 post_id = self.get_id(raw_post)

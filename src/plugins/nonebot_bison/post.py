@@ -29,7 +29,7 @@ class Post:
     def _use_pic(self):
         if not self.override_use_pic is None:
             return self.override_use_pic
-        return plugin_config.hk_reporter_use_pic
+        return plugin_config.bison_use_pic
 
     async def _pic_url_to_image(self, data: Union[str, bytes]) -> Image.Image:
         pic_buffer = BytesIO()

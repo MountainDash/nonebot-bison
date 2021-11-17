@@ -54,7 +54,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.handle()
     async def init_id(bot: Bot, event: Event, state: T_State):
         if platform_manager[state['platform']].has_target:
-            state['_prompt'] = '请输入订阅用户的id，详情查阅https://nonebot-hk-reporter.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid'
+            state['_prompt'] = '请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid'
         else:
             state['id'] = 'default'
             state['name'] = await platform_manager[state['platform']].get_target_name(Target(''))

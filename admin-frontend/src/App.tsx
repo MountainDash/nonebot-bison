@@ -41,7 +41,7 @@ function App() {
     <LoginContext.Provider value={{login: loginStatus, save}}>
       <GlobalConfContext.Provider value={globalConf}>
       { globalConf.loaded &&
-        <Router basename="/hk_reporter">
+        <Router basename="/bison">
           <Switch>
             <Route path="/auth/:code">
               <Auth />   

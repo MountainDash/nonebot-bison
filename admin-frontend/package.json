@@ -2,7 +2,7 @@
   "name": "admin-frontend",
   "version": "0.1.0",
   "private": true,
-  "homepage": "hk_reporter",
+  "homepage": "bison",
   "proxy": "http://localhost:8080",
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && cp -r -f build/* ../src/plugins/nonebot_hk_reporter/admin_page/dist",
+    "build": "react-scripts build && cp -r -f build/* ../src/plugins/nonebot_bison/admin_page/dist",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

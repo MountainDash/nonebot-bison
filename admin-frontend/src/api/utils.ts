@@ -2,7 +2,7 @@ import axios from "axios";
 // import { useContext } from 'react';
 // import { LoginContext } from "../utils/context";
 
-export const baseUrl = '/hk_reporter/api/'
+export const baseUrl = '/bison/api/'
 
 // const loginStatus = useContext(LoginContext);
 axios.interceptors.request.use(function (config) {

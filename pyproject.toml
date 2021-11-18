@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-bison"
-version = "0.3.3"
+version = "0.4.0"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"
@@ -40,11 +40,6 @@ coverage = "^5.5"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-
-# [[tool.poetry.source]]
-# name = "aliyun"
-# url = "https://mirrors.aliyun.com/pypi/simple/"
-# default = true
 
 [tool.pytest.ini_options]
 markers = [

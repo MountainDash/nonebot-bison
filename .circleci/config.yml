@@ -64,7 +64,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - "src/plugins/nonebot_hk_reporter/admin_page/dist/"
+            - "src/plugins/nonebot_bison/admin_page/dist/"
   test:
     docker:
       - image: cimg/python:3.9

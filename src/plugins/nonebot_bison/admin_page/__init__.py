@@ -23,7 +23,7 @@ from .token_manager import token_manager as tm
 from .jwt import load_jwt
 from ..plugin_config import plugin_config
 
-URL_BASE = '/hk_reporter/'
+URL_BASE = '/bison/'
 GLOBAL_CONF_URL = f'{URL_BASE}api/global_conf'
 AUTH_URL = f'{URL_BASE}api/auth'
 SUBSCRIBE_URL = f'{URL_BASE}api/subs'
@@ -76,7 +76,7 @@ def register_router_fastapi(driver: Driver, socketio):
     async def _add_group_subs(groupNumber: str, req: AddSubscribeReq):
         return await add_group_sub(group_number=groupNumber, platform_name=req.platformName,
                 target=req.target, target_name=req.targetName, cats=req.categories, tags=req.tags)
-    app.mount(URL_BASE, StaticFiles(directory=static_path, html=True), name="hk_reporter")
+    app.mount(URL_BASE, StaticFiles(directory=static_path, html=True), name="bison")
     templates = Jinja2Templates(directory=static_path)
 
     @app.get(f'{URL_BASE}{{rest_path:path}}')
@@ -110,5 +110,5 @@ async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):
         await get_token.finish('你不是管理员')
     else:
         token = tm.get_user_token((event.get_user_id(), event.sender.nickname))
-        await get_token.finish(f'请访问: {plugin_config.hk_reporter_outer_url}auth/{token}')
+        await get_token.finish(f'请访问: {plugin_config.bison_outer_url}auth/{token}')
 

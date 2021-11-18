@@ -29,7 +29,7 @@ class Post:
     def _use_pic(self):
         if not self.override_use_pic is None:
             return self.override_use_pic
-        return plugin_config.hk_reporter_use_pic
+        return plugin_config.bison_use_pic
 
     async def _pic_url_to_image(self, data: Union[str, bytes]) -> Image.Image:
         pic_buffer = BytesIO()
@@ -110,7 +110,10 @@ class Post:
             msgs = []
             text = ''
             if self.text:
-                text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
+                if self._use_pic():
+                    text += '{}'.format(self.text)
+                else:
+                    text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
             text += '\n来源: {}'.format(self.target_type)
             if self.target_name:
                 text += ' {}'.format(self.target_name)

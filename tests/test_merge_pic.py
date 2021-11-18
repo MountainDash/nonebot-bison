@@ -4,7 +4,7 @@ import typing
 if typing.TYPE_CHECKING:
     import sys
     sys.path.append('./src/plugins')
-    import nonebot_hk_reporter
+    import nonebot_bison
 
 merge_source_9 = [
         'https://wx1.sinaimg.cn/large/0071VPLMgy1gq0vib7zooj30dx0dxmz5.jpg',
@@ -23,7 +23,7 @@ merge_source_9 = [
     ]
 
 @pytest.mark.asyncio
-async def test_9_merge(plugin_module: 'nonebot_hk_reporter'):
+async def test_9_merge(plugin_module: 'nonebot_bison'):
     post = plugin_module.post.Post('', '', '', pics=merge_source_9)
     await post._pic_merge() 
     assert len(post.pics) == 5

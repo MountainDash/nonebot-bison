@@ -4,14 +4,14 @@ import typing
 if typing.TYPE_CHECKING:
     import sys
     sys.path.append('./src/plugins')
-    import nonebot_hk_reporter
+    import nonebot_bison
 
 @pytest.fixture
 def config(plugin_module):
     plugin_module.config.start_up()
     return plugin_module.config.Config()
 
-def test_create_and_get(config: 'nonebot_hk_reporter.config.Config', plugin_module: 'nonebot_hk_reporter'):
+def test_create_and_get(config: 'nonebot_bison.config.Config', plugin_module: 'nonebot_bison'):
     config.add_subscribe(
             user='123',
             user_type='group',

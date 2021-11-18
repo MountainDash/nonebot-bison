@@ -14,14 +14,18 @@ from .platform import platform_manager
 supported_target_type = platform_manager.keys()
 
 def get_config_path() -> str:
-    if plugin_config.hk_reporter_config_path:
-        data_dir = plugin_config.hk_reporter_config_path
+    if plugin_config.bison_config_path:
+        data_dir = plugin_config.bison_config_path
     else:
         working_dir = os.getcwd()
         data_dir = path.join(working_dir, 'data')
     if not path.isdir(data_dir):
         os.makedirs(data_dir)
-    return path.join(data_dir, 'hk_reporter.json')
+    old_path = path.join(data_dir, 'hk_reporter.json')
+    new_path = path.join(data_dir, 'bison.json')
+    if os.path.exists(old_path) and not os.path.exists(new_path):
+        os.rename(old_path, new_path)
+    return new_path
 
 class NoSuchUserException(Exception):
     pass

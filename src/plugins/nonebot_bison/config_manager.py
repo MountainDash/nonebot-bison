@@ -10,9 +10,13 @@ from nonebot.matcher import Matcher
 
 from .config import Config, NoSuchSubscribeException
 from .platform import platform_manager, check_sub_target
-from .send import send_msgs
 from .utils import parse_text
 from .types import Target
+
+def _gen_prompt_template(prompt: str):
+    if hasattr(Message, 'template'):
+        return Message.template(prompt)
+    return prompt
 
 common_platform = [p.platform_name for p in \
         filter(lambda platform: platform.enabled and platform.is_common,
@@ -29,7 +33,7 @@ async def send_help(bot: Bot, event: Event, state: T_State):
 def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.handle()
     async def init_promote(bot: Bot, event: Event, state: T_State):
-        state['_prompt'] = '请输入想要订阅的平台，目前支持：\n' + \
+        state['_prompt'] = '请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n' + \
                 ''.join(['{}：{}\n'.format(platform_name, platform_manager[platform_name].name) \
                         for platform_name in common_platform]) + \
                 '要查看全部平台请输入：“全部”'
@@ -46,11 +50,11 @@ def do_add_sub(add_sub: Type[Matcher]):
         else:
             await add_sub.reject('平台输入错误')
 
-    @add_sub.got('platform', '{_prompt}', parse_platform)
+    @add_sub.got('platform', _gen_prompt_template('{_prompt}'), parse_platform)
     @add_sub.handle()
     async def init_id(bot: Bot, event: Event, state: T_State):
         if platform_manager[state['platform']].has_target:
-            state['_prompt'] = '请输入订阅用户的id，详情查阅https://nonebot-hk-reporter.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid'
+            state['_prompt'] = '请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid'
         else:
             state['id'] = 'default'
             state['name'] = await platform_manager[state['platform']].get_target_name(Target(''))
@@ -63,14 +67,14 @@ def do_add_sub(add_sub: Type[Matcher]):
         state['id'] = target
         state['name'] = name
 
-    @add_sub.got('id', '{_prompt}', parse_id)
+    @add_sub.got('id', _gen_prompt_template('{_prompt}'), parse_id)
     @add_sub.handle()
     async def init_cat(bot: Bot, event: Event, state: T_State):
         if not platform_manager[state['platform']].categories:
             state['cats'] = []
             return
         state['_prompt'] = '请输入要订阅的类别，以空格分隔，支持的类别有：{}'.format(
-                ','.join(list(platform_manager[state['platform']].categories.values())))
+                ' '.join(list(platform_manager[state['platform']].categories.values())))
 
     async def parser_cats(bot: Bot, event: Event, state: T_State):
         res = []
@@ -80,7 +84,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             res.append(platform_manager[state['platform']].reverse_category[cat])
         state['cats'] = res
 
-    @add_sub.got('cats', '{_prompt}', parser_cats)
+    @add_sub.got('cats', _gen_prompt_template('{_prompt}'), parser_cats)
     @add_sub.handle()
     async def init_tag(bot: Bot, event: Event, state: T_State):
         if not platform_manager[state['platform']].enable_tag:
@@ -94,7 +98,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         else:
             state['tags'] = str(event.get_message()).strip().split()
 
-    @add_sub.got('tags', '{_prompt}', parser_tags)
+    @add_sub.got('tags', _gen_prompt_template('{_prompt}'), parser_tags)
     @add_sub.handle()
     async def add_sub_process(bot: Bot, event: Event, state: T_State):
         config = Config()
@@ -118,7 +122,6 @@ def do_query_sub(query_sub: Type[Matcher]):
             if platform.enable_tag:
                 res += ' {}'.format(', '.join(sub['tags']))
             res += '\n'
-        # send_msgs(bot, event.group_id, 'group', [await parse_text(res)])
         await query_sub.finish(Message(await parse_text(res)))
 
 def do_del_sub(del_sub: Type[Matcher]):

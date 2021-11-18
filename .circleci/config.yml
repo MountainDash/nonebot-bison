@@ -9,6 +9,7 @@ orbs:
   node: circleci/node@4.7.0
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
+  docker: circleci/docker@1.7.0
 
 workflows:
   build-test-publish:
@@ -31,6 +32,21 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
+      - docker/publish:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          context: 
+            - docker
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: latest,${CIRCLE_TAG}
+          update-description: true
+          docker-username: DOCKERHUB_USERNAME
+          docker-password: DOCKERHUB_PASSWORD
 
 jobs:
   build-frontend:
@@ -54,7 +70,7 @@ jobs:
       - image: cimg/python:3.9
       - image: browserless/chrome
     environment:
-      HK_REPORTER_BROWSER: ws://localhost:3000
+      BISON_BROWSER: ws://localhost:3000
     steps:
       - checkout
       # - run: sed -e '41,45d' -i pyproject.toml

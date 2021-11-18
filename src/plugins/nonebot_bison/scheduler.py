@@ -11,6 +11,7 @@ from .platform import platform_manager
 from .send import do_send_msgs
 from .send import send_msgs
 from .types import UserSubInfo
+from .plugin_config import plugin_config
 
 scheduler = AsyncIOScheduler()
 
@@ -43,7 +44,7 @@ async def fetch_and_send(target_type: str):
             if not bot:
                 logger.warning('no bot connected')
             else:
-                send_msgs(bot, user.user, user.user_type, await send_post.generate_messages())
+                await send_msgs(bot, user.user, user.user_type, await send_post.generate_messages())
 
 for platform_name, platform in platform_manager.items():
     if platform.schedule_type in ['cron', 'interval', 'date']:
@@ -52,16 +53,17 @@ for platform_name, platform in platform_manager.items():
                 fetch_and_send, platform.schedule_type, **platform.schedule_kw,
                 args=(platform_name,))
 
-scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalesce=True)
+if plugin_config.bison_use_queue:
+    scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalesce=True)
 
-class SchedulerLogFilter(logging.Filter):
+    class SchedulerLogFilter(logging.Filter):
 
-    def filter(self, record: logging.LogRecord) -> bool:
-        logger.debug("logRecord", record, record.getMessage())
-        return not (record.name == "apscheduler" and 'skipped: maximum number of running instances reached' in record.getMessage())
+        def filter(self, record: logging.LogRecord) -> bool:
+            logger.debug("logRecord", record, record.getMessage())
+            return not (record.name == "apscheduler" and 'skipped: maximum number of running instances reached' in record.getMessage())
 
-aps_logger = logging.getLogger("apscheduler")
-aps_logger.setLevel(30)
-aps_logger.addFilter(SchedulerLogFilter())
-aps_logger.handlers.clear()
-aps_logger.addHandler(LoguruHandler())
+    aps_logger = logging.getLogger("apscheduler")
+    aps_logger.setLevel(30)
+    aps_logger.addFilter(SchedulerLogFilter())
+    aps_logger.handlers.clear()
+    aps_logger.addHandler(LoguruHandler())

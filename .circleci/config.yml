@@ -51,7 +51,7 @@ workflows:
 jobs:
   build-frontend:
     docker:
-      - image: cimg/node:17.1.0
+      - image: cimg/node:v16.11.1
     steps:
       - checkout
       - node/install-packages:

@@ -7,9 +7,9 @@ import pytest
 if typing.TYPE_CHECKING:
     import sys
     sys.path.append('./src/plugins')
-    import nonebot_hk_reporter
-    from nonebot_hk_reporter.types import *
-    from nonebot_hk_reporter.post import Post
+    import nonebot_bison
+    from nonebot_bison.types import *
+    from nonebot_bison.post import Post
 
 from time import time
 now = time()
@@ -26,18 +26,18 @@ raw_post_list_2 = raw_post_list_1 + [
         ]
 
 @pytest.fixture
-def dummy_user(plugin_module: 'nonebot_hk_reporter'):
+def dummy_user(plugin_module: 'nonebot_bison'):
     user = plugin_module.types.User('123', 'group')
     return user
 
 @pytest.fixture
-def user_info_factory(plugin_module: 'nonebot_hk_reporter', dummy_user):
+def user_info_factory(plugin_module: 'nonebot_bison', dummy_user):
     def _user_info(category_getter, tag_getter):
         return plugin_module.types.UserSubInfo(dummy_user, category_getter, tag_getter)
     return _user_info
 
 @pytest.fixture
-def mock_platform_without_cats_tags(plugin_module: 'nonebot_hk_reporter'):
+def mock_platform_without_cats_tags(plugin_module: 'nonebot_bison'):
     class MockPlatform(plugin_module.platform.platform.NewMessage,
             plugin_module.platform.platform.TargetMixin):
 
@@ -76,7 +76,7 @@ def mock_platform_without_cats_tags(plugin_module: 'nonebot_hk_reporter'):
     return MockPlatform()
 
 @pytest.fixture
-def mock_platform(plugin_module: 'nonebot_hk_reporter'):
+def mock_platform(plugin_module: 'nonebot_bison'):
     class MockPlatform(plugin_module.platform.platform.NewMessage,
             plugin_module.platform.platform.TargetMixin):
 
@@ -123,7 +123,7 @@ def mock_platform(plugin_module: 'nonebot_hk_reporter'):
     return MockPlatform()
 
 @pytest.fixture
-def mock_platform_no_target(plugin_module: 'nonebot_hk_reporter'):
+def mock_platform_no_target(plugin_module: 'nonebot_bison'):
     class MockPlatform(plugin_module.platform.platform.NewMessage,
             plugin_module.platform.platform.NoTargetMixin):
 
@@ -174,7 +174,7 @@ def mock_platform_no_target(plugin_module: 'nonebot_hk_reporter'):
     return MockPlatform()
 
 @pytest.fixture
-def mock_platform_no_target_2(plugin_module: 'nonebot_hk_reporter'):
+def mock_platform_no_target_2(plugin_module: 'nonebot_bison'):
     class MockPlatform(plugin_module.platform.platform.NewMessage,
             plugin_module.platform.platform.NoTargetMixin):
 
@@ -230,7 +230,7 @@ def mock_platform_no_target_2(plugin_module: 'nonebot_hk_reporter'):
     return MockPlatform()
 
 @pytest.fixture
-def mock_status_change(plugin_module: 'nonebot_hk_reporter'):
+def mock_status_change(plugin_module: 'nonebot_bison'):
     class MockPlatform(plugin_module.platform.platform.StatusChange,
             plugin_module.platform.platform.NoTargetMixin):
 
@@ -359,7 +359,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert(len(res4) == 0)
 
 @pytest.mark.asyncio
-async def test_group(plugin_module: 'nonebot_hk_reporter', mock_platform_no_target, mock_platform_no_target_2, user_info_factory):
+async def test_group(plugin_module: 'nonebot_bison', mock_platform_no_target, mock_platform_no_target_2, user_info_factory):
     group_platform = plugin_module.platform.platform.NoTargetGroup([mock_platform_no_target, mock_platform_no_target_2])
     res1 = await group_platform.fetch_new_post('dummy', [user_info_factory(lambda _: [1,4], lambda _: [])])
     assert(len(res1) == 0)

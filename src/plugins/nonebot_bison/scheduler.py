@@ -53,7 +53,7 @@ for platform_name, platform in platform_manager.items():
                 fetch_and_send, platform.schedule_type, **platform.schedule_kw,
                 args=(platform_name,))
 
-if plugin_config.hk_reporter_use_queue:
+if plugin_config.bison_use_queue:
     scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalesce=True)
 
     class SchedulerLogFilter(logging.Filter):

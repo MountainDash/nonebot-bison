@@ -24,7 +24,7 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-if not plugin_config.hk_reporter_browser and not plugin_config.hk_reporter_use_local \
+if not plugin_config.bison_browser and not plugin_config.bison_use_local \
         and not check_chromium():
     os.environ['PYPPETEER_DOWNLOAD_HOST'] = 'http://npm.taobao.org/mirrors'
     download_chromium()
@@ -38,15 +38,15 @@ class Render(metaclass=Singleton):
         self.remote_browser = False
 
     async def get_browser(self) -> Browser:
-        if plugin_config.hk_reporter_browser:
-            if plugin_config.hk_reporter_browser.startswith('local:'):
-                path = plugin_config.hk_reporter_browser.split('local:', 1)[1]
+        if plugin_config.bison_browser:
+            if plugin_config.bison_browser.startswith('local:'):
+                path = plugin_config.bison_browser.split('local:', 1)[1]
                 return await launch(executablePath=path, args=['--no-sandbox'])
-            if plugin_config.hk_reporter_browser.startswith('ws:'):
+            if plugin_config.bison_browser.startswith('ws:'):
                 self.remote_browser = True
-                return await connect(browserWSEndpoint=plugin_config.hk_reporter_browser)
-            raise RuntimeError('HK_REPORTER_BROWSER error')
-        if plugin_config.hk_reporter_use_local:
+                return await connect(browserWSEndpoint=plugin_config.bison_browser)
+            raise RuntimeError('bison_BROWSER error')
+        if plugin_config.bison_use_local:
             return await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
         return await launch(args=['--no-sandbox'])
 
@@ -119,7 +119,7 @@ class Render(metaclass=Singleton):
 
 async def parse_text(text: str) -> MessageSegment:
     'return raw text if don\'t use pic, otherwise return rendered opcode'
-    if plugin_config.hk_reporter_use_pic:
+    if plugin_config.bison_use_pic:
         render = Render()
         return await render.text_to_pic_cqcode(text)
     else:

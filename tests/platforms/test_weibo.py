@@ -9,12 +9,12 @@ import feedparser
 if typing.TYPE_CHECKING:
     import sys
     sys.path.append('./src/plugins')
-    import nonebot_hk_reporter
+    import nonebot_bison
 
 from .utils import get_json, get_file
 
 @pytest.fixture
-def weibo(plugin_module: 'nonebot_hk_reporter'):
+def weibo(plugin_module: 'nonebot_bison'):
     return plugin_module.platform.platform_manager['weibo']
 
 @pytest.fixture(scope='module')

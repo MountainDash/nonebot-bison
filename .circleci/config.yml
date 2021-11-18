@@ -76,9 +76,6 @@ jobs:
       # - run: sed -e '41,45d' -i pyproject.toml
       - python/install-packages:
           pkg-manager: poetry
-      - node/run:
-          app-dir: ./admin-frontend
-          yarn-run: build
       - run:
           name: Coverage test
           command: poetry run coverage run -m pytest --junitxml=test-results/junit.xml -k 'not compare'

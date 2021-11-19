@@ -22,6 +22,6 @@ export function Auth() {
       }
     }
     loginFun();
-  }, [])
+  }, [code, save])
   return content;
 }

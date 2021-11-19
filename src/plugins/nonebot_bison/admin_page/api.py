@@ -1,7 +1,7 @@
 from ..platform import platform_manager, check_sub_target
 from .token_manager import token_manager
 from .jwt import pack_jwt
-from ..config import Config
+from ..config import Config, NoSuchSubscribeException, NoSuchUserException
 import nonebot
 from nonebot.adapters.cqhttp.bot import Bot
 
@@ -53,7 +53,7 @@ async def get_subs_info(jwt_obj: dict):
         group_id = group['id']
         config = Config()
         subs = list(map(lambda sub: {
-            'targetType': sub['target_type'], 'target': sub['target'], 'targetName': sub['target_name'], 'cats': sub['cats'], 'tags': sub['tags']
+            'platformName': sub['target_type'], 'target': sub['target'], 'targetName': sub['target_name'], 'cats': sub['cats'], 'tags': sub['tags']
             }, config.list_subscribe(group_id, 'group')))
         res[group_id] = {
             'name': group['name'],
@@ -67,6 +67,13 @@ async def get_target_name(platform_name: str, target: str, jwt_obj: dict):
 async def add_group_sub(group_number: str, platform_name: str, target: str, 
         target_name: str, cats: list[str], tags: list[str]):
     config = Config()
-    config.add_subscribe(group_number, 'group', target, target_name, platform_name, cats, tags)
+    config.add_subscribe(int(group_number), 'group', target, target_name, platform_name, cats, tags)
     return { 'status': 200, 'msg': '' }
 
+async def del_group_sub(group_number: str, platform_name: str, target: str):
+    config = Config()
+    try:
+        config.del_subscribe(int(group_number), 'group', target, platform_name) 
+    except (NoSuchUserException, NoSuchSubscribeException):
+        return { 'status': 400, 'msg': '删除错误' }
+    return { 'status': 200, 'msg': '' }

@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-import importlib
 from pathlib import Path
-from typing import Callable
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -18,7 +16,7 @@ import functools
 
 from starlette.requests import Request
 
-from .api import test, get_global_conf, auth, get_subs_info, get_target_name, add_group_sub
+from .api import del_group_sub, test, get_global_conf, auth, get_subs_info, get_target_name, add_group_sub
 from .token_manager import token_manager as tm
 from .jwt import load_jwt
 from ..plugin_config import plugin_config
@@ -49,8 +47,10 @@ def register_router_fastapi(driver: Driver, socketio):
 
     async def check_group_permission(groupNumber: str, token_obj: dict = Depends(get_jwt_obj)):
         groups = token_obj['groups']
-        if groupNumber not in groups:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        for group in groups:
+            if int(groupNumber) == group['id']:
+                return
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     @dataclass
     class AddSubscribeReq:
@@ -76,6 +76,9 @@ def register_router_fastapi(driver: Driver, socketio):
     async def _add_group_subs(groupNumber: str, req: AddSubscribeReq):
         return await add_group_sub(group_number=groupNumber, platform_name=req.platformName,
                 target=req.target, target_name=req.targetName, cats=req.categories, tags=req.tags)
+    @app.delete(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
+    async def _del_group_subs(groupNumber: str, target: str, platformName: str):
+        return await del_group_sub(groupNumber, platformName, target)
     app.mount(URL_BASE, StaticFiles(directory=static_path, html=True), name="bison")
     templates = Jinja2Templates(directory=static_path)
 

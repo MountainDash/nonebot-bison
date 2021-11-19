@@ -107,7 +107,7 @@ export function InputTag(prop: InputTagProp) {
           onPressEnter={handleInputConfirm} />
       )}
       {!inputVisible && (
-        <Tag className="site-tag-plus" onClick={showInput} style={{background: '#fff', border: 'dashed'}}>
+        <Tag className="site-tag-plus" onClick={showInput} style={{background: '#fff', border: 'dashed thin', borderColor: '#bfbfbf' }}>
           <PlusOutlined/> {prop.addText || "Add Tag"}
         </Tag>
       )}

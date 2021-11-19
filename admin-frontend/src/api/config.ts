@@ -26,3 +26,8 @@ export async function addSubscribe(groupNumber: string, req: CreateSubscribeReq)
   const res = await axios.post(`${baseUrl}subs`, req, {params: {groupNumber}})
   return res.data;
 }
+
+export async function delSubscribe(groupNumber: string, platformName: string, target: string) {
+  const res = await axios.delete(`${baseUrl}subs`, {params: {groupNumber, platformName, target}});
+  return res.data;
+}

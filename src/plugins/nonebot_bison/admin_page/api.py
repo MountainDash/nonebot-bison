@@ -20,6 +20,17 @@ async def get_global_conf():
             }
     return { 'platformConf': res }
 
+async def get_admin_groups(qq: int):
+    bot = nonebot.get_bot()
+    groups = await bot.call_api('get_group_list')
+    res = []
+    for group in groups:
+        group_id = group['group_id']
+        users = await bot.call_api('get_group_member_list', group_id=group_id)
+        for user in users:
+            if user['user_id'] == qq and user['role'] in ('owner', 'admin'):
+                res.append({'id': group_id, 'name': group['group_name']})
+    return res
 
 async def auth(token: str):
     if qq_tuple := token_manager.get_user(token):
@@ -36,6 +47,18 @@ async def auth(token: str):
                     }
             ret_obj = {
                     'type': 'admin',
+                    'name': nickname,
+                    'id': str(qq),
+                    'token': pack_jwt(jwt_obj)
+                    }
+            return { 'status': 200, **ret_obj }
+        if admin_groups := await get_admin_groups(int(qq)):
+            jwt_obj = {
+                    'id': str(qq),
+                    'groups': admin_groups
+                    }
+            ret_obj = {
+                    'type': 'user',
                     'name': nickname,
                     'id': str(qq),
                     'token': pack_jwt(jwt_obj)

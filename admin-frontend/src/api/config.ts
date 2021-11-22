@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GlobalConf, TokenResp, SubscribeResp, TargetNameResp, CreateSubscribeReq } from "../utils/type";
+import { GlobalConf, TokenResp, SubscribeResp, TargetNameResp, SubscribeConfig } from "../utils/type";
 import { baseUrl } from './utils';
 
 export async function getGlobalConf(): Promise<GlobalConf> {
@@ -22,7 +22,7 @@ export async function getTargetName(platformName: string, target: string): Promi
   return res.data;
 }
 
-export async function addSubscribe(groupNumber: string, req: CreateSubscribeReq) {
+export async function addSubscribe(groupNumber: string, req: SubscribeConfig) {
   const res = await axios.post(`${baseUrl}subs`, req, {params: {groupNumber}})
   return res.data;
 }

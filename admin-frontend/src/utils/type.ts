@@ -19,7 +19,7 @@ export type LoginContextType = {
 
 export interface SubscribeConfig {
   platformName: string
-  target?: string
+  target: string
   targetName: string
   cats: Array<number>
   tags: Array<string>
@@ -65,12 +65,4 @@ export interface SubscribeResp {
 
 export interface TargetNameResp {
   targetName: string
-}
-
-export interface CreateSubscribeReq {
-  platformName: string,
-  targetName: string,
-  target: string,
-  categories: Array<string>,
-  tags: Array<string>
 }

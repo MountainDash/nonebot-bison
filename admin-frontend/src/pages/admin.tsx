@@ -1,7 +1,7 @@
-import React, { ReactElement, useContext, useEffect, useState } from "react";
+import React, { FC, ReactElement, ReactNode, useContext, useEffect, useState } from "react";
 import { LoginContext, GlobalConfContext } from "../utils/context";
 import { Layout, Menu, Empty, Collapse, Card, Tag, Row, Col, Form, Tooltip, Button, Modal, Select,
-  Input, Popconfirm} from 'antd';
+  Input, Popconfirm, message } from 'antd';
 import { SubscribeConfig, SubscribeResp, PlatformConfig, CategoryConfig } from '../utils/type';
 import { SettingOutlined, BugOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/icons';
 import { getSubscribe, getTargetName, addSubscribe, delSubscribe } from '../api/config';
@@ -74,7 +74,9 @@ function ConfigPage(prop: ConfigPageProp) {
             onConfirm={handleDelete(groupNumber, config.platformName, config.target || 'default')}>
             <Tooltip title="删除" ><DeleteOutlined /></Tooltip>
           </Popconfirm>, 
-          <Tooltip title="添加到其他群"><CopyOutlined /></Tooltip>
+          <TargetGroupSelection config={config} groups={configData}>
+            <Tooltip title="添加到其他群"><CopyOutlined /></Tooltip>
+          </TargetGroupSelection>
           ]}>
         <Form labelCol={{ span: 6 }}>
         <Form.Item label="订阅类型">
@@ -117,6 +119,43 @@ function ConfigPage(prop: ConfigPageProp) {
     </div>
     )
   }
+}
+
+interface TargetGroupSelectionProp {
+  config: SubscribeConfig,
+  groups: SubscribeResp
+  children: ReactNode
+}
+function TargetGroupSelection({ config, groups, children }: TargetGroupSelectionProp) {
+  let [ selectedGroups, setSelectGroups ] = useState<Array<string>>([]);
+  const submitCopy = () => {
+    let promise = null
+    for (let selectGroup of selectedGroups) {
+      if (! promise) {
+        promise = addSubscribe(selectGroup, config)
+      } else {
+        promise = promise.then(() => addSubscribe(selectGroup, config))
+      }
+    }
+    if (promise) {
+      promise.then(() => message.success("复制订阅成功"))
+    }
+    return promise;
+  }
+  return <>
+    <Popconfirm title={
+        <Select mode="multiple" onChange={(value: Array<string>) => setSelectGroups(value)}>
+          {
+            Object.keys(groups).map((groupNumber) => 
+              <Select.Option value={groupNumber} key={groupNumber}>
+                {`${groupNumber} - ${groups[groupNumber].name}`}
+              </Select.Option>)
+            }
+        </Select>
+      } onConfirm={submitCopy} >
+      { children }
+    </Popconfirm>
+  </>
 }
 
 interface InputTagCustomProp {

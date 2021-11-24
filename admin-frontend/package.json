@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.175",
-    "@types/react-router-dom": "^5.3.0"
+    "@types/react-router-dom": "^5.3.0",
+    "react-app-rewired": "^2.1.8"
   }
 }

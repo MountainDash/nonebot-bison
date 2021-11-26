@@ -30,6 +30,8 @@ SUBSCRIBE_URL = f'{URL_BASE}api/subs'
 GET_TARGET_NAME_URL = f'{URL_BASE}api/target_name'
 TEST_URL = f'{URL_BASE}test'
 
+STATIC_PATH = (Path(__file__).parent / "dist").resolve()
+
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 socket_app = socketio.ASGIApp(sio, socketio_path="socket")
 
@@ -70,11 +72,11 @@ def register_router_fastapi(driver: Driver, socketio):
         platformName: str
         target: str
         targetName: str
-        categories: list[str]
+        cats: list[str]
         tags: list[str]
 
     app = driver.server_app
-    static_path = (Path(__file__).parent / "dist").resolve()
+    static_path = STATIC_PATH
     app.get(TEST_URL)(test)
     app.get(GLOBAL_CONF_URL)(get_global_conf)
     app.get(AUTH_URL)(auth)
@@ -88,7 +90,7 @@ def register_router_fastapi(driver: Driver, socketio):
     @app.post(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
     async def _add_group_subs(groupNumber: str, req: AddSubscribeReq):
         return await add_group_sub(group_number=groupNumber, platform_name=req.platformName,
-                target=req.target, target_name=req.targetName, cats=req.categories, tags=req.tags)
+                target=req.target, target_name=req.targetName, cats=req.cats, tags=req.tags)
 
     @app.delete(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
     async def _del_group_subs(groupNumber: str, target: str, platformName: str):
@@ -112,12 +114,14 @@ def init():
     logger.opt(colors=True).info(f"Nonebot test frontend will be running at: "
                                  f"<b><u>http://{host}:{port}{URL_BASE}</u></b>")
 
-init()
+if (STATIC_PATH / 'index.html').exists():
+    init()
 
-get_token = on_command('后台管理', rule=to_me(), priority=5)
-@get_token.handle()
-async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):
-    driver = nonebot.get_driver()
-    token = tm.get_user_token((event.get_user_id(), event.sender.nickname))
-    await get_token.finish(f'请访问: {plugin_config.bison_outer_url}auth/{token}')
-
+    get_token = on_command('后台管理', rule=to_me(), priority=5)
+    @get_token.handle()
+    async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):
+        driver = nonebot.get_driver()
+        token = tm.get_user_token((event.get_user_id(), event.sender.nickname))
+        await get_token.finish(f'请访问: {plugin_config.bison_outer_url}auth/{token}')
+else:
+    logger.warning("Frontend file not found, please compile it or use docker or pypi version")

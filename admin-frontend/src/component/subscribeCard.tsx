@@ -39,7 +39,7 @@ function CopyModal({setShowModal,config,
         <Select mode="multiple" onChange={(value: Array<string>) => setSelectGroups(value)} 
           style={{width: '80%'}}>
           {
-            Object.keys(groups).filter(groupNumber => groupNumber != currentGroupNumber)
+            Object.keys(groups).filter(groupNumber => groupNumber !== currentGroupNumber)
               .map((groupNumber) =>
               <Select.Option value={groupNumber} key={groupNumber}>
                 {`${groupNumber} - ${groups[groupNumber].name}`}

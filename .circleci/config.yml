@@ -32,7 +32,7 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
-      - docker/publish:
+      - docker/publish: &docker-push
           requires:
             - test
           filters:
@@ -47,6 +47,12 @@ workflows:
           update-description: true
           docker-username: DOCKERHUB_USERNAME
           docker-password: DOCKERHUB_PASSWORD
+      - docker/publish:
+          <<: *docker-push
+          filters:
+            tags:
+              ignore: /.*/
+          tag: ${CIRCLE_BRANCH}
 
 jobs:
   build-frontend:

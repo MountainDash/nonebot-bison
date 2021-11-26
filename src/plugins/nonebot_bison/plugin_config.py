@@ -11,6 +11,7 @@ class PlugConfig(BaseSettings):
     bison_browser: str = ''
     bison_init_filter: bool = True
     bison_use_queue: bool = True
+    bison_outer_url: str = 'http://localhost:8080/bison/'
 
     class Config:
         extra = 'ignore'

@@ -6,6 +6,7 @@ orbs:
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.4
+  node: circleci/node@4.7.0
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
   docker: circleci/docker@1.7.0
@@ -13,7 +14,13 @@ orbs:
 workflows:
   build-test-publish:
     jobs:
+      - build-frontend:
+          filters:
+            tags:
+              only: /.*/
       - test:
+          requires:
+            - build-frontend
           filters:
             tags:
               only: /.*/
@@ -25,7 +32,7 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
-      - docker/publish:
+      - docker/publish: &docker-push
           requires:
             - test
           filters:
@@ -40,8 +47,30 @@ workflows:
           update-description: true
           docker-username: DOCKERHUB_USERNAME
           docker-password: DOCKERHUB_PASSWORD
+      - docker/publish:
+          <<: *docker-push
+          filters:
+            tags:
+              ignore: /.*/
+          tag: ${CIRCLE_BRANCH}
 
 jobs:
+  build-frontend:
+    docker:
+      - image: cimg/node:16.13.0
+    steps:
+      - checkout
+      - node/install-packages:
+          app-dir: ./admin-frontend
+          pkg-manager: yarn
+      - run:
+          name: yarn build
+          working_directory: ./admin-frontend
+          command: yarn build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "src/plugins/nonebot_bison/admin_page/dist/"
   test:
     docker:
       - image: cimg/python:3.9

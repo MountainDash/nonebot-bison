@@ -318,3 +318,4 @@ dist
 data*/*
 .env.*
 .vim/*
+!dist/.gitkeep

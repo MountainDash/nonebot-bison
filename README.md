@@ -37,8 +37,16 @@
 * 定时爬取指定网站
 * 通过图片发送文本，防止风控
 * 使用队列限制发送频率
+* 使用网页后台管理Bot订阅
 
 ## 使用方法
+**!!注意，如果要使用后台管理功能请使用pypi版本或者docker版本，如果直接clone源代码
+需要按下面方式进行build**
+```bash
+cd ./admin-frontend
+yarn && yarn build
+```
+可以使用Docker，docker-compose，作为插件安装在nonebot中，或者直接运行  
 参考[文档](https://nonebot-bison.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
 
 ## FAQ

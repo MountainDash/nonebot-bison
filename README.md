@@ -1,18 +1,24 @@
 <div align="center">
-<h1>hk-reporter </br>通用订阅推送插件</h1>
+<h1>Bison </br>通用订阅推送插件</h1>
 
 
-
-[![pypi](https://badgen.net/pypi/v/nonebot-hk-reporter)](https://pypi.org/project/nonebot-hk-reporter/)
-[![felinae98](https://circleci.com/gh/felinae98/nonebot-hk-reporter.svg?style=shield)](https://circleci.com/gh/felinae98/nonebot-hk-reporter)
+[![pypi](https://badgen.net/pypi/v/nonebot-bison)](https://pypi.org/project/nonebot-bison/)
+[![felinae98](https://circleci.com/gh/felinae98/nonebot-bison.svg?style=shield)](https://circleci.com/gh/felinae98/nonebot-bison)
 [![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange )](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)
 
-[文档](https://nonebot-hk-reporter.vercel.app)|[开发文档](https://nonebot-hk-reporter.vercel.app/dev)
+[文档](https://nonebot-bison.vercel.app)|[开发文档](https://nonebot-bison.vercel.app/dev)
 </div>
 
 ## 简介
-一款自动爬取各种站点，社交平台更新动态，并将信息推送到QQ的机器人。基于 [`NoneBot2`](https://github.com/nonebot/nonebot2 ) 开发（诞生于明日方舟的蹲饼活动）
+一款自动爬取各种站点，社交平台更新动态，并将信息推送到QQ的机器人。
+基于 [`NoneBot2`](https://github.com/nonebot/nonebot2 ) 开发（诞生于明日方舟的蹲饼活动）
+<details>
+<summary>本项目原名原名nonebot-hk-reporter</summary>
 
+寓意本Bot要做全世界跑的最快的搬运机器人，后因名字过于暴力改名
+
+</details>
+本项目名称来源于明日方舟角色拜松——一名龙门的信使，曾经骑自行车追上骑摩托车的德克萨斯
 
 支持的平台：
 * 微博
@@ -23,6 +29,8 @@
   * 游戏内公告
   * 版本更新等通知
 * 网易云音乐
+  * 歌手发布新专辑
+  * 电台更新
 
 
 ## 功能
@@ -31,7 +39,7 @@
 * 使用队列限制发送频率
 
 ## 使用方法
-参考[文档](https://nonebot-hk-reporter.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
+参考[文档](https://nonebot-bison.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
 
 ## FAQ
 1. 报错`TypeError: 'type' object is not subscriptable`  

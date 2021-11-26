@@ -8,14 +8,18 @@ homepage = "https://github.com/felinae98/nonebot-bison"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"
 packages = [
-    { include = "nonebot_bison/*.py", from = "./src/plugins/" },
-    { include = "nonebot_bison/platform/*.py", from = "./src/plugins/" }
+    { include = "nonebot_bison", from = "./src/plugins/" }
+]
+include = [
+    "src/plugins/nonebot_bison/admin_page/dist/**/*"
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: Implementation :: CPython"
+    "Programming Language :: Python :: Implementation :: CPython",
+    "License :: OSI Approved :: MIT License"
 ]
 
 [tool.poetry.dependencies]

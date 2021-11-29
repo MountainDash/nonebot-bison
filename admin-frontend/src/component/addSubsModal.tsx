@@ -26,7 +26,7 @@ function InputTagCustom(prop: InputTagCustomProp) {
   return (
     <>
       {
-        prop.disabled ? <Tag color="red">不支持标签</Tag>: 
+        prop.disabled ? <Tag color="default">不支持标签</Tag>: 
         <>
         {value.length === 0 &&
           <Tag color="green">全部标签</Tag>
@@ -77,8 +77,11 @@ export function AddModal({
   }
   const handleSubmit = (value: any) => {
     let newVal = Object.assign({}, value)
-    if (typeof newVal.tags != 'object') {
+    if (typeof newVal.tags !== 'object') {
       newVal.tags = []
+    }
+    if (typeof newVal.cats !== 'object') {
+      newVal.cats = []
     }
     if (newVal.target === '') {
       newVal.target = 'default'

@@ -37,7 +37,8 @@ export function ConfigPage(prop: ConfigPageProp) {
         <Collapse.Panel key={key} header={
           <span>{`${key} - ${value.name}`}<Button style={{float: "right"}} onClick={clickNew(key)}>添加</Button></span>
           }>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align="middle">
+            <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32},
+              { xs: 8, sm: 16, md: 24, lg: 32}]} align="middle">
             {value.subscribes.map((subs, idx) => <SubscribeCard key={idx}
               groupNumber={key} config={subs} groupSubscribes={configData} reload={loadData}
               />)}

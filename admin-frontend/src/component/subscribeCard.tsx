@@ -67,7 +67,7 @@ export function SubscribeCard({groupNumber, config, reload, groupSubscribes}: Su
     })
   }
   return (
-  <Col span={6} key={`${config.platformName}-${config.target}`}> 
+  <Col span={8} key={`${config.platformName}-${config.target}`}> 
     <Card title={`${platformConf.name} - ${config.targetName}`}
       actions={[
         <Tooltip title="编辑">
@@ -81,15 +81,18 @@ export function SubscribeCard({groupNumber, config, reload, groupSubscribes}: Su
           <Tooltip title="删除" ><DeleteOutlined /></Tooltip>
         </Popconfirm>, 
         ]}>
-      <Form labelCol={{ span: 6 }}>
+      <Form labelCol={{ span: 4 }}>
+        <Form.Item label="订阅帐号">
+        { platformConf.hasTarget ? config.target : <Tag color="default">无帐号</Tag> }
+        </Form.Item>
       <Form.Item label="订阅类型">
         {Object.keys(platformConf.categories).length > 0 ? 
         config.cats.map((catKey: number) => (<Tag color="green" key={catKey}>{platformConf.categories[catKey]}</Tag>)) :
-        <Tag color="red">不支持类型</Tag>}
+        <Tag color="default">不支持类型</Tag>}
       </Form.Item>
       <Form.Item label="订阅Tag">
         {platformConf.enabledTag ? config.tags.length > 0 ? config.tags.map(tag => (<Tag color="green" key={tag}>{tag}</Tag>)) : (<Tag color="blue">全部标签</Tag>) :
-        <Tag color="red">不支持Tag</Tag>}
+        <Tag color="default">不支持Tag</Tag>}
       </Form.Item>
       </Form>
     </Card>

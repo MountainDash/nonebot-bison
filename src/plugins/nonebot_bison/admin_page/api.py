@@ -100,3 +100,15 @@ async def del_group_sub(group_number: str, platform_name: str, target: str):
     except (NoSuchUserException, NoSuchSubscribeException):
         return { 'status': 400, 'msg': '删除错误' }
     return { 'status': 200, 'msg': '' }
+
+
+async def update_group_sub(group_number: str, platform_name: str, target: str, 
+        target_name: str, cats: list[str], tags: list[str]):
+    config = Config()
+    try:
+        config.update_subscribe(int(group_number), 'group',
+                target, target_name, platform_name, cats, tags)
+    except (NoSuchUserException, NoSuchSubscribeException):
+        return { 'status': 400, 'msg': '更新错误' }
+    return { 'status': 200, 'msg': '' }
+

@@ -1,9 +1,9 @@
-import { Form, Input, Modal, Select, Tag } from 'antd';
-import React, { useContext, useState } from "react";
-import { addSubscribe, getTargetName } from 'src/api/config';
-import { InputTag } from 'src/component/inputTag';
-import { GlobalConfContext } from "src/utils/context";
-import { CategoryConfig } from 'src/utils/type';
+import {Form, Input, Modal, Select, Tag} from 'antd';
+import React, {useContext, useEffect, useState} from "react";
+import {addSubscribe, getTargetName, updateSubscribe} from 'src/api/config';
+import {InputTag} from 'src/component/inputTag';
+import {GlobalConfContext} from "src/utils/context";
+import {CategoryConfig, SubscribeConfig} from 'src/utils/type';
 
 interface InputTagCustomProp {
   value?: Array<string>,
@@ -18,6 +18,11 @@ function InputTagCustom(prop: InputTagCustomProp) {
       prop.onChange(newVal);
     }
   }
+  useEffect(() => {
+    if (prop.value) {
+      setValue(prop.value);
+    }
+  }, [prop.value])
   return (
     <>
       {
@@ -38,14 +43,18 @@ interface AddModalProp {
   groupNumber: string,
   setShowModal: (s: boolean) => void,
   refresh: () => void
+  initVal?: SubscribeConfig
 }
-export function AddModal(prop: AddModalProp) {
+export function AddModal({
+  showModal, groupNumber, setShowModal, refresh, initVal
+}: AddModalProp) {
   const [ confirmLoading, setConfirmLoading ] = useState<boolean>(false);
   const { platformConf } = useContext(GlobalConfContext);
   const [ hasTarget, setHasTarget ] = useState(false);
   const [ categories, setCategories ] = useState({} as CategoryConfig);
   const [ enabledTag, setEnableTag ] = useState(false);
   const [ form ] = Form.useForm();
+  const [ inited, setInited ] = useState(false);
   const changePlatformSelect = (platform: string) => {
     setHasTarget(_ => platformConf[platform].hasTarget);
     setCategories(_ => platformConf[platform].categories);
@@ -74,23 +83,42 @@ export function AddModal(prop: AddModalProp) {
     if (newVal.target === '') {
       newVal.target = 'default'
     }
-    addSubscribe(prop.groupNumber, newVal)
-    .then(() => {
-      setConfirmLoading(false);
-      prop.setShowModal(false);
-      prop.refresh();
-      });
+    if (initVal) { // patch
+      updateSubscribe(groupNumber, newVal)
+        .then(() => {
+          setConfirmLoading(false);
+          setShowModal(false);
+          form.resetFields();
+          refresh();
+        });
+    } else {
+      addSubscribe(groupNumber, newVal)
+      .then(() => {
+        setConfirmLoading(false);
+        setShowModal(false);
+        form.resetFields();
+        refresh();
+        });
+    }
   }
   const handleModleFinish = () => {
     form.submit();
     setConfirmLoading(() => true);
   }
-
-  return <Modal title="添加订阅" visible={prop.showModal} 
-    confirmLoading={confirmLoading} onCancel={() => prop.setShowModal(false)}
+  useEffect(() => {
+    if (initVal && !inited) {
+      const platformName = initVal.platformName;
+      setHasTarget(platformConf[platformName].hasTarget);
+      setCategories(platformConf[platformName].categories);
+      setEnableTag(platformConf[platformName].enabledTag);
+      setInited(true)
+      form.setFieldsValue(initVal)
+    }
+  }, [initVal, form, platformConf, inited])
+  return <Modal title="添加订阅" visible={showModal} 
+    confirmLoading={confirmLoading} onCancel={() => setShowModal(false)}
     onOk={handleModleFinish}>
-    <Form form={form} labelCol={{ span: 6 }} name="b" onFinish={handleSubmit}
-      initialValues={{tags: [], cats: []}}>
+    <Form form={form} labelCol={{ span: 6 }} name="b" onFinish={handleSubmit} >
       <Form.Item label="平台" name="platformName" rules={[]}>
         <Select style={{ width: '80%' }} onChange={changePlatformSelect}>
           {Object.keys(platformConf).map(platformName => 

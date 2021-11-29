@@ -18,7 +18,7 @@ import functools
 
 from starlette.requests import Request
 
-from .api import del_group_sub, test, get_global_conf, auth, get_subs_info, get_target_name, add_group_sub
+from .api import del_group_sub, test, get_global_conf, auth, get_subs_info, get_target_name, add_group_sub, update_group_sub
 from .token_manager import token_manager as tm
 from .jwt import load_jwt
 from ..plugin_config import plugin_config
@@ -72,7 +72,7 @@ def register_router_fastapi(driver: Driver, socketio):
         platformName: str
         target: str
         targetName: str
-        cats: list[str]
+        cats: list[int]
         tags: list[str]
 
     app = driver.server_app
@@ -91,7 +91,10 @@ def register_router_fastapi(driver: Driver, socketio):
     async def _add_group_subs(groupNumber: str, req: AddSubscribeReq):
         return await add_group_sub(group_number=groupNumber, platform_name=req.platformName,
                 target=req.target, target_name=req.targetName, cats=req.cats, tags=req.tags)
-
+    @app.patch(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
+    async def _update_group_subs(groupNumber: str, req: AddSubscribeReq):
+        return await update_group_sub(group_number=groupNumber, platform_name=req.platformName,
+                target=req.target, target_name=req.targetName, cats=req.cats, tags=req.tags)
     @app.delete(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
     async def _del_group_subs(groupNumber: str, target: str, platformName: str):
         return await del_group_sub(groupNumber, platformName, target)

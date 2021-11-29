@@ -31,3 +31,8 @@ export async function delSubscribe(groupNumber: string, platformName: string, ta
   const res = await axios.delete(`${baseUrl}subs`, {params: {groupNumber, platformName, target}});
   return res.data;
 }
+
+export async function updateSubscribe(groupNumber: string, req: SubscribeConfig) {
+  return axios.patch(`${baseUrl}subs`, req, {params: {groupNumber}})
+    .then(res => res.data);
+}

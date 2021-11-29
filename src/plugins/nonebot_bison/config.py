@@ -6,10 +6,10 @@ from typing import DefaultDict, Mapping
 import nonebot
 from tinydb import Query, TinyDB
 
+from .platform import platform_manager
 from .plugin_config import plugin_config
 from .types import Target, User
 from .utils import Singleton
-from .platform import platform_manager
 
 supported_target_type = platform_manager.keys()
 
@@ -85,6 +85,25 @@ class Config(metaclass=Singleton):
                 self.update_send_cache()
                 return
         raise NoSuchSubscribeException()
+
+    def update_subscribe(self, user, user_type, target, target_name, target_type, cats, tags):
+        user_query = Query()
+        query = (user_query.user == user) & (user_query.user_type == user_type)
+        if (user_data := self.user_target.get(query)):
+            # update
+            subs: list = user_data.get('subs', [])
+            find_flag = False
+            for item in subs:
+                if item['target'] == target and item['target_type'] == target_type:
+                    item['target_name'], item['cats'], item['tags'] = \
+                            target_name, cats, tags
+                    find_flag = True
+                    break
+            if not find_flag:
+                raise NoSuchSubscribeException()
+            self.user_target.update({"subs": subs}, query)
+        else:
+            raise NoSuchUserException()
 
     def update_send_cache(self):
         res = {target_type: defaultdict(list) for target_type in supported_target_type}

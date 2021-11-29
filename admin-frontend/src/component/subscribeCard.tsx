@@ -1,10 +1,11 @@
-import {CopyOutlined, DeleteOutlined} from '@ant-design/icons';
+import {CopyOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
 import {Card, Col, Form, message, Popconfirm, Select, Tag, Tooltip} from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import React, {useContext, useState} from "react";
 import {addSubscribe, delSubscribe} from 'src/api/config';
 import {GlobalConfContext} from "src/utils/context";
 import {PlatformConfig, SubscribeConfig, SubscribeResp} from 'src/utils/type';
+import {AddModal} from './addSubsModal';
 
 interface CopyModalProp {
   setShowModal: (modalShow: boolean) => void
@@ -30,6 +31,7 @@ function CopyModal({setShowModal,config,
       setConfirmLoading(true)
       postReqs(selectedGroups, config).then(() => {
         setConfirmLoading(false)
+        setShowModal(false)
         return reload() 
       })
     }
@@ -57,6 +59,7 @@ interface SubscribeCardProp {
 export function SubscribeCard({groupNumber, config, reload, groupSubscribes}: SubscribeCardProp) {
   const globalConf = useContext(GlobalConfContext);
   const [showModal, setShowModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const platformConf = globalConf.platformConf[config.platformName] as PlatformConfig;
   const handleDelete = (groupNumber: string, platformName: string, target: string) => () => {
     delSubscribe(groupNumber, platformName, target).then(() => {
@@ -67,13 +70,16 @@ export function SubscribeCard({groupNumber, config, reload, groupSubscribes}: Su
   <Col span={6} key={`${config.platformName}-${config.target}`}> 
     <Card title={`${platformConf.name} - ${config.targetName}`}
       actions={[
+        <Tooltip title="编辑">
+          <EditOutlined onClick={()=>{setShowEditModal(state => !state)}}/>
+        </Tooltip>,
+        <Tooltip title="添加到其他群">
+          <CopyOutlined onClick={()=>{setShowModal(state => !state)}}/>
+        </Tooltip>,
         <Popconfirm title={`确定要删除 ${platformConf.name} - ${config.targetName}`}
           onConfirm={handleDelete(groupNumber, config.platformName, config.target || 'default')}>
           <Tooltip title="删除" ><DeleteOutlined /></Tooltip>
         </Popconfirm>, 
-        <Tooltip title="添加到其他群">
-          <CopyOutlined onClick={()=>{setShowModal(state => !state)}}/>
-        </Tooltip>
         ]}>
       <Form labelCol={{ span: 6 }}>
       <Form.Item label="订阅类型">
@@ -89,6 +95,8 @@ export function SubscribeCard({groupNumber, config, reload, groupSubscribes}: Su
     </Card>
     <CopyModal setShowModal={setShowModal} reload={reload} currentGroupNumber={groupNumber}
       showModal={showModal} config={config} groups={groupSubscribes}/>
+    <AddModal showModal={showEditModal} setShowModal={setShowEditModal} 
+      groupNumber={groupNumber} refresh={reload} initVal={config}/>
   </Col>
   )
 }

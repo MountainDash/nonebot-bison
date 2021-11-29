@@ -19,6 +19,11 @@ export function InputTag(prop: InputTagProp) {
   const inputRef = useRef(null as any);
   const editInputRef = useRef(null as any);
   useEffect(() => {
+    if (prop.value) {
+      setValue(prop.value);
+    }
+  }, [prop.value])
+  useEffect(() => {
     if (inputVisible) {
       inputRef.current.focus()
     }

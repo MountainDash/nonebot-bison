@@ -3,7 +3,7 @@ import React, {ReactElement, useEffect, useState} from "react";
 import {getSubscribe} from 'src/api/config';
 import {SubscribeCard} from 'src/component/subscribeCard';
 import {SubscribeResp} from 'src/utils/type';
-import {AddModal} from './AddSubsModal';
+import {AddModal} from 'src/component/addSubsModal';
 
 interface ConfigPageProp {
   tab: string
@@ -34,11 +34,11 @@ export function ConfigPage(prop: ConfigPageProp) {
     for (let key of Object.keys(configData)) {
       let value = configData[key];
       groups.push(
-        <Collapse.Panel header={
+        <Collapse.Panel key={key} header={
           <span>{`${key} - ${value.name}`}<Button style={{float: "right"}} onClick={clickNew(key)}>添加</Button></span>
-          } key={key}>
+          }>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align="middle">
-            {value.subscribes.map((subs) => <SubscribeCard
+            {value.subscribes.map((subs, idx) => <SubscribeCard key={idx}
               groupNumber={key} config={subs} groupSubscribes={configData} reload={loadData}
               />)}
           </Row>

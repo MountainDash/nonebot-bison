@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "bison",
-  "proxy": "http://localhost:8080",
+  "proxy": "http://127.0.0.1:8080",
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
     "@testing-library/jest-dom": "^5.11.4",

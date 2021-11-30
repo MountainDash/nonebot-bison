@@ -4,6 +4,7 @@ import os
 from typing import DefaultDict, Mapping
 
 import nonebot
+from nonebot import logger
 from tinydb import Query, TinyDB
 
 from .platform import platform_manager
@@ -110,9 +111,11 @@ class Config(metaclass=Singleton):
         cat_res = {target_type: defaultdict(lambda: defaultdict(list)) for target_type in supported_target_type}
         tag_res = {target_type: defaultdict(lambda: defaultdict(list)) for target_type in supported_target_type}
         # res = {target_type: defaultdict(lambda: defaultdict(list)) for target_type in supported_target_type}
+        to_del = []
         for user in self.user_target.all():
             for sub in user.get('subs', []):
                 if not sub.get('target_type') in supported_target_type:
+                    to_del.append({'user': user['user'], 'user_type': user['user_type'], 'target': sub['target'], 'target_type': sub['target_type']})
                     continue
                 res[sub['target_type']][sub['target']].append(User(user['user'], user['user_type']))
                 cat_res[sub['target_type']][sub['target']]['{}-{}'.format(user['user_type'], user['user'])] = sub['cats']
@@ -122,6 +125,10 @@ class Config(metaclass=Singleton):
         self.target_user_tag_cache = tag_res
         for target_type in self.target_user_cache:
             self.target_list[target_type] = list(self.target_user_cache[target_type].keys())
+        
+        logger.info(f'Deleting {to_del}')
+        for d in to_del:
+            self.del_subscribe(**d)
 
     def get_sub_category(self, target_type, target, user_type, user):
         return self.target_user_cat_cache[target_type][target]['{}-{}'.format(user_type, user)]

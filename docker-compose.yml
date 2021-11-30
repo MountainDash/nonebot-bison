@@ -17,6 +17,8 @@ services:
       # SUPERUSERS: '[<your QQ>]'
       BISON_CONFIG_PATH: /data
       BISON_BROWSER: ws://browserless:3000
+    expose:
+      - 8080:8080
     depends_on:
       - browserless
       - go-cqhttp

@@ -24,7 +24,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - build-publish:
+      - build:
           requires:
             - test
           filters:
@@ -32,6 +32,12 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
+      - publish-pypi:
+          requires:
+            - build
+      - publish-github-release:
+          requires:
+            - build
       - docker/publish: &docker-push
           requires:
             - test
@@ -92,17 +98,42 @@ jobs:
           command: poetry run coverage html --include='src/*'
       - store_artifacts:
           path: htmlcov
-  build-publish:
+  build:
     docker:
       - image: cimg/python:3.9
     steps:
       - checkout
+      - attach_workspace:
+          at: .src/plugins/nonebot_bison/admin_page/dist/
       - run: poetry build
       - store_artifacts:
-          path: dist
-      - swissknife/publish_github_release:
-          tag: ${CIRCLE_TAG}
+          path: "dist"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "dist"
+  publish-pypi:
+    docker:
+      - image: cimg/python3.9
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./dist
       - run:
           command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
-          name: publish to pypi
+          name: Publish to Pypi
+
+  publish-github-release:
+    docker:
+      - image: circleci/golang:1.8
+    steps:
+      - attach_workspace:
+          at: ./dist
+      - run:
+          name: Publish to Github Release
+          command: |
+            go get github.com/tcnksm/ghr
+            VERSION=$(cat pyproject.toml | grep version | sed 's/version = "\([0-9\.]*\)"/\1/')
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./dist
+
 

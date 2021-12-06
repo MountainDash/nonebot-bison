@@ -49,6 +49,7 @@ workflows:
             tags:
               only: /^v.*/
       - docker/publish: &docker-push
+          name: "Docker release version"
           requires:
             - test
           filters:
@@ -65,6 +66,7 @@ workflows:
           docker-password: DOCKERHUB_PASSWORD
       - docker/publish:
           <<: *docker-push
+          name: "Docker debug version"
           filters:
             tags:
               ignore: /.*/

@@ -35,9 +35,19 @@ workflows:
       - publish-pypi:
           requires:
             - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
       - publish-github-release:
           requires:
             - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
       - docker/publish: &docker-push
           requires:
             - test

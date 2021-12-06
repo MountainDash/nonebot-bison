@@ -145,7 +145,7 @@ jobs:
       - run:
           name: Publish to Github Release
           command: |
-            go install github.com/tcnksm/ghr
+            go install github.com/tcnksm/ghr@latest
             VERSION=$(cat pyproject.toml | grep version | sed 's/version = "\([0-9\.]*\)"/\1/')
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./dist
 

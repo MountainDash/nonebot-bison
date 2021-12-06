@@ -116,7 +116,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: .src/plugins/nonebot_bison/admin_page/dist/
+          at: .
       - run: poetry build
       - store_artifacts:
           path: "dist"
@@ -130,7 +130,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ./dist
+          at: .
       - run:
           command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
           name: Publish to Pypi
@@ -140,7 +140,7 @@ jobs:
       - image: circleci/golang:1.17
     steps:
       - attach_workspace:
-          at: ./dist
+          at: .
       - run:
           name: Publish to Github Release
           command: |

@@ -87,7 +87,7 @@ jobs:
       - run:
           name: Get hash of frontend code
           command: |
-            find ./admin-frontend/src -type f -exec md5sum {} + | LC_ALL=C sort > fontend.hash
+            find ./admin-frontend/src -type f -exec md5sum {} + | LC_ALL=C sort > frontend.hash
             md5sum ./admin-frontend/yarn.lock >> frontend.hash
             cat frontend.hash
       - persist_to_workspace:

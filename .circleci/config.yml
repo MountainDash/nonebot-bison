@@ -116,16 +116,6 @@ jobs:
           paths:
             - ./src/plugins/nonebot_bison/admin_page/dist/
           key: frontend_build_res-{{ checksum "frontend.hash" }}
-  load-frontend:
-    docker:
-      - image: cimg/node:16.13.0
-    steps:
-      - attach_workspace:
-          at: .
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "./src/plugins/nonebot_bison/admin_page/dist/"
   test:
     docker:
       - image: cimg/python:3.9
@@ -154,6 +144,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
+      - restore_cache:
+          key: frontend_build_res-{{ checksum "frontend.hash" }}
       - run: poetry build
       - store_artifacts:
           path: "dist"

@@ -49,7 +49,7 @@ workflows:
             tags:
               only: /^v.*/
       - docker/publish: &docker-push
-          name: "Docker release version"
+          name: "docker/publish-release"
           requires:
             - test
           filters:

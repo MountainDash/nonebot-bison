@@ -18,9 +18,15 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test:
+      - load-frontend:
           requires:
             - build-frontend
+          filters:
+            tags:
+              only: /.*/
+      - test:
+          requires:
+            - load-frontend
           filters:
             tags:
               only: /.*/
@@ -66,7 +72,7 @@ workflows:
           docker-password: DOCKERHUB_PASSWORD
       - docker/publish:
           <<: *docker-push
-          name: "Docker debug version"
+          name: "docker/publish-debug"
           filters:
             tags:
               ignore: /.*/
@@ -78,6 +84,27 @@ jobs:
       - image: cimg/node:16.13.0
     steps:
       - checkout
+      - run:
+          name: Get hash of frontend code
+          command: |
+            find ./admin-frontend/src -type f -exec md5sum {} + | LC_ALL=C sort > fontend.hash
+            md5sum ./admin-frontend/yarn.lock >> frontend.hash
+            cat frontend.hash
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "frontend.hash"
+      - restore_cache:
+          key: frontend_build_res-{{ checksum "frontend.hash" }}
+      - run:
+          name: Check cache
+          command: |
+            if [ -f ./src/plugins/nonebot_bison/admin_page/dist/index.html ]; then
+              echo "frontend cache exists"
+              circleci-agent step halt
+            else
+              echo "no such cache, build will begin"
+            fi
       - node/install-packages:
           app-dir: ./admin-frontend
           pkg-manager: yarn
@@ -85,10 +112,20 @@ jobs:
           name: yarn build
           working_directory: ./admin-frontend
           command: yarn build
+      - save_cache:
+          paths:
+            - ./src/plugins/nonebot_bison/admin_page/dist/
+          key: frontend_build_res-{{ checksum "frontend.hash" }}
+  load-frontend:
+    docker:
+      - image: cimg/node:16.13.0
+    steps:
+      - attach_workspace:
+          at: .
       - persist_to_workspace:
           root: .
           paths:
-            - "src/plugins/nonebot_bison/admin_page/dist/"
+            - "./src/plugins/nonebot_bison/admin_page/dist/"
   test:
     docker:
       - image: cimg/python:3.9

@@ -18,15 +18,9 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - load-frontend:
-          requires:
-            - build-frontend
-          filters:
-            tags:
-              only: /.*/
       - test:
           requires:
-            - load-frontend
+            - build-frontend
           filters:
             tags:
               only: /.*/

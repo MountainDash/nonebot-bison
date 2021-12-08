@@ -51,7 +51,7 @@ workflows:
       - docker/publish: &docker-push
           name: "docker/publish-release"
           dockerfile: docker/Dockerfile_with_frontend
-          after-checkout:
+          after_checkout:
             - attach_workspace:
                 at: .
             - restore_cache:

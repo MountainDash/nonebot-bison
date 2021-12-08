@@ -49,7 +49,7 @@ class Render(metaclass=Singleton):
                         executable_path=path, args=['--no-sandbox'])
             if plugin_config.bison_browser.startswith('ws:'):
                 self.remote_browser = True
-                return await playwright.chromium.connect(plugin_config.bison_browser)
+                return await playwright.chromium.connect_over_cdp(plugin_config.bison_browser)
             raise RuntimeError('bison_BROWSER error')
         if plugin_config.bison_use_local:
             return await playwright.chromium.launch(

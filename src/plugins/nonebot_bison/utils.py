@@ -2,18 +2,17 @@ import asyncio
 import base64
 from html import escape
 import os
-from time import asctime
 import re
+import subprocess
+from time import asctime
 from typing import Awaitable, Callable, Optional
 
+from bs4 import BeautifulSoup as bs
+import nonebot
 from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import logger
-
-import subprocess
-from playwright.async_api import async_playwright, Browser, Page
 from playwright._impl._driver import compute_driver_executable
-
-from bs4 import BeautifulSoup as bs
+from playwright.async_api import Browser, Page, async_playwright
 
 from .plugin_config import plugin_config
 
@@ -24,11 +23,14 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-if not plugin_config.bison_browser and not plugin_config.bison_use_local:
-    env = os.environ.copy()
-    driver_executable = compute_driver_executable()
-    env["PW_CLI_TARGET_LANG"] = "python"
-    subprocess.run([str(driver_executable), "install", "chromium"], env=env)
+@nonebot.get_driver().on_startup
+def download_browser():
+    if not plugin_config.bison_browser and not plugin_config.bison_use_local:
+        env = os.environ.copy()
+        driver_executable = compute_driver_executable()
+        env["PW_CLI_TARGET_LANG"] = "python"
+        subprocess.run([str(driver_executable), "install", "chromium"], env=env)
+
 
 class Render(metaclass=Singleton):
 

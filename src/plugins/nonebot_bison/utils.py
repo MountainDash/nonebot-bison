@@ -8,10 +8,10 @@ from typing import Awaitable, Callable, Optional
 
 from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import logger
-from pyppeteer import connect, launch
-from pyppeteer.browser import Browser
-from pyppeteer.chromium_downloader import check_chromium, download_chromium
-from pyppeteer.page import Page
+
+import subprocess
+from playwright.async_api import async_playwright, Browser, Page
+from playwright._impl._driver import compute_driver_executable
 
 from bs4 import BeautifulSoup as bs
 
@@ -24,10 +24,11 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-if not plugin_config.bison_browser and not plugin_config.bison_use_local \
-        and not check_chromium():
-    os.environ['PYPPETEER_DOWNLOAD_HOST'] = 'http://npm.taobao.org/mirrors'
-    download_chromium()
+if not plugin_config.bison_browser and not plugin_config.bison_use_local:
+    env = os.environ.copy()
+    driver_executable = compute_driver_executable()
+    env["PW_CLI_TARGET_LANG"] = "python"
+    subprocess.run([str(driver_executable), "install", "chromium"], env=env)
 
 class Render(metaclass=Singleton):
 
@@ -38,17 +39,20 @@ class Render(metaclass=Singleton):
         self.remote_browser = False
 
     async def get_browser(self) -> Browser:
+        playwright = await async_playwright().start()
         if plugin_config.bison_browser:
             if plugin_config.bison_browser.startswith('local:'):
                 path = plugin_config.bison_browser.split('local:', 1)[1]
-                return await launch(executablePath=path, args=['--no-sandbox'])
+                return await playwright.chromium.launch(
+                        executable_path=path, args=['--no-sandbox'])
             if plugin_config.bison_browser.startswith('ws:'):
                 self.remote_browser = True
-                return await connect(browserWSEndpoint=plugin_config.bison_browser)
+                return await playwright.chromium.connect(plugin_config.bison_browser)
             raise RuntimeError('bison_BROWSER error')
         if plugin_config.bison_use_local:
-            return await launch(executablePath='/usr/bin/chromium', args=['--no-sandbox'])
-        return await launch(args=['--no-sandbox'])
+            return await playwright.chromium.launch(
+                    executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+        return await playwright.chromium.launch(args=['--no-sandbox'])
 
     async def close_browser(self):
         if not self.remote_browser:
@@ -76,22 +80,25 @@ class Render(metaclass=Singleton):
         async with self.lock:
             self.browser = await self.get_browser()
             self._inter_log('open browser')
-            page = await self.browser.newPage()
+            if viewport:
+                constext = await self.browser.new_context(
+                        viewport={'width': viewport['width'], 'height': viewport['height']},
+                        device_scale_factor=viewport.get('deviceScaleFactor', 1))
+                page = await constext.new_page()
+            else:
+                page = await self.browser.new_page()
             if operation:
                 await operation(page)
             else:
                 await page.goto(url)
             self._inter_log('open page')
-            if viewport:
-                await page.setViewport(viewport)
-                self._inter_log('set viewport')
             if target:
-                target_ele = await page.querySelector(target)
+                target_ele = page.locator(target)
                 if not target_ele:
                     return None
-                data = await target_ele.screenshot(type='jpeg', encoding='binary')
+                data = await target_ele.screenshot(type='jpeg')
             else:
-                data = await page.screenshot(type='jpeg', encoding='binary')
+                data = await page.screenshot(type='jpeg')
             self._inter_log('screenshot')
             await page.close()
             self._inter_log('close page')

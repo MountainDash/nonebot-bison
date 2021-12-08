@@ -77,6 +77,21 @@ workflows:
             tags:
               ignore: /.*/
           tag: ${CIRCLE_BRANCH}
+      - docker/publish:
+          <<: *docker-push
+          dockerfile: docker/Dockerfile_with_frontend_sentry
+          name: "docker/publish-sentry"
+          tag: sentry, ${CIRCLE_TAG}-sentry
+      - docker/publish:
+          <<: *docker-push
+          name: "docker/publish-debug-sentry"
+          dockerfile: docker/Dockerfile_with_frontend_sentry
+          filters:
+            branches:
+              only: [main, dev]
+            tags:
+              ignore: /.*/
+          tag: ${CIRCLE_BRANCH}-sentry
 
 jobs:
   build-frontend:

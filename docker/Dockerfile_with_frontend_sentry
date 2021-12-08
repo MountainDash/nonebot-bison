@@ -2,7 +2,8 @@ FROM python:3.9
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
 COPY ./pyproject.toml ./poetry.lock* /app/
-RUN poetry add 
+RUN poetry add nonebot-plugin-sentry && \
+    sed '/nonebot.load_builtin_plugins()/a nonebot.load_plugin("nonebot_plugin_sentry")' -i bot.py
 RUN poetry install --no-root --no-dev
 ADD src /app/src
 ADD bot.py /app/

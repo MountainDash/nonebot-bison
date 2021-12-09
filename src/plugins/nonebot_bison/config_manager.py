@@ -1,17 +1,20 @@
 from typing import Type
+
 from nonebot import logger, on_command
+from nonebot.adapters._bot import Bot as AbstractBot
+from nonebot.adapters._event import Event as AbstractEvent
 from nonebot.adapters.cqhttp import Bot, Event, GroupMessageEvent
 from nonebot.adapters.cqhttp.message import Message
 from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_MEMBER, GROUP_OWNER
+from nonebot.matcher import Matcher
 from nonebot.permission import Permission, SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
-from nonebot.matcher import Matcher
 
 from .config import Config, NoSuchSubscribeException
-from .platform import platform_manager, check_sub_target
-from .utils import parse_text
+from .platform import check_sub_target, platform_manager
 from .types import Target
+from .utils import parse_text
 
 def _gen_prompt_template(prompt: str):
     if hasattr(Message, 'template'):
@@ -38,7 +41,7 @@ def do_add_sub(add_sub: Type[Matcher]):
                         for platform_name in common_platform]) + \
                 '要查看全部平台请输入：“全部”'
 
-    async def parse_platform(bot: Bot, event: Event, state: T_State) -> None:
+    async def parse_platform(bot: AbstractBot, event: AbstractEvent, state: T_State) -> None:
         platform = str(event.get_message()).strip()
         if platform == '全部':
             message = '全部平台\n' + \
@@ -59,7 +62,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             state['id'] = 'default'
             state['name'] = await platform_manager[state['platform']].get_target_name(Target(''))
 
-    async def parse_id(bot: Bot, event: Event, state: T_State):
+    async def parse_id(bot: AbstractBot, event: AbstractEvent, state: T_State):
         target = str(event.get_message()).strip()
         name = await check_sub_target(state['platform'], target)
         if not name:
@@ -76,7 +79,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         state['_prompt'] = '请输入要订阅的类别，以空格分隔，支持的类别有：{}'.format(
                 ' '.join(list(platform_manager[state['platform']].categories.values())))
 
-    async def parser_cats(bot: Bot, event: Event, state: T_State):
+    async def parser_cats(bot: AbstractBot, event: AbstractEvent, state: T_State):
         res = []
         for cat in str(event.get_message()).strip().split():
             if cat not in platform_manager[state['platform']].reverse_category:
@@ -92,7 +95,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         state['_prompt'] = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
 
-    async def parser_tags(bot: Bot, event: Event, state: T_State):
+    async def parser_tags(bot: AbstractBot, event: AbstractEvent, state: T_State):
         if str(event.get_message()).strip() == '全部标签':
             state['tags'] = []
         else:
@@ -155,7 +158,7 @@ def do_del_sub(del_sub: Type[Matcher]):
         else:
             await del_sub.finish('删除成功')
 
-async def parse_group_number(bot: Bot, event: Event, state: T_State):
+async def parse_group_number(bot: AbstractBot, event: AbstractEvent, state: T_State):
     state[state["_current_key"]] = int(str(event.get_message()))
 
 

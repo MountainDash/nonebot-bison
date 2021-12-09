@@ -440,6 +440,18 @@ httpx = ">=0.18.0,<1.0.0"
 nonebot2 = ">=2.0.0-alpha.14,<3.0.0"
 
 [[package]]
+name = "nonebot-plugin-help"
+version = "0.1.5"
+description = "A general help lister for nonebot2 plugins"
+category = "main"
+optional = false
+python-versions = ">=3.7.3,<4.0.0"
+
+[package.dependencies]
+nonebot-adapter-cqhttp = ">=2.0.0a16,<3.0.0"
+nonebot2 = ">=2.0.0.a16,<3.0.0"
+
+[[package]]
 name = "nonebot2"
 version = "2.0.0a16"
 description = "An asynchronous python bot framework."
@@ -939,7 +951,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a12ba453cb761ccbc97a694a0de4d3acf4e9c88bb4650203acbeaaf0d762b3c1"
+content-hash = "6258435dbcdc3a69af258a1dc3dee54e55cc14dba81521aa33eb54236570d882"
 
 [metadata.files]
 aiofiles = [
@@ -1193,6 +1205,10 @@ matplotlib-inline = [
 nonebot-adapter-cqhttp = [
     {file = "nonebot-adapter-cqhttp-2.0.0a16.tar.gz", hash = "sha256:9de270291b98c41a45e5b629c02f16e3b25cafb3867b8161851f49c84145d8aa"},
     {file = "nonebot_adapter_cqhttp-2.0.0a16-py3-none-any.whl", hash = "sha256:831747c55c9c1a660215225f84784a4ca275a84bffa8d1312524367066b68bbe"},
+]
+nonebot-plugin-help = [
+    {file = "nonebot-plugin-help-0.1.5.tar.gz", hash = "sha256:2ef8c0f8b578c7941e364396532749cabb4d52872ddc4a0419db3cd103223e60"},
+    {file = "nonebot_plugin_help-0.1.5-py3-none-any.whl", hash = "sha256:1c4bb626feb202515f47311e3ca9872ab6c0db5e935bc9561325fcc1a2591511"},
 ]
 nonebot2 = [
     {file = "nonebot2-2.0.0a16-py3-none-any.whl", hash = "sha256:88596c154143fc2203a50d224bacf4e2e5be1b4142fd92e645c40258e5819924"},

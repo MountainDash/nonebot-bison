@@ -1,7 +1,6 @@
 from abc import abstractmethod, ABC
 from collections import defaultdict
 from dataclasses import dataclass
-from functools import reduce
 import time
 from typing import Any, Collection, Optional, Literal
 

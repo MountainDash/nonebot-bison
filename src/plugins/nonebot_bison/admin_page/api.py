@@ -1,9 +1,10 @@
-from ..platform import platform_manager, check_sub_target
-from .token_manager import token_manager
-from .jwt import pack_jwt
-from ..config import Config, NoSuchSubscribeException, NoSuchUserException
 import nonebot
 from nonebot.adapters.cqhttp.bot import Bot
+
+from ..config import Config, NoSuchSubscribeException, NoSuchUserException
+from ..platform import check_sub_target, platform_manager
+from .jwt import pack_jwt
+from .token_manager import token_manager
 
 async def test():
     return {"status": 200, "text": "test"}
@@ -88,7 +89,7 @@ async def get_target_name(platform_name: str, target: str, jwt_obj: dict):
     return {'targetName': await check_sub_target(platform_name, target)}
 
 async def add_group_sub(group_number: str, platform_name: str, target: str, 
-        target_name: str, cats: list[str], tags: list[str]):
+        target_name: str, cats: list[int], tags: list[str]):
     config = Config()
     config.add_subscribe(int(group_number), 'group', target, target_name, platform_name, cats, tags)
     return { 'status': 200, 'msg': '' }
@@ -103,7 +104,7 @@ async def del_group_sub(group_number: str, platform_name: str, target: str):
 
 
 async def update_group_sub(group_number: str, platform_name: str, target: str, 
-        target_name: str, cats: list[str], tags: list[str]):
+        target_name: str, cats: list[int], tags: list[str]):
     config = Config()
     try:
         config.update_subscribe(int(group_number), 'group',

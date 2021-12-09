@@ -1,12 +1,10 @@
 from dataclasses import dataclass
-from pathlib import Path
 import os
+from pathlib import Path
 from typing import Union
 
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from nonebot import get_driver, on_command
-import nonebot
 from nonebot.adapters.cqhttp.bot import Bot
 from nonebot.adapters.cqhttp.event import GroupMessageEvent, PrivateMessageEvent
 from nonebot.drivers.fastapi import Driver
@@ -14,14 +12,20 @@ from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 import socketio
-import functools
 
-from starlette.requests import Request
-
-from .api import del_group_sub, test, get_global_conf, auth, get_subs_info, get_target_name, add_group_sub, update_group_sub
-from .token_manager import token_manager as tm
-from .jwt import load_jwt
 from ..plugin_config import plugin_config
+from .api import (
+    add_group_sub,
+    auth,
+    del_group_sub,
+    get_global_conf,
+    get_subs_info,
+    get_target_name,
+    test,
+    update_group_sub,
+)
+from .jwt import load_jwt
+from .token_manager import token_manager as tm
 
 URL_BASE = '/bison/'
 GLOBAL_CONF_URL = f'{URL_BASE}api/global_conf'
@@ -122,9 +126,11 @@ if (STATIC_PATH / 'index.html').exists():
 
     get_token = on_command('后台管理', rule=to_me(), priority=5)
     @get_token.handle()
-    async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):
-        driver = nonebot.get_driver()
+    async def send_token(_: "Bot", event: PrivateMessageEvent, state: T_State):
         token = tm.get_user_token((event.get_user_id(), event.sender.nickname))
         await get_token.finish(f'请访问: {plugin_config.bison_outer_url}auth/{token}')
+    get_token.__help__name__ = '获取后台管理地址'
+    get_token.__help__info__ =   ('获取管理bot后台的地址，该地址会'
+            '在一段时间过后过期，请不要泄漏该地址')
 else:
     logger.warning("Frontend file not found, please compile it or use docker or pypi version")

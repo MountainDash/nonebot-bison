@@ -10,6 +10,7 @@ orbs:
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
   docker: circleci/docker@1.7.0
+  docker-cache: cci-x/docker-registry-image-cache@0.2.0
 
 workflows:
   build-test-publish:
@@ -66,6 +67,7 @@ workflows:
           context: 
             - docker
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG}'
           tag: latest,${CIRCLE_TAG}
           update-description: true
           docker-username: DOCKERHUB_USERNAME
@@ -77,11 +79,13 @@ workflows:
             tags:
               ignore: /.*/
           tag: ${CIRCLE_BRANCH}
+          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}'
       - docker/publish:
           <<: *docker-push
           dockerfile: docker/Dockerfile_with_frontend_sentry
           name: "docker/publish-sentry"
           tag: sentry, ${CIRCLE_TAG}-sentry
+          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG}-sentry'
       - docker/publish:
           <<: *docker-push
           name: "docker/publish-debug-sentry"
@@ -92,6 +96,7 @@ workflows:
             tags:
               ignore: /.*/
           tag: ${CIRCLE_BRANCH}-sentry
+          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}-sentry'
 
 jobs:
   build-frontend:
@@ -192,5 +197,4 @@ jobs:
             go install github.com/tcnksm/ghr@latest
             VERSION=$(cat pyproject.toml | grep version | sed 's/version = "\([0-9\.]*\)"/\1/')
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./dist
-
 

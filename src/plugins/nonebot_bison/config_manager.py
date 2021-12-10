@@ -61,11 +61,14 @@ def do_add_sub(add_sub: Type[Matcher]):
 
     async def parse_id(bot: Bot, event: Event, state: T_State):
         target = str(event.get_message()).strip()
-        name = await check_sub_target(state['platform'], target)
-        if not name:
+        try:
+            name = await check_sub_target(state['platform'], target)
+            if not name:
+                await add_sub.reject('id输入错误')
+            state['id'] = target
+            state['name'] = name
+        except:
             await add_sub.reject('id输入错误')
-        state['id'] = target
-        state['name'] = name
 
     @add_sub.got('id', _gen_prompt_template('{_prompt}'), parse_id)
     @add_sub.handle()

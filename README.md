@@ -3,7 +3,9 @@
 
 
 [![pypi](https://badgen.net/pypi/v/nonebot-bison)](https://pypi.org/project/nonebot-bison/)
+[![license](https://img.shields.io/github/license/felinae98/nonebot-bison)](https://github.com/felinae98/nonebot-bison/blob/main/LICENSE)
 [![felinae98](https://circleci.com/gh/felinae98/nonebot-bison.svg?style=shield)](https://circleci.com/gh/felinae98/nonebot-bison)
+[![docker](https://img.shields.io/docker/image-size/felinae98/nonebot-bison)](https://hub.docker.com/r/felinae98/nonebot-bison)
 [![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange )](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)
 
 [文档](https://nonebot-bison.vercel.app)|[开发文档](https://nonebot-bison.vercel.app/dev)

@@ -1,45 +1,36 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import './App.css';
-import { LoginContext, loginContextDefault, GlobalConfContext } from './utils/context';
-import { LoginStatus, GlobalConf, AllPlatformConf } from './utils/type';
-import { Admin } from './pages/admin';
-import { getGlobalConf } from './api/config';
-import { Auth } from './pages/auth';
 import 'antd/dist/antd.css';
+import React, {useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
+import './App.css';
+import {Admin} from './pages/admin';
+import {Auth} from './pages/auth';
+import {getGlobalConf} from './store/globalConfSlice';
+import {useAppSelector} from './store/hooks';
+import {loadLoginState, loginSelector} from './store/loginSlice';
 
 
 function LoginSwitch() {
-  const {login, save} = useContext(LoginContext);
+  const login = useSelector(loginSelector)
   if (login.login) {
     return <Admin />;
   } else {
     return (
       <div>
         not login
-        <button onClick={() => save({
-            login: true, type: 'admin', name: '', id: '123', token: ''
-            })}>1</button>
       </div>
     )
   }
 }
 
 function App() {
-  const [loginStatus, setLogin] = useState(loginContextDefault.login);
-  const [globalConf, setGlobalConf] = useState<GlobalConf>({platformConf: {} as AllPlatformConf, loaded: false});
-  // const globalConfContext = useContext(GlobalConfContext);
-  const save = (login: LoginStatus) => setLogin(_ => login);
+  const dispatch = useDispatch()
+  const globalConf = useAppSelector(state => state.globalConf)
   useEffect(() => {
-    const fetchGlobalConf = async () => {
-      const res = await getGlobalConf();
-      setGlobalConf(_ => {return {...res, loaded: true}});
-    };
-    fetchGlobalConf();
-  }, []);
-  return (
-    <LoginContext.Provider value={{login: loginStatus, save}}>
-      <GlobalConfContext.Provider value={globalConf}>
+    dispatch(getGlobalConf());
+    dispatch(loadLoginState())
+  }, [dispatch]);
+  return <>
       { globalConf.loaded &&
         <Router basename="/bison">
           <Switch>
@@ -52,9 +43,7 @@ function App() {
           </Switch>
         </Router>
       }
-      </GlobalConfContext.Provider>
-    </LoginContext.Provider>
-  );
+    </>;
 }
 
 export default App;

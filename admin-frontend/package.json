@@ -16,6 +16,7 @@
     "@types/react-dom": "^17.0.0",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
+    "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.175",
+    "@types/react-redux": "^7.1.20",
     "@types/react-router-dom": "^5.3.0",
     "react-app-rewired": "^2.1.8",
     "redux-devtools": "^3.7.0"

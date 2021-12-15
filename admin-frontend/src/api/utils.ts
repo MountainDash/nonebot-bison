@@ -8,7 +8,7 @@ export const baseUrl = '/bison/api/'
 axios.interceptors.request.use(function (config) {
   if (config.url && config.url.startsWith(baseUrl) && config.url !== `${baseUrl}auth` 
      && config.url !== `${baseUrl}global_conf`) {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     } else {

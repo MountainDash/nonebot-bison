@@ -1,9 +1,10 @@
 import {CopyOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
 import {Card, Col, Form, message, Popconfirm, Select, Tag, Tooltip} from 'antd';
 import Modal from 'antd/lib/modal/Modal';
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
+import {useSelector} from 'react-redux';
 import {addSubscribe, delSubscribe} from 'src/api/config';
-import {GlobalConfContext} from "src/utils/context";
+import {platformConfSelector} from 'src/store/globalConfSlice';
 import {PlatformConfig, SubscribeConfig, SubscribeResp} from 'src/utils/type';
 import {AddModal} from './addSubsModal';
 
@@ -57,10 +58,11 @@ interface SubscribeCardProp {
   reload: () => void
 }
 export function SubscribeCard({groupNumber, config, reload, groupSubscribes}: SubscribeCardProp) {
-  const globalConf = useContext(GlobalConfContext);
+  // const globalConf = useSelector()
+  const platformConfs = useSelector(platformConfSelector)
   const [showModal, setShowModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
-  const platformConf = globalConf.platformConf[config.platformName] as PlatformConfig;
+  const platformConf = platformConfs[config.platformName] as PlatformConfig;
   const handleDelete = (groupNumber: string, platformName: string, target: string) => () => {
     delSubscribe(groupNumber, platformName, target).then(() => {
       reload() 

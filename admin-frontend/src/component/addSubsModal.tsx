@@ -1,8 +1,9 @@
 import {Form, Input, Modal, Select, Tag} from 'antd';
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
+import {useSelector} from 'react-redux';
 import {addSubscribe, getTargetName, updateSubscribe} from 'src/api/config';
 import {InputTag} from 'src/component/inputTag';
-import {GlobalConfContext} from "src/utils/context";
+import {platformConfSelector} from 'src/store/globalConfSlice';
 import {CategoryConfig, SubscribeConfig} from 'src/utils/type';
 
 interface InputTagCustomProp {
@@ -49,7 +50,7 @@ export function AddModal({
   showModal, groupNumber, setShowModal, refresh, initVal
 }: AddModalProp) {
   const [ confirmLoading, setConfirmLoading ] = useState<boolean>(false);
-  const { platformConf } = useContext(GlobalConfContext);
+  const platformConf = useSelector(platformConfSelector)
   const [ hasTarget, setHasTarget ] = useState(false);
   const [ categories, setCategories ] = useState({} as CategoryConfig);
   const [ enabledTag, setEnableTag ] = useState(false);

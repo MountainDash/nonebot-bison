@@ -1,27 +1,28 @@
-import React, {useContext, useEffect, useState} from "react";
-import { useParams } from "react-router";
-import { auth } from '../api/config';
-import { LoginContext } from '../utils/context';
-import { Redirect } from 'react-router-dom'
+import React, {useEffect} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {useParams} from "react-router";
+import {Redirect} from 'react-router-dom';
+import {login, loginSelector} from 'src/store/loginSlice';
+
 interface AuthParam  {
   code: string
 }
 export function Auth() {
   const { code } = useParams<AuthParam>(); 
-  const [ content, contentUpdate ] = useState(<div>Logining...</div>);
-  const { save } = useContext(LoginContext);
+  const dispatch = useDispatch();
+  const loginState = useSelector(loginSelector)
   useEffect(() => {
     const loginFun = async () => {
-      const resp = await auth(code);
-      if (resp.status === 200) {
-        save({login: true, type: resp.type, name: resp.name, id: resp.id, token: resp.token});
-        contentUpdate(_ => <Redirect to={{pathname: '/admin'}} />);
-        sessionStorage.setItem('token', resp.token);
-      } else {
-        contentUpdate(_ => <div>登录失败，请重新获取连接</div>);
-      }
+      dispatch(login(code));
     }
     loginFun();
-  }, [code, save])
-  return content;
+  }, [code, dispatch])
+  return <>
+    { loginState.login ?
+      <Redirect to={{pathname: '/admin'}} /> :
+      loginState.failed ?
+      <div>登录失败，请重新获取连接</div> :
+      <div>Logining...</div>
+    }
+</>;
 }

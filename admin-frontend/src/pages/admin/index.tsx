@@ -1,12 +1,13 @@
 import {BugOutlined, SettingOutlined} from '@ant-design/icons';
 import {Layout, Menu} from 'antd';
-import React, {useContext, useState} from "react";
-import {LoginContext} from "src/utils/context";
+import React, {useState} from "react";
+import {useSelector} from 'react-redux';
+import {loginSelector} from 'src/store/loginSlice';
 import './admin.css';
 import {ConfigPage} from './configPage';
 
 export function Admin() {
-  const { login } = useContext(LoginContext);
+  const login = useSelector(loginSelector)
   const [ tab, changeTab ] = useState("manage");
   return (
   <Layout style={{ minHeight: '100vh' }}>

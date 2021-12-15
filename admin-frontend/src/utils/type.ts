@@ -9,7 +9,8 @@ export interface LoginStatus {
   name: string
   id: string
   // groups: Array<QQGroup>
-  token: string
+  token: string,
+  failed: boolean,
 }
 
 export type LoginContextType = {

@@ -1,26 +1,21 @@
 import {Button, Collapse, Empty, Row} from 'antd';
 import React, {ReactElement, useEffect, useState} from "react";
-import {getSubscribe} from 'src/api/config';
-import {SubscribeCard} from 'src/component/subscribeCard';
-import {SubscribeResp} from 'src/utils/type';
+import {useDispatch, useSelector} from 'react-redux';
 import {AddModal} from 'src/component/addSubsModal';
+import {SubscribeCard} from 'src/component/subscribeCard';
+import {groupConfigSelector, updateGroupSubs} from 'src/store/groupConfigSlice';
 
 interface ConfigPageProp {
   tab: string
 }
 export function ConfigPage(prop: ConfigPageProp) {
-  const [ configData, setConfigData ] = useState<SubscribeResp>({});
   const [ showModal, setShowModal ] = useState<boolean>(false);
   const [ currentAddingGroupNumber, setCurrentAddingGroupNumber ] = useState('');
-  const loadData = () => {
-    getSubscribe()
-      .then(res => {
-          setConfigData(_ => res);
-        });
-  }
+  const configData = useSelector(groupConfigSelector);
+  const dispatcher = useDispatch();
   useEffect(() => {
-    loadData()
-  }, [prop.tab]);
+    dispatcher(updateGroupSubs())
+  }, [prop.tab, dispatcher]);
   const clickNew = (groupNumber: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
     setShowModal(_ => true);
     setCurrentAddingGroupNumber(groupNumber);
@@ -40,8 +35,7 @@ export function ConfigPage(prop: ConfigPageProp) {
             <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32},
               { xs: 8, sm: 16, md: 24, lg: 32}]} align="middle">
             {value.subscribes.map((subs, idx) => <SubscribeCard key={idx}
-              groupNumber={key} config={subs} groupSubscribes={configData} reload={loadData}
-              />)}
+              groupNumber={key} config={subs} />)}
           </Row>
         </Collapse.Panel>
         )
@@ -52,7 +46,8 @@ export function ConfigPage(prop: ConfigPageProp) {
         {groups}
       </Collapse>
       <AddModal groupNumber={currentAddingGroupNumber} showModal={showModal} 
-        refresh={loadData} setShowModal={(s: boolean) => setShowModal(_ => s)} />
+        refresh={() => dispatcher(updateGroupSubs())}
+        setShowModal={(s: boolean) => setShowModal(_ => s)} />
     </div>
     )
   }

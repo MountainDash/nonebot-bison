@@ -60,7 +60,10 @@ export const loginSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    doLogin: loginAction
+    doLogin: loginAction,
+    doClearLogin: (state) => {
+      state.login = false
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, loginAction);
@@ -70,7 +73,7 @@ export const loginSlice = createSlice({
   }
 })
 
-export const { doLogin } = loginSlice.actions
+export const { doLogin, doClearLogin } = loginSlice.actions
 
 export const loadLoginState = (): ThunkAction<void, RootState, unknown, AnyAction> =>
   (dispatch, getState) => {
@@ -94,6 +97,12 @@ export const loadLoginState = (): ThunkAction<void, RootState, unknown, AnyActio
     }
   }
 
+export const clearLoginStatus = (): ThunkAction<void, RootState, unknown, AnyAction> =>
+  (dispatch) => {
+    localStorage.removeItem('loginInfo')
+    localStorage.removeItem('token')
+    dispatch(doClearLogin())
+  }
 export const loginSelector = (state: RootState) => state.login
 
 export default loginSlice.reducer

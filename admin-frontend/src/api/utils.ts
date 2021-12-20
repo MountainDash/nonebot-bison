@@ -1,8 +1,14 @@
-import axios from "axios";
+import axios, {AxiosError} from "axios";
+import {Store} from "src/store";
+import { clearLoginStatus } from 'src/store/loginSlice';
 // import { useContext } from 'react';
 // import { LoginContext } from "../utils/context";
 
 export const baseUrl = '/bison/api/'
+let store: Store
+export const injectStore = (_store: Store) => {
+  store = _store
+}
 
 // const loginStatus = useContext(LoginContext);
 axios.interceptors.request.use(function (config) {
@@ -37,4 +43,9 @@ axios.interceptors.response.use(function (response) {
   // }
   // response.data = parseToMap(data);
   return response;
+}, function(error: AxiosError) {
+  if(error.response && error.response.status === 401) {
+    store.dispatch(clearLoginStatus());
+  }
+  return Promise.reject(error);
 });

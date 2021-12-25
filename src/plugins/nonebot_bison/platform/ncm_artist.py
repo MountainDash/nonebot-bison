@@ -13,7 +13,7 @@ class NcmArtist(TargetMixin, NewMessage):
     enabled = True
     is_common = True
     schedule_type = 'interval'
-    schedule_kw = {'minutes': 10}
+    schedule_kw = {'minutes': 1}
     name = "网易云-歌手"
 
     async def get_target_name(self, target: Target) -> Optional[str]:

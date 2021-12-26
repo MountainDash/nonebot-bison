@@ -42,7 +42,7 @@ class Post:
         return Image.open(pic_buffer)
 
     def _check_image_square(self, size: tuple[int, int]) -> bool:
-        return abs(size[0] - size[1]) / size[0] < 0.01
+        return abs(size[0] - size[1]) / size[0] < 0.05
 
     async def _pic_merge(self) -> None:
         if len(self.pics) < 3:

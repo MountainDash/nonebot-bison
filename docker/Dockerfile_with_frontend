@@ -1,9 +1,12 @@
 FROM python:3.9
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
+RUN pip install playwright && playwright install chromium
 COPY ./pyproject.toml ./poetry.lock* /app/
 RUN poetry install --no-root --no-dev
 ADD src /app/src
 ADD bot.py /app/
 ENV HOST=0.0.0.0
 CMD ["python", "bot.py"]
+
+# vim: ft=dockerfile

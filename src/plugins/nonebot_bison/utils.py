@@ -63,6 +63,7 @@ class Render(metaclass=Singleton):
     async def render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
             operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> Optional[bytes]:
         retry_times = 0
+        self.interval_log = ''
         while retry_times < 3:
             try:
                 return await asyncio.wait_for(self.do_render(url, viewport, target, operation), 20)

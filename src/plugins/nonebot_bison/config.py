@@ -105,6 +105,7 @@ class Config(metaclass=Singleton):
             self.user_target.update({"subs": subs}, query)
         else:
             raise NoSuchUserException()
+        self.update_send_cache()
 
     def update_send_cache(self):
         res = {target_type: defaultdict(list) for target_type in supported_target_type}

@@ -1,7 +1,7 @@
 FROM python:3.9
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
-RUN pip install playwright && playwright install chromium
+RUN pip install playwright && playwright install chromium && playwright install-deps
 COPY ./pyproject.toml ./poetry.lock* /app/
 RUN poetry install --no-root --no-dev
 ADD src /app/src

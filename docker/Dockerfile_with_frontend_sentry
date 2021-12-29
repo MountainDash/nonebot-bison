@@ -1,7 +1,7 @@
 FROM python:3.9
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
-RUN pip install playwright && playwright install chromium
+RUN pip install playwright && playwright install chromium && playwright install-deps
 COPY ./pyproject.toml ./poetry.lock* ./bot.py /app/
 RUN poetry add nonebot-plugin-sentry && \
     sed '/nonebot.load_builtin_plugins()/a nonebot.load_plugin("nonebot_plugin_sentry")' -i bot.py

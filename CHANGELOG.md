@@ -38,3 +38,5 @@
 ## [0.4.3]
 - 使用playwright替换pypeteer（大概能修复渲染失败图片之后CPU跑满的问题）
 - 增加了help插件`nonebot-plugin-help`
+- 修复playwright漏内存的问题
+- 增加过滤nonebot日志功能

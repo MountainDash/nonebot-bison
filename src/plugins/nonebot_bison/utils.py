@@ -4,15 +4,17 @@ from html import escape
 import os
 import re
 import subprocess
+import sys
 from time import asctime
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional, Union
 
 from bs4 import BeautifulSoup as bs
 import nonebot
 from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import logger
+from nonebot.log import default_format
 from playwright._impl._driver import compute_driver_executable
-from playwright.async_api import Browser, Page, async_playwright, Playwright
+from playwright.async_api import Browser, Page, Playwright, async_playwright
 
 from .plugin_config import plugin_config
 
@@ -146,3 +148,30 @@ def html_to_text(html: str, query_dict: dict = {}) -> str:
     assert node is not None
     return node.text.strip()
 
+
+class Filter:
+
+    def __init__(self) -> None:
+        self.level: Union[int, str] = "DEBUG"
+
+    def __call__(self, record):
+        module_name: str = record["name"]
+        module = sys.modules.get(module_name)
+        if module:
+            module_name = getattr(module, "__module_name__", module_name)
+        record["name"] = module_name.split(".")[0]
+        levelno = logger.level(self.level).no if isinstance(self.level,
+                                                            str) else self.level
+        nonebot_warning_level = logger.level("WARNING").no
+        return record["level"].no >= levelno if record["name"] != "nonebot" \
+                else record["level"].no >= nonebot_warning_level
+
+if plugin_config.bison_filter_log:
+    logger.remove()
+    default_filter = Filter()
+    logger.add(sys.stdout,
+               colorize=True,
+               diagnose=False,
+               filter=default_filter,
+               format=default_format)
+    logger.success("Muted info & success from nonebot") 

@@ -12,7 +12,7 @@ import nonebot
 from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import logger
 from playwright._impl._driver import compute_driver_executable
-from playwright.async_api import Browser, Page, async_playwright
+from playwright.async_api import Browser, Page, async_playwright, Playwright
 
 from .plugin_config import plugin_config
 
@@ -40,8 +40,7 @@ class Render(metaclass=Singleton):
         self.interval_log = ''
         self.remote_browser = False
 
-    async def get_browser(self) -> Browser:
-        playwright = await async_playwright().start()
+    async def get_browser(self, playwright: Playwright) -> Browser:
         if plugin_config.bison_browser:
             if plugin_config.bison_browser.startswith('local:'):
                 path = plugin_config.bison_browser.split('local:', 1)[1]
@@ -81,34 +80,35 @@ class Render(metaclass=Singleton):
     async def do_render(self, url: str, viewport: Optional[dict] = None, target: Optional[str] = None,
             operation: Optional[Callable[[Page], Awaitable[None]]] = None) -> Optional[bytes]:
         async with self.lock:
-            self.browser = await self.get_browser()
-            self._inter_log('open browser')
-            if viewport:
-                constext = await self.browser.new_context(
-                        viewport={'width': viewport['width'], 'height': viewport['height']},
-                        device_scale_factor=viewport.get('deviceScaleFactor', 1))
-                page = await constext.new_page()
-            else:
-                page = await self.browser.new_page()
-            if operation:
-                await operation(page)
-            else:
-                await page.goto(url)
-            self._inter_log('open page')
-            if target:
-                target_ele = page.locator(target)
-                if not target_ele:
-                    return None
-                data = await target_ele.screenshot(type='jpeg')
-            else:
-                data = await page.screenshot(type='jpeg')
-            self._inter_log('screenshot')
-            await page.close()
-            self._inter_log('close page')
-            await self.close_browser()
-            self._inter_log('close browser')
-            assert(isinstance(data, bytes))
-            return data
+            async with async_playwright() as playwright:
+                self.browser = await self.get_browser(playwright)
+                self._inter_log('open browser')
+                if viewport:
+                    constext = await self.browser.new_context(
+                            viewport={'width': viewport['width'], 'height': viewport['height']},
+                            device_scale_factor=viewport.get('deviceScaleFactor', 1))
+                    page = await constext.new_page()
+                else:
+                    page = await self.browser.new_page()
+                if operation:
+                    await operation(page)
+                else:
+                    await page.goto(url)
+                self._inter_log('open page')
+                if target:
+                    target_ele = page.locator(target)
+                    if not target_ele:
+                        return None
+                    data = await target_ele.screenshot(type='jpeg')
+                else:
+                    data = await page.screenshot(type='jpeg')
+                self._inter_log('screenshot')
+                await page.close()
+                self._inter_log('close page')
+                await self.close_browser()
+                self._inter_log('close browser')
+                assert(isinstance(data, bytes))
+                return data
 
     async def text_to_pic(self, text: str) -> Optional[bytes]:
         lines = text.split('\n')

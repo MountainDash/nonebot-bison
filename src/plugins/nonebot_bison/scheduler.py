@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -53,17 +54,17 @@ for platform_name, platform in platform_manager.items():
                 fetch_and_send, platform.schedule_type, **platform.schedule_kw,
                 args=(platform_name,))
 
+class CustomLogHandler(LoguruHandler):
+
+    def filter(self, record: logging.LogRecord):
+        return record.msg != ('Execution of job "%s" '
+                'skipped: maximum number of running instances reached (%d)')
+
+
 if plugin_config.bison_use_queue:
     scheduler.add_job(do_send_msgs, 'interval', seconds=0.3, coalesce=True)
 
-    class SchedulerLogFilter(logging.Filter):
-
-        def filter(self, record: logging.LogRecord) -> bool:
-            logger.debug("logRecord", record, record.getMessage())
-            return not (record.name == "apscheduler" and 'skipped: maximum number of running instances reached' in record.getMessage())
-
     aps_logger = logging.getLogger("apscheduler")
     aps_logger.setLevel(30)
-    aps_logger.addFilter(SchedulerLogFilter())
     aps_logger.handlers.clear()
-    aps_logger.addHandler(LoguruHandler())
+    aps_logger.addHandler(CustomLogHandler())

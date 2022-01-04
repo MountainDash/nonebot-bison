@@ -174,4 +174,8 @@ if plugin_config.bison_filter_log:
                diagnose=False,
                filter=default_filter,
                format=default_format)
+    config = nonebot.get_driver().config
     logger.success("Muted info & success from nonebot") 
+    default_filter.level = (
+            "DEBUG" if config.debug else
+            "INFO") if config.log_level is None else config.log_level

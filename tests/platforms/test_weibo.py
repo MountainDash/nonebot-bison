@@ -32,7 +32,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
     detail_router = respx.get("https://m.weibo.cn/detail/4649031014551911")
     ak_list_router.mock(return_value=Response(200, json=get_json('weibo_ak_list_0.json')))
-    detail_router.mock(return_value=Response(200, text=get_file('weibo_detail_4649031014551911.html')))
+    detail_router.mock(return_value=Response(200, text=get_file('weibo_detail_4649031014551911')))
     target = '6279793937'
     res = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert(ak_list_router.called)
@@ -73,7 +73,7 @@ async def test_classification(weibo):
 @respx.mock
 async def test_parse_long(weibo):
     detail_router = respx.get("https://m.weibo.cn/detail/4645748019299849")
-    detail_router.mock(return_value=Response(200, text=get_file('weibo_detail_4645748019299849.html')))
+    detail_router.mock(return_value=Response(200, text=get_file('weibo_detail_4645748019299849')))
     raw_post = get_json('weibo_ak_list_1.json')['data']['cards'][0]
     post = await weibo.parse(raw_post)
     assert(not '全文' in post.text)

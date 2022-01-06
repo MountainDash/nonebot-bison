@@ -141,7 +141,7 @@ jobs:
       - image: cimg/python:3.9
       - image: browserless/chrome
     environment:
-      BISON_BROWSER: ws://localhost:3000
+      BISON_BROWSER: wsc://localhost:3000
     steps:
       - checkout
       # - run: sed -e '41,45d' -i pyproject.toml

@@ -85,7 +85,7 @@ workflows:
           dockerfile: docker/Dockerfile_with_frontend_sentry
           name: "docker/publish-sentry"
           tag: sentry, ${CIRCLE_TAG}-sentry
-          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG}-sentry'
+          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:sentry'
       - docker/publish:
           <<: *docker-push
           name: "docker/publish-debug-sentry"

@@ -75,10 +75,18 @@ sidebar: auto
 * `BISON_USE_PIC`: 将文字渲染成图片后进行发送，多用于规避风控
 * `BISON_BROWSER`: 本插件使用Chrome来渲染图片
   * 使用browserless提供的Chrome管理服务，设置为`ws://xxxxxxxx`，值为Chrome Endpoint（推荐）
+  * 使用cdp连接相关服务，设置为`wsc://xxxxxxxxx`
   * 使用本地安装的Chrome，设置为`local:<chrome path>`，例如`local:/usr/bin/google-chrome-stable`
-  * 如果不进行配置，那么会在启动时候自动进行安装（不推荐）
+  * 如果不进行配置，那么会在启动时候自动进行安装，在官方的docker镜像中已经安装了浏览器
+::: warning
+截止发布时，本项目尚不能完全与browserless兼容，目前建议使用镜像内自带的浏览器，即
+不要配置这个变量
+:::
 * `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison`，如果你的插件部署
     在服务器上，建议配置为`http://<你的服务器ip>:8080/bison`
+* `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的warning级以下的log，如果你的bot只运行了这个插件可以考虑
+开启，默认关
+* `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
 ## 使用
 ::: warning
 本节假设`COMMAND_START`设置中包含`''`，如果出现bot不响应的问题，请先

@@ -40,3 +40,5 @@
 - 增加了help插件`nonebot-plugin-help`
 - 修复playwright漏内存的问题
 - 增加过滤nonebot日志功能
+- 前端可以刷新了（之前居然不可以）
+- 在镜像里塞进了浏览器（导致镜像体积起飞）

@@ -1,5 +1,5 @@
 import nonebot
-from nonebot.adapters.cqhttp.bot import Bot
+from nonebot.adapters.onebot.v11.bot import Bot
 
 from ..config import Config, NoSuchSubscribeException, NoSuchUserException
 from ..platform import check_sub_target, platform_manager

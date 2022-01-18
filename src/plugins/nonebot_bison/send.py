@@ -1,7 +1,7 @@
 import time
 
 from nonebot import logger
-from nonebot.adapters.cqhttp.bot import Bot
+from nonebot.adapters.onebot.v11.bot import Bot
 
 from .plugin_config import plugin_config
 

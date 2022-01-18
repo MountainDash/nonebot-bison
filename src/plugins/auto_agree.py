@@ -1,9 +1,9 @@
 from nonebot import on_request, logger
-from nonebot.adapters.cqhttp import Bot, Event
+from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.permission import SUPERUSER
 from nonebot.typing import T_State
-from nonebot.adapters.cqhttp.permission import PRIVATE_FRIEND
-from nonebot.adapters.cqhttp.event import FriendRequestEvent, GroupRequestEvent, RequestEvent
+from nonebot.adapters.onebot.v11.permission import PRIVATE_FRIEND
+from nonebot.adapters.onebot.v11.event import FriendRequestEvent, GroupRequestEvent, RequestEvent
 
 friend_req = on_request(priority=5)
 

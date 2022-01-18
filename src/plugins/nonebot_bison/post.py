@@ -7,7 +7,7 @@ from typing import Optional, Union
 from PIL import Image
 import httpx
 from nonebot import logger
-from nonebot.adapters.cqhttp.message import Message, MessageSegment
+from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
 from .plugin_config import plugin_config
 from .utils import parse_text

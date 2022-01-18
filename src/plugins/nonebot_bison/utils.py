@@ -10,7 +10,7 @@ from typing import Awaitable, Callable, Optional, Union
 
 from bs4 import BeautifulSoup as bs
 import nonebot
-from nonebot.adapters.cqhttp.message import MessageSegment
+from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebot.log import logger
 from nonebot.log import default_format
 from playwright._impl._driver import compute_driver_executable

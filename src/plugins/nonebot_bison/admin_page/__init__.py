@@ -5,8 +5,8 @@ from typing import Union
 
 from fastapi.staticfiles import StaticFiles
 from nonebot import get_driver, on_command
-from nonebot.adapters.cqhttp.bot import Bot
-from nonebot.adapters.cqhttp.event import GroupMessageEvent, PrivateMessageEvent
+from nonebot.adapters.onebot.v11 import Bot
+from nonebot.adapters.onebot.v11.event import GroupMessageEvent, PrivateMessageEvent
 from nonebot.drivers.fastapi import Driver
 from nonebot.log import logger
 from nonebot.rule import to_me

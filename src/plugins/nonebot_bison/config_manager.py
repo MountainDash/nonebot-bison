@@ -3,9 +3,9 @@ from typing import Type
 from nonebot import logger, on_command
 from nonebot.adapters._bot import Bot as AbstractBot
 from nonebot.adapters._event import Event as AbstractEvent
-from nonebot.adapters.cqhttp import Bot, Event, GroupMessageEvent
-from nonebot.adapters.cqhttp.message import Message
-from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_MEMBER, GROUP_OWNER
+from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent
+from nonebot.adapters.onebot.v11.message import Message
+from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_MEMBER, GROUP_OWNER
 from nonebot.matcher import Matcher
 from nonebot.permission import Permission, SUPERUSER
 from nonebot.rule import to_me

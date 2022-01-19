@@ -149,6 +149,9 @@ jobs:
       - python/install-packages:
           pkg-manager: poetry
       - run:
+          name: Install browser
+          command: poetry run playwright install-deps chromium
+      - run:
           name: Coverage test
           command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
       - store_test_results:

@@ -276,6 +276,7 @@ class NoTargetGroup(Platform, abstract=True):
     enable_tag = False
     DUMMY_STR = '_DUMMY'
     enabled = True
+    has_target = False
 
     def __init__(self, platform_list: list[Platform]):
         self.platform_list = platform_list

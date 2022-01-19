@@ -150,7 +150,7 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Coverage test
-          command: poetry run -m pytest pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
+          command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
       - store_test_results:
           path: test-results
       - run:

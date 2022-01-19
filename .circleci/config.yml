@@ -11,6 +11,7 @@ orbs:
   swissknife: roopakv/swissknife@0.59.0
   docker: circleci/docker@1.7.0
   docker-cache: cci-x/docker-registry-image-cache@0.2.0
+  codecov: codecov/codecov@3.2.2
 
 workflows:
   build-test-publish:
@@ -140,8 +141,8 @@ jobs:
     docker:
       - image: cimg/python:3.9
       - image: browserless/chrome
-    environment:
-      BISON_BROWSER: wsc://localhost:3000
+    # environment:
+    #   BISON_BROWSER: wsc://localhost:3000
     steps:
       - checkout
       # - run: sed -e '41,45d' -i pyproject.toml
@@ -149,12 +150,14 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Coverage test
-          command: poetry run coverage run -m pytest --junitxml=test-results/junit.xml -k 'not compare'
+          command: poetry run -m pytest pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
       - store_test_results:
           path: test-results
       - run:
           name: Collect coverage
           command: poetry run coverage html --include='src/*'
+      - codecov/upload:
+          file: coverage.xml
       - store_artifacts:
           path: htmlcov
   build:

@@ -9,9 +9,9 @@ from nonebot import logger
 
 from ..post import Post
 from ..types import *
-from .platform import NewMessage, TargetMixin
+from .platform import NewMessage
 
-class Weibo(NewMessage, TargetMixin):
+class Weibo(NewMessage):
 
     categories = {
             1: '转发',
@@ -26,6 +26,7 @@ class Weibo(NewMessage, TargetMixin):
     is_common = True
     schedule_type = 'interval'
     schedule_kw = {'seconds': 3}
+    has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:

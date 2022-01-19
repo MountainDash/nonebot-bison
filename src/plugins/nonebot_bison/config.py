@@ -1,7 +1,7 @@
 from collections import defaultdict
 from os import path
 import os
-from typing import DefaultDict, Mapping
+from typing import DefaultDict, Literal, Mapping, TypedDict
 
 import nonebot
 from nonebot import logger
@@ -34,6 +34,18 @@ class NoSuchUserException(Exception):
 class NoSuchSubscribeException(Exception):
     pass
 
+class SubscribeContent(TypedDict):
+    target: str
+    target_type: str
+    target_name: str
+    cats: list[int]
+    tags: list[str]
+
+class ConfigContent(TypedDict):
+    user: str
+    user_type: Literal["group", "private"]
+    subs: list[SubscribeContent]
+
 class Config(metaclass=Singleton):
 
     migrate_version = 2
@@ -64,7 +76,7 @@ class Config(metaclass=Singleton):
             })
         self.update_send_cache()
 
-    def list_subscribe(self, user, user_type):
+    def list_subscribe(self, user, user_type) -> list[SubscribeContent]:
         query = Query()
         if user_sub := self.user_target.get((query.user == user) & (query.user_type ==user_type)):
             return user_sub['subs']

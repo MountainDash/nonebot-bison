@@ -3,9 +3,9 @@ from typing import Any, Optional
 import httpx
 from ..post import Post
 from ..types import RawPost, Target
-from .platform import TargetMixin, NewMessage
+from .platform import NewMessage
 
-class NcmArtist(TargetMixin, NewMessage):
+class NcmArtist(NewMessage):
 
     categories = {}
     platform_name = 'ncm-artist'
@@ -15,6 +15,7 @@ class NcmArtist(TargetMixin, NewMessage):
     schedule_type = 'interval'
     schedule_kw = {'minutes': 1}
     name = "网易云-歌手"
+    has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:

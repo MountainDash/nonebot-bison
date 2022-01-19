@@ -14,7 +14,7 @@ async def check_sub_target(target_type, target):
     return await platform_manager[target_type].get_target_name(target)
 
 _platform_list = defaultdict(list)
-for _platform in Platform.registory:
+for _platform in Platform.registry:
     if not _platform.enabled:
         continue
     _platform_list[_platform.platform_name].append(_platform)

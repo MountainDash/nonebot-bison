@@ -2,7 +2,6 @@ import pytest
 import typing
 import respx
 from httpx import Response
-import feedparser
 
 if typing.TYPE_CHECKING:
     import sys

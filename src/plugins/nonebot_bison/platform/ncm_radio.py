@@ -3,9 +3,9 @@ from typing import Any, Optional
 import httpx
 from ..post import Post
 from ..types import RawPost, Target
-from .platform import TargetMixin, NewMessage
+from .platform import NewMessage
 
-class NcmRadio(TargetMixin, NewMessage):
+class NcmRadio(NewMessage):
 
     categories = {}
     platform_name = 'ncm-radio'
@@ -15,6 +15,7 @@ class NcmRadio(TargetMixin, NewMessage):
     schedule_type = 'interval'
     schedule_kw = {'minutes': 10}
     name = "网易云-电台"
+    has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:

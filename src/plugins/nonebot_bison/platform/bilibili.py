@@ -5,9 +5,9 @@ import httpx
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from .platform import NewMessage, TargetMixin, CategoryNotSupport
+from .platform import NewMessage, CategoryNotSupport
 
-class Bilibili(NewMessage, TargetMixin):
+class Bilibili(NewMessage):
 
     categories = {
             1: "一般动态",
@@ -24,6 +24,7 @@ class Bilibili(NewMessage, TargetMixin):
     schedule_type = 'interval'
     schedule_kw = {'seconds': 10}
     name = 'B站'
+    has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:

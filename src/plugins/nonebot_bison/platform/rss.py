@@ -7,9 +7,9 @@ import httpx
 
 from ..post import Post
 from ..types import RawPost, Target
-from .platform import NewMessage, TargetMixin
+from .platform import NewMessage
 
-class Rss(NewMessage, TargetMixin):
+class Rss(NewMessage):
 
     categories = {}
     enable_tag = False
@@ -19,6 +19,7 @@ class Rss(NewMessage, TargetMixin):
     is_common = True
     schedule_type = 'interval'
     schedule_kw = {'seconds': 30}
+    has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:

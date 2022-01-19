@@ -38,8 +38,7 @@ def user_info_factory(plugin_module: 'nonebot_bison', dummy_user):
 
 @pytest.fixture
 def mock_platform_without_cats_tags(plugin_module: 'nonebot_bison'):
-    class MockPlatform(plugin_module.platform.platform.NewMessage,
-            plugin_module.platform.platform.TargetMixin):
+    class MockPlatform(plugin_module.platform.platform.NewMessage):
 
         platform_name = 'mock_platform'
         name = 'Mock Platform'
@@ -48,6 +47,7 @@ def mock_platform_without_cats_tags(plugin_module: 'nonebot_bison'):
         schedule_interval = 10
         enable_tag = False
         categories = {}
+        has_target = True
 
         def __init__(self):
             self.sub_index = 0
@@ -77,8 +77,7 @@ def mock_platform_without_cats_tags(plugin_module: 'nonebot_bison'):
 
 @pytest.fixture
 def mock_platform(plugin_module: 'nonebot_bison'):
-    class MockPlatform(plugin_module.platform.platform.NewMessage,
-            plugin_module.platform.platform.TargetMixin):
+    class MockPlatform(plugin_module.platform.platform.NewMessage):
 
         platform_name = 'mock_platform'
         name = 'Mock Platform'
@@ -86,6 +85,7 @@ def mock_platform(plugin_module: 'nonebot_bison'):
         is_common = True
         schedule_interval = 10
         enable_tag = True
+        has_target = True
         categories = {
                 1: '转发',
                 2: '视频',
@@ -124,8 +124,7 @@ def mock_platform(plugin_module: 'nonebot_bison'):
 
 @pytest.fixture
 def mock_platform_no_target(plugin_module: 'nonebot_bison'):
-    class MockPlatform(plugin_module.platform.platform.NewMessage,
-            plugin_module.platform.platform.NoTargetMixin):
+    class MockPlatform(plugin_module.platform.platform.NewMessage):
 
         platform_name = 'mock_platform'
         name = 'Mock Platform'
@@ -134,6 +133,7 @@ def mock_platform_no_target(plugin_module: 'nonebot_bison'):
         schedule_type = 'interval'
         schedule_kw = {'seconds': 30}
         enable_tag = True
+        has_target = False
         categories = {
                 1: '转发',
                 2: '视频',
@@ -175,8 +175,7 @@ def mock_platform_no_target(plugin_module: 'nonebot_bison'):
 
 @pytest.fixture
 def mock_platform_no_target_2(plugin_module: 'nonebot_bison'):
-    class MockPlatform(plugin_module.platform.platform.NewMessage,
-            plugin_module.platform.platform.NoTargetMixin):
+    class MockPlatform(plugin_module.platform.platform.NewMessage):
 
         platform_name = 'mock_platform'
         name = 'Mock Platform'
@@ -185,6 +184,7 @@ def mock_platform_no_target_2(plugin_module: 'nonebot_bison'):
         schedule_kw = {'seconds': 30}
         is_common = True
         enable_tag = True
+        has_target = False
         categories = {
                 4: 'leixing4',
                 5: 'leixing5',
@@ -231,8 +231,7 @@ def mock_platform_no_target_2(plugin_module: 'nonebot_bison'):
 
 @pytest.fixture
 def mock_status_change(plugin_module: 'nonebot_bison'):
-    class MockPlatform(plugin_module.platform.platform.StatusChange,
-            plugin_module.platform.platform.NoTargetMixin):
+    class MockPlatform(plugin_module.platform.platform.StatusChange):
 
         platform_name = 'mock_platform'
         name = 'Mock Platform'
@@ -241,6 +240,7 @@ def mock_status_change(plugin_module: 'nonebot_bison'):
         enable_tag = False
         schedule_type = 'interval'
         schedule_kw = {'seconds': 10}
+        has_target = False
         categories = {
                 1: '转发',
                 2: '视频',

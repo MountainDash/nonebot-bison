@@ -7,10 +7,10 @@ import httpx
 from ..post import Post
 from ..types import Category, RawPost, Target
 from ..utils import Render
-from .platform import CategoryNotSupport, NewMessage, NoTargetMixin, StatusChange
+from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
-class Arknights(NewMessage, NoTargetMixin):
+class Arknights(NewMessage):
 
     categories = {1: '游戏公告'}
     platform_name = 'arknights'
@@ -20,6 +20,7 @@ class Arknights(NewMessage, NoTargetMixin):
     is_common = False
     schedule_type = 'interval'
     schedule_kw = {'seconds': 30}
+    has_target = False
 
     async def get_target_name(self, _: Target) -> str:
         return '明日方舟游戏信息'
@@ -60,7 +61,7 @@ class Arknights(NewMessage, NoTargetMixin):
             raise CategoryNotSupport()
         return Post('arknights', text=text, url='', target_name="明日方舟游戏内公告", pics=pics, compress=True, override_use_pic=False)
 
-class AkVersion(NoTargetMixin, StatusChange):
+class AkVersion(StatusChange):
 
     categories = {2: '更新信息'}
     platform_name = 'arknights'
@@ -70,6 +71,7 @@ class AkVersion(NoTargetMixin, StatusChange):
     is_common = False
     schedule_type = 'interval'
     schedule_kw = {'seconds': 30}
+    has_target = False
 
     async def get_target_name(self, _: Target) -> str:
         return '明日方舟游戏信息'
@@ -104,7 +106,7 @@ class AkVersion(NoTargetMixin, StatusChange):
     async def parse(self, raw_post):
         return raw_post
 
-class MonsterSiren(NewMessage, NoTargetMixin):
+class MonsterSiren(NewMessage):
 
     categories = {3: '塞壬唱片新闻'}
     platform_name = 'arknights'
@@ -114,6 +116,7 @@ class MonsterSiren(NewMessage, NoTargetMixin):
     is_common = False
     schedule_type = 'interval'
     schedule_kw = {'seconds': 30}
+    has_target = False
 
     async def get_target_name(self, _: Target) -> str:
         return '明日方舟游戏信息'

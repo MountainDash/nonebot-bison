@@ -2,6 +2,7 @@ import asyncio
 import base64
 from html import escape
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -15,6 +16,8 @@ from nonebot.log import logger
 from nonebot.log import default_format
 from playwright._impl._driver import compute_driver_executable
 from playwright.async_api import Browser, Page, Playwright, async_playwright
+from uvicorn.loops import asyncio as _asyncio
+from uvicorn import config
 
 from .plugin_config import plugin_config
 
@@ -184,3 +187,17 @@ if plugin_config.bison_filter_log:
     default_filter.level = (
             "DEBUG" if config.debug else
             "INFO") if config.log_level is None else config.log_level
+
+# monkey patch
+def asyncio_setup():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+@property
+def should_reload(self):
+    return False
+
+if platform.system() == "Windows":
+    _asyncio.asyncio_setup = asyncio_setup
+    config.Config.should_reload = should_reload # type:ignore
+    logger.warning('检测到当前为 Windows 系统，已自动注入猴子补丁')

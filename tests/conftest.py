@@ -1,6 +1,7 @@
 import pytest
 import nonebot
 import typing
+from nonebug.fixture import nonebug_init, nonebug_clear
 
 if typing.TYPE_CHECKING:
     import sys
@@ -24,3 +25,9 @@ def dummy_user_subinfo(plugin_module: 'nonebot_bison'):
             tag_getter=lambda _: []
             )
 
+@pytest.fixture
+def n_plugin_module(tmpdir):
+    nonebot.init(bison_config_path=str(tmpdir))
+    nonebot.load_plugins('src/plugins')
+    yield None
+    nonebug_clear()

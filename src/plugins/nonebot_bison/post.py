@@ -1,16 +1,17 @@
 import base64
-from dataclasses import dataclass, field
-from functools import reduce
 from io import BytesIO
-from typing import Optional, Union
+from functools import reduce
+from typing import Union, Optional
+from dataclasses import field, dataclass
 
-from PIL import Image
 import httpx
+from PIL import Image
 from nonebot import logger
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
-from .plugin_config import plugin_config
 from .utils import parse_text
+from .plugin_config import plugin_config
+
 
 @dataclass
 class Post:
@@ -21,7 +22,9 @@ class Post:
     target_name: Optional[str] = None
     compress: bool = False
     override_use_pic: Optional[bool] = None
-    pics: Union[list[Union[str,bytes]], list[str], list[bytes]] = field(default_factory=list)
+    pics: Union[list[Union[str, bytes]], list[str], list[bytes]] = field(
+        default_factory=list
+    )
     extra_msg: list[Message] = field(default_factory=list)
 
     _message: Optional[list] = None
@@ -56,7 +59,7 @@ class Post:
             cur_img = await self._pic_url_to_image(self.pics[i])
             if not self._check_image_square(cur_img.size):
                 return
-            if cur_img.size[1] != images[0].size[1]: # height not equal
+            if cur_img.size[1] != images[0].size[1]:  # height not equal
                 return
             images.append(cur_img)
         _tmp = 0
@@ -65,6 +68,7 @@ class Post:
             _tmp += images[i].size[0]
             x_coord.append(_tmp)
         y_coord = [0, first_image.size[1]]
+
         async def process_row(row: int) -> bool:
             if len(self.pics) < (row + 1) * 3:
                 return False
@@ -86,44 +90,48 @@ class Post:
             images.extend(image_row)
             y_coord.append(y_coord[-1] + row_first_img.size[1])
             return True
+
         if await process_row(1):
-            matrix = (3,2)
+            matrix = (3, 2)
         else:
-            matrix = (3,1)
+            matrix = (3, 1)
         if await process_row(2):
-            matrix = (3,3)
-        logger.info('trigger merge image')
-        target = Image.new('RGB', (x_coord[-1], y_coord[-1]))
+            matrix = (3, 3)
+        logger.info("trigger merge image")
+        target = Image.new("RGB", (x_coord[-1], y_coord[-1]))
         for y in range(matrix[1]):
             for x in range(matrix[0]):
-                target.paste(images[y * matrix[0] + x], (
-                    x_coord[x], y_coord[y], x_coord[x+1], y_coord[y+1]
-                    ))
+                target.paste(
+                    images[y * matrix[0] + x],
+                    (x_coord[x], y_coord[y], x_coord[x + 1], y_coord[y + 1]),
+                )
         target_io = BytesIO()
-        target.save(target_io, 'JPEG')
-        self.pics = self.pics[matrix[0] * matrix[1]: ]
+        target.save(target_io, "JPEG")
+        self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
 
     async def generate_messages(self):
         if self._message is None:
             await self._pic_merge()
             msgs = []
-            text = ''
+            text = ""
             if self.text:
                 if self._use_pic():
-                    text += '{}'.format(self.text)
+                    text += "{}".format(self.text)
                 else:
-                    text += '{}'.format(self.text if len(self.text) < 500 else self.text[:500] + '...')
-            text += '\n来源: {}'.format(self.target_type)
+                    text += "{}".format(
+                        self.text if len(self.text) < 500 else self.text[:500] + "..."
+                    )
+            text += "\n来源: {}".format(self.target_type)
             if self.target_name:
-                text += ' {}'.format(self.target_name)
+                text += " {}".format(self.target_name)
             if self._use_pic():
                 msgs.append(await parse_text(text))
-                if not self.target_type == 'rss' and self.url:
+                if not self.target_type == "rss" and self.url:
                     msgs.append(MessageSegment.text(self.url))
             else:
                 if self.url:
-                    text += ' \n详情: {}'.format(self.url)
+                    text += " \n详情: {}".format(self.url)
                 msgs.append(MessageSegment.text(text))
             for pic in self.pics:
                 # if isinstance(pic, bytes):
@@ -137,10 +145,17 @@ class Post:
         return self._message
 
     def __str__(self):
-        return 'type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}'.format(
-                self.target_type,
-                self.target_name,
-                self.text if len(self.text) < 500 else self.text[:500] + '...',
-                self.url,
-                ', '.join(map(lambda x: 'b64img' if isinstance(x, bytes) or x.startswith('base64') else x, self.pics))
-            )
+        return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(
+            self.target_type,
+            self.target_name,
+            self.text if len(self.text) < 500 else self.text[:500] + "...",
+            self.url,
+            ", ".join(
+                map(
+                    lambda x: "b64img"
+                    if isinstance(x, bytes) or x.startswith("base64")
+                    else x,
+                    self.pics,
+                )
+            ),
+        )

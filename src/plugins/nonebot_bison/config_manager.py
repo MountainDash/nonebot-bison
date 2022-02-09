@@ -1,23 +1,19 @@
 from typing import Type
 
+from nonebot import on_command
 from nonebot.rule import to_me
+from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
-from nonebot import logger, on_command
-from nonebot.adapters._bot import Bot as AbstractBot
-from nonebot.permission import SUPERUSER, Permission
+from nonebot.permission import SUPERUSER
+from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.adapters._event import Event as AbstractEvent
-from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent
-from nonebot.adapters.onebot.v11.permission import (
-    GROUP_ADMIN,
-    GROUP_OWNER,
-    GROUP_MEMBER,
-)
+from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 
 from .types import Target
+from .config import Config
 from .utils import parse_text
-from .config import Config, NoSuchSubscribeException
 from .platform import check_sub_target, platform_manager
 
 
@@ -39,14 +35,14 @@ help_match = on_command("help", rule=to_me(), priority=5)
 
 
 @help_match.handle()
-async def send_help(bot: Bot, event: Event, state: T_State):
+async def send_help():
     message = "使用方法：\n@bot 添加订阅（仅管理员）\n@bot 查询订阅\n@bot 删除订阅（仅管理员）"
     await help_match.finish(Message(await parse_text(message)))
 
 
 def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.handle()
-    async def init_promote(bot: Bot, event: Event, state: T_State):
+    async def init_promote(state: T_State):
         state["_prompt"] = (
             "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
             + "".join(
@@ -60,9 +56,9 @@ def do_add_sub(add_sub: Type[Matcher]):
             + "要查看全部平台请输入：“全部”"
         )
 
-    async def parse_platform(
-        bot: AbstractBot, event: AbstractEvent, state: T_State
-    ) -> None:
+    async def parse_platform(event: AbstractEvent, state: T_State) -> None:
+        if not isinstance(state["platform"], Message):
+            return
         platform = str(event.get_message()).strip()
         if platform == "全部":
             message = "全部平台\n" + "\n".join(
@@ -77,9 +73,10 @@ def do_add_sub(add_sub: Type[Matcher]):
         else:
             await add_sub.reject("平台输入错误")
 
-    @add_sub.got("platform", _gen_prompt_template("{_prompt}"), parse_platform)
-    @add_sub.handle()
-    async def init_id(bot: Bot, event: Event, state: T_State):
+    @add_sub.got(
+        "platform", _gen_prompt_template("{_prompt}"), [Depends(parse_platform)]
+    )
+    async def init_id(state: T_State):
         if platform_manager[state["platform"]].has_target:
             state[
                 "_prompt"
@@ -90,7 +87,9 @@ def do_add_sub(add_sub: Type[Matcher]):
                 Target("")
             )
 
-    async def parse_id(bot: AbstractBot, event: AbstractEvent, state: T_State):
+    async def parse_id(event: AbstractEvent, state: T_State):
+        if not isinstance(state["id"], Message):
+            return
         target = str(event.get_message()).strip()
         try:
             name = await check_sub_target(state["platform"], target)
@@ -101,9 +100,8 @@ def do_add_sub(add_sub: Type[Matcher]):
         except:
             await add_sub.reject("id输入错误")
 
-    @add_sub.got("id", _gen_prompt_template("{_prompt}"), parse_id)
-    @add_sub.handle()
-    async def init_cat(bot: Bot, event: Event, state: T_State):
+    @add_sub.got("id", _gen_prompt_template("{_prompt}"), [Depends(parse_id)])
+    async def init_cat(state: T_State):
         if not platform_manager[state["platform"]].categories:
             state["cats"] = []
             return
@@ -111,7 +109,9 @@ def do_add_sub(add_sub: Type[Matcher]):
             " ".join(list(platform_manager[state["platform"]].categories.values()))
         )
 
-    async def parser_cats(bot: AbstractBot, event: AbstractEvent, state: T_State):
+    async def parser_cats(event: AbstractEvent, state: T_State):
+        if not isinstance(state["cats"], Message):
+            return
         res = []
         for cat in str(event.get_message()).strip().split():
             if cat not in platform_manager[state["platform"]].reverse_category:
@@ -119,23 +119,23 @@ def do_add_sub(add_sub: Type[Matcher]):
             res.append(platform_manager[state["platform"]].reverse_category[cat])
         state["cats"] = res
 
-    @add_sub.got("cats", _gen_prompt_template("{_prompt}"), parser_cats)
-    @add_sub.handle()
-    async def init_tag(bot: Bot, event: Event, state: T_State):
+    @add_sub.got("cats", _gen_prompt_template("{_prompt}"), [Depends(parser_cats)])
+    async def init_tag(state: T_State):
         if not platform_manager[state["platform"]].enable_tag:
             state["tags"] = []
             return
         state["_prompt"] = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
 
-    async def parser_tags(bot: AbstractBot, event: AbstractEvent, state: T_State):
+    async def parser_tags(event: AbstractEvent, state: T_State):
+        if not isinstance(state["tags"], Message):
+            return
         if str(event.get_message()).strip() == "全部标签":
             state["tags"] = []
         else:
             state["tags"] = str(event.get_message()).strip().split()
 
-    @add_sub.got("tags", _gen_prompt_template("{_prompt}"), parser_tags)
-    @add_sub.handle()
-    async def add_sub_process(bot: Bot, event: Event, state: T_State):
+    @add_sub.got("tags", _gen_prompt_template("{_prompt}"), [Depends(parser_tags)])
+    async def add_sub_process(event: Event, state: T_State):
         config = Config()
         config.add_subscribe(
             state.get("_user_id") or event.group_id,
@@ -151,7 +151,7 @@ def do_add_sub(add_sub: Type[Matcher]):
 
 def do_query_sub(query_sub: Type[Matcher]):
     @query_sub.handle()
-    async def _(bot: Bot, event: Event, state: T_State):
+    async def _(event: Event, state: T_State):
         config: Config = Config()
         sub_list = config.list_subscribe(
             state.get("_user_id") or event.group_id, "group"
@@ -201,7 +201,7 @@ def do_del_sub(del_sub: Type[Matcher]):
         await bot.send(event=event, message=Message(await parse_text(res)))
 
     @del_sub.receive()
-    async def do_del(bot, event: Event, state: T_State):
+    async def do_del(event: Event, state: T_State):
         try:
             index = int(str(event.get_message()).strip())
             config = Config()
@@ -212,53 +212,54 @@ def do_del_sub(del_sub: Type[Matcher]):
             )
         except Exception as e:
             await del_sub.reject("删除错误")
-            logger.warning(e)
         else:
             await del_sub.finish("删除成功")
 
 
-async def parse_group_number(bot: AbstractBot, event: AbstractEvent, state: T_State):
-    state[state["_current_key"]] = int(str(event.get_message()))
+async def parse_group_number(event: AbstractEvent, state: T_State):
+    if not isinstance(state["_user_id"], Message):
+        return
+    state["_user_id"] = int(str(event.get_message()))
 
 
 add_sub_matcher = on_command(
     "添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5
 )
 do_add_sub(add_sub_matcher)
-manage_add_sub_mather = on_command("管理-添加订阅", permission=SUPERUSER, priority=5)
+manage_add_sub_matcher = on_command("管理-添加订阅", permission=SUPERUSER, priority=5)
 
 
-@manage_add_sub_mather.got("_user_id", "群号", parse_group_number)
-async def handle(bot: Bot, event: Event, state: T_State):
+@manage_add_sub_matcher.got("_user_id", "群号", [Depends(parse_group_number)])
+async def add_sub_handle():
     pass
 
 
-do_add_sub(manage_add_sub_mather)
+do_add_sub(manage_add_sub_matcher)
 
 
-query_sub_macher = on_command("查询订阅", rule=to_me(), priority=5)
-do_query_sub(query_sub_macher)
-manage_query_sub_mather = on_command("管理-查询订阅", permission=SUPERUSER, priority=5)
+query_sub_matcher = on_command("查询订阅", rule=to_me(), priority=5)
+do_query_sub(query_sub_matcher)
+manage_query_sub_matcher = on_command("管理-查询订阅", permission=SUPERUSER, priority=5)
 
 
-@manage_query_sub_mather.got("_user_id", "群号", parse_group_number)
-async def handle(bot: Bot, event: Event, state: T_State):
+@manage_query_sub_matcher.got("_user_id", "群号", [Depends(parse_group_number)])
+async def query_sub_handle():
     pass
 
 
-do_query_sub(manage_query_sub_mather)
+do_query_sub(manage_query_sub_matcher)
 
 
-del_sub_macher = on_command(
+del_sub_matcher = on_command(
     "删除订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5
 )
-do_del_sub(del_sub_macher)
-manage_del_sub_mather = on_command("管理-删除订阅", permission=SUPERUSER, priority=5)
+do_del_sub(del_sub_matcher)
+manage_del_sub_matcher = on_command("管理-删除订阅", permission=SUPERUSER, priority=5)
 
 
-@manage_del_sub_mather.got("_user_id", "群号", parse_group_number)
-async def handle(bot: Bot, event: Event, state: T_State):
+@manage_del_sub_matcher.got("_user_id", "群号", [Depends(parse_group_number)])
+async def del_sub_handle():
     pass
 
 
-do_del_sub(manage_del_sub_mather)
+do_del_sub(manage_del_sub_matcher)

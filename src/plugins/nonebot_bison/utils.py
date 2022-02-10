@@ -43,6 +43,7 @@ def download_browser():
             raise RuntimeError("platform not supported")
         if browser_path.exists() and os.listdir(str(browser_path)):
             logger.warning("Browser Exists, skip")
+            return
         env = os.environ.copy()
         driver_executable = compute_driver_executable()
         env["PW_CLI_TARGET_LANG"] = "python"

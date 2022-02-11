@@ -2,18 +2,18 @@ from typing import Type
 
 from nonebot import on_command
 from nonebot.rule import to_me
-from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.permission import SUPERUSER
+from nonebot.params import State, Depends
 from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.adapters._event import Event as AbstractEvent
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 
-from .types import Target
 from .config import Config
 from .utils import parse_text
+from .types import Target, Category
 from .platform import check_sub_target, platform_manager
 
 
@@ -42,7 +42,7 @@ async def send_help():
 
 def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.handle()
-    async def init_promote(state: T_State):
+    async def init_promote(state: T_State = State()):
         state["_prompt"] = (
             "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
             + "".join(
@@ -56,7 +56,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             + "要查看全部平台请输入：“全部”"
         )
 
-    async def parse_platform(event: AbstractEvent, state: T_State) -> None:
+    async def parse_platform(event: AbstractEvent, state: T_State = State()) -> None:
         if not isinstance(state["platform"], Message):
             return
         platform = str(event.get_message()).strip()
@@ -76,7 +76,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.got(
         "platform", _gen_prompt_template("{_prompt}"), [Depends(parse_platform)]
     )
-    async def init_id(state: T_State):
+    async def init_id(state: T_State = State()):
         if platform_manager[state["platform"]].has_target:
             state[
                 "_prompt"
@@ -87,7 +87,7 @@ def do_add_sub(add_sub: Type[Matcher]):
                 Target("")
             )
 
-    async def parse_id(event: AbstractEvent, state: T_State):
+    async def parse_id(event: AbstractEvent, state: T_State = State()):
         if not isinstance(state["id"], Message):
             return
         target = str(event.get_message()).strip()
@@ -101,7 +101,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             await add_sub.reject("id输入错误")
 
     @add_sub.got("id", _gen_prompt_template("{_prompt}"), [Depends(parse_id)])
-    async def init_cat(state: T_State):
+    async def init_cat(state: T_State = State()):
         if not platform_manager[state["platform"]].categories:
             state["cats"] = []
             return
@@ -109,7 +109,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             " ".join(list(platform_manager[state["platform"]].categories.values()))
         )
 
-    async def parser_cats(event: AbstractEvent, state: T_State):
+    async def parser_cats(event: AbstractEvent, state: T_State = State()):
         if not isinstance(state["cats"], Message):
             return
         res = []
@@ -120,13 +120,13 @@ def do_add_sub(add_sub: Type[Matcher]):
         state["cats"] = res
 
     @add_sub.got("cats", _gen_prompt_template("{_prompt}"), [Depends(parser_cats)])
-    async def init_tag(state: T_State):
+    async def init_tag(state: T_State = State()):
         if not platform_manager[state["platform"]].enable_tag:
             state["tags"] = []
             return
         state["_prompt"] = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
 
-    async def parser_tags(event: AbstractEvent, state: T_State):
+    async def parser_tags(event: AbstractEvent, state: T_State = State()):
         if not isinstance(state["tags"], Message):
             return
         if str(event.get_message()).strip() == "全部标签":
@@ -135,7 +135,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             state["tags"] = str(event.get_message()).strip().split()
 
     @add_sub.got("tags", _gen_prompt_template("{_prompt}"), [Depends(parser_tags)])
-    async def add_sub_process(event: Event, state: T_State):
+    async def add_sub_process(event: Event, state: T_State = State()):
         config = Config()
         config.add_subscribe(
             state.get("_user_id") or event.group_id,
@@ -151,7 +151,7 @@ def do_add_sub(add_sub: Type[Matcher]):
 
 def do_query_sub(query_sub: Type[Matcher]):
     @query_sub.handle()
-    async def _(event: Event, state: T_State):
+    async def _(event: Event, state: T_State = State()):
         config: Config = Config()
         sub_list = config.list_subscribe(
             state.get("_user_id") or event.group_id, "group"
@@ -164,7 +164,9 @@ def do_query_sub(query_sub: Type[Matcher]):
             platform = platform_manager[sub["target_type"]]
             if platform.categories:
                 res += " [{}]".format(
-                    ", ".join(map(lambda x: platform.categories[x], sub["cats"]))
+                    ", ".join(
+                        map(lambda x: platform.categories[Category(x)], sub["cats"])
+                    )
                 )
             if platform.enable_tag:
                 res += " {}".format(", ".join(sub["tags"]))
@@ -174,7 +176,7 @@ def do_query_sub(query_sub: Type[Matcher]):
 
 def do_del_sub(del_sub: Type[Matcher]):
     @del_sub.handle()
-    async def send_list(bot: Bot, event: Event, state: T_State):
+    async def send_list(bot: Bot, event: Event, state: T_State = State()):
         config: Config = Config()
         sub_list = config.list_subscribe(
             state.get("_user_id") or event.group_id, "group"
@@ -192,7 +194,9 @@ def do_del_sub(del_sub: Type[Matcher]):
             platform = platform_manager[sub["target_type"]]
             if platform.categories:
                 res += " [{}]".format(
-                    ", ".join(map(lambda x: platform.categories[x], sub["cats"]))
+                    ", ".join(
+                        map(lambda x: platform.categories[Category(x)], sub["cats"])
+                    )
                 )
             if platform.enable_tag:
                 res += " {}".format(", ".join(sub["tags"]))
@@ -201,7 +205,7 @@ def do_del_sub(del_sub: Type[Matcher]):
         await bot.send(event=event, message=Message(await parse_text(res)))
 
     @del_sub.receive()
-    async def do_del(event: Event, state: T_State):
+    async def do_del(event: Event, state: T_State = State()):
         try:
             index = int(str(event.get_message()).strip())
             config = Config()
@@ -216,7 +220,7 @@ def do_del_sub(del_sub: Type[Matcher]):
             await del_sub.finish("删除成功")
 
 
-async def parse_group_number(event: AbstractEvent, state: T_State):
+async def parse_group_number(event: AbstractEvent, state: T_State = State()):
     if not isinstance(state["_user_id"], Message):
         return
     state["_user_id"] = int(str(event.get_message()))

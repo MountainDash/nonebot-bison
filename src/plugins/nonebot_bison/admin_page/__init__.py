@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import socketio
 from nonebot.log import logger
 from nonebot.rule import to_me
+from nonebot.params import State
 from nonebot.typing import T_State
 from nonebot import get_driver, on_command
 from nonebot.drivers.fastapi import Driver
@@ -151,7 +152,9 @@ if (STATIC_PATH / "index.html").exists():
     get_token = on_command("后台管理", rule=to_me(), priority=5)
 
     @get_token.handle()
-    async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):
+    async def send_token(
+        bot: "Bot", event: PrivateMessageEvent, state: T_State = State()
+    ):
         token = tm.get_user_token((event.get_user_id(), event.sender.nickname))
         await get_token.finish(f"请访问: {plugin_config.bison_outer_url}auth/{token}")
 

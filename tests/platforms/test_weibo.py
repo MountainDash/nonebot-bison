@@ -1,4 +1,3 @@
-import typing
 from datetime import datetime
 
 import respx
@@ -6,19 +5,16 @@ import pytest
 import feedparser
 from pytz import timezone
 from httpx import Response
-
-if typing.TYPE_CHECKING:
-    import sys
-
-    sys.path.append("./src/plugins")
-    import nonebot_bison
+from nonebug.app import App
 
 from .utils import get_file, get_json
 
 
 @pytest.fixture
-def weibo(plugin_module: "nonebot_bison"):
-    return plugin_module.platform.platform_manager["weibo"]
+def weibo(app: App):
+    from nonebot_bison.platform import platform_manager
+
+    return platform_manager["weibo"]
 
 
 @pytest.fixture(scope="module")

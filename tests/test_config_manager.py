@@ -1,23 +1,28 @@
 import typing
 
 import pytest
+from nonebug.app import App
 
 if typing.TYPE_CHECKING:
     import sys
 
     sys.path.append("./src/plugins")
     import nonebot_bison
+    from nonebot_bison.config import Config
 
 
 @pytest.fixture
-def config(plugin_module):
-    plugin_module.config.start_up()
-    return plugin_module.config.Config()
+def config(app: App):
+    from nonebot_bison import config
+
+    config.start_up()
+    return config.Config()
 
 
-def test_create_and_get(
-    config: "nonebot_bison.config.Config", plugin_module: "nonebot_bison"
-):
+def test_create_and_get(config: "Config", app: App):
+    from nonebot_bison import types
+    from nonebot_bison.types import Target
+
     config.add_subscribe(
         user="123",
         user_type="group",
@@ -29,8 +34,8 @@ def test_create_and_get(
     )
     confs = config.list_subscribe("123", "group")
     assert len(confs) == 1
-    assert config.target_user_cache["weibo"]["weibo_id"] == [
-        plugin_module.types.User("123", "group")
+    assert config.target_user_cache["weibo"][Target("weibo_id")] == [
+        types.User("123", "group")
     ]
     assert confs[0]["cats"] == []
     config.update_subscribe(

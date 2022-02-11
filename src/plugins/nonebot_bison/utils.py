@@ -219,3 +219,4 @@ if plugin_config.bison_filter_log:
         if config.log_level is None
         else config.log_level
     )
+    logger.warning("test")

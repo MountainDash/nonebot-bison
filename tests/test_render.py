@@ -1,6 +1,7 @@
 import typing
 
 import pytest
+from nonebug.app import App
 
 if typing.TYPE_CHECKING:
     import sys
@@ -11,8 +12,10 @@ if typing.TYPE_CHECKING:
 
 @pytest.mark.asyncio
 @pytest.mark.render
-async def test_render(plugin_module: "nonebot_bison"):
-    render = plugin_module.utils.Render()
+async def test_render(app: App):
+    from nonebot_bison.utils import Render
+
+    render = Render()
     res = await render.text_to_pic(
         """a\nbbbbbbbbbbbbbbbbbbbbbb\ncd
 <h1>中文</h1>

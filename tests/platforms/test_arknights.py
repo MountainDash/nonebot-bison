@@ -1,21 +1,16 @@
-import typing
-
 import respx
 import pytest
 from httpx import Response
-
-if typing.TYPE_CHECKING:
-    import sys
-
-    sys.path.append("./src/plugins")
-    import nonebot_bison
+from nonebug.app import App
 
 from .utils import get_file, get_json
 
 
 @pytest.fixture
-def arknights(plugin_module: "nonebot_bison"):
-    return plugin_module.platform.platform_manager["arknights"]
+def arknights(app: App):
+    from nonebot_bison.platform import platform_manager
+
+    return platform_manager["arknights"]
 
 
 @pytest.fixture(scope="module")

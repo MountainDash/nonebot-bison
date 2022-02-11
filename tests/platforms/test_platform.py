@@ -1,18 +1,8 @@
-import sys
-import typing
+from time import time
 from typing import Any, Optional
 
 import pytest
-
-if typing.TYPE_CHECKING:
-    import sys
-
-    sys.path.append("./src/plugins")
-    import nonebot_bison
-    from nonebot_bison.types import *
-    from nonebot_bison.post import Post
-
-from time import time
+from nonebug.app import App
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -29,22 +19,30 @@ raw_post_list_2 = raw_post_list_1 + [
 
 
 @pytest.fixture
-def dummy_user(plugin_module: "nonebot_bison"):
-    user = plugin_module.types.User("123", "group")
+def dummy_user(app: App):
+    from nonebot_bison.types import User
+
+    user = User("123", "group")
     return user
 
 
 @pytest.fixture
-def user_info_factory(plugin_module: "nonebot_bison", dummy_user):
+def user_info_factory(app: App, dummy_user):
+    from nonebot_bison.types import UserSubInfo
+
     def _user_info(category_getter, tag_getter):
-        return plugin_module.types.UserSubInfo(dummy_user, category_getter, tag_getter)
+        return UserSubInfo(dummy_user, category_getter, tag_getter)
 
     return _user_info
 
 
 @pytest.fixture
-def mock_platform_without_cats_tags(plugin_module: "nonebot_bison"):
-    class MockPlatform(plugin_module.platform.platform.NewMessage):
+def mock_platform_without_cats_tags(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Target, RawPost
+    from nonebot_bison.platform.platform import NewMessage
+
+    class MockPlatform(NewMessage):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
@@ -70,7 +68,7 @@ def mock_platform_without_cats_tags(plugin_module: "nonebot_bison"):
             return raw_post["date"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return plugin_module.post.Post(
+            return Post(
                 "mock_platform",
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
@@ -88,8 +86,12 @@ def mock_platform_without_cats_tags(plugin_module: "nonebot_bison"):
 
 
 @pytest.fixture
-def mock_platform(plugin_module: "nonebot_bison"):
-    class MockPlatform(plugin_module.platform.platform.NewMessage):
+def mock_platform(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.types import Tag, Target, RawPost, Category
+
+    class MockPlatform(NewMessage):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
@@ -99,8 +101,8 @@ def mock_platform(plugin_module: "nonebot_bison"):
         enable_tag = True
         has_target = True
         categories = {
-            1: "转发",
-            2: "视频",
+            Category(1): "转发",
+            Category(2): "视频",
         }
 
         def __init__(self):
@@ -124,7 +126,7 @@ def mock_platform(plugin_module: "nonebot_bison"):
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return plugin_module.post.Post(
+            return Post(
                 "mock_platform",
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
@@ -142,8 +144,12 @@ def mock_platform(plugin_module: "nonebot_bison"):
 
 
 @pytest.fixture
-def mock_platform_no_target(plugin_module: "nonebot_bison"):
-    class MockPlatform(plugin_module.platform.platform.NewMessage):
+def mock_platform_no_target(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.platform.platform import NewMessage, CategoryNotSupport
+
+    class MockPlatform(NewMessage):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
@@ -153,7 +159,7 @@ def mock_platform_no_target(plugin_module: "nonebot_bison"):
         schedule_kw = {"seconds": 30}
         enable_tag = True
         has_target = False
-        categories = {1: "转发", 2: "视频", 3: "不支持"}
+        categories = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
 
         def __init__(self):
             self.sub_index = 0
@@ -174,11 +180,11 @@ def mock_platform_no_target(plugin_module: "nonebot_bison"):
 
         def get_category(self, raw_post: "RawPost") -> "Category":
             if raw_post["category"] == 3:
-                raise plugin_module.platform.platform.CategoryNotSupport()
+                raise CategoryNotSupport()
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return plugin_module.post.Post(
+            return Post(
                 "mock_platform",
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
@@ -196,8 +202,12 @@ def mock_platform_no_target(plugin_module: "nonebot_bison"):
 
 
 @pytest.fixture
-def mock_platform_no_target_2(plugin_module: "nonebot_bison"):
-    class MockPlatform(plugin_module.platform.platform.NewMessage):
+def mock_platform_no_target_2(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.types import Tag, Target, RawPost, Category
+
+    class MockPlatform(NewMessage):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
@@ -208,8 +218,8 @@ def mock_platform_no_target_2(plugin_module: "nonebot_bison"):
         enable_tag = True
         has_target = False
         categories = {
-            4: "leixing4",
-            5: "leixing5",
+            Category(4): "leixing4",
+            Category(5): "leixing5",
         }
 
         def __init__(self):
@@ -233,7 +243,7 @@ def mock_platform_no_target_2(plugin_module: "nonebot_bison"):
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return plugin_module.post.Post(
+            return Post(
                 "mock_platform_2",
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
@@ -259,8 +269,12 @@ def mock_platform_no_target_2(plugin_module: "nonebot_bison"):
 
 
 @pytest.fixture
-def mock_status_change(plugin_module: "nonebot_bison"):
-    class MockPlatform(plugin_module.platform.platform.StatusChange):
+def mock_status_change(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import StatusChange
+    from nonebot_bison.types import Tag, Target, RawPost, Category
+
+    class MockPlatform(StatusChange):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
@@ -271,8 +285,8 @@ def mock_status_change(plugin_module: "nonebot_bison"):
         schedule_kw = {"seconds": 10}
         has_target = False
         categories = {
-            1: "转发",
-            2: "视频",
+            Category(1): "转发",
+            Category(2): "视频",
         }
 
         def __init__(self):
@@ -297,7 +311,7 @@ def mock_status_change(plugin_module: "nonebot_bison"):
             return []
 
         async def parse(self, raw_post) -> "Post":
-            return plugin_module.post.Post("mock_status", raw_post["text"], "")
+            return Post("mock_status", raw_post["text"], "")
 
         def get_category(self, raw_post):
             return raw_post["cat"]
@@ -420,14 +434,17 @@ async def test_status_change(mock_status_change, user_info_factory):
 
 @pytest.mark.asyncio
 async def test_group(
-    plugin_module: "nonebot_bison",
+    app: App,
     mock_platform_no_target,
     mock_platform_no_target_2,
     user_info_factory,
 ):
-    group_platform = plugin_module.platform.platform.NoTargetGroup(
-        [mock_platform_no_target, mock_platform_no_target_2]
-    )
+
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import NoTargetGroup
+    from nonebot_bison.types import Tag, Target, RawPost, Category
+
+    group_platform = NoTargetGroup([mock_platform_no_target, mock_platform_no_target_2])
     res1 = await group_platform.fetch_new_post(
         "dummy", [user_info_factory(lambda _: [1, 4], lambda _: [])]
     )

@@ -12,7 +12,7 @@ from .platform import platform_manager
 from .plugin_config import plugin_config
 from .send import send_msgs, do_send_msgs
 
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
 
 
 @get_driver().on_startup

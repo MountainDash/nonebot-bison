@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-path = Path(__file__).parent
+path = Path(__file__).parent / "static"
 
 
 def get_json(file_name: str):

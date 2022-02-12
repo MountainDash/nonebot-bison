@@ -1,9 +1,9 @@
 import calendar
 from typing import Any, Optional
 
+from bs4 import BeautifulSoup as bs
 import feedparser
 import httpx
-from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from ..types import RawPost, Target

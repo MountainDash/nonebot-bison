@@ -1,17 +1,17 @@
 import asyncio
 import base64
+from html import escape
 import os
+from pathlib import Path
 import platform
 import re
 import subprocess
 import sys
-from html import escape
-from pathlib import Path
 from time import asctime
 from typing import Awaitable, Callable, Optional, Union
 
-import nonebot
 from bs4 import BeautifulSoup as bs
+import nonebot
 from nonebot.adapters.cqhttp.message import MessageSegment
 from nonebot.log import default_format, logger
 from playwright._impl._driver import compute_driver_executable

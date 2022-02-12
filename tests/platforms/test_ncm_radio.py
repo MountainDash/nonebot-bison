@@ -1,9 +1,9 @@
 import time
 import typing
 
+from httpx import Response
 import pytest
 import respx
-from httpx import Response
 
 from .utils import get_json
 

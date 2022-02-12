@@ -1,9 +1,8 @@
-import os
 from dataclasses import dataclass
+import os
 from pathlib import Path
 from typing import Union
 
-import socketio
 from fastapi.staticfiles import StaticFiles
 from nonebot import get_driver, on_command
 from nonebot.adapters.cqhttp.bot import Bot
@@ -12,6 +11,7 @@ from nonebot.drivers.fastapi import Driver
 from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
+import socketio
 
 from ..plugin_config import plugin_config
 from .api import (

@@ -1,5 +1,5 @@
-import os
 from collections import defaultdict
+import os
 from os import path
 from typing import DefaultDict, Literal, Mapping, TypedDict
 

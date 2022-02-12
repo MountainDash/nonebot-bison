@@ -204,7 +204,7 @@ def do_del_sub(del_sub: Type[Matcher]):
             config.del_subscribe(
                 state.get("_user_id") or event.group_id,
                 "group",
-                **state["sub_table"][index]
+                **state["sub_table"][index],
             )
         except Exception as e:
             await del_sub.reject("删除错误")

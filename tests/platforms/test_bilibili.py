@@ -1,7 +1,7 @@
 import typing
 
-import pytest
 from httpx import Response
+import pytest
 
 if typing.TYPE_CHECKING:
     import sys

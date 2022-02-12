@@ -1,8 +1,8 @@
 import json
 from typing import Any
 
-import httpx
 from bs4 import BeautifulSoup as bs
+import httpx
 
 from ..post import Post
 from ..types import Category, RawPost, Target

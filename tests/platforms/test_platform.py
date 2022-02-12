@@ -1,8 +1,8 @@
 from time import time
 from typing import Any, Optional
 
-import pytest
 from nonebug.app import App
+import pytest
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -38,9 +38,9 @@ def user_info_factory(app: App, dummy_user):
 
 @pytest.fixture
 def mock_platform_without_cats_tags(app: App):
-    from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import RawPost, Target
 
     class MockPlatform(NewMessage):
 
@@ -87,9 +87,9 @@ def mock_platform_without_cats_tags(app: App):
 
 @pytest.fixture
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     class MockPlatform(NewMessage):
 
@@ -145,9 +145,9 @@ def mock_platform(app: App):
 
 @pytest.fixture
 def mock_platform_no_target(app: App):
+    from nonebot_bison.platform.platform import CategoryNotSupport, NewMessage
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Tag, Target, RawPost, Category
-    from nonebot_bison.platform.platform import NewMessage, CategoryNotSupport
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     class MockPlatform(NewMessage):
 
@@ -203,9 +203,9 @@ def mock_platform_no_target(app: App):
 
 @pytest.fixture
 def mock_platform_no_target_2(app: App):
-    from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     class MockPlatform(NewMessage):
 
@@ -270,9 +270,9 @@ def mock_platform_no_target_2(app: App):
 
 @pytest.fixture
 def mock_status_change(app: App):
-    from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import StatusChange
-    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     class MockPlatform(StatusChange):
 
@@ -440,9 +440,9 @@ async def test_group(
     user_info_factory,
 ):
 
-    from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NoTargetGroup
-    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     group_platform = NoTargetGroup([mock_platform_no_target, mock_platform_no_target_2])
     res1 = await group_platform.fetch_new_post(

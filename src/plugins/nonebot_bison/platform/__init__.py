@@ -1,9 +1,9 @@
-from pathlib import Path
-from pkgutil import iter_modules
 from collections import defaultdict
 from importlib import import_module
+from pathlib import Path
+from pkgutil import iter_modules
 
-from .platform import Platform, NoTargetGroup
+from .platform import NoTargetGroup, Platform
 
 _package_dir = str(Path(__file__).resolve().parent)
 for (_, module_name, _) in iter_modules([_package_dir]):

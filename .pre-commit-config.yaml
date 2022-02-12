@@ -5,10 +5,11 @@ ci:
   autoupdate_schedule: weekly
   autoupdate_commit_msg: "auto update by pre-commit hooks"
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
-    hooks:
-      - id: isort
+  # - repo: https://github.com/pycqa/isort
+  #   rev: 5.10.1
+  #   hooks:
+  #     - id: isort
+  #       args: ["--profile", "black", "--filter-files"]
 
   - repo: https://github.com/psf/black
     rev: 22.1.0
@@ -19,4 +20,4 @@ repos:
     rev: v2.5.1
     hooks:
       - id: prettier
-        types_or: [markdown]
+        types_or: [markdown, ts, tsx]

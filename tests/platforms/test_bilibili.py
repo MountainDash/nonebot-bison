@@ -1,6 +1,6 @@
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
 
 from .utils import get_json
 

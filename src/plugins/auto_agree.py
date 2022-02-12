@@ -1,9 +1,9 @@
 from typing import Union
 
 from nonebot import on_request
-from nonebot.log import logger
 from nonebot.adapters.onebot.v11 import Bot
-from nonebot.adapters.onebot.v11.event import GroupRequestEvent, FriendRequestEvent
+from nonebot.adapters.onebot.v11.event import FriendRequestEvent, GroupRequestEvent
+from nonebot.log import logger
 
 friend_req = on_request(priority=5)
 

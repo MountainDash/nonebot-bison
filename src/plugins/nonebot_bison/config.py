@@ -1,16 +1,16 @@
+from collections import defaultdict
 import os
 from os import path
-from collections import defaultdict
-from typing import Literal, Mapping, TypedDict, DefaultDict
+from typing import DefaultDict, Literal, Mapping, TypedDict
 
 import nonebot
 from nonebot import logger
 from tinydb import Query, TinyDB
 
-from .utils import Singleton
-from .types import User, Target
 from .platform import platform_manager
 from .plugin_config import plugin_config
+from .types import Target, User
+from .utils import Singleton
 
 supported_target_type = platform_manager.keys()
 

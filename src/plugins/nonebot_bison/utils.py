@@ -1,19 +1,23 @@
-import os
-import re
-import sys
-import base64
 import asyncio
-import subprocess
+import base64
 from html import escape
+import os
+from pathlib import Path
+import platform
+import re
+import subprocess
+import sys
 from time import asctime
-from typing import Union, Callable, Optional, Awaitable
+from typing import Awaitable, Callable, Optional, Union
 
-import nonebot
 from bs4 import BeautifulSoup as bs
-from nonebot.log import logger, default_format
+import nonebot
 from nonebot.adapters.onebot.v11.message import MessageSegment
+from nonebot.log import default_format, logger
 from playwright._impl._driver import compute_driver_executable
-from playwright.async_api import Page, Browser, Playwright, async_playwright
+from playwright.async_api import Browser, Page, Playwright, async_playwright
+from uvicorn import config
+from uvicorn.loops import asyncio as _asyncio
 
 from .plugin_config import plugin_config
 
@@ -30,6 +34,16 @@ class Singleton(type):
 @nonebot.get_driver().on_startup
 def download_browser():
     if not plugin_config.bison_browser and not plugin_config.bison_use_local:
+        system = platform.system()
+        if system == "Linux":
+            browser_path = Path.home() / ".cache" / "ms-playwright"
+        elif system == "Windows":
+            browser_path = Path.home() / "AppData" / "Local" / "ms-playwright"
+        else:
+            raise RuntimeError("platform not supported")
+        if browser_path.exists() and os.listdir(str(browser_path)):
+            logger.warning("Browser Exists, skip")
+            return
         env = os.environ.copy()
         driver_executable = compute_driver_executable()
         env["PW_CLI_TARGET_LANG"] = "python"
@@ -219,4 +233,19 @@ if plugin_config.bison_filter_log:
         if config.log_level is None
         else config.log_level
     )
-    logger.warning("test")
+
+# monkey patch
+def asyncio_setup():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+
+@property
+def should_reload(self):
+    return False
+
+
+if platform.system() == "Windows":
+    _asyncio.asyncio_setup = asyncio_setup
+    config.Config.should_reload = should_reload  # type:ignore
+    logger.warning("检测到当前为 Windows 系统，已自动注入猴子补丁")

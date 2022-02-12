@@ -1,20 +1,20 @@
 from typing import Type
 
 from nonebot import on_command
-from nonebot.rule import to_me
-from nonebot.typing import T_State
-from nonebot.matcher import Matcher
-from nonebot.permission import SUPERUSER
-from nonebot.params import State, Depends
+from nonebot.adapters._event import Event as AbstractEvent
 from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.adapters.onebot.v11.message import Message
-from nonebot.adapters._event import Event as AbstractEvent
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
+from nonebot.matcher import Matcher
+from nonebot.params import Depends, State
+from nonebot.permission import SUPERUSER
+from nonebot.rule import to_me
+from nonebot.typing import T_State
 
 from .config import Config
-from .utils import parse_text
-from .types import Target, Category
 from .platform import check_sub_target, platform_manager
+from .types import Category, Target
+from .utils import parse_text
 
 
 def _gen_prompt_template(prompt: str):

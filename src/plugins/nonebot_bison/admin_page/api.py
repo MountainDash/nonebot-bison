@@ -1,10 +1,10 @@
 import nonebot
 from nonebot.adapters.onebot.v11.bot import Bot
 
+from ..config import Config, NoSuchSubscribeException, NoSuchUserException
+from ..platform import check_sub_target, platform_manager
 from .jwt import pack_jwt
 from .token_manager import token_manager
-from ..platform import check_sub_target, platform_manager
-from ..config import Config, NoSuchUserException, NoSuchSubscribeException
 
 
 async def test():

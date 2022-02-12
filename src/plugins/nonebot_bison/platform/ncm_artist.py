@@ -3,8 +3,8 @@ from typing import Any, Optional
 import httpx
 
 from ..post import Post
+from ..types import RawPost, Target
 from .platform import NewMessage
-from ..types import Target, RawPost
 
 
 class NcmArtist(NewMessage):

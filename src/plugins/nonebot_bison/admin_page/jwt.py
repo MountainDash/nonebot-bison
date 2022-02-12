@@ -1,6 +1,6 @@
+import datetime
 import random
 import string
-import datetime
 from typing import Optional
 
 import jwt

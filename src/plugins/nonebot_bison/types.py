@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, NewType, Callable, NamedTuple
+from typing import Any, Callable, NamedTuple, NewType
 
 RawPost = NewType("RawPost", Any)
 Target = NewType("Target", str)

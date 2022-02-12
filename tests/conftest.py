@@ -1,9 +1,9 @@
-import typing
 from pathlib import Path
+import typing
 
-import pytest
 import nonebot
 from nonebug.app import App
+import pytest
 
 
 @pytest.fixture

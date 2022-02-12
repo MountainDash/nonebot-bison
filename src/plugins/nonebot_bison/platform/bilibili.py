@@ -4,8 +4,8 @@ from typing import Any, Optional
 import httpx
 
 from ..post import Post
-from ..types import Tag, Target, RawPost, Category
-from .platform import NewMessage, CategoryNotSupport
+from ..types import Category, RawPost, Tag, Target
+from .platform import CategoryNotSupport, NewMessage
 
 
 class Bilibili(NewMessage):

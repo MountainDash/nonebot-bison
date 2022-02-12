@@ -1,7 +1,7 @@
 import typing
 
-from nonebug.app import App
 import pytest
+from nonebug.app import App
 
 if typing.TYPE_CHECKING:
     import sys

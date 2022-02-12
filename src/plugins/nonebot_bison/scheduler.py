@@ -1,7 +1,7 @@
 import logging
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import nonebot
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from nonebot import get_driver, logger
 from nonebot.log import LoguruHandler
 

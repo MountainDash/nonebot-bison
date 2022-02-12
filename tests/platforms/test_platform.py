@@ -1,8 +1,8 @@
 from time import time
 from typing import Any, Optional
 
-from nonebug.app import App
 import pytest
+from nonebug.app import App
 
 now = time()
 passed = now - 3 * 60 * 60

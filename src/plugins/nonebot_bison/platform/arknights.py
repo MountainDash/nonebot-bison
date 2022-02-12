@@ -5,9 +5,9 @@ import httpx
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
+from ..types import Category, RawPost, Target
 from ..utils import Render
-from ..types import Target, RawPost, Category
-from .platform import NewMessage, StatusChange, CategoryNotSupport
+from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
 class Arknights(NewMessage):

@@ -1,5 +1,5 @@
-from collections import defaultdict
 import os
+from collections import defaultdict
 from os import path
 from typing import DefaultDict, Literal, Mapping, TypedDict
 

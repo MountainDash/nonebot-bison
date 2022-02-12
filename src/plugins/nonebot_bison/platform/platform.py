@@ -1,7 +1,7 @@
+import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-import time
 from typing import Any, Collection, Literal, Optional
 
 import httpx

@@ -1,32 +1,32 @@
 import os
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
-from dataclasses import dataclass
 
 import socketio
-from nonebot.log import logger
-from nonebot.rule import to_me
-from nonebot.params import State
-from nonebot.typing import T_State
-from nonebot import get_driver, on_command
-from nonebot.drivers.fastapi import Driver
 from fastapi.staticfiles import StaticFiles
+from nonebot import get_driver, on_command
 from nonebot.adapters.onebot.v11 import Bot
 from nonebot.adapters.onebot.v11.event import GroupMessageEvent, PrivateMessageEvent
+from nonebot.drivers.fastapi import Driver
+from nonebot.log import logger
+from nonebot.params import State
+from nonebot.rule import to_me
+from nonebot.typing import T_State
 
-from .jwt import load_jwt
 from ..plugin_config import plugin_config
-from .token_manager import token_manager as tm
 from .api import (
-    auth,
-    test,
     add_group_sub,
+    auth,
     del_group_sub,
-    get_subs_info,
     get_global_conf,
+    get_subs_info,
     get_target_name,
+    test,
     update_group_sub,
 )
+from .jwt import load_jwt
+from .token_manager import token_manager as tm
 
 URL_BASE = "/bison/"
 GLOBAL_CONF_URL = f"{URL_BASE}api/global_conf"

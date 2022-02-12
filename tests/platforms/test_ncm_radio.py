@@ -1,9 +1,9 @@
 import time
 
-from httpx import Response
-from nonebug.app import App
 import pytest
 import respx
+from httpx import Response
+from nonebug.app import App
 
 from .utils import get_json
 

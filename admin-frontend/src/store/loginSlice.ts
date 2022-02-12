@@ -1,108 +1,121 @@
-import { AnyAction, CaseReducer, createAsyncThunk, createSlice, PayloadAction, ThunkAction } from "@reduxjs/toolkit";
-import jwt_decode from 'jwt-decode';
+import {
+  AnyAction,
+  CaseReducer,
+  createAsyncThunk,
+  createSlice,
+  PayloadAction,
+  ThunkAction,
+} from "@reduxjs/toolkit";
+import jwt_decode from "jwt-decode";
 import { LoginStatus, TokenResp } from "src/utils/type";
 import { auth } from "src/api/config";
-import {RootState} from ".";
+import { RootState } from ".";
 
 const initialState: LoginStatus = {
   login: false,
-  type: '',
-  name: '',
-  id: '123',
+  type: "",
+  name: "",
+  id: "123",
   // groups: [],
-  token: '',
-  failed: false
-}
+  token: "",
+  failed: false,
+};
 
 interface storedInfo {
-  type: string
-  name: string
-  id: string
+  type: string;
+  name: string;
+  id: string;
 }
 
-const loginAction: CaseReducer<LoginStatus, PayloadAction<TokenResp>> = (_, action) => {
+const loginAction: CaseReducer<LoginStatus, PayloadAction<TokenResp>> = (
+  _,
+  action
+) => {
   return {
     login: true,
     failed: false,
     type: action.payload.type,
     name: action.payload.name,
     id: action.payload.id,
-    token: action.payload.token
-  }
-}
+    token: action.payload.token,
+  };
+};
 
 export const login = createAsyncThunk(
   "auth/login",
   async (code: string) => {
     let res = await auth(code);
     if (res.status !== 200) {
-      throw Error("Login Error")
+      throw Error("Login Error");
     } else {
-      localStorage.setItem('loginInfo', JSON.stringify({
-        'type': res.type,
-        'name': res.name,
-        id: res.id,
-      }))
-      localStorage.setItem('token', res.token)
+      localStorage.setItem(
+        "loginInfo",
+        JSON.stringify({
+          type: res.type,
+          name: res.name,
+          id: res.id,
+        })
+      );
+      localStorage.setItem("token", res.token);
     }
-    return res
+    return res;
   },
   {
     condition: (_: string, { getState }) => {
-      const { login } = getState() as { login: LoginStatus }
+      const { login } = getState() as { login: LoginStatus };
       return !login.login;
-    }
+    },
   }
-)
-
+);
 
 export const loginSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     doLogin: loginAction,
     doClearLogin: (state) => {
-      state.login = false
-    }
+      state.login = false;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, loginAction);
     builder.addCase(login.rejected, (stat) => {
-      stat.failed = true
-    })
-  }
-})
+      stat.failed = true;
+    });
+  },
+});
 
-export const { doLogin, doClearLogin } = loginSlice.actions
+export const { doLogin, doClearLogin } = loginSlice.actions;
 
-export const loadLoginState = (): ThunkAction<void, RootState, unknown, AnyAction> =>
+export const loadLoginState =
+  (): ThunkAction<void, RootState, unknown, AnyAction> =>
   (dispatch, getState) => {
     if (getState().login.login) {
-      return
+      return;
     }
-    const infoJson = localStorage.getItem('loginInfo')
-    const jwtToken = localStorage.getItem('token');
+    const infoJson = localStorage.getItem("loginInfo");
+    const jwtToken = localStorage.getItem("token");
     if (infoJson && jwtToken) {
       const decodedJwt = jwt_decode(jwtToken) as { exp: number };
       if (decodedJwt.exp < Date.now() / 1000) {
-        return
+        return;
       }
-      const info = JSON.parse(infoJson) as storedInfo
+      const info = JSON.parse(infoJson) as storedInfo;
       const payload: TokenResp = {
         ...info,
         status: 200,
         token: jwtToken,
-      }
-      dispatch(doLogin(payload))
+      };
+      dispatch(doLogin(payload));
     }
-  }
+  };
 
-export const clearLoginStatus = (): ThunkAction<void, RootState, unknown, AnyAction> =>
-  (dispatch) => {
-    localStorage.removeItem('loginInfo')
-    localStorage.removeItem('token')
-    dispatch(doClearLogin())
-  }
-export const loginSelector = (state: RootState) => state.login
+export const clearLoginStatus =
+  (): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
+    localStorage.removeItem("loginInfo");
+    localStorage.removeItem("token");
+    dispatch(doClearLogin());
+  };
+export const loginSelector = (state: RootState) => state.login;
 
-export default loginSlice.reducer
+export default loginSlice.reducer;

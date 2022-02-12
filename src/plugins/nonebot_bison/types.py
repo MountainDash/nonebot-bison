@@ -1,15 +1,17 @@
-from typing import Any, Callable, NamedTuple, NewType
 from dataclasses import dataclass
+from typing import Any, Callable, NamedTuple, NewType
 
-RawPost = NewType('RawPost', Any)
-Target = NewType('Target', str)
-Category = NewType('Category', int)
-Tag = NewType('Tag', str)
+RawPost = NewType("RawPost", Any)
+Target = NewType("Target", str)
+Category = NewType("Category", int)
+Tag = NewType("Tag", str)
+
 
 @dataclass(eq=True, frozen=True)
 class User:
     user: str
     user_type: str
+
 
 class UserSubInfo(NamedTuple):
     user: User

@@ -8,11 +8,13 @@ from .plugin_config import plugin_config
 QUEUE = []
 LAST_SEND_TIME = time.time()
 
-async def _do_send(bot: 'Bot', user: str, user_type: str, msg):
-    if user_type == 'group':
-        await bot.call_api('send_group_msg', group_id=user, message=msg)
-    elif user_type == 'private':
-        await bot.call_api('send_private_msg', user_id=user, message=msg)
+
+async def _do_send(bot: "Bot", user: str, user_type: str, msg):
+    if user_type == "group":
+        await bot.call_api("send_group_msg", group_id=user, message=msg)
+    elif user_type == "private":
+        await bot.call_api("send_private_msg", user_id=user, message=msg)
+
 
 async def do_send_msgs():
     global LAST_SEND_TIME
@@ -28,9 +30,10 @@ async def do_send_msgs():
             else:
                 msg_str = str(msg)
                 if len(msg_str) > 50:
-                    msg_str = msg_str[:50] + '...'
-                logger.warning(f'send msg err {e} {msg_str}')
+                    msg_str = msg_str[:50] + "..."
+                logger.warning(f"send msg err {e} {msg_str}")
         LAST_SEND_TIME = time.time()
+
 
 async def send_msgs(bot, user, user_type, msgs):
     if plugin_config.bison_use_queue:
@@ -39,5 +42,3 @@ async def send_msgs(bot, user, user_type, msgs):
     else:
         for msg in msgs:
             await _do_send(bot, user, user_type, msg)
-
-

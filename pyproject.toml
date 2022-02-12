@@ -61,3 +61,14 @@ markers = [
     "render: render img by chrome"
 ]
 
+[tool.black]
+line-length = 88
+target-version = ["py39", "py310"]
+include = '\.pyi?$'
+extend-exclude = '''
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true

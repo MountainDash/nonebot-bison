@@ -32,6 +32,7 @@ async def test_send_no_queue(app: App):
 @pytest.mark.asyncio
 async def test_send_queue(app: App):
     import nonebot
+    from nonebot_bison import send
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import LAST_SEND_TIME, do_send_msgs, send_msgs
 
@@ -50,7 +51,8 @@ async def test_send_queue(app: App):
         ctx.should_call_api(
             "send_group_msg", {"group_id": "1233", "message": "msg"}, True
         )
-        LAST_SEND_TIME = 0
-        await asyncio.sleep(2)
+        await do_send_msgs()
+        assert not ctx.wait_list.empty()
+        app.monkeypatch.setattr(send, "LAST_SEND_TIME", 0, True)
         await do_send_msgs()
         assert ctx.wait_list.empty()

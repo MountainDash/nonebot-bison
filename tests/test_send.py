@@ -21,7 +21,12 @@ async def test_send_no_queue(app: App):
         ctx.should_call_api(
             "send_group_msg", {"group_id": "1233", "message": "msg2"}, True
         )
+        ctx.should_call_api(
+            "send_private_msg", {"user_id": "666", "message": "priv"}, True
+        )
         await send_msgs(bot, "1233", "group", ["msg1", "msg2"])
+        await send_msgs(bot, "666", "private", ["priv"])
+        assert ctx.wait_list.empty()
 
 
 @pytest.mark.asyncio

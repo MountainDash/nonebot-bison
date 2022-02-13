@@ -46,4 +46,6 @@ async def test_send_queue(app: App):
             "send_group_msg", {"group_id": "1233", "message": "msg"}, True
         )
         LAST_SEND_TIME = 0
+        await asyncio.sleep(2)
         await do_send_msgs()
+        assert ctx.wait_list.empty()

@@ -25,9 +25,6 @@ async def do_send_msgs():
     if time.time() - LAST_SEND_TIME < 1.5:
         return
     if QUEUE:
-        import ipdb
-
-        ipdb.set_trace()
         bot, user, user_type, msg, retry_time = QUEUE.pop(0)
         try:
             await _do_send(bot, user, user_type, msg)

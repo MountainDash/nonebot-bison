@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Callable, NamedTuple, NewType
+from typing import Any, Callable, Literal, NamedTuple, NewType
 
 RawPost = NewType("RawPost", Any)
 Target = NewType("Target", str)
@@ -10,7 +10,7 @@ Tag = NewType("Tag", str)
 @dataclass(eq=True, frozen=True)
 class User:
     user: str
-    user_type: str
+    user_type: Literal["group", "private"]
 
 
 class UserSubInfo(NamedTuple):

@@ -3,6 +3,7 @@ import logging
 import nonebot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from nonebot import get_driver, logger
+from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import LoguruHandler
 
 from .config import Config
@@ -46,8 +47,8 @@ async def fetch_and_send(target_type: str):
             send_user_list,
         )
     )
-    bot_list = list(nonebot.get_bots().values())
-    bot = bot_list[0] if bot_list else None
+    bot = nonebot.get_bot()
+    assert isinstance(bot, Bot)
     to_send = await platform_manager[target_type].fetch_new_post(
         target, send_userinfo_list
     )

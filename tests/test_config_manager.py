@@ -90,9 +90,6 @@ async def test_add_with_target(app: App):
         event_4_err = fake_group_message_event(
             message=Message("000"), sender=fake_admin_user
         )
-        import ipdb
-
-        ipdb.set_trace()
         ctx.receive_event(bot, event_4_err)
         ctx.should_call_send(event_4_err, "id输入错误", True)
         ctx.should_rejected()

@@ -12,6 +12,7 @@ async def app(nonebug_init: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatc
 
     config = nonebot.get_driver().config
     config.bison_config_path = str(tmp_path)
+    config.command_start = {""}
     return App(monkeypatch)
 
 

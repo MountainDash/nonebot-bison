@@ -24,7 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-nonebot2 = "^2.0.0-beta.1"
+nonebot2 = "^2.0.0-beta.2"
 httpx = ">=0.16.1 <1.0.0"
 bs4 = "^0.0.1"
 tinydb = "^4.3.0"
@@ -49,7 +49,7 @@ nonebug = "^0.2.0"
 black = "^22.1.0"
 isort = "^5.10.1"
 pre-commit = "^2.17.0"
-nb-cli = "^0.6.5"
+nb-cli = "^0.6.6"
 
 [build-system]
 requires = ["poetry>=0.12"]

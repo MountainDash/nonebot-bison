@@ -3,8 +3,8 @@ from typing import Any, Callable, Literal, NamedTuple, NewType
 
 RawPost = NewType("RawPost", Any)
 Target = NewType("Target", str)
-Category = NewType("Category", int)
-Tag = NewType("Tag", str)
+Category = int
+Tag = str
 
 
 @dataclass(eq=True, frozen=True)

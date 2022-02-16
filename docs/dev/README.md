@@ -34,19 +34,50 @@ sidebar: auto
 
 #### 这个平台是否有账号的概念
 
-- `nonebot_bison.platform.platform.TargetMixin` 有账号的概念  
-   例如：Bilibili 用户，微博用户
-- `nonebot_bison.platform.platform.NoTargetMixin` 没有账号的概念  
-   例如：游戏公告，教务处公告
+- 有账号的概念  
+   例如：B 站用户动态，微博用户动态，网易云电台更新
+- 没有账号的概念  
+  例如：游戏公告，教务处公告
 
-现在你已经选择了两个类，现在你需要在`src/plugins/nonebot_bison/platform`下新建一个 py 文件，
-在里面新建一个类，继承你刚刚选择的两个类，重载一些关键的函数，然后……就完成了，不需要修改别的东西了。
+现在你需要在`src/plugins/nonebot_bison/platform`下新建一个 py 文件，
+在里面新建一个类，继承推送类型的基类，重载一些关键的函数，然后……就完成了，不需要修改别的东西了。
 
-例如要适配微博，微博有账号，并且我希望 bot 搬运新的消息，所以微博的类应该这样定义：
+任何一种订阅类型需要实现的方法/字段如下：
+
+- `schedule_type`, `schedule_kw` 调度的参数，本质是使用 apscheduler 的[trigger 参数](https://apscheduler.readthedocs.io/en/3.x/userguide.html?highlight=trigger#choosing-the-right-scheduler-job-store-s-executor-s-and-trigger-s)，`schedule_type`可以是`date`,`interval`和`cron`，
+  `schedule_kw`是对应的参数，一个常见的配置是`schedule_type=interval`, `schedule_kw={'seconds':30}`
+- `is_common` 是否常用，如果被标记为常用，那么和机器人交互式对话添加订阅时，会直接出现在选择列表中，否则
+  需要输入`全部`才会出现。
+- `enabled` 是否启用
+- `name` 平台的正式名称，例如`微博`
+- `has_target` 平台是否有“帐号”
+- `category` 平台的发布内容分类，例如 B 站包括专栏，视频，图文动态，普通动态等，如果不包含分类功能则设为`{}`
+- `enable_tag` 平台发布内容是否带 Tag，例如微博
+- `platform_name` 唯一的，英文的识别标识，比如`weibo`
+- `async get_target_name(Target) -> Optional[str]` 通常用于获取帐号的名称，如果平台没有帐号概念，可以直接返回平台的`name`
+- `async parse(RawPost) -> Post`将获取到的 RawPost 处理成 Post
+- `get_tags(RawPost) -> Optional[Collection[Tag]]` （可选） 从 RawPost 中提取 Tag
+- `get_category(RawPos) -> Optional[Category]` （可选）从 RawPost 中提取 Category
+
+例如要适配微博，我希望 bot 搬运新的消息，所以微博的类应该这样定义：
 
 ```python
-class Weibo(NewMessage, TargetMixin):
-    ...
+class Weibo(NewMessage):
+
+    categories = {
+        1: "转发",
+        2: "视频",
+        3: "图文",
+        4: "文字",
+    }
+    enable_tag = True
+    platform_name = "weibo"
+    name = "新浪微博"
+    enabled = True
+    is_common = True
+    schedule_type = "interval"
+    schedule_kw = {"seconds": 3}
+    has_target = True
 ```
 
 当然我们非常希望你对自己适配的平台写一些单元测试，你可以模仿`tests/platforms/test_*.py`中的内容写

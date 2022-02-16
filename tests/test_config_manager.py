@@ -1,52 +1,103 @@
-import typing
-
 import pytest
+import respx
+from httpx import Response
+from nonebot.adapters.onebot.v11.event import Sender
+from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebug.app import App
 
-if typing.TYPE_CHECKING:
-    import sys
+from .platforms.utils import get_json
+from .utils import fake_admin_user, fake_group_message_event
 
-    sys.path.append("./src/plugins")
-    import nonebot_bison
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_add_with_target(app: App):
+    from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import Config
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager
 
+    config = Config()
+    config.user_target.truncate()
 
-@pytest.fixture
-def config(app: App):
-    from nonebot_bison import config
-
-    config.start_up()
-    return config.Config()
-
-
-def test_create_and_get(config: "Config", app: App):
-    from nonebot_bison import types
-    from nonebot_bison.types import Target
-
-    config.add_subscribe(
-        user="123",
-        user_type="group",
-        target="weibo_id",
-        target_name="weibo_name",
-        target_type="weibo",
-        cats=[],
-        tags=[],
+    ak_list_router = respx.get(
+        "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
     )
-    confs = config.list_subscribe("123", "group")
-    assert len(confs) == 1
-    assert config.target_user_cache["weibo"][Target("weibo_id")] == [
-        types.User("123", "group")
-    ]
-    assert confs[0]["cats"] == []
-    config.update_subscribe(
-        user="123",
-        user_type="group",
-        target="weibo_id",
-        target_name="weibo_name",
-        target_type="weibo",
-        cats=["1"],
-        tags=[],
+    ak_list_router.mock(
+        return_value=Response(200, json=get_json("weibo_ak_profile.json"))
     )
-    confs = config.list_subscribe("123", "group")
-    assert len(confs) == 1
-    assert confs[0]["cats"] == ["1"]
+    ak_list_bad_router = respx.get(
+        "https://m.weibo.cn/api/container/getIndex?containerid=100505000"
+    )
+    ak_list_bad_router.mock(
+        return_value=Response(200, json=get_json("weibo_err_profile.json"))
+    )
+
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot()
+        event_1 = fake_group_message_event(
+            message=Message("添加订阅"),
+            sender=Sender(card="", nickname="test", role="admin"),
+            to_me=True,
+        )
+        ctx.receive_event(bot, event_1)
+        ctx.should_pass_rule()
+        ctx.should_call_send(
+            event_1,
+            Message(
+                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
+                + "".join(
+                    [
+                        "{}：{}\n".format(
+                            platform_name, platform_manager[platform_name].name
+                        )
+                        for platform_name in common_platform
+                    ]
+                )
+                + "要查看全部平台请输入：“全部”"
+            ),
+            True,
+        )
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
+        ctx.receive_event(bot, event_2)
+        ctx.should_rejected()
+        ctx.should_call_send(
+            event_2,
+            (
+                "全部平台\n"
+                + "\n".join(
+                    [
+                        "{}：{}".format(platform_name, platform.name)
+                        for platform_name, platform in platform_manager.items()
+                    ]
+                )
+            ),
+            True,
+        )
+        event_3 = fake_group_message_event(
+            message=Message("weibo"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_3)
+        ctx.should_call_send(
+            event_3,
+            Message(
+                "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+            ),
+            True,
+        )
+        event_4_err = fake_group_message_event(
+            message=Message("000"), sender=fake_admin_user
+        )
+        import ipdb
+
+        ipdb.set_trace()
+        ctx.receive_event(bot, event_4_err)
+        ctx.should_call_send(event_4_err, "id输入错误", True)
+        ctx.should_rejected()
+        event_4_ok = fake_group_message_event(
+            message=Message("6279793937"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_4_ok)
+        ctx.should_call_send(event_4_ok, "id输入错误", True)

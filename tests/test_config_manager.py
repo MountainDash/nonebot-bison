@@ -97,4 +97,38 @@ async def test_add_with_target(app: App):
             message=Message("6279793937"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_ok)
-        ctx.should_call_send(event_4_ok, "id输入错误", True)
+        ctx.should_call_send(
+            event_4_ok,
+            Message(
+                "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
+                    " ".join(list(platform_manager["weibo"].categories.values()))
+                )
+            ),
+            True,
+        )
+        event_5_err = fake_group_message_event(
+            message=Message("图文 文字 err"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_5_err)
+        ctx.should_call_send(event_5_err, "不支持 err", True)
+        ctx.should_rejected()
+        event_5_ok = fake_group_message_event(
+            message=Message("图文 文字"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_5_ok)
+        ctx.should_call_send(event_5_ok, Message('请输入要订阅的tag，订阅所有tag输入"全部标签"'), True)
+        event_6 = fake_group_message_event(
+            message=Message("全部标签"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_6)
+        ctx.should_call_send(event_6, ("添加 明日方舟Arknights 成功"), True)
+    subs = config.list_subscribe(10000, "group")
+    assert len(subs) == 1
+    sub = subs[0]
+    assert sub["target"] == "6279793937"
+    assert sub["tags"] == []
+    assert sub["cats"] == [platform_manager["weibo"].reverse_category["图文"]] + [
+        platform_manager["weibo"].reverse_category["文字"]
+    ]
+    assert sub["target_type"] == "weibo"
+    assert sub["target_name"] == "明日方舟Arknights"

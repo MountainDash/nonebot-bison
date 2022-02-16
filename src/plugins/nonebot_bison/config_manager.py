@@ -94,7 +94,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         try:
             name = await check_sub_target(state["platform"], target)
             if not name:
-                await add_sub.reject("id输入错误")
+                raise ValueError
             state["id"] = target
             state["name"] = name
         except:

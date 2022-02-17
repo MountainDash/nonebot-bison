@@ -84,7 +84,7 @@ class Weibo(NewMessage):
         if super_topic_img:
             try:
                 res.append(
-                    super_topic_img.parent.parent.find("span", class_="surl-text").text
+                    super_topic_img.parent.parent.find("span", class_="surl-text").text  # type: ignore
                     + "超话"
                 )
             except:

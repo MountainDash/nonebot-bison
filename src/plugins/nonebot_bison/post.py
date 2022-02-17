@@ -21,9 +21,7 @@ class Post:
     target_name: Optional[str] = None
     compress: bool = False
     override_use_pic: Optional[bool] = None
-    pics: Union[list[Union[str, bytes]], list[str], list[bytes]] = field(
-        default_factory=list
-    )
+    pics: list[Union[str, bytes]] = field(default_factory=list)
     extra_msg: list[Message] = field(default_factory=list)
 
     _message: Optional[list] = None

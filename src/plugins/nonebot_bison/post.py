@@ -1,12 +1,11 @@
-import base64
 from dataclasses import dataclass, field
 from functools import reduce
 from io import BytesIO
 from typing import Optional, Union
 
 import httpx
-from nonebot import logger
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+from nonebot.log import logger
 from PIL import Image
 
 from .plugin_config import plugin_config

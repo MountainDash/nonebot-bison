@@ -2,9 +2,9 @@ import logging
 
 import nonebot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from nonebot import get_driver, logger
+from nonebot import get_driver
 from nonebot.adapters.onebot.v11.bot import Bot
-from nonebot.log import LoguruHandler
+from nonebot.log import LoguruHandler, logger
 
 from .config import Config
 from .platform import platform_manager

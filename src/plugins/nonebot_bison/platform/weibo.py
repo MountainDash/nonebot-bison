@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 import httpx
 from bs4 import BeautifulSoup as bs
-from nonebot import logger
+from nonebot.log import logger
 
 from ..post import Post
 from ..types import *

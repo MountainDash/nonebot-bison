@@ -1,9 +1,9 @@
 import time
 from typing import Literal, Union
 
-from nonebot import logger
 from nonebot.adapters import Message, MessageSegment
 from nonebot.adapters.onebot.v11.bot import Bot
+from nonebot.log import logger
 
 from .plugin_config import plugin_config
 

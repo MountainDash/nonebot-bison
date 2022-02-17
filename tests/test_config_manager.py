@@ -132,3 +132,50 @@ async def test_add_with_target(app: App):
     ]
     assert sub["target_type"] == "weibo"
     assert sub["target_name"] == "明日方舟Arknights"
+
+
+@pytest.mark.asyncio
+async def test_platform_name_err(app: App):
+    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_bison.config import Config
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager
+
+    config = Config()
+    config.user_target.truncate()
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot()
+        event_1 = fake_group_message_event(
+            message=Message("添加订阅"),
+            sender=Sender(card="", nickname="test", role="admin"),
+            to_me=True,
+        )
+        ctx.receive_event(bot, event_1)
+        ctx.should_pass_rule()
+        ctx.should_call_send(
+            event_1,
+            Message(
+                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
+                + "".join(
+                    [
+                        "{}：{}\n".format(
+                            platform_name, platform_manager[platform_name].name
+                        )
+                        for platform_name in common_platform
+                    ]
+                )
+                + "要查看全部平台请输入：“全部”"
+            ),
+            True,
+        )
+        event_2 = fake_group_message_event(
+            message=Message("error"),
+            sender=Sender(card="", nickname="test", role="admin"),
+        )
+        ctx.receive_event(bot, event_2)
+        ctx.should_rejected()
+        ctx.should_call_send(
+            event_2,
+            "平台输入错误",
+            True,
+        )

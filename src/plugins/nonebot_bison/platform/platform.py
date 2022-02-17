@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Collection, Literal, Optional
 
 import httpx
-from nonebot import logger
+from nonebot.log import logger
 
 from ..plugin_config import plugin_config
 from ..post import Post

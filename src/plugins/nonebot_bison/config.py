@@ -4,7 +4,7 @@ from os import path
 from typing import DefaultDict, Literal, Mapping, TypedDict
 
 import nonebot
-from nonebot import logger
+from nonebot.log import logger
 from tinydb import Query, TinyDB
 
 from .platform import platform_manager

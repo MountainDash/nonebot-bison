@@ -1,6 +1,7 @@
 import pytest
 import respx
 from httpx import Response
+from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.adapters.onebot.v11.event import Sender
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebug.app import App
@@ -234,7 +235,8 @@ async def test_del_sub(app: App):
         ["明日方舟"],
     )
     async with app.test_matcher(del_sub_matcher) as ctx:
-        bot = ctx.create_bot()
+        bot = ctx.create_bot(base=Bot)
+        assert isinstance(bot, Bot)
         event = fake_group_message_event(
             message=Message("删除订阅"), to_me=True, sender=fake_admin_user
         )

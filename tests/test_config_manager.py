@@ -1,9 +1,6 @@
 import pytest
 import respx
 from httpx import Response
-from nonebot.adapters.onebot.v11.bot import Bot
-from nonebot.adapters.onebot.v11.event import Sender
-from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebug.app import App
 
 from .platforms.utils import get_json
@@ -13,13 +10,10 @@ from .utils import fake_admin_user, fake_group_message_event
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_target(app: App):
+    from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import Config
-    from nonebot_bison.config_manager import (
-        add_sub_matcher,
-        common_platform,
-        query_sub_matcher,
-    )
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
     config = Config()
@@ -142,6 +136,7 @@ async def test_add_with_target(app: App):
 
 @pytest.mark.asyncio
 async def test_platform_name_err(app: App):
+    from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -218,6 +213,7 @@ async def test_query_sub(app: App):
 
 @pytest.mark.asyncio
 async def test_del_sub(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import del_sub_matcher
@@ -246,7 +242,7 @@ async def test_del_sub(app: App):
         ctx.should_call_send(
             event,
             Message(
-                "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937 [图文] 明日方舟\n请输入要删除的订阅的序号"
+                "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n请输入要删除的订阅的序号"
             ),
             True,
         )
@@ -256,3 +252,11 @@ async def test_del_sub(app: App):
         ctx.receive_event(bot, event_1_err)
         ctx.should_call_send(event_1_err, "删除错误", True)
         ctx.should_rejected()
+        event_1_ok = fake_group_message_event(
+            message=Message("1"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_1_ok)
+        ctx.should_call_send(event_1_ok, "删除成功", True)
+        ctx.should_finished()
+    subs = config.list_subscribe(10000, "group")
+    assert len(subs) == 0

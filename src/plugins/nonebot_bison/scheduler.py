@@ -47,11 +47,13 @@ async def fetch_and_send(target_type: str):
             send_user_list,
         )
     )
-    bot = nonebot.get_bot()
-    assert isinstance(bot, Bot)
     to_send = await platform_manager[target_type].fetch_new_post(
         target, send_userinfo_list
     )
+    if not to_send:
+        return
+    bot = nonebot.get_bot()
+    assert isinstance(bot, Bot)
     for user, send_list in to_send:
         for send_post in send_list:
             logger.info("send to {}: {}".format(user, send_post))

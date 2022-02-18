@@ -5,14 +5,16 @@ from nonebot.adapters import Event as AbstractEvent
 from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
+from nonebot.internal.rule import Rule
 from nonebot.matcher import Matcher
-from nonebot.params import Depends
+from nonebot.params import Depends, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 
 from .config import Config
 from .platform import check_sub_target, platform_manager
+from .plugin_config import plugin_config
 from .types import Category, Target
 from .utils import parse_text
 
@@ -23,6 +25,16 @@ def _gen_prompt_template(prompt: str):
     return prompt
 
 
+def _configurable_to_me(to_me: bool = EventToMe()):
+    if plugin_config.bison_to_me:
+        return to_me
+    else:
+        return True
+
+
+configurable_to_me = Rule(_configurable_to_me)
+
+
 common_platform = [
     p.platform_name
     for p in filter(
@@ -30,14 +42,6 @@ common_platform = [
         platform_manager.values(),
     )
 ]
-
-help_match = on_command("help", rule=to_me(), priority=5)
-
-
-@help_match.handle()
-async def send_help():
-    message = "使用方法：\n@bot 添加订阅（仅管理员）\n@bot 查询订阅\n@bot 删除订阅（仅管理员）"
-    await help_match.finish(Message(await parse_text(message)))
 
 
 def do_add_sub(add_sub: Type[Matcher]):
@@ -227,7 +231,10 @@ async def parse_group_number(event: AbstractEvent, state: T_State):
 
 
 add_sub_matcher = on_command(
-    "添加订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5
+    "添加订阅",
+    rule=configurable_to_me,
+    permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
+    priority=5,
 )
 do_add_sub(add_sub_matcher)
 manage_add_sub_matcher = on_command("管理-添加订阅", permission=SUPERUSER, priority=5)
@@ -241,7 +248,7 @@ async def add_sub_handle():
 do_add_sub(manage_add_sub_matcher)
 
 
-query_sub_matcher = on_command("查询订阅", rule=to_me(), priority=5)
+query_sub_matcher = on_command("查询订阅", rule=configurable_to_me, priority=5)
 do_query_sub(query_sub_matcher)
 manage_query_sub_matcher = on_command("管理-查询订阅", permission=SUPERUSER, priority=5)
 
@@ -255,7 +262,10 @@ do_query_sub(manage_query_sub_matcher)
 
 
 del_sub_matcher = on_command(
-    "删除订阅", rule=to_me(), permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER, priority=5
+    "删除订阅",
+    rule=configurable_to_me,
+    permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
+    priority=5,
 )
 do_del_sub(del_sub_matcher)
 manage_del_sub_matcher = on_command("管理-删除订阅", permission=SUPERUSER, priority=5)

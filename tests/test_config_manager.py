@@ -8,6 +8,66 @@ from .utils import fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
+async def test_configurable_at_me_true_failed(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_bison.config_manager import add_sub_matcher
+    from nonebot_bison.plugin_config import plugin_config
+
+    plugin_config.bison_to_me = True
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot(base=Bot)
+        event = fake_group_message_event(
+            message=Message("添加订阅"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event)
+        ctx.should_not_pass_rule()
+        ctx.should_pass_permission()
+
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot(base=Bot)
+        event = fake_group_message_event(message=Message("添加订阅"), to_me=True)
+        ctx.receive_event(bot, event)
+        ctx.should_pass_rule()
+        ctx.should_not_pass_permission()
+
+
+@pytest.mark.asyncio
+async def test_configurable_at_me_false(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.plugin_config import plugin_config
+
+    plugin_config.bison_to_me = False
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot(base=Bot)
+        event = fake_group_message_event(
+            message=Message("添加订阅"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event)
+        ctx.should_call_send(
+            event,
+            Message(
+                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
+                + "".join(
+                    [
+                        "{}：{}\n".format(
+                            platform_name, platform_manager[platform_name].name
+                        )
+                        for platform_name in common_platform
+                    ]
+                )
+                + "要查看全部平台请输入：“全部”"
+            ),
+            True,
+        )
+        ctx.should_pass_rule()
+        ctx.should_pass_permission()
+
+
+@pytest.mark.asyncio
 @respx.mock
 async def test_add_with_target(app: App):
     from nonebot.adapters.onebot.v11.event import Sender

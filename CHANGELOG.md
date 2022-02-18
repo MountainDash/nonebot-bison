@@ -57,3 +57,7 @@
 - 又双叒叕重构了一下
 - 修复了 Docker 中 Playwright 下载的浏览器版本不正确问题
 - 加入了猴子补丁，使 Windows 里能运行 Playwright
+
+## [0.5.0]
+
+- 添加了 FF14

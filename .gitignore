@@ -319,3 +319,4 @@ data*/*
 .env.*
 .vim/*
 !dist/.gitkeep
+.vscode

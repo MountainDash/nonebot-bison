@@ -25,6 +25,7 @@ workflows:
       - build-frontend
       - test
   build-test-publish:
+    unless: << pipeline.parameters.is_pr >>
     jobs:
       - build-frontend:
           filters:

@@ -5,12 +5,12 @@ path = Path(__file__).parent / "static"
 
 
 def get_json(file_name: str):
-    with open(path / file_name, "r") as f:
+    with open(path / file_name, "r", encoding="utf8") as f:
         file_text = f.read()
         return json.loads(file_text)
 
 
 def get_file(file_name: str):
-    with open(path / file_name, "r") as f:
+    with open(path / file_name, "r", encoding="utf8") as f:
         file_text = f.read()
         return file_text

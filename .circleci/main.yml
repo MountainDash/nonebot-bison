@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  is_pr:
+    type: boolean
+    default: false
+
 orbs:
   # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
   # Orb commands and jobs help you with common scripting around a language/tool

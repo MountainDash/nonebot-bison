@@ -1,5 +1,6 @@
+from email import message
 import time
-from typing import Literal, Union
+from typing import List, Literal, Union
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot.adapters.onebot.v11.bot import Bot
@@ -19,6 +20,22 @@ async def _do_send(
     elif user_type == "private":
         await bot.call_api("send_private_msg", user_id=user, message=msg)
 
+async def _do_send_forward(
+    bot: "Bot", user: str, msgs: list
+):
+    group_msg = []
+    bot_info = await bot.call_api("get_login_info")#猜测返回list 第一个为user_id，第二个为nickname
+    for msg in msgs:
+        sub_msg = {
+            "type": "node",
+            "data": {
+                "name": f"{bot_info[0]}",
+                "uin": f"{bot_info[1]}",
+                "content": msg
+            }
+        }
+        group_msg.append(sub_msg)
+    await bot.call_api("send_group_forward_msg", group_id=user, message=group_msg)
 
 async def do_send_msgs():
     global LAST_SEND_TIME
@@ -40,7 +57,10 @@ async def do_send_msgs():
 
 
 async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs: list):
-    if plugin_config.bison_use_queue:
+    if plugin_config.bison_use_forward_pic and user_type!="private":
+        if msgs:
+            _do_send_forward(bot, user, msgs)
+    elif plugin_config.bison_use_queue:
         for msg in msgs:
             QUEUE.append((bot, user, user_type, msg, 2))
     else:

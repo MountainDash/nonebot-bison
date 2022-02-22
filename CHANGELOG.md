@@ -61,3 +61,4 @@
 ## [0.5.0]
 
 - 添加了 FF14
+- 去掉了自己维护的 playwright，转向[nonebot-plugin-htmlrender](https://github.com/kexue-z/nonebot-plugin-htmlrender)

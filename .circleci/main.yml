@@ -151,7 +151,6 @@ jobs:
   test:
     docker:
       - image: cimg/python:3.9
-      - image: browserless/chrome
     # environment:
     #   BISON_BROWSER: wsc://localhost:3000
     steps:
@@ -164,7 +163,8 @@ jobs:
           command: poetry run playwright install-deps && poetry run playwright install chromium
       - run:
           name: Coverage test
-          command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
+          command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml\
+            -k 'not compare and not render'
       - store_test_results:
           path: test-results
       - run:

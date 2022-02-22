@@ -1,4 +1,6 @@
-import nonebot
+from nonebot.plugin import require
+
+require("nonebot_plugin_htmlrender")
 
 from . import (
     admin_page,

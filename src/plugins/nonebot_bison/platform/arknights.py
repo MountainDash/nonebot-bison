@@ -1,10 +1,9 @@
 import json
-from typing import Any, Type
+from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup as bs
 from nonebot.plugin import require
-from nonebot_plugin_htmlrender import capture_element
 
 from ..post import Post
 from ..types import Category, RawPost, Target
@@ -52,6 +51,8 @@ class Arknights(NewMessage):
         if soup.find("div", class_="standerd-container"):
             # 图文
             require("nonebot_plugin_htmlrender")
+            from nonebot_plugin_htmlrender import capture_element
+
             pic_data = await capture_element(
                 announce_url,
                 "div.main",

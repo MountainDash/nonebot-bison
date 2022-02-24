@@ -6,7 +6,7 @@ import nonebot
 from bs4 import BeautifulSoup as bs
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebot.log import default_format, logger
-from nonebot_plugin_htmlrender import text_to_pic as _text_to_pic
+from nonebot.plugin import require
 
 from .plugin_config import plugin_config
 
@@ -23,9 +23,16 @@ class Singleton(type):
 async def parse_text(text: str) -> MessageSegment:
     "return raw text if don't use pic, otherwise return rendered opcode"
     if plugin_config.bison_use_pic:
+        require("nonebot_plugin_htmlrender")
+        from nonebot_plugin_htmlrender import text_to_pic as _text_to_pic
+
         return MessageSegment.image(await _text_to_pic(text))
     else:
         return MessageSegment.text(text)
+
+
+if not plugin_config.bison_skip_browser_check:
+    require("nonebot_plugin_htmlrender")
 
 
 def html_to_text(html: str, query_dict: dict = {}) -> str:

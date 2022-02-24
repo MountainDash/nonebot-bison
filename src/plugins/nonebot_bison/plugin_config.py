@@ -1,5 +1,3 @@
-import warnings
-
 import nonebot
 from pydantic import BaseSettings
 
@@ -13,6 +11,7 @@ class PlugConfig(BaseSettings):
     bison_outer_url: str = "http://localhost:8080/bison/"
     bison_filter_log: bool = False
     bison_to_me: bool = True
+    bison_skip_browser_check: bool = False
 
     class Config:
         extra = "ignore"

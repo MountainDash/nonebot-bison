@@ -151,16 +151,17 @@ jobs:
   test:
     docker:
       - image: cimg/python:3.9
-    # environment:
+    environment:
+      BISON_SKIP_BROWSER_CHECK: true
     #   BISON_BROWSER: wsc://localhost:3000
     steps:
       - checkout
       # - run: sed -e '41,45d' -i pyproject.toml
       - python/install-packages:
           pkg-manager: poetry
-      - run:
-          name: Install browser
-          command: poetry run playwright install-deps && poetry run playwright install chromium
+      # - run:
+      #     name: Install browser
+      #     command: poetry run playwright install-deps && poetry run playwright install chromium
       - run:
           name: Coverage test
           command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml

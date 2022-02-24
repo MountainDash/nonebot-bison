@@ -30,9 +30,6 @@ async def test_arknights(app: App):
     from nonebot_bison.platform.arknights import Arknights
 
     ak = Arknights()
-    import ipdb
-
-    ipdb.set_trace()
     res = await ak.parse(
         {"webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/854_1644580545.html"}
     )

@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y xvfb fonts-noto-color-emoji ttf-unifont
     libxdamage1 libxext6 libxfixes3 libxrandr2 libxshmfence1 \
     && rm -rf /var/lib/apt/lists/*
 COPY ./pyproject.toml ./poetry.lock* /app/
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-dev
 RUN playwright install chromium
 ADD src /app/src
 ADD bot.py /app/

@@ -8,6 +8,9 @@ workflows:
       - continuation/continue:
           configuration_path: ".circleci/main.yml"
           parameters: /home/circleci/params.json
+          filters:
+            tags:
+              only: /.*/
           pre-steps:
             - run:
                 command: |

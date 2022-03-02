@@ -735,15 +735,21 @@ version = "0.2.1"
 description = "nonebot2 test framework"
 category = "dev"
 optional = false
-python-versions = ">=3.7.3,<4.0.0"
+python-versions = "^3.7.3"
+develop = false
 
 [package.dependencies]
-asgiref = ">=3.4.0,<4.0.0"
-async-asgi-testclient = ">=1.4.8,<2.0.0"
-nonebot2 = ">=2.0.0-beta.1,<3.0.0"
-pytest = ">=6.2.5,<7.0.0"
-pytest-asyncio = ">=0.16.0,<0.17.0"
-typing-extensions = ">=4.0.0,<5.0.0"
+asgiref = "^3.4.0"
+async-asgi-testclient = "^1.4.8"
+nonebot2 = "^2.0.0-beta.1"
+pytest = "^7.0.0"
+typing-extensions = "^4.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/nonebot/nonebug.git"
+reference = "40fcd4f"
+resolved_reference = "40fcd4f3eff8f4b2118e95938fabc3d77ff6819c"
 
 [[package]]
 name = "packaging"
@@ -988,7 +994,7 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pytest"
-version = "6.2.5"
+version = "7.0.1"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
@@ -1002,24 +1008,24 @@ iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
 py = ">=1.8.2"
-toml = "*"
+tomli = ">=1.0.0"
 
 [package.extras]
-testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
+testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.16.0"
-description = "Pytest support for asyncio."
+version = "0.18.1"
+description = "Pytest support for asyncio"
 category = "dev"
 optional = false
-python-versions = ">= 3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
-pytest = ">=5.4.0"
+pytest = ">=6.1.0"
 
 [package.extras]
-testing = ["coverage", "hypothesis (>=5.7.1)"]
+testing = ["coverage (==6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy (==0.931)"]
 
 [[package]]
 name = "pytest-cov"
@@ -1455,7 +1461,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "7dbb53c4a2386da480678e34620664651cf61dd754dd3dae7b6e8e8a56c04b9d"
+content-hash = "4a0d093b99ca03d9e9effe113ccd85daf9242c0a95f2336d2af8fcc7e764b6ce"
 
 [metadata.files]
 aiofiles = [
@@ -1920,10 +1926,7 @@ nonebot2 = [
     {file = "nonebot2-2.0.0b2-py3-none-any.whl", hash = "sha256:8166490311b607f8fbf5e31934b005e29f6d39ff222a6771ec36c9456ec337ec"},
     {file = "nonebot2-2.0.0b2.tar.gz", hash = "sha256:2950f27a62f2a98b2abf3128c19d898a24c2867e70fb5c6af231eadf558b18a8"},
 ]
-nonebug = [
-    {file = "nonebug-0.2.1-py3-none-any.whl", hash = "sha256:f4d59effd50e400ee866df57902e4d749227a76857be26a0607fc2a5f6a05f7c"},
-    {file = "nonebug-0.2.1.tar.gz", hash = "sha256:2f363bd5d65081c802b7b19a72b07ada1ad8e61968cf313176f38a5cf97e84e2"},
-]
+nonebug = []
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
@@ -2093,12 +2096,12 @@ pyparsing = [
     {file = "pyparsing-3.0.7.tar.gz", hash = "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"},
 ]
 pytest = [
-    {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
-    {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
+    {file = "pytest-7.0.1-py3-none-any.whl", hash = "sha256:9ce3ff477af913ecf6321fe337b93a2c0dcf2a0a1439c43f5452112c1e4280db"},
+    {file = "pytest-7.0.1.tar.gz", hash = "sha256:e30905a0c131d3d94b89624a1cc5afec3e0ba2fbdb151867d8e0ebd49850f171"},
 ]
 pytest-asyncio = [
-    {file = "pytest-asyncio-0.16.0.tar.gz", hash = "sha256:7496c5977ce88c34379df64a66459fe395cd05543f0a2f837016e7144391fcfb"},
-    {file = "pytest_asyncio-0.16.0-py3-none-any.whl", hash = "sha256:5f2a21273c47b331ae6aa5b36087047b4899e40f03f18397c0e65fa5cca54e9b"},
+    {file = "pytest-asyncio-0.18.1.tar.gz", hash = "sha256:c43fcdfea2335dd82ffe0f2774e40285ddfea78a8e81e56118d47b6a90fbb09e"},
+    {file = "pytest_asyncio-0.18.1-py3-none-any.whl", hash = "sha256:c9ec48e8bbf5cc62755e18c4d8bc6907843ec9c5f4ac8f61464093baeba24a7e"},
 ]
 pytest-cov = [
     {file = "pytest-cov-3.0.0.tar.gz", hash = "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"},

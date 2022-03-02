@@ -68,3 +68,4 @@ def fake_private_message_event(**field) -> "PrivateMessageEvent":
 from nonebot.adapters.onebot.v11.event import Sender
 
 fake_admin_user = Sender(nickname="test", role="admin")
+fake_superuser = Sender(user_id=10001, nickname="superuser")

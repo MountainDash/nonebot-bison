@@ -40,11 +40,11 @@ nonebot-plugin-htmlrender = "^0.0.4"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.4"
-pytest = "^6.2.4"
-pytest-asyncio = "^0.16"
+pytest = "^7.0.1"
+pytest-asyncio = "^0.18.1"
 respx = "^0.19.0"
 pytest-cov = "^3.0.0"
-nonebug = "^0.2.0"
+nonebug = {git = "https://github.com/nonebot/nonebug.git", rev = "40fcd4f"}
 black = "^22.1.0"
 isort = "^5.10.1"
 pre-commit = "^2.17.0"
@@ -59,6 +59,7 @@ markers = [
     "compare: compare fetching result with rsshub",
     "render: render img by chrome"
 ]
+asyncio_mode = "auto"
 
 [tool.black]
 line-length = 88

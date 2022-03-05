@@ -41,8 +41,8 @@ async def _do_merge_send(
     ):
     try:
         await _do_send(bot, user, user_type, msgs.pop(0))#弹出第一条消息，剩下的消息合并
-    except Exception as e:
-        logger.error("向群{}发送消息序列首消息失败:{}".format(user,repr(e)))
+    except Exception as e_f:#first_msg_exception
+        logger.error("向群{}发送消息序列首消息失败:{}".format(user,repr(e_f)))
     else:
         logger.info("成功向群{}发送消息序列中的首条消息".format(user))
     try:
@@ -52,8 +52,8 @@ async def _do_merge_send(
                                                     nickname = group_bot_info["card"]
                                                     )#生成合并转发内容
         await bot.send_group_forward_msg(group_id=user,messages=forward_msg)
-    except:
-        logger.error("向群{}发送合并图片消息失败:{}".format(user,repr(e)))
+    except Exception as e_b:#behind_msg_exception
+        logger.error("向群{}发送合并图片消息失败:{}".format(user,repr(e_b)))
     else:
         logger.info("成功向群{}发送合并图片转发消息".format(user))
 

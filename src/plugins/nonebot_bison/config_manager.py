@@ -105,9 +105,9 @@ def do_add_sub(add_sub: Type[Matcher]):
                 raise ValueError
             state["id"] = target
             state["name"] = name
-        except(KeyboardInterrupt):
+        except (KeyboardInterrupt):
             await add_sub.finish("已中止订阅")
-        except(ValueError):
+        except (ValueError):
             await add_sub.reject("id输入错误")
 
     @add_sub.got("id", _gen_prompt_template("{_prompt}"), [Depends(parse_id)])
@@ -141,7 +141,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     async def parser_tags(event: AbstractEvent, state: T_State):
         if not isinstance(state["tags"], Message):
             return
-        if str(event.get_message()).strip() == "取消":#一般不会有叫 取消 的tag吧
+        if str(event.get_message()).strip() == "取消":  # 一般不会有叫 取消 的tag吧
             await add_sub.finish("已中止订阅")
         if str(event.get_message()).strip() == "全部标签":
             state["tags"] = []

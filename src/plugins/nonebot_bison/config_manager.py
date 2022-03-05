@@ -57,7 +57,7 @@ def do_add_sub(add_sub: Type[Matcher]):
                     for platform_name in common_platform
                 ]
             )
-            + "要查看全部平台请输入：“全部”"
+            + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
         )
 
     async def parse_platform(event: AbstractEvent, state: T_State) -> None:
@@ -72,6 +72,8 @@ def do_add_sub(add_sub: Type[Matcher]):
                 ]
             )
             await add_sub.reject(message)
+        elif platform == "取消":
+            await add_sub.finish("已中止订阅")
         elif platform in platform_manager:
             state["platform"] = platform
         else:
@@ -96,12 +98,16 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         target = str(event.get_message()).strip()
         try:
+            if target == "取消":
+                raise KeyboardInterrupt
             name = await check_sub_target(state["platform"], target)
             if not name:
                 raise ValueError
             state["id"] = target
             state["name"] = name
-        except:
+        except(KeyboardInterrupt):
+            await add_sub.finish("已中止订阅")
+        except(ValueError):
             await add_sub.reject("id输入错误")
 
     @add_sub.got("id", _gen_prompt_template("{_prompt}"), [Depends(parse_id)])
@@ -118,7 +124,9 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         res = []
         for cat in str(event.get_message()).strip().split():
-            if cat not in platform_manager[state["platform"]].reverse_category:
+            if cat == "取消":
+                await add_sub.finish("已中止订阅")
+            elif cat not in platform_manager[state["platform"]].reverse_category:
                 await add_sub.reject("不支持 {}".format(cat))
             res.append(platform_manager[state["platform"]].reverse_category[cat])
         state["cats"] = res
@@ -133,6 +141,8 @@ def do_add_sub(add_sub: Type[Matcher]):
     async def parser_tags(event: AbstractEvent, state: T_State):
         if not isinstance(state["tags"], Message):
             return
+        if str(event.get_message()).strip() == "取消":#一般不会有叫 取消 的tag吧
+            await add_sub.finish("已中止订阅")
         if str(event.get_message()).strip() == "全部标签":
             state["tags"] = []
         else:

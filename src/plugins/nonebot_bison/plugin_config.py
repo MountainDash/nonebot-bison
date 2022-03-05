@@ -12,6 +12,7 @@ class PlugConfig(BaseSettings):
     bison_filter_log: bool = False
     bison_to_me: bool = True
     bison_skip_browser_check: bool = False
+    bison_use_pic_merge: bool = True#多图片时启用图片合并转发
 
     class Config:
         extra = "ignore"

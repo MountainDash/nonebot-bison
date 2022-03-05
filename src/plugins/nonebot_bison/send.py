@@ -46,14 +46,15 @@ async def _do_merge_send(
     else:
         logger.info("成功向群{}发送消息序列中的首条消息".format(user))
     try:
-        group_bot_info = await bot.get_group_member_info(group_id=user,user_id=bot.self_id,no_cache=True)#调用api获取群内bot的相关参数
-        forward_msg = generate_forward_msg(msgs = msgs, 
-                                                    self_id = group_bot_info["user_id"],
-                                                    nickname = group_bot_info["card"]
-                                                    )#生成合并转发内容
-        await bot.send_group_forward_msg(group_id=user,messages=forward_msg)
+        if msgs:
+            group_bot_info = await bot.get_group_member_info(group_id=user,user_id=bot.self_id,no_cache=True)#调用api获取群内bot的相关参数
+            forward_msg = generate_forward_msg(msgs = msgs, 
+                                                        self_id = group_bot_info["user_id"],
+                                                        nickname = group_bot_info["card"]
+                                                        )#生成合并转发内容
+            await bot.send_group_forward_msg(group_id=user,messages=forward_msg)
     except Exception as e_b:#behind_msg_exception
-        logger.error("向群{}发送合并图片消息失败:{}".format(user,repr(e_b)))
+        logger.warning("向群{}发送合并图片消息超时或者可能失败:{}".format(user,repr(e_b)))
     else:
         logger.info("成功向群{}发送合并图片转发消息".format(user))
 

@@ -59,7 +59,7 @@ async def test_configurable_at_me_false(app: App):
                         for platform_name in common_platform
                     ]
                 )
-                + "要查看全部平台请输入：“全部”"
+                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )
@@ -113,7 +113,7 @@ async def test_add_with_target(app: App):
                         for platform_name in common_platform
                     ]
                 )
-                + "要查看全部平台请输入：“全部”"
+                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )
@@ -230,7 +230,7 @@ async def test_add_with_target_no_cat(app: App):
                         for platform_name in common_platform
                     ]
                 )
-                + "要查看全部平台请输入：“全部”"
+                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )
@@ -294,7 +294,7 @@ async def test_add_no_target(app: App):
                         for platform_name in common_platform
                     ]
                 )
-                + "要查看全部平台请输入：“全部”"
+                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )
@@ -358,7 +358,7 @@ async def test_platform_name_err(app: App):
                         for platform_name in common_platform
                     ]
                 )
-                + "要查看全部平台请输入：“全部”"
+                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )

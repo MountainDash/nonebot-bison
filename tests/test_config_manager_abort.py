@@ -2,10 +2,12 @@ import pytest
 import respx
 from httpx import Response
 from nonebug.app import App
+
 from .platforms.utils import get_json
 from .utils import fake_admin_user, fake_group_message_event
 
-#选择platform阶段中止
+
+# 选择platform阶段中止
 @pytest.mark.asyncio
 @respx.mock
 async def test_abort_add_on_platform(app: App):
@@ -65,7 +67,9 @@ async def test_abort_add_on_platform(app: App):
             True,
         )
         ctx.should_finished()
-#输入id阶段中止
+
+
+# 输入id阶段中止
 @pytest.mark.asyncio
 @respx.mock
 async def test_abort_add_on_id(app: App):
@@ -137,7 +141,8 @@ async def test_abort_add_on_id(app: App):
         )
         ctx.should_finished()
 
-#输入订阅类别阶段中止
+
+# 输入订阅类别阶段中止
 @pytest.mark.asyncio
 @respx.mock
 async def test_abort_add_on_cats(app: App):
@@ -223,7 +228,7 @@ async def test_abort_add_on_cats(app: App):
         ctx.should_finished()
 
 
-#输入标签阶段中止
+# 输入标签阶段中止
 @pytest.mark.asyncio
 @respx.mock
 async def test_abort_add_on_tag(app: App):

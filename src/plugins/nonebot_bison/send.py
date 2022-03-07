@@ -54,7 +54,9 @@ async def _do_merge_send(
                 forward_msg = generate_forward_msg(
                     msgs=msgs,
                     self_id=group_bot_info["user_id"],
-                    nickname=group_bot_info["card"] if group_bot_info["card"] else group_bot_info["nickname"],
+                    nickname=group_bot_info["card"]
+                    if group_bot_info["card"]
+                    else group_bot_info["nickname"],
                 )  # 生成合并转发内容
                 await bot.send_group_forward_msg(group_id=user, messages=forward_msg)
     except Exception as e_b:  # behind_msg_exception

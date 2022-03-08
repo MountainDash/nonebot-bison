@@ -75,6 +75,22 @@ async def test_send_merge_no_queue(app: App):
         message = [
             Message(MessageSegment.text("test msg")),
             Message(MessageSegment.image("https://picsum.photos/200/300")),
+        ]
+        ctx.should_call_api(
+            "send_group_msg",
+            {"group_id": 633, "message": Message(MessageSegment.text("test msg"))},
+            None,
+        )
+        ctx.should_call_api(
+            "send_group_msg",
+            {"group_id": 633, "message": message[1]},
+            None,
+        )
+        await send_msgs(bot, 633, "group", message)
+
+        message = [
+            Message(MessageSegment.text("test msg")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
             Message(MessageSegment.image("https://picsum.photos/200/300")),
         ]
         ctx.should_call_api(

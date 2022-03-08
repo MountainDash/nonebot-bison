@@ -1,13 +1,13 @@
 import asyncio
 
 import pytest
-from nonebot.adapters.onebot.v11.bot import Bot
 from nonebug import App
 
 
 @pytest.mark.asyncio
 async def test_send_no_queue(app: App):
     import nonebot
+    from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 
@@ -32,6 +32,7 @@ async def test_send_no_queue(app: App):
 @pytest.mark.asyncio
 async def test_send_queue(app: App):
     import nonebot
+    from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot_bison import send
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import LAST_SEND_TIME, do_send_msgs, send_msgs
@@ -56,3 +57,147 @@ async def test_send_queue(app: App):
         app.monkeypatch.setattr(send, "LAST_SEND_TIME", 0, True)
         await do_send_msgs()
         assert ctx.wait_list.empty()
+
+
+@pytest.mark.asyncio
+async def test_send_merge_no_queue(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.send import send_msgs
+
+    plugin_config.bison_use_pic_merge = 1
+    plugin_config.bison_use_queue = False
+
+    async with app.test_api() as ctx:
+        bot = ctx.create_bot(base=Bot, self_id="8888")
+        assert isinstance(bot, Bot)
+        message = [
+            Message(MessageSegment.text("test msg")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+        ]
+        ctx.should_call_api(
+            "send_group_msg",
+            {"group_id": 633, "message": Message(MessageSegment.text("test msg"))},
+            None,
+        )
+        ctx.should_call_api(
+            "get_group_member_info",
+            {"group_id": 633, "user_id": 8888, "no_cache": True},
+            {"user_id": 8888, "card": "admin", "nickname": "adminuser"},
+        )
+        merged_message = Message(
+            [
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="admin", content=message[1]
+                ),
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="admin", content=message[2]
+                ),
+            ]
+        )
+        ctx.should_call_api(
+            "send_group_forward_msg",
+            {"group_id": 633, "messages": merged_message},
+            None,
+        )
+        await send_msgs(bot, 633, "group", message)
+
+        message = [
+            Message(MessageSegment.text("test msg")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+        ]
+        ctx.should_call_api(
+            "send_group_msg",
+            {"group_id": 633, "message": Message(MessageSegment.text("test msg"))},
+            None,
+        )
+        ctx.should_call_api(
+            "get_group_member_info",
+            {"group_id": 633, "user_id": 8888, "no_cache": True},
+            {"user_id": 8888, "card": None, "nickname": "adminuser"},
+        )
+        merged_message = Message(
+            [
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="adminuser", content=message[1]
+                ),
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="adminuser", content=message[2]
+                ),
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="adminuser", content=message[3]
+                ),
+            ]
+        )
+        ctx.should_call_api(
+            "send_group_forward_msg",
+            {"group_id": 633, "messages": merged_message},
+            None,
+        )
+        await send_msgs(bot, 633, "group", message)
+
+        # private user should not send in forward
+        message = [
+            Message(MessageSegment.text("test msg")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+        ]
+        ctx.should_call_api(
+            "send_private_msg",
+            {"user_id": 633, "message": Message(MessageSegment.text("test msg"))},
+            None,
+        )
+        ctx.should_call_api(
+            "send_private_msg", {"user_id": 633, "message": message[1]}, None
+        )
+        ctx.should_call_api(
+            "send_private_msg", {"user_id": 633, "message": message[2]}, None
+        )
+        await send_msgs(bot, 633, "private", message)
+
+
+async def test_send_merge2_no_queue(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.send import send_msgs
+
+    plugin_config.bison_use_pic_merge = 2
+    plugin_config.bison_use_queue = False
+
+    async with app.test_api() as ctx:
+        bot = ctx.create_bot(base=Bot, self_id="8888")
+        assert isinstance(bot, Bot)
+        message = [
+            Message(MessageSegment.text("test msg")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            Message(MessageSegment.image("https://picsum.photos/200/300")),
+        ]
+        ctx.should_call_api(
+            "get_group_member_info",
+            {"group_id": 633, "user_id": 8888, "no_cache": True},
+            {"user_id": 8888, "card": "admin", "nickname": "adminuser"},
+        )
+        merged_message = Message(
+            [
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="admin", content=message[0]
+                ),
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="admin", content=message[1]
+                ),
+                MessageSegment.node_custom(
+                    user_id=8888, nickname="admin", content=message[2]
+                ),
+            ]
+        )
+        ctx.should_call_api(
+            "send_group_forward_msg",
+            {"group_id": 633, "messages": merged_message},
+            None,
+        )
+        await send_msgs(bot, 633, "group", message)

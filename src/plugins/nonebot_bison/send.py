@@ -1,68 +1,36 @@
 import time
-from email import message
 from typing import Literal, Union
 
-from nonebot.adapters import Message, MessageSegment
 from nonebot.adapters.onebot.v11.bot import Bot
+from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.log import logger
 
 from .plugin_config import plugin_config
 
-QUEUE = []  # 不开启图片合并转发时使用
+QUEUE: list[
+    tuple[
+        Bot,
+        int,
+        Literal["private", "group", "group-forward"],
+        Union[str, Message],
+        int,
+    ]
+] = []
 LAST_SEND_TIME = time.time()
 
 
-def generate_forward_msg(msgs: list, self_id: str, nickname: str):
-    group_msg = []
-    for msg in msgs:
-        sub_msg = {
-            "type": "node",
-            "data": {"name": f"{nickname}", "uin": f"{self_id}", "content": f"{msg}"},
-        }
-        group_msg.append(sub_msg)
-
-    return group_msg
-
-
 async def _do_send(
-    bot: "Bot", user: str, user_type: str, msg: Union[str, Message, MessageSegment]
+    bot: "Bot",
+    user: int,
+    user_type: Literal["group", "private", "group-forward"],
+    msg: Union[str, Message],
 ):
     if user_type == "group":
-        await bot.call_api("send_group_msg", group_id=user, message=msg)
+        await bot.send_group_msg(group_id=user, message=msg)
     elif user_type == "private":
-        await bot.call_api("send_private_msg", user_id=user, message=msg)
-
-
-async def _do_merge_send(
-    bot: Bot, user, user_type: Literal["private", "group"], msgs: list
-):
-    if plugin_config.bison_use_pic_merge == 1:
-        try:
-            await _do_send(bot, user, user_type, msgs.pop(0))  # 弹出第一条消息，剩下的消息合并
-        except Exception as e_f:  # first_msg_exception
-            logger.error("向群{}发送消息序列首消息失败:{}".format(user, repr(e_f)))
-        else:
-            logger.info("成功向群{}发送消息序列中的首条消息".format(user))
-    try:
-        if msgs:
-            if len(msgs) == 1:  # 只有一条消息序列就不合并转发
-                await _do_send(bot, user, user_type, msgs.pop(0))
-            else:
-                group_bot_info = await bot.get_group_member_info(
-                    group_id=user, user_id=bot.self_id, no_cache=True
-                )  # 调用api获取群内bot的相关参数
-                forward_msg = generate_forward_msg(
-                    msgs=msgs,
-                    self_id=group_bot_info["user_id"],
-                    nickname=group_bot_info["card"]
-                    if group_bot_info["card"]
-                    else group_bot_info["nickname"],
-                )  # 生成合并转发内容
-                await bot.send_group_forward_msg(group_id=user, messages=forward_msg)
-    except Exception as e_b:  # behind_msg_exception
-        logger.warning("向群{}发送合并图片消息超时或者可能失败:{}\n可能是因为图片太大或者太多".format(user, repr(e_b)))
-    else:
-        logger.info("成功向群{}发送合并图片转发消息".format(user))
+        await bot.send_private_msg(user_id=user, message=msg)
+    elif user_type == "group-forward":
+        await bot.send_group_forward_msg(group_id=user, messages=msg)
 
 
 async def do_send_msgs():
@@ -84,14 +52,40 @@ async def do_send_msgs():
         LAST_SEND_TIME = time.time()
 
 
-async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs: list):
+async def _send_msgs_dispatch(
+    bot: Bot,
+    user,
+    user_type: Literal["private", "group", "group-forward"],
+    msg: Union[str, Message],
+):
     if plugin_config.bison_use_queue:
-        if plugin_config.bison_use_pic_merge and user_type == "group":
-            await _do_merge_send(bot, user, user_type, msgs)
-        else:
-            for msg in msgs:
-                QUEUE.append((bot, user, user_type, msg, 2))
-
+        QUEUE.append((bot, user, user_type, msg, 2))
     else:
+        await _do_send(bot, user, user_type, msg)
+
+
+async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs: list):
+    if not plugin_config.bison_use_pic_merge or user_type == "private":
         for msg in msgs:
-            await _do_send(bot, user, user_type, msg)
+            await _send_msgs_dispatch(bot, user, user_type, msg)
+        return
+    if plugin_config.bison_use_pic_merge == 1:
+        await _send_msgs_dispatch(bot, user, "group", msgs.pop(0))
+    if msgs:
+        if len(msgs) == 1:  # 只有一条消息序列就不合并转发
+            await _send_msgs_dispatch(bot, user, "group", msgs.pop(0))
+        else:
+            group_bot_info = await bot.get_group_member_info(
+                group_id=user, user_id=int(bot.self_id), no_cache=True
+            )  # 调用api获取群内bot的相关参数
+            forward_msg = Message(
+                [
+                    MessageSegment.node_custom(
+                        group_bot_info["user_id"],
+                        nickname=group_bot_info["card"] or group_bot_info["nickname"],
+                        content=msg,
+                    )
+                    for msg in msgs
+                ]
+            )
+            await _send_msgs_dispatch(bot, user, "group-forward", forward_msg)

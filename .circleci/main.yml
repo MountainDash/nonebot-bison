@@ -14,7 +14,7 @@ orbs:
   node: circleci/node@4.7.0
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
-  docker: circleci/docker@1.7.0
+  docker: circleci/docker@2.0.2
   docker-cache: cci-x/docker-registry-image-cache@0.2.0
   codecov: codecov/codecov@3.2.2
 

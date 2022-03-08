@@ -35,21 +35,21 @@ expiringdict = "^1.2.1"
 pyjwt = "^2.1.0"
 aiofiles = "^0.8.0"
 python-socketio = "^5.4.0"
-nonebot-plugin-help = "^0.1.5"
 nonebot-adapter-onebot = "^2.0.0-beta.1"
 nonebot-plugin-htmlrender = "^0.0.4"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.4"
-pytest = "^6.2.4"
-pytest-asyncio = "^0.16"
+pytest = "^7.0.1"
+pytest-asyncio = "^0.18.1"
 respx = "^0.19.0"
 pytest-cov = "^3.0.0"
-nonebug = "^0.2.0"
+nonebug = {git = "https://github.com/nonebot/nonebug.git", rev = "40fcd4f"}
 black = "^22.1.0"
 isort = "^5.10.1"
 pre-commit = "^2.17.0"
 nb-cli = "^0.6.6"
+flaky = "^3.7.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
@@ -60,6 +60,7 @@ markers = [
     "compare: compare fetching result with rsshub",
     "render: render img by chrome"
 ]
+asyncio_mode = "auto"
 
 [tool.black]
 line-length = 88

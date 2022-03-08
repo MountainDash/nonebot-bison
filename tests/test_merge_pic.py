@@ -1,6 +1,7 @@
 import typing
 
 import pytest
+from flaky import flaky
 from nonebug.app import App
 
 if typing.TYPE_CHECKING:
@@ -40,7 +41,7 @@ merge_source_9_2 = [
 ]
 
 
-@pytest.mark.asyncio
+@flaky
 async def test_9_merge(app: App):
     from nonebot_bison.post import Post
 
@@ -50,7 +51,7 @@ async def test_9_merge(app: App):
     await post.generate_messages()
 
 
-@pytest.mark.asyncio
+@flaky
 async def test_9_merge_2(app: App):
     from nonebot_bison.post import Post
 
@@ -60,7 +61,7 @@ async def test_9_merge_2(app: App):
     await post.generate_messages()
 
 
-@pytest.mark.asyncio
+@flaky
 async def test_6_merge(app: App):
     from nonebot_bison.post import Post
 
@@ -69,7 +70,7 @@ async def test_6_merge(app: App):
     assert len(post.pics) == 5
 
 
-@pytest.mark.asyncio
+@flaky
 async def test_3_merge(app: App):
     from nonebot_bison.post import Post
 
@@ -78,7 +79,7 @@ async def test_3_merge(app: App):
     assert len(post.pics) == 5
 
 
-@pytest.mark.asyncio
+@flaky
 async def test_6_merge_only(app: App):
     from nonebot_bison.post import Post
 
@@ -87,7 +88,7 @@ async def test_6_merge_only(app: App):
     assert len(post.pics) == 1
 
 
-@pytest.mark.asyncio
+@flaky
 async def test_3_merge_only(app: App):
     from nonebot_bison.post import Post
 

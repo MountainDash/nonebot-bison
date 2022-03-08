@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y xvfb fonts-noto-color-emoji ttf-unifont
 COPY ./pyproject.toml ./poetry.lock* ./bot.py /app/
 RUN poetry add nonebot-plugin-sentry && \
     sed '/nonebot.load_builtin_plugins("echo")/a nonebot.load_plugin("nonebot_plugin_sentry")' -i bot.py
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-dev --no-root
 RUN playwright install chromium
 ADD src /app/src
 ENV HOST=0.0.0.0

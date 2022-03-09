@@ -63,3 +63,8 @@
 - 添加了 FF14
 - 去掉了自己维护的 playwright，转向[nonebot-plugin-htmlrender](https://github.com/kexue-z/nonebot-plugin-htmlrender)
 - 支持了 nonebot 2.0.0beta
+
+## [0.5.1]
+
+- 使用了新的私聊进行群管理的方式
+- 默认关闭自动重发功能

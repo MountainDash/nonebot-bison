@@ -59,7 +59,7 @@ async def _send_msgs_dispatch(
     msg: Union[str, Message],
 ):
     if plugin_config.bison_use_queue:
-        QUEUE.append((bot, user, user_type, msg, 2))
+        QUEUE.append((bot, user, user_type, msg, plugin_config.bison_resend_times))
     else:
         await _do_send(bot, user, user_type, msg)
 

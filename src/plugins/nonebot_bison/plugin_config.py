@@ -14,6 +14,8 @@ class PlugConfig(BaseSettings):
     bison_skip_browser_check: bool = False
     bison_use_pic_merge: int = 0  # 多图片时启用图片合并转发（仅限群）,当bison_use_queue为False时该配置不会生效
     # 0：不启用；1：首条消息单独发送，剩余照片合并转发；2以及以上：所有消息全部合并转发
+    bison_resend_times: int = 0
+
     class Config:
         extra = "ignore"
 

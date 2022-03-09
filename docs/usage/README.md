@@ -42,7 +42,7 @@ sidebar: auto
 
    servers:
      - ws-reverse:
-         universal: ws://nonebot:8080/cqhttp/ws # 将这个字段写为这个值
+         universal: ws://nonebot:8080/onebot/v11/ws/ # 将这个字段写为这个值
    ```
 
 3. 登录 go-cqhttp
@@ -107,11 +107,14 @@ sidebar: auto
     截止发布时，本项目尚不能完全与 browserless 兼容，目前建议使用镜像内自带的浏览器，即
     不要配置这个变量
     :::
+- `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`False`会在用到浏览器时自动下载，
+  默认`True`
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison`，如果你的插件部署
   在服务器上，建议配置为`http://<你的服务器ip>:8080/bison`
 - `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的 warning 级以下的 log，如果你的 bot 只运行了这个插件可以考虑
   开启，默认关
 - `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
+- `BISON_RESEND_TIMES`: 最大重发次数，默认 0
 
 ## 使用
 

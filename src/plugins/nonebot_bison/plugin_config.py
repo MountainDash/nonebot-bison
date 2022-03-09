@@ -12,6 +12,7 @@ class PlugConfig(BaseSettings):
     bison_filter_log: bool = False
     bison_to_me: bool = True
     bison_skip_browser_check: bool = False
+    bison_resend_times: int = 0
 
     class Config:
         extra = "ignore"

@@ -42,7 +42,7 @@ async def do_send_msgs():
 async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs: list):
     if plugin_config.bison_use_queue:
         for msg in msgs:
-            QUEUE.append((bot, user, user_type, msg, 2))
+            QUEUE.append((bot, user, user_type, msg, plugin_config.bison_resend_times))
     else:
         for msg in msgs:
             await _do_send(bot, user, user_type, msg)

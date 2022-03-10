@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  go-cqhttp:
+    image: felinae98/go-cqhttp:v1.0.0-beta8-fix2
+    volumes:
+      - ./bot-data:/data
+  nonebot:
+    image: felinae98/nonebot-bison
+    volumes:
+      - ./nonebot-data:/data
+    environment:
+      TZ: Asia/Shanghai
+      HOST: 0.0.0.0
+      # SUPERUSERS: '[<your QQ>]'
+      BISON_CONFIG_PATH: /data
+      # BISON_OUTER_URL: 'http://<your server ip>:8080/bison'
+      BISON_FILTER_LOG: true
+      BISON_USE_PIC: false # 如果需要将文字转为图片发送请改为true
+
+    expose:
+      - 8080:8080
+    depends_on:
+      - go-cqhttp

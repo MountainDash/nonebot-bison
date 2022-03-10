@@ -1,0 +1,99 @@
+{
+  "focusAnnounceId": "816",
+  "announceList": [
+    {
+      "announceId": "807",
+      "title": "【雪融之诺】\n限时寻访开启",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/807_1640060583.html",
+      "day": 21,
+      "month": 12,
+      "group": "ACTIVITY"
+    },
+    {
+      "announceId": "809",
+      "title": "冰原信使系列\n新装限时上架",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/809_1640060505.html",
+      "day": 21,
+      "month": 12,
+      "group": "ACTIVITY"
+    },
+    {
+      "announceId": "810",
+      "title": "寒武纪系列\n限时复刻上架",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/810_1640060511.html",
+      "day": 21,
+      "month": 12,
+      "group": "ACTIVITY"
+    },
+    {
+      "announceId": "806",
+      "title": "跨年欢庆·回首\n限时寻访说明",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/806_1639379808.html",
+      "day": 14,
+      "month": 12,
+      "group": "ACTIVITY"
+    },
+    {
+      "announceId": "802",
+      "title": "「制作组通讯」\n#15期",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/802_1638871766.html",
+      "day": 8,
+      "month": 12,
+      "group": "SYSTEM"
+    },
+    {
+      "announceId": "97",
+      "title": "新人寻访特惠\n必得六星干员",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/97_1606379786.html",
+      "day": 30,
+      "month": 4,
+      "group": "ACTIVITY"
+    },
+    {
+      "announceId": "95",
+      "title": "通关特定关卡\n赠送专属时装",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/95_1606379781.html",
+      "day": 30,
+      "month": 4,
+      "group": "ACTIVITY"
+    },
+    {
+      "announceId": "192",
+      "title": "《明日方舟》\n公测开启说明",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/192_1606379744.html",
+      "day": 30,
+      "month": 4,
+      "group": "SYSTEM"
+    },
+    {
+      "announceId": "98",
+      "title": "《明日方舟》\n公平运营申明",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/98_1638970453.html",
+      "day": 30,
+      "month": 4,
+      "group": "SYSTEM"
+    },
+    {
+      "announceId": "94",
+      "title": "常驻活动介绍",
+      "isWebUrl": true,
+      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/94_1606379757.html",
+      "day": 30,
+      "month": 4,
+      "group": "ACTIVITY"
+    }
+  ],
+  "extra": {
+    "enable": false,
+    "name": "额外活动"
+  }
+}

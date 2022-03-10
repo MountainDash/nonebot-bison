@@ -121,13 +121,13 @@ sidebar: auto
   - `2`: 所有消息全部合并转发
     ::: details 配置项示例
     - 当`BISON_USE_PIC_MERGE=1`时:
-    ![simple1](./pic/forward-msg-simple1.png)
+      ![simple1](./pic/forward-msg-simple1.png)
     - 当`BISON_USE_PIC_MERGE=2`时:
-    ![simple1](./pic/forward-msg-simple2.png)
-    :::
-    ::: warning
-    启用此功能时，可能会因为待推送图片过大/过多而导致文字消息与合并转发图片消息推送间隔过大(选择模式`1`时)，请谨慎考虑开启。或者选择模式`2`，使图文消息一同合并转发(可能会使消息推送延迟过长)
-    :::
+      ![simple1](./pic/forward-msg-simple2.png)
+      :::
+      ::: warning
+      启用此功能时，可能会因为待推送图片过大/过多而导致文字消息与合并转发图片消息推送间隔过大(选择模式`1`时)，请谨慎考虑开启。或者选择模式`2`，使图文消息一同合并转发(可能会使消息推送延迟过长)
+      :::
 
 ## 使用
 

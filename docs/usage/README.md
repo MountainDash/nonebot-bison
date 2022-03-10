@@ -119,12 +119,12 @@ sidebar: auto
   - `0`: 不启用(默认)
   - `1`: 首条消息单独发送，剩余图片合并转发
   - `2`: 所有消息全部合并转发
-  ::: details 配置项示例
+    ::: details 配置项示例
   - 当`BISON_USE_PIC_MERGE=1`时:
-  ![simple1](./pic/forward-msg-simple1.png)
+    ![simple1](./pic/forward-msg-simple1.png)
   - 当`BISON_USE_PIC_MERGE=2`时:
-  ![simple1](./pic/forward-msg-simple2.png)
-  :::
+    ![simple1](./pic/forward-msg-simple2.png)
+    :::
 
 ## 使用
 

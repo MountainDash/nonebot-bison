@@ -142,7 +142,7 @@ async def test_add_with_target(app: App):
         ctx.should_call_send(
             event_3,
             Message(
-                "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+                "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
             ),
             True,
         )
@@ -156,6 +156,13 @@ async def test_add_with_target(app: App):
             message=Message("6279793937"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_ok)
+        ctx.should_call_send(
+            event_4_ok,
+            Message(
+                "即将订阅的用户为:weibo 明日方舟Arknights 6279793937\n如有错误请输入“取消”重新订阅"
+            ),
+            True
+        )
         ctx.should_call_send(
             event_4_ok,
             Message(
@@ -241,7 +248,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.should_call_send(
             event_3,
             Message(
-                "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+                "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
             ),
             True,
         )
@@ -249,6 +256,13 @@ async def test_add_with_target_no_cat(app: App):
             message=Message("32540734"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_ok)
+        ctx.should_call_send(
+            event_4_ok,
+            Message(
+                "即将订阅的用户为:ncm-artist 塞壬唱片-MSR 32540734\n如有错误请输入“取消”重新订阅"
+            ),
+            True
+        )
         ctx.should_call_send(event_4_ok, ("添加 塞壬唱片-MSR 成功"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
@@ -302,6 +316,13 @@ async def test_add_no_target(app: App):
             message=Message("arknights"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_3)
+        ctx.should_call_send(
+            event_3,
+            Message(
+                "即将订阅的用户为:arknights 明日方舟游戏信息 default\n如有错误请输入“取消”重新订阅"
+            ),
+            True
+        )
         ctx.should_call_send(
             event_3,
             Message(

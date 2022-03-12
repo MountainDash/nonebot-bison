@@ -4,8 +4,9 @@ from httpx import Response
 from nonebug.app import App
 
 from .platforms.utils import get_json
-from .utils import fake_admin_user, fake_group_message_event
+from .utils import fake_admin_user, fake_group_message_event, BotReply
 
+bot_reply=BotReply()
 
 @pytest.mark.asyncio
 async def test_configurable_at_me_true_failed(app: App):
@@ -31,7 +32,6 @@ async def test_configurable_at_me_true_failed(app: App):
         ctx.should_pass_rule()
         ctx.should_not_pass_permission()
 
-
 @pytest.mark.asyncio
 async def test_configurable_at_me_false(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
@@ -49,23 +49,11 @@ async def test_configurable_at_me_false(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            bot_reply.add_reply_on_platform(platform_manager,common_platform),
             True,
         )
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-
 
 @pytest.mark.asyncio
 @respx.mock
@@ -103,18 +91,7 @@ async def test_add_with_target(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            bot_reply.add_reply_on_platform(platform_manager,common_platform),
             True,
         )
         event_2 = fake_group_message_event(
@@ -124,15 +101,7 @@ async def test_add_with_target(app: App):
         ctx.should_rejected()
         ctx.should_call_send(
             event_2,
-            (
-                "全部平台\n"
-                + "\n".join(
-                    [
-                        "{}：{}".format(platform_name, platform.name)
-                        for platform_name, platform in platform_manager.items()
-                    ]
-                )
-            ),
+            bot_reply.add_reply_on_platform_input_allplatform(platform_manager),
             True,
         )
         event_3 = fake_group_message_event(
@@ -141,16 +110,14 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(
-                "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
-            ),
+            bot_reply.add_reply_on_id,
             True,
         )
         event_4_err = fake_group_message_event(
             message=Message("000"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_err)
-        ctx.should_call_send(event_4_err, "id输入错误", True)
+        ctx.should_call_send(event_4_err, bot_reply.add_reply_on_id_input_error, True)
         ctx.should_rejected()
         event_4_ok = fake_group_message_event(
             message=Message("6279793937"), sender=fake_admin_user
@@ -158,36 +125,30 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_call_send(
             event_4_ok,
-            Message(
-                "即将订阅的用户为:weibo 明日方舟Arknights 6279793937\n如有错误请输入“取消”重新订阅"
-            ),
+            bot_reply.add_reply_on_target_confirm("weibo","明日方舟Arknights","6279793937"),
             True
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(
-                "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
-                    " ".join(list(platform_manager["weibo"].categories.values()))
-                )
-            ),
+            bot_reply.add_reply_on_cats(platform_manager,"weibo"),
             True,
         )
         event_5_err = fake_group_message_event(
             message=Message("图文 文字 err"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_err)
-        ctx.should_call_send(event_5_err, "不支持 err", True)
+        ctx.should_call_send(event_5_err, bot_reply.add_reply_on_cats_input_error("err"), True)
         ctx.should_rejected()
         event_5_ok = fake_group_message_event(
             message=Message("图文 文字"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_ok)
-        ctx.should_call_send(event_5_ok, Message('请输入要订阅的tag，订阅所有tag输入"全部标签"'), True)
+        ctx.should_call_send(event_5_ok, bot_reply.add_reply_on_tags, True)
         event_6 = fake_group_message_event(
             message=Message("全部标签"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_6)
-        ctx.should_call_send(event_6, ("添加 明日方舟Arknights 成功"), True)
+        ctx.should_call_send(event_6, bot_reply.add_reply_subscribe_success("明日方舟Arknights"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -199,7 +160,6 @@ async def test_add_with_target(app: App):
     ]
     assert sub["target_type"] == "weibo"
     assert sub["target_name"] == "明日方舟Arknights"
-
 
 @pytest.mark.asyncio
 @respx.mock
@@ -227,18 +187,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            bot_reply.add_reply_on_platform(platform_manager,common_platform),
             True,
         )
         event_3 = fake_group_message_event(
@@ -247,9 +196,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(
-                "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
-            ),
+            bot_reply.add_reply_on_id,
             True,
         )
         event_4_ok = fake_group_message_event(
@@ -258,12 +205,10 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_call_send(
             event_4_ok,
-            Message(
-                "即将订阅的用户为:ncm-artist 塞壬唱片-MSR 32540734\n如有错误请输入“取消”重新订阅"
-            ),
+            bot_reply.add_reply_on_target_confirm("ncm-artist","塞壬唱片-MSR","32540734"),
             True
         )
-        ctx.should_call_send(event_4_ok, ("添加 塞壬唱片-MSR 成功"), True)
+        ctx.should_call_send(event_4_ok, bot_reply.add_reply_subscribe_success("塞壬唱片-MSR"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -273,7 +218,6 @@ async def test_add_with_target_no_cat(app: App):
     assert sub["cats"] == []
     assert sub["target_type"] == "ncm-artist"
     assert sub["target_name"] == "塞壬唱片-MSR"
-
 
 @pytest.mark.asyncio
 @respx.mock
@@ -298,18 +242,7 @@ async def test_add_no_target(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            bot_reply.add_reply_on_platform(platform_manager,common_platform),
             True,
         )
         event_3 = fake_group_message_event(
@@ -318,25 +251,20 @@ async def test_add_no_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(
-                "即将订阅的用户为:arknights 明日方舟游戏信息 default\n如有错误请输入“取消”重新订阅"
-            ),
+            bot_reply.add_reply_on_target_confirm("arknights","明日方舟游戏信息","default")
+            ,
             True
         )
         ctx.should_call_send(
             event_3,
-            Message(
-                "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
-                    " ".join(list(platform_manager["arknights"].categories.values()))
-                )
-            ),
+            bot_reply.add_reply_on_cats(platform_manager,"arknights"),
             True,
         )
         event_4 = fake_group_message_event(
             message=Message("游戏公告"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4)
-        ctx.should_call_send(event_4, ("添加 明日方舟游戏信息 成功"), True)
+        ctx.should_call_send(event_4, bot_reply.add_reply_subscribe_success("明日方舟游戏信息"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -346,7 +274,6 @@ async def test_add_no_target(app: App):
     assert sub["cats"] == [platform_manager["arknights"].reverse_category["游戏公告"]]
     assert sub["target_type"] == "arknights"
     assert sub["target_name"] == "明日方舟游戏信息"
-
 
 @pytest.mark.asyncio
 async def test_platform_name_err(app: App):
@@ -369,18 +296,7 @@ async def test_platform_name_err(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            bot_reply.add_reply_on_platform(platform_manager,common_platform),
             True,
         )
         event_2 = fake_group_message_event(
@@ -391,100 +307,6 @@ async def test_platform_name_err(app: App):
         ctx.should_rejected()
         ctx.should_call_send(
             event_2,
-            "平台输入错误",
+            bot_reply.add_reply_on_platform_input_error,
             True,
         )
-
-
-@pytest.mark.asyncio
-async def test_query_sub(app: App):
-    from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
-    from nonebot_bison.config_manager import query_sub_matcher
-    from nonebot_bison.platform import platform_manager
-
-    config = Config()
-    config.user_target.truncate()
-    config.add_subscribe(
-        10000,
-        "group",
-        "6279793937",
-        "明日方舟Arknights",
-        "weibo",
-        [platform_manager["weibo"].reverse_category["图文"]],
-        ["明日方舟"],
-    )
-    async with app.test_matcher(query_sub_matcher) as ctx:
-        bot = ctx.create_bot()
-        event = fake_group_message_event(message=Message("查询订阅"), to_me=True)
-        ctx.receive_event(bot, event)
-        ctx.should_pass_rule()
-        ctx.should_pass_permission()
-        ctx.should_call_send(
-            event, Message("订阅的帐号为：\nweibo 明日方舟Arknights 6279793937 [图文] 明日方舟\n"), True
-        )
-
-
-@pytest.mark.asyncio
-async def test_del_sub(app: App):
-    from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
-    from nonebot_bison.config_manager import del_sub_matcher
-    from nonebot_bison.platform import platform_manager
-
-    config = Config()
-    config.user_target.truncate()
-    config.add_subscribe(
-        10000,
-        "group",
-        "6279793937",
-        "明日方舟Arknights",
-        "weibo",
-        [platform_manager["weibo"].reverse_category["图文"]],
-        ["明日方舟"],
-    )
-    async with app.test_matcher(del_sub_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        assert isinstance(bot, Bot)
-        event = fake_group_message_event(
-            message=Message("删除订阅"), to_me=True, sender=fake_admin_user
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_rule()
-        ctx.should_pass_permission()
-        ctx.should_call_send(
-            event,
-            Message(
-                "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n请输入要删除的订阅的序号"
-            ),
-            True,
-        )
-        event_1_err = fake_group_message_event(
-            message=Message("2"), sender=fake_admin_user
-        )
-        ctx.receive_event(bot, event_1_err)
-        ctx.should_call_send(event_1_err, "删除错误", True)
-        ctx.should_rejected()
-        event_1_ok = fake_group_message_event(
-            message=Message("1"), sender=fake_admin_user
-        )
-        ctx.receive_event(bot, event_1_ok)
-        ctx.should_call_send(event_1_ok, "删除成功", True)
-        ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
-    assert len(subs) == 0
-
-
-async def test_test(app: App):
-    from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config_manager import test_matcher
-
-    async with app.test_matcher(test_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event = fake_group_message_event(message=Message("testtt"))
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission()
-        ctx.should_pass_rule()
-        ctx.should_call_send(event, "666", True)

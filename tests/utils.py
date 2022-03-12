@@ -71,50 +71,54 @@ fake_admin_user = Sender(nickname="test", role="admin")
 fake_superuser = Sender(user_id=10001, nickname="superuser")
 
 from nonebot.adapters.onebot.v11.message import Message
+
+
 class BotReply:
-    def add_reply_on_platform(platform_manager,common_platform):
+    def add_reply_on_platform(platform_manager, common_platform):
         return (
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
+            "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
+            + "".join(
+                [
+                    "{}：{}\n".format(
+                        platform_name, platform_manager[platform_name].name
+                    )
+                    for platform_name in common_platform
+                ]
             )
+            + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
+        )
 
     def add_reply_on_platform_input_allplatform(platform_manager):
         return "全部平台\n" + "\n".join(
-                [
-                    "{}：{}".format(platform_name, platform.name)
-                    for platform_name, platform in platform_manager.items()
-                ])
+            [
+                "{}：{}".format(platform_name, platform.name)
+                for platform_name, platform in platform_manager.items()
+            ]
+        )
 
     def add_reply_on_id_input_search():
-        search_url="https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
-        search_title="Bison所支持的平台UID"
-        search_content="查询相关平台的uid格式或获取方式"
-        search_image="https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
-        return (f"[CQ:share,url={search_url},title={search_title},content={search_content},image={search_image}")
-    
-    def add_reply_on_target_confirm(platform,name,id):
-        return (f"即将订阅的用户为:{platform} {name} {id}\n如有错误请输入“取消”重新订阅")
-    
-    def add_reply_on_cats(platform_manager,platform:str):
-        return ("请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
-            " ".join(list(platform_manager[platform].categories.values()))))
+        search_url = "https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+        search_title = "Bison所支持的平台UID"
+        search_content = "查询相关平台的uid格式或获取方式"
+        search_image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
+        return f"[CQ:share,url={search_url},title={search_title},content={search_content},image={search_image}"
 
-    def add_reply_on_cats_input_error(cat:str):
-        return ("不支持 {}".format(cat))
+    def add_reply_on_target_confirm(platform, name, id):
+        return f"即将订阅的用户为:{platform} {name} {id}\n如有错误请输入“取消”重新订阅"
+
+    def add_reply_on_cats(platform_manager, platform: str):
+        return "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
+            " ".join(list(platform_manager[platform].categories.values()))
+        )
+
+    def add_reply_on_cats_input_error(cat: str):
+        return "不支持 {}".format(cat)
 
     def add_reply_subscribe_success(name):
-        return ("添加 {} 成功".format(name))
+        return "添加 {} 成功".format(name)
 
-    add_reply_on_id_input_error="id输入错误"
-    add_reply_on_platform_input_error="平台输入错误"
-    add_reply_on_id="请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
-    add_reply_on_tags='请输入要订阅的tag，订阅所有tag输入"全部标签"'
-    add_reply_abort="已中止订阅"
+    add_reply_on_id_input_error = "id输入错误"
+    add_reply_on_platform_input_error = "平台输入错误"
+    add_reply_on_id = "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
+    add_reply_on_tags = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
+    add_reply_abort = "已中止订阅"

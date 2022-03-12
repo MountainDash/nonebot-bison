@@ -4,7 +4,7 @@ from httpx import Response
 from nonebug.app import App
 
 from .platforms.utils import get_json
-from .utils import fake_admin_user, fake_group_message_event, BotReply
+from .utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
@@ -31,6 +31,7 @@ async def test_configurable_at_me_true_failed(app: App):
         ctx.should_pass_rule()
         ctx.should_not_pass_permission()
 
+
 @pytest.mark.asyncio
 async def test_configurable_at_me_false(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
@@ -48,11 +49,12 @@ async def test_configurable_at_me_false(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         ctx.should_pass_rule()
         ctx.should_pass_permission()
+
 
 @pytest.mark.asyncio
 @respx.mock
@@ -90,7 +92,11 @@ async def test_add_with_target(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager=platform_manager,common_platform=common_platform)),
+            Message(
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
+            ),
             True,
         )
         event_2 = fake_group_message_event(
@@ -124,19 +130,23 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_call_send(
             event_4_ok,
-            BotReply.add_reply_on_target_confirm("weibo","明日方舟Arknights","6279793937"),
-            True
+            BotReply.add_reply_on_target_confirm(
+                "weibo", "明日方舟Arknights", "6279793937"
+            ),
+            True,
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager,"weibo")),
+            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
             True,
         )
         event_5_err = fake_group_message_event(
             message=Message("图文 文字 err"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_err)
-        ctx.should_call_send(event_5_err, BotReply.add_reply_on_cats_input_error("err"), True)
+        ctx.should_call_send(
+            event_5_err, BotReply.add_reply_on_cats_input_error("err"), True
+        )
         ctx.should_rejected()
         event_5_ok = fake_group_message_event(
             message=Message("图文 文字"), sender=fake_admin_user
@@ -147,7 +157,9 @@ async def test_add_with_target(app: App):
             message=Message("全部标签"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_6)
-        ctx.should_call_send(event_6, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True)
+        ctx.should_call_send(
+            event_6, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True
+        )
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -159,6 +171,7 @@ async def test_add_with_target(app: App):
     ]
     assert sub["target_type"] == "weibo"
     assert sub["target_name"] == "明日方舟Arknights"
+
 
 @pytest.mark.asyncio
 @respx.mock
@@ -186,7 +199,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -204,10 +217,12 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_call_send(
             event_4_ok,
-            BotReply.add_reply_on_target_confirm("ncm-artist","塞壬唱片-MSR","32540734"),
-            True
+            BotReply.add_reply_on_target_confirm("ncm-artist", "塞壬唱片-MSR", "32540734"),
+            True,
         )
-        ctx.should_call_send(event_4_ok, BotReply.add_reply_subscribe_success("塞壬唱片-MSR"), True)
+        ctx.should_call_send(
+            event_4_ok, BotReply.add_reply_subscribe_success("塞壬唱片-MSR"), True
+        )
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -217,6 +232,7 @@ async def test_add_with_target_no_cat(app: App):
     assert sub["cats"] == []
     assert sub["target_type"] == "ncm-artist"
     assert sub["target_name"] == "塞壬唱片-MSR"
+
 
 @pytest.mark.asyncio
 @respx.mock
@@ -241,7 +257,7 @@ async def test_add_no_target(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -250,14 +266,16 @@ async def test_add_no_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager,"arknights")),
+            Message(BotReply.add_reply_on_cats(platform_manager, "arknights")),
             True,
         )
         event_4 = fake_group_message_event(
             message=Message("游戏公告"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4)
-        ctx.should_call_send(event_4, BotReply.add_reply_subscribe_success("明日方舟游戏信息"), True)
+        ctx.should_call_send(
+            event_4, BotReply.add_reply_subscribe_success("明日方舟游戏信息"), True
+        )
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -267,6 +285,7 @@ async def test_add_no_target(app: App):
     assert sub["cats"] == [platform_manager["arknights"].reverse_category["游戏公告"]]
     assert sub["target_type"] == "arknights"
     assert sub["target_name"] == "明日方舟游戏信息"
+
 
 @pytest.mark.asyncio
 async def test_platform_name_err(app: App):
@@ -289,7 +308,7 @@ async def test_platform_name_err(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_2 = fake_group_message_event(

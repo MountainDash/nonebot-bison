@@ -73,7 +73,7 @@ fake_superuser = Sender(user_id=10001, nickname="superuser")
 from nonebot.adapters.onebot.v11.message import Message
 class BotReply:
     def add_reply_on_platform(platform_manager,common_platform):
-        return Message(
+        return (
                 "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
                 + "".join(
                     [
@@ -98,20 +98,20 @@ class BotReply:
         search_title="Bison所支持的平台UID"
         search_content="查询相关平台的uid格式或获取方式"
         search_image="https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
-        return Message(f"[CQ:share,url={search_url},title={search_title},content={search_content},image={search_image}")
+        return (f"[CQ:share,url={search_url},title={search_title},content={search_content},image={search_image}")
     
     def add_reply_on_target_confirm(platform,name,id):
-        return Message(f"即将订阅的用户为:{platform} {name} {id}\n如有错误请输入“取消”重新订阅")
+        return (f"即将订阅的用户为:{platform} {name} {id}\n如有错误请输入“取消”重新订阅")
     
     def add_reply_on_cats(platform_manager,platform:str):
-        return Message("请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
+        return ("请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
             " ".join(list(platform_manager[platform].categories.values()))))
 
     def add_reply_on_cats_input_error(cat:str):
-        return Message("不支持 {}".format(cat))
+        return ("不支持 {}".format(cat))
 
     def add_reply_subscribe_success(name):
-        return Message("添加 {} 成功".format(name))
+        return ("添加 {} 成功".format(name))
 
     add_reply_on_id_input_error="id输入错误"
     add_reply_on_platform_input_error="平台输入错误"

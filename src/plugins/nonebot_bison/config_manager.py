@@ -134,11 +134,11 @@ def do_add_sub(add_sub: Type[Matcher]):
             state["id"] = target
             state["name"] = name
         except (LookupError):
-            url="https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+            url="https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
             title="Bison所支持的平台UID"
             content="查询相关平台的uid格式或获取方式"
             image="https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
-            getId_share=f"[CQ:share,url={url},title={title},content={content},image={image}"#缩短字符串格式长度，以及方便后续修改为消息段格式
+            getId_share=f"[CQ:share,url={url},title={title},content={content},image={image}]"#缩短字符串格式长度，以及方便后续修改为消息段格式
             await add_sub.reject(Message(getId_share))
         except (KeyboardInterrupt):
             await add_sub.finish("已中止订阅")

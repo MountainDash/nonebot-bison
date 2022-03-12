@@ -6,7 +6,6 @@ from nonebug.app import App
 from .platforms.utils import get_json
 from .utils import fake_admin_user, fake_group_message_event, BotReply
 
-bot_reply=BotReply()
 
 @pytest.mark.asyncio
 async def test_configurable_at_me_true_failed(app: App):
@@ -49,7 +48,7 @@ async def test_configurable_at_me_false(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            bot_reply.add_reply_on_platform(platform_manager,common_platform),
+            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
             True,
         )
         ctx.should_pass_rule()
@@ -91,7 +90,7 @@ async def test_add_with_target(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            bot_reply.add_reply_on_platform(platform_manager,common_platform),
+            Message(BotReply.add_reply_on_platform(platform_manager=platform_manager,common_platform=common_platform)),
             True,
         )
         event_2 = fake_group_message_event(
@@ -101,7 +100,7 @@ async def test_add_with_target(app: App):
         ctx.should_rejected()
         ctx.should_call_send(
             event_2,
-            bot_reply.add_reply_on_platform_input_allplatform(platform_manager),
+            BotReply.add_reply_on_platform_input_allplatform(platform_manager),
             True,
         )
         event_3 = fake_group_message_event(
@@ -110,14 +109,14 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            bot_reply.add_reply_on_id,
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_4_err = fake_group_message_event(
             message=Message("000"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_err)
-        ctx.should_call_send(event_4_err, bot_reply.add_reply_on_id_input_error, True)
+        ctx.should_call_send(event_4_err, BotReply.add_reply_on_id_input_error, True)
         ctx.should_rejected()
         event_4_ok = fake_group_message_event(
             message=Message("6279793937"), sender=fake_admin_user
@@ -125,30 +124,30 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_call_send(
             event_4_ok,
-            bot_reply.add_reply_on_target_confirm("weibo","明日方舟Arknights","6279793937"),
+            BotReply.add_reply_on_target_confirm("weibo","明日方舟Arknights","6279793937"),
             True
         )
         ctx.should_call_send(
             event_4_ok,
-            bot_reply.add_reply_on_cats(platform_manager,"weibo"),
+            Message(BotReply.add_reply_on_cats(platform_manager,"weibo")),
             True,
         )
         event_5_err = fake_group_message_event(
             message=Message("图文 文字 err"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_err)
-        ctx.should_call_send(event_5_err, bot_reply.add_reply_on_cats_input_error("err"), True)
+        ctx.should_call_send(event_5_err, BotReply.add_reply_on_cats_input_error("err"), True)
         ctx.should_rejected()
         event_5_ok = fake_group_message_event(
             message=Message("图文 文字"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_ok)
-        ctx.should_call_send(event_5_ok, bot_reply.add_reply_on_tags, True)
+        ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
         event_6 = fake_group_message_event(
             message=Message("全部标签"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_6)
-        ctx.should_call_send(event_6, bot_reply.add_reply_subscribe_success("明日方舟Arknights"), True)
+        ctx.should_call_send(event_6, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -187,7 +186,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            bot_reply.add_reply_on_platform(platform_manager,common_platform),
+            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -196,7 +195,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            bot_reply.add_reply_on_id,
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_4_ok = fake_group_message_event(
@@ -205,10 +204,10 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_call_send(
             event_4_ok,
-            bot_reply.add_reply_on_target_confirm("ncm-artist","塞壬唱片-MSR","32540734"),
+            BotReply.add_reply_on_target_confirm("ncm-artist","塞壬唱片-MSR","32540734"),
             True
         )
-        ctx.should_call_send(event_4_ok, bot_reply.add_reply_subscribe_success("塞壬唱片-MSR"), True)
+        ctx.should_call_send(event_4_ok, BotReply.add_reply_subscribe_success("塞壬唱片-MSR"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -242,7 +241,7 @@ async def test_add_no_target(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            bot_reply.add_reply_on_platform(platform_manager,common_platform),
+            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -251,20 +250,14 @@ async def test_add_no_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            bot_reply.add_reply_on_target_confirm("arknights","明日方舟游戏信息","default")
-            ,
-            True
-        )
-        ctx.should_call_send(
-            event_3,
-            bot_reply.add_reply_on_cats(platform_manager,"arknights"),
+            Message(BotReply.add_reply_on_cats(platform_manager,"arknights")),
             True,
         )
         event_4 = fake_group_message_event(
             message=Message("游戏公告"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4)
-        ctx.should_call_send(event_4, bot_reply.add_reply_subscribe_success("明日方舟游戏信息"), True)
+        ctx.should_call_send(event_4, BotReply.add_reply_subscribe_success("明日方舟游戏信息"), True)
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 1
@@ -296,7 +289,7 @@ async def test_platform_name_err(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            bot_reply.add_reply_on_platform(platform_manager,common_platform),
+            Message(BotReply.add_reply_on_platform(platform_manager,common_platform)),
             True,
         )
         event_2 = fake_group_message_event(
@@ -307,6 +300,6 @@ async def test_platform_name_err(app: App):
         ctx.should_rejected()
         ctx.should_call_send(
             event_2,
-            bot_reply.add_reply_on_platform_input_error,
+            BotReply.add_reply_on_platform_input_error,
             True,
         )

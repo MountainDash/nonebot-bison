@@ -72,26 +72,27 @@ fake_superuser = Sender(user_id=10001, nickname="superuser")
 
 from nonebot.adapters.onebot.v11.message import Message,MessageSegment
 class BotReply:
-    def add_reply_on_platform(platform_manager,common_platform):
+    def add_reply_on_platform(platform_manager, common_platform):
         return (
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
+            "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
+            + "".join(
+                [
+                    "{}：{}\n".format(
+                        platform_name, platform_manager[platform_name].name
+                    )
+                    for platform_name in common_platform
+                ]
             )
+            + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
+        )
 
     def add_reply_on_platform_input_allplatform(platform_manager):
         return "全部平台\n" + "\n".join(
-                [
-                    "{}：{}".format(platform_name, platform.name)
-                    for platform_name, platform in platform_manager.items()
-                ])
+            [
+                "{}：{}".format(platform_name, platform.name)
+                for platform_name, platform in platform_manager.items()
+            ]
+        )
 
     def add_reply_on_id_input_search():
         search_url="https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
@@ -119,10 +120,10 @@ class BotReply:
         return ("不支持 {}".format(cat))
 
     def add_reply_subscribe_success(name):
-        return ("添加 {} 成功".format(name))
+        return "添加 {} 成功".format(name)
 
-    add_reply_on_id_input_error="id输入错误"
-    add_reply_on_platform_input_error="平台输入错误"
-    add_reply_on_id="请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
-    add_reply_on_tags='请输入要订阅的tag，订阅所有tag输入"全部标签"'
-    add_reply_abort="已中止订阅"
+    add_reply_on_id_input_error = "id输入错误"
+    add_reply_on_platform_input_error = "平台输入错误"
+    add_reply_on_id = "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
+    add_reply_on_tags = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
+    add_reply_abort = "已中止订阅"

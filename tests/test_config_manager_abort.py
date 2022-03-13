@@ -4,7 +4,7 @@ from httpx import Response
 from nonebug.app import App
 
 from .platforms.utils import get_json
-from .utils import fake_admin_user, fake_group_message_event,BotReply
+from .utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 # 选择platform阶段中止
@@ -43,9 +43,7 @@ async def test_abort_add_on_platform(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(platform_manager,common_platform)
-            ),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_abort = fake_group_message_event(
@@ -96,9 +94,7 @@ async def test_abort_add_on_id(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(platform_manager,common_platform)
-            ),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_2 = fake_group_message_event(
@@ -107,9 +103,7 @@ async def test_abort_add_on_id(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(
-                BotReply.add_reply_on_id
-            ),
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_abort = fake_group_message_event(
@@ -161,7 +155,9 @@ async def test_abort_add_on_cats(app: App):
         ctx.should_call_send(
             event_1,
             Message(
-                BotReply.add_reply_on_platform(platform_manager=platform_manager,common_platform=common_platform)
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
             ),
             True,
         )
@@ -171,9 +167,7 @@ async def test_abort_add_on_cats(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(
-                BotReply.add_reply_on_id
-            ),
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_3 = fake_group_message_event(
@@ -182,12 +176,14 @@ async def test_abort_add_on_cats(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            BotReply.add_reply_on_target_confirm("weibo","明日方舟Arknights","6279793937"),
-            True
+            BotReply.add_reply_on_target_confirm(
+                "weibo", "明日方舟Arknights", "6279793937"
+            ),
+            True,
         )
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager,"weibo")),
+            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
             True,
         )
         event_abort = fake_group_message_event(
@@ -239,7 +235,9 @@ async def test_abort_add_on_tag(app: App):
         ctx.should_call_send(
             event_1,
             Message(
-                BotReply.add_reply_on_platform(platform_manager=platform_manager,common_platform=common_platform)
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
             ),
             True,
         )
@@ -249,9 +247,7 @@ async def test_abort_add_on_tag(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(
-                BotReply.add_reply_on_id
-            ),
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_3 = fake_group_message_event(
@@ -260,12 +256,14 @@ async def test_abort_add_on_tag(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            BotReply.add_reply_on_target_confirm("weibo","明日方舟Arknights","6279793937"),
-            True
+            BotReply.add_reply_on_target_confirm(
+                "weibo", "明日方舟Arknights", "6279793937"
+            ),
+            True,
         )
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager,"weibo")),
+            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
             True,
         )
         event_4 = fake_group_message_event(

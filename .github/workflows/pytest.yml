@@ -3,7 +3,7 @@ on: [push]
 jobs:
   do-a-test:
     runs-on: ubuntu-latest
-    step:
+    steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.10
         uses: actions/setup-python@v2
@@ -21,8 +21,5 @@ jobs:
         run: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
       - name: Collect coverage
         run: poetry run coverage html --include='src/*'
-      - codecov/upload:
-        file: coverage.xml
-      - store_artifacts:
-          path: htmlcov
+
   

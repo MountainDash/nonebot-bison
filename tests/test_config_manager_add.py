@@ -323,11 +323,12 @@ async def test_platform_name_err(app: App):
             True,
         )
 
+
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
-    from nonebot.adapters.onebot.v11.message import Message,MessageSegment
+    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
@@ -359,7 +360,11 @@ async def test_add_with_get_id(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager=platform_manager,common_platform=common_platform)),
+            Message(
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
+            ),
             True,
         )
         event_3 = fake_group_message_event(
@@ -379,15 +384,15 @@ async def test_add_with_get_id(app: App):
         ctx.should_call_send(
             event_4_query,
             [MessageSegment(*BotReply.add_reply_on_id_input_search())],
-            True
+            True,
         )
-        '''
+        """
         line 362:
         鬼知道为什么要在这里这样写，
         没有[]的话assert不了(should_call_send使用[MessageSegment(...)]的格式进行比较)
         不在这里MessageSegment()的话也assert不了(指不能让add_reply_on_id_input_search直接返回一个MessageSegment对象)
         amen
-        '''
+        """
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=Sender(card="", nickname="test", role="admin")
         )

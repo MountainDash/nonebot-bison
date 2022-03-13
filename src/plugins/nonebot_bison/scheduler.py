@@ -6,7 +6,7 @@ from nonebot import get_driver
 from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import LoguruHandler, logger
 
-from .config import Config
+from .config import config
 from .platform import platform_manager
 from .plugin_config import plugin_config
 from .send import do_send_msgs, send_msgs
@@ -25,7 +25,6 @@ async def _start():
 
 
 async def fetch_and_send(target_type: str):
-    config = Config()
     target = config.get_next_target(target_type)
     if not target:
         return

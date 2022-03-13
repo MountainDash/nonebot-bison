@@ -1,5 +1,4 @@
 import asyncio
-from asyncio.tasks import Task
 from datetime import datetime
 from typing import Optional, Type
 
@@ -12,12 +11,11 @@ from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
 from nonebot.log import logger
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventMessage, EventPlainText, EventToMe
+from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
-from nonebot.rule import to_me
 from nonebot.typing import T_State
 
-from .config import Config
+from .config import config
 from .platform import check_sub_target, platform_manager
 from .plugin_config import plugin_config
 from .types import Category, Target, User
@@ -166,7 +164,6 @@ def do_add_sub(add_sub: Type[Matcher]):
 
     @add_sub.got("tags", _gen_prompt_template("{_prompt}"), [Depends(parser_tags)])
     async def add_sub_process(event: Event, state: T_State):
-        config = Config()
         user = state.get("target_user_info")
         assert isinstance(user, User)
         config.add_subscribe(
@@ -188,7 +185,6 @@ def do_query_sub(query_sub: Type[Matcher]):
 
     @query_sub.handle()
     async def _(state: T_State):
-        config: Config = Config()
         user_info = state["target_user_info"]
         assert isinstance(user_info, User)
         sub_list = config.list_subscribe(
@@ -219,7 +215,6 @@ def do_del_sub(del_sub: Type[Matcher]):
 
     @del_sub.handle()
     async def send_list(bot: Bot, event: Event, state: T_State):
-        config: Config = Config()
         user_info = state["target_user_info"]
         assert isinstance(user_info, User)
         sub_list = config.list_subscribe(
@@ -254,7 +249,6 @@ def do_del_sub(del_sub: Type[Matcher]):
     async def do_del(event: Event, state: T_State):
         try:
             index = int(str(event.get_message()).strip())
-            config = Config()
             user_info = state["target_user_info"]
             assert isinstance(user_info, User)
             config.del_subscribe(

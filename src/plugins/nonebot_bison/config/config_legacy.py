@@ -7,10 +7,10 @@ import nonebot
 from nonebot.log import logger
 from tinydb import Query, TinyDB
 
-from .platform import platform_manager
-from .plugin_config import plugin_config
-from .types import Target, User
-from .utils import Singleton
+from ..platform import platform_manager
+from ..plugin_config import plugin_config
+from ..types import Target, User
+from ..utils import Singleton
 
 supported_target_type = platform_manager.keys()
 
@@ -241,3 +241,5 @@ def start_up():
 
 
 nonebot.get_driver().on_startup(start_up)
+
+config = Config()

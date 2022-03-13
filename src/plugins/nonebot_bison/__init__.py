@@ -1,5 +1,3 @@
-import nonebot
-
 from . import (
     admin_page,
     config,

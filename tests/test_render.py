@@ -3,20 +3,16 @@ import typing
 import pytest
 from nonebug.app import App
 
-if typing.TYPE_CHECKING:
-    import sys
-
-    sys.path.append("./src/plugins")
-    import nonebot_bison
-
 
 @pytest.mark.asyncio
 @pytest.mark.render
 async def test_render(app: App):
-    from nonebot_bison.utils import Render
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.utils import parse_text
 
-    render = Render()
-    res = await render.text_to_pic(
+    plugin_config.bison_use_pic = True
+
+    res = await parse_text(
         """a\nbbbbbbbbbbbbbbbbbbbbbb\ncd
 <h1>中文</h1>
 VuePress 由两部分组成：第一部分是一个极简静态网站生成器
@@ -25,4 +21,15 @@ VuePress 由两部分组成：第一部分是一个极简静态网站生成器
 
 每一个由 VuePress 生成的页面都带有预渲染好的 HTML，也因此具有非常好的加载性能和搜索引擎优化（SEO）。同时，一旦页面被加载，Vue 将接管这些静态内容，并将其转换成一个完整的单页应用（SPA），其他的页面则会只在用户浏览到的时候才按需加载。
 """
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.render
+async def test_arknights(app: App):
+    from nonebot_bison.platform.arknights import Arknights
+
+    ak = Arknights()
+    res = await ak.parse(
+        {"webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/854_1644580545.html"}
     )

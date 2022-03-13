@@ -9,7 +9,7 @@ Tag = str
 
 @dataclass(eq=True, frozen=True)
 class User:
-    user: str
+    user: int
     user_type: Literal["group", "private"]
 
 

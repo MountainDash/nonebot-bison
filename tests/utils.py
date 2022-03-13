@@ -70,7 +70,7 @@ from nonebot.adapters.onebot.v11.event import Sender
 fake_admin_user = Sender(nickname="test", role="admin")
 fake_superuser = Sender(user_id=10001, nickname="superuser")
 
-from nonebot.adapters.onebot.v11.message import Message
+from nonebot.adapters.onebot.v11.message import Message,MessageSegment
 class BotReply:
     def add_reply_on_platform(platform_manager,common_platform):
         return (
@@ -94,11 +94,19 @@ class BotReply:
                 ])
 
     def add_reply_on_id_input_search():
-        search_url="https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+        search_url="https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
         search_title="Bison所支持的平台UID"
         search_content="查询相关平台的uid格式或获取方式"
-        search_image="https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
-        return (f"[CQ:share,url={search_url},title={search_title},content={search_content},image={search_image}")
+        search_image="https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"  
+        type='share'
+        data={
+                'url':search_url,
+                'title':search_title,
+                'content':search_content,
+                'image':search_image
+                }
+        msg=[type,data]
+        return msg
     
     def add_reply_on_target_confirm(platform,name,id):
         return (f"即将订阅的用户为:{platform} {name} {id}\n如有错误请输入“取消”重新订阅")

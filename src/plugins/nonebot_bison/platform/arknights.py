@@ -3,10 +3,10 @@ from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup as bs
+from nonebot.plugin import require
 
 from ..post import Post
 from ..types import Category, RawPost, Target
-from ..utils import Render
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
@@ -46,21 +46,30 @@ class Arknights(NewMessage):
         text = ""
         async with httpx.AsyncClient() as client:
             raw_html = await client.get(announce_url)
-        soup = bs(raw_html, "html.parser")
+        soup = bs(raw_html.text, "html.parser")
         pics = []
         if soup.find("div", class_="standerd-container"):
             # 图文
-            render = Render()
-            viewport = {"width": 320, "height": 6400, "deviceScaleFactor": 3}
-            pic_data = await render.render(
-                announce_url, viewport=viewport, target="div.main"
+            require("nonebot_plugin_htmlrender")
+            from nonebot_plugin_htmlrender import capture_element
+
+            pic_data = await capture_element(
+                announce_url,
+                "div.main",
+                viewport={"width": 320, "height": 6400},
+                device_scale_factor=3,
             )
+            # render = Render()
+            # viewport = {"width": 320, "height": 6400, "deviceScaleFactor": 3}
+            # pic_data = await render.render(
+            #     announce_url, viewport=viewport, target="div.main"
+            # )
             if pic_data:
                 pics.append(pic_data)
             else:
                 text = "图片渲染失败"
         elif pic := soup.find("img", class_="banner-image"):
-            pics.append(pic["src"])
+            pics.append(pic["src"])  # type: ignore
         else:
             raise CategoryNotSupport()
         return Post(

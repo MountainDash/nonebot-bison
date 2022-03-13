@@ -14,7 +14,7 @@ orbs:
   node: circleci/node@4.7.0
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0
-  docker: circleci/docker@1.7.0
+  docker: circleci/docker@2.0.2
   docker-cache: cci-x/docker-registry-image-cache@0.2.0
   codecov: codecov/codecov@3.2.2
 
@@ -151,8 +151,8 @@ jobs:
   test:
     docker:
       - image: cimg/python:3.9
-      - image: browserless/chrome
-    # environment:
+    environment:
+      BISON_SKIP_BROWSER_CHECK: true
     #   BISON_BROWSER: wsc://localhost:3000
     steps:
       - checkout
@@ -164,7 +164,8 @@ jobs:
           command: poetry run playwright install-deps && poetry run playwright install chromium
       - run:
           name: Coverage test
-          command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
+          command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml
+            -k 'not compare and not render'
       - store_test_results:
           path: test-results
       - run:
@@ -198,7 +199,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
+          command: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD || echo "Already pushed to pypi"
           name: Publish to Pypi
 
   publish-github-release:
@@ -212,6 +213,5 @@ jobs:
           name: Publish to Github Release
           command: |
             go install github.com/tcnksm/ghr@latest
-            VERSION=$(cat pyproject.toml | grep version | sed 's/version = "\([0-9\.]*\)"/\1/')
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./dist
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./dist
 

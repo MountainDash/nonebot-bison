@@ -45,10 +45,10 @@ class SinglePageApplication(StaticFiles):
         self.index = index
         super().__init__(directory=directory, packages=None, html=True, check_dir=True)
 
-    async def lookup_path(self, path: str) -> tuple[str, Union[os.stat_result, None]]:
-        full_path, stat_res = await super().lookup_path(path)
+    def lookup_path(self, path: str) -> tuple[str, Union[os.stat_result, None]]:
+        full_path, stat_res = super().lookup_path(path)
         if stat_res is None:
-            return await super().lookup_path(self.index)
+            return super().lookup_path(self.index)
         return (full_path, stat_res)
 
 

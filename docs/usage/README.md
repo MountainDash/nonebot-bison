@@ -42,7 +42,7 @@ sidebar: auto
 
    servers:
      - ws-reverse:
-         universal: ws://nonebot:8080/cqhttp/ws # 将这个字段写为这个值
+         universal: ws://nonebot:8080/onebot/v11/ws/ # 将这个字段写为这个值
    ```
 
 3. 登录 go-cqhttp
@@ -107,18 +107,40 @@ sidebar: auto
     截止发布时，本项目尚不能完全与 browserless 兼容，目前建议使用镜像内自带的浏览器，即
     不要配置这个变量
     :::
+- `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`False`会在用到浏览器时自动下载，
+  默认`True`
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison`，如果你的插件部署
   在服务器上，建议配置为`http://<你的服务器ip>:8080/bison`
 - `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的 warning 级以下的 log，如果你的 bot 只运行了这个插件可以考虑
   开启，默认关
 - `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
+- `BISON_RESEND_TIMES`: 最大重发次数，默认 0
+- `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
+
+  - `0`: 不启用(默认)
+  - `1`: 首条消息单独发送，剩余图片合并转发
+  - `2`: 所有消息全部合并转发
+
+  ::: details 配置项示例
+
+  - 当`BISON_USE_PIC_MERGE=1`时:
+    ![simple1](./pic/forward-msg-simple1.png)
+  - 当`BISON_USE_PIC_MERGE=2`时:
+    ![simple1](./pic/forward-msg-simple2.png)
+
+  :::
+  ::: warning
+  启用此功能时，可能会因为待推送图片过大/过多而导致文字消息与合并转发图片消息推送间隔过大(选择模式`1`时)，请谨慎考虑开启。或者选择模式`2`，使图文消息一同合并转发(可能会使消息推送延迟过长)
+  :::
 
 ## 使用
 
 ::: warning
-本节假设`COMMAND_START`设置中包含`''`，如果出现 bot 不响应的问题，请先
-排查这个设置
-:::
+本节假设`COMMAND_START`设置中包含`''`
+
+- 如果出现 bot 不响应的问题，请先排查这个设置
+- 尝试在命令前添加设置的命令前缀，如`COMMAND_START=['/']`，则尝试使用`/添加订阅`
+  :::
 
 ### 命令
 

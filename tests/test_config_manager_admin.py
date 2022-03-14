@@ -1,11 +1,13 @@
-
+import pytest
 from nonebug import App
 
-from .utils import fake_admin_user, fake_private_message_event, fake_group_message_event, fake_superuser
+from .utils import (
+    fake_admin_user,
+    fake_group_message_event,
+    fake_private_message_event,
+    fake_superuser,
+)
 
-from .conftest import app
-
-import pytest
 
 @pytest.mark.asyncio
 async def test_query_with_superuser_private(app: App):
@@ -50,6 +52,7 @@ async def test_query_with_superuser_private(app: App):
         ctx.receive_event(bot, event_2_ok)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
+
 
 @pytest.mark.asyncio
 async def test_query_with_superuser_group_tome(app: App):

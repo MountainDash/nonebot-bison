@@ -1,8 +1,13 @@
+import pytest
 from nonebug import App
 
-from .utils import fake_admin_user, fake_private_message_event, fake_group_message_event, fake_superuser
+from .utils import (
+    fake_admin_user,
+    fake_group_message_event,
+    fake_private_message_event,
+    fake_superuser,
+)
 
-import pytest
 
 @pytest.mark.asyncio
 async def test_query_with_superuser_private(app: App):
@@ -48,6 +53,7 @@ async def test_query_with_superuser_private(app: App):
         ctx.should_pass_rule()
         ctx.should_pass_permission()
 
+
 @pytest.mark.asyncio
 async def test_query_with_superuser_group_tome(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
@@ -57,11 +63,9 @@ async def test_query_with_superuser_group_tome(app: App):
     async with app.test_matcher(group_manage_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
         event = fake_group_message_event(
-            message=Message("群管理"), sender=fake_superuser,to_me=True
+            message=Message("群管理"), sender=fake_superuser, to_me=True
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_send(
-            event, '', True
-        )
+        ctx.should_call_send(event, "", True)

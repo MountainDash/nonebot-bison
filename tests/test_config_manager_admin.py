@@ -13,7 +13,10 @@ async def test_query_with_superuser_private(app: App):
     async with app.test_matcher(group_manage_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
         event = fake_private_message_event(
-            message=Message("群管理"), sender=fake_superuser
+            message=Message("群管理"),
+            sender=fake_superuser,
+            to_me=True,
+            user_id=fake_superuser.user_id,
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()

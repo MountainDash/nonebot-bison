@@ -1,6 +1,9 @@
+import imp
 from nonebug import App
 
 from .utils import fake_admin_user, fake_private_message_event, fake_group_message_event, fake_superuser
+
+from .conftest import app
 
 import pytest
 
@@ -63,5 +66,5 @@ async def test_query_with_superuser_group_tome(app: App):
         ctx.should_pass_rule()
         ctx.should_pass_permission()
         ctx.should_call_send(
-            event, '', True
+            event, Message("该功能只支持私聊使用，请私聊Bot"), True
         )

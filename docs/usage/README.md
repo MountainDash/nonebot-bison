@@ -124,9 +124,9 @@ sidebar: auto
   ::: details 配置项示例
 
   - 当`BISON_USE_PIC_MERGE=1`时:
-    ![simple1](./pic/forward-msg-simple1.png)
+    ![simple1](/images/forward-msg-simple1.png)
   - 当`BISON_USE_PIC_MERGE=2`时:
-    ![simple1](./pic/forward-msg-simple2.png)
+    ![simple1](/images/forward-msg-simple2.png)
 
   :::
   ::: warning

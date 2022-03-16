@@ -360,13 +360,13 @@ async def do_dispatch_command(
         "message",
         Rule(),
         permission,
-        None,
-        True,
+        handlers=None,
+        temp=True,
         priority=0,
         block=True,
         plugin=matcher.plugin,
         module=matcher.module,
-        expire_time=datetime.now() + bot.config.session_expire_timeout,
+        expire_time=datetime.now(),
         default_state=matcher.state,
         default_type_updater=matcher.__class__._default_type_updater,
         default_permission_updater=matcher.__class__._default_permission_updater,
@@ -379,34 +379,3 @@ async def do_dispatch_command(
         do_del_sub(new_matcher)
     new_matcher_ins = new_matcher()
     asyncio.create_task(new_matcher_ins.run(bot, event, state))
-
-
-test_matcher = on_command("testtt")
-
-
-@test_matcher.handle()
-async def _handler(bot: Bot, event: Event, matcher: Matcher, state: T_State):
-    permission = await matcher.update_permission(bot, event)
-    new_matcher = Matcher.new(
-        "message",
-        Rule(),
-        permission,
-        None,
-        True,
-        priority=0,
-        block=True,
-        plugin=matcher.plugin,
-        module=matcher.module,
-        expire_time=datetime.now() + bot.config.session_expire_timeout,
-        default_state=matcher.state,
-        default_type_updater=matcher.__class__._default_type_updater,
-        default_permission_updater=matcher.__class__._default_permission_updater,
-    )
-
-    async def h():
-        logger.warning("yes")
-        await new_matcher.send("666")
-
-    new_matcher.handle()(h)
-    new_matcher_ins = new_matcher()
-    await new_matcher_ins.run(bot, event, state)

@@ -1,7 +1,7 @@
 name: auto-pytest
 on: [push]
 jobs:
-  do-a-test:
+  Pytest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,7 +18,15 @@ jobs:
         run: poetry run playwright install-deps && poetry run playwright install chromium
       - name: Coverage test
         run: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
-      - name: Collect coverage
-        run: poetry run coverage html --include='src/*'
-
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with: 
+          directory: ./src/plugins/nonebot_bison/coverage/reports/
+          env_vars: ubuntu-latest,'3.10'
+          fail_ci_if_error: true
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
   

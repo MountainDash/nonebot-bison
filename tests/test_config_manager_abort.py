@@ -4,7 +4,7 @@ from httpx import Response
 from nonebug.app import App
 
 from .platforms.utils import get_json
-from .utils import fake_admin_user, fake_group_message_event
+from .utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 # 选择platform阶段中止
@@ -43,18 +43,7 @@ async def test_abort_add_on_platform(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_abort = fake_group_message_event(
@@ -63,7 +52,7 @@ async def test_abort_add_on_platform(app: App):
         ctx.receive_event(bot, event_abort)
         ctx.should_call_send(
             event_abort,
-            "已中止订阅",
+            BotReply.add_reply_abort,
             True,
         )
         ctx.should_finished()
@@ -105,18 +94,7 @@ async def test_abort_add_on_id(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
-                )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-            ),
+            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
             True,
         )
         event_2 = fake_group_message_event(
@@ -125,9 +103,7 @@ async def test_abort_add_on_id(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(
-                "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
-            ),
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_abort = fake_group_message_event(
@@ -136,7 +112,7 @@ async def test_abort_add_on_id(app: App):
         ctx.receive_event(bot, event_abort)
         ctx.should_call_send(
             event_abort,
-            "已中止订阅",
+            BotReply.add_reply_abort,
             True,
         )
         ctx.should_finished()
@@ -179,16 +155,9 @@ async def test_abort_add_on_cats(app: App):
         ctx.should_call_send(
             event_1,
             Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
                 )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )
@@ -198,9 +167,7 @@ async def test_abort_add_on_cats(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(
-                "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
-            ),
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_3 = fake_group_message_event(
@@ -209,11 +176,14 @@ async def test_abort_add_on_cats(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(
-                "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
-                    " ".join(list(platform_manager["weibo"].categories.values()))
-                )
+            BotReply.add_reply_on_target_confirm(
+                "weibo", "明日方舟Arknights", "6279793937"
             ),
+            True,
+        )
+        ctx.should_call_send(
+            event_3,
+            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
             True,
         )
         event_abort = fake_group_message_event(
@@ -222,7 +192,7 @@ async def test_abort_add_on_cats(app: App):
         ctx.receive_event(bot, event_abort)
         ctx.should_call_send(
             event_abort,
-            "已中止订阅",
+            BotReply.add_reply_abort,
             True,
         )
         ctx.should_finished()
@@ -265,16 +235,9 @@ async def test_abort_add_on_tag(app: App):
         ctx.should_call_send(
             event_1,
             Message(
-                "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
-                + "".join(
-                    [
-                        "{}：{}\n".format(
-                            platform_name, platform_manager[platform_name].name
-                        )
-                        for platform_name in common_platform
-                    ]
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
                 )
-                + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
             ),
             True,
         )
@@ -284,9 +247,7 @@ async def test_abort_add_on_tag(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(
-                "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
-            ),
+            Message(BotReply.add_reply_on_id),
             True,
         )
         event_3 = fake_group_message_event(
@@ -295,25 +256,28 @@ async def test_abort_add_on_tag(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(
-                "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
-                    " ".join(list(platform_manager["weibo"].categories.values()))
-                )
+            BotReply.add_reply_on_target_confirm(
+                "weibo", "明日方舟Arknights", "6279793937"
             ),
+            True,
+        )
+        ctx.should_call_send(
+            event_3,
+            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
             True,
         )
         event_4 = fake_group_message_event(
             message=Message("图文 文字"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4)
-        ctx.should_call_send(event_4, Message('请输入要订阅的tag，订阅所有tag输入"全部标签"'), True)
+        ctx.should_call_send(event_4, Message(BotReply.add_reply_on_tags), True)
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=Sender(card="", nickname="test", role="admin")
         )
         ctx.receive_event(bot, event_abort)
         ctx.should_call_send(
             event_abort,
-            "已中止订阅",
+            BotReply.add_reply_abort,
             True,
         )
         ctx.should_finished()

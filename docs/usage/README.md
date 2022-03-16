@@ -115,13 +115,32 @@ sidebar: auto
   开启，默认关
 - `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
 - `BISON_RESEND_TIMES`: 最大重发次数，默认 0
+- `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
+
+  - `0`: 不启用(默认)
+  - `1`: 首条消息单独发送，剩余图片合并转发
+  - `2`: 所有消息全部合并转发
+
+  ::: details 配置项示例
+
+  - 当`BISON_USE_PIC_MERGE=1`时:
+    ![simple1](/images/forward-msg-simple1.png)
+  - 当`BISON_USE_PIC_MERGE=2`时:
+    ![simple1](/images/forward-msg-simple2.png)
+
+  :::
+  ::: warning
+  启用此功能时，可能会因为待推送图片过大/过多而导致文字消息与合并转发图片消息推送间隔过大(选择模式`1`时)，请谨慎考虑开启。或者选择模式`2`，使图文消息一同合并转发(可能会使消息推送延迟过长)
+  :::
 
 ## 使用
 
 ::: warning
-本节假设`COMMAND_START`设置中包含`''`，如果出现 bot 不响应的问题，请先
-排查这个设置
-:::
+本节假设`COMMAND_START`设置中包含`''`
+
+- 如果出现 bot 不响应的问题，请先排查这个设置
+- 尝试在命令前添加设置的命令前缀，如`COMMAND_START=['/']`，则尝试使用`/添加订阅`
+  :::
 
 ### 命令
 

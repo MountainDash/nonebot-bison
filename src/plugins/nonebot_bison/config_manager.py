@@ -110,9 +110,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     )
     async def init_id(state: T_State):
         if platform_manager[state["platform"]].has_target:
-            state[
-                "_prompt"
-            ] = "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+            state["_prompt"] = "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
         else:
             state["id"] = "default"
             state["name"] = await platform_manager[state["platform"]].get_target_name(
@@ -124,6 +122,8 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         target = str(event.get_message()).strip()
         try:
+            if target == "查询":
+                raise LookupError
             if target == "取消":
                 raise KeyboardInterrupt
             name = await check_sub_target(state["platform"], target)
@@ -131,10 +131,23 @@ def do_add_sub(add_sub: Type[Matcher]):
                 raise ValueError
             state["id"] = target
             state["name"] = name
+        except (LookupError):
+            url = "https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
+            title = "Bison所支持的平台UID"
+            content = "查询相关平台的uid格式或获取方式"
+            image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
+            getId_share = f"[CQ:share,url={url},title={title},content={content},image={image}]"  # 缩短字符串格式长度，以及方便后续修改为消息段格式
+            await add_sub.reject(Message(getId_share))
         except (KeyboardInterrupt):
             await add_sub.finish("已中止订阅")
         except (ValueError):
             await add_sub.reject("id输入错误")
+        else:
+            await add_sub.send(
+                "即将订阅的用户为:{} {} {}\n如有错误请输入“取消”重新订阅".format(
+                    state["platform"], state["name"], state["id"]
+                )
+            )
 
     @add_sub.got("id", _gen_prompt_template("{_prompt}"), [Depends(parse_id)])
     async def init_cat(state: T_State):
@@ -304,11 +317,16 @@ del_sub_matcher = on_command(
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-group_manage_matcher = on_command("群管理")
+group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4)
 
 
 @group_manage_matcher.handle()
-async def send_group_list(bot: Bot, state: T_State):
+async def send_group_list(bot: Bot, event: GroupMessageEvent, state: T_State):
+    await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
+
+
+@group_manage_matcher.handle()
+async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
     groups = await bot.call_api("get_group_list")
     res_text = "请选择需要管理的群：\n"
     group_number_idx = {}

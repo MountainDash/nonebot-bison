@@ -17,11 +17,11 @@ jobs:
       - name: Browser install
         run: poetry run playwright install-deps && poetry run playwright install chromium
       - name: Coverage test
-        run: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml -k 'not compare'
+        run: poetry run pytest -v --cov-report=xml --cov=./src/plugins/nonebot_bison -k 'not compare'
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with: 
-          directory: ./src/plugins/nonebot_bison/coverage/reports/
+          directory: ./coverage/reports/
           env_vars: ubuntu-latest,'3.10'
           fail_ci_if_error: true
           files: ./coverage.xml

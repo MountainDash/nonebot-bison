@@ -1,5 +1,4 @@
 import asyncio
-from asyncio.tasks import Task
 from datetime import datetime
 from typing import Optional, Type
 
@@ -12,7 +11,7 @@ from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
 from nonebot.log import logger
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventMessage, EventPlainText, EventToMe, EventType
+from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
@@ -321,7 +320,7 @@ group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSE
 
 
 @group_manage_matcher.handle()
-async def send_group_list(bot: Bot, event: GroupMessageEvent, state: T_State):
+async def send_group_list_private(bot: Bot, event: GroupMessageEvent, state: T_State):
     await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
 
 

@@ -317,11 +317,13 @@ del_sub_matcher = on_command(
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-group_manage_matcher = on_command("群管理",rule=to_me(),permission=SUPERUSER,priority=4)
+group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4)
+
 
 @group_manage_matcher.handle()
 async def send_group_list(bot: Bot, event: GroupMessageEvent, state: T_State):
     await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
+
 
 @group_manage_matcher.handle()
 async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):

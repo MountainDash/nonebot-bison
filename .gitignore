@@ -22,6 +22,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+venv_test/
 
 # C extensions
 *.so

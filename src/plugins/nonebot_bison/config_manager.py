@@ -12,7 +12,7 @@ from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
 from nonebot.log import logger
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventMessage, EventPlainText, EventToMe
+from nonebot.params import Depends, EventMessage, EventPlainText, EventToMe, EventType
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State

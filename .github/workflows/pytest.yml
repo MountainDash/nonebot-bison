@@ -18,15 +18,15 @@ jobs:
         run: poetry run playwright install-deps && poetry run playwright install chromium
       - name: Coverage test
         run: poetry run pytest -v --cov-report=xml --cov=./src/plugins/nonebot_bison -k 'not compare'
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with: 
-          directory: ./coverage/reports/
-          env_vars: ubuntu-latest,'3.10'
-          fail_ci_if_error: true
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v2
+#        with: 
+#          directory: ./coverage/reports/
+#          env_vars: ubuntu-latest,'3.10'
+#          fail_ci_if_error: true
+#          files: ./coverage.xml
+#          flags: unittests
+#          name: codecov-umbrella
+#          path_to_write_report: ./coverage/codecov_report.txt
+#          verbose: true
   

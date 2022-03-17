@@ -1,5 +1,4 @@
 import asyncio
-from asyncio.tasks import Task
 from datetime import datetime
 from typing import Optional, Type
 
@@ -12,7 +11,7 @@ from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
 from nonebot.log import logger
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventMessage, EventPlainText, EventToMe, EventType
+from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
@@ -83,7 +82,7 @@ def do_add_sub(add_sub: Type[Matcher]):
                     for platform_name in common_platform
                 ]
             )
-            + "要查看全部平台请输入：“全部”"
+            + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
         )
 
     async def parse_platform(event: MessageEvent, state: T_State) -> None:
@@ -98,6 +97,8 @@ def do_add_sub(add_sub: Type[Matcher]):
                 ]
             )
             await add_sub.reject(message)
+        elif platform == "取消":
+            await add_sub.finish("已中止订阅")
         elif platform in platform_manager:
             state["platform"] = platform
         else:
@@ -108,9 +109,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     )
     async def init_id(state: T_State):
         if platform_manager[state["platform"]].has_target:
-            state[
-                "_prompt"
-            ] = "请输入订阅用户的id，详情查阅https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84uid"
+            state["_prompt"] = "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
         else:
             state["id"] = "default"
             state["name"] = await platform_manager[state["platform"]].get_target_name(
@@ -122,13 +121,32 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         target = str(event.get_message()).strip()
         try:
+            if target == "查询":
+                raise LookupError
+            if target == "取消":
+                raise KeyboardInterrupt
             name = await check_sub_target(state["platform"], target)
             if not name:
                 raise ValueError
             state["id"] = target
             state["name"] = name
-        except:
+        except (LookupError):
+            url = "https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
+            title = "Bison所支持的平台UID"
+            content = "查询相关平台的uid格式或获取方式"
+            image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
+            getId_share = f"[CQ:share,url={url},title={title},content={content},image={image}]"  # 缩短字符串格式长度，以及方便后续修改为消息段格式
+            await add_sub.reject(Message(getId_share))
+        except (KeyboardInterrupt):
+            await add_sub.finish("已中止订阅")
+        except (ValueError):
             await add_sub.reject("id输入错误")
+        else:
+            await add_sub.send(
+                "即将订阅的用户为:{} {} {}\n如有错误请输入“取消”重新订阅".format(
+                    state["platform"], state["name"], state["id"]
+                )
+            )
 
     @add_sub.got("id", _gen_prompt_template("{_prompt}"), [Depends(parse_id)])
     async def init_cat(state: T_State):
@@ -144,7 +162,9 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         res = []
         for cat in str(event.get_message()).strip().split():
-            if cat not in platform_manager[state["platform"]].reverse_category:
+            if cat == "取消":
+                await add_sub.finish("已中止订阅")
+            elif cat not in platform_manager[state["platform"]].reverse_category:
                 await add_sub.reject("不支持 {}".format(cat))
             res.append(platform_manager[state["platform"]].reverse_category[cat])
         state["cats"] = res
@@ -159,6 +179,8 @@ def do_add_sub(add_sub: Type[Matcher]):
     async def parser_tags(event: MessageEvent, state: T_State):
         if not isinstance(state["tags"], Message):
             return
+        if str(event.get_message()).strip() == "取消":  # 一般不会有叫 取消 的tag吧
+            await add_sub.finish("已中止订阅")
         if str(event.get_message()).strip() == "全部标签":
             state["tags"] = []
         else:
@@ -298,7 +320,7 @@ group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSE
 
 
 @group_manage_matcher.handle()
-async def send_group_list(bot: Bot, event: GroupMessageEvent, state: T_State):
+async def send_group_list_private(bot: Bot, event: GroupMessageEvent, state: T_State):
     await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
 
 

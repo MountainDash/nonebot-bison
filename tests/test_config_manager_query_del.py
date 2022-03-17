@@ -85,17 +85,3 @@ async def test_del_sub(app: App):
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 0
-
-
-async def test_test(app: App):
-    from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config_manager import test_matcher
-
-    async with app.test_matcher(test_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event = fake_group_message_event(message=Message("testtt"))
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission()
-        ctx.should_pass_rule()
-        ctx.should_call_send(event, "666", True)

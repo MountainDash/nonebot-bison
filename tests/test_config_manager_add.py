@@ -383,7 +383,7 @@ async def test_add_with_get_id(app: App):
         ctx.should_rejected()
         ctx.should_call_send(
             event_4_query,
-            [MessageSegment(*BotReply.add_reply_on_id_input_search())],
+            Message([MessageSegment(*BotReply.add_reply_on_id_input_search())]),
             True,
         )
         """
@@ -403,3 +403,5 @@ async def test_add_with_get_id(app: App):
             True,
         )
         ctx.should_finished()
+    subs = config.list_subscribe(10000, "group")
+    assert len(subs) == 0

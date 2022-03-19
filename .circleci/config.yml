@@ -14,10 +14,10 @@ workflows:
           pre-steps:
             - run:
                 command: |
-                  if [ -z "${CIRCLE_PULL_REQUEST##*/}" ]
+                  if [[ -n "${CIRCLE_PULL_REQUEST##*/}" && ${CIRCLE_BRANCH} =~ "pull/" ]]
                   then
-                    IS_PR=false
-                  else
                     IS_PR=true
+                  else
+                    IS_PR=false
                   fi
                   echo '{ "is_pr": '$IS_PR' }' >> /home/circleci/params.json

@@ -139,6 +139,7 @@ class Post:
                 msgs = [reduce(lambda x, y: x.append(y), msgs, Message())]
             msgs.extend(self.extra_msg)
             self._message = msgs
+        assert len(self._message) > 0, f"message list empty, {self}"
         return self._message
 
     def __str__(self):

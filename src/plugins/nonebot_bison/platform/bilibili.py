@@ -42,7 +42,7 @@ class Bilibili(NewMessage):
     async def parse_target(self, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif match := re.match(r"(?:https://)?space.bilibili.com/(\d+)", target_text):
+        elif match := re.match(r"(?:https?://)?space.bilibili.com/(\d+)", target_text):
             return Target(match.group(1))
         else:
             raise Platform.ParseTargetException()

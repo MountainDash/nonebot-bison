@@ -480,15 +480,15 @@ async def test_add_with_bilibili_target_parser(app: App):
         )
         ctx.should_rejected()
 
-        event_4_err1 = fake_group_message_event(
+        event_4_err2 = fake_group_message_event(
             message=Message(
                 "https://space.bilibili.com/ark161775300?from=search&seid=13051774060625135297&spm_id_from=333.337.0.0"
             ),
             sender=fake_admin_user,
         )
-        ctx.receive_event(bot, event_4_err1)
+        ctx.receive_event(bot, event_4_err2)
         ctx.should_call_send(
-            event_4_err1, BotReply.add_reply_on_target_parse_input_error, True
+            event_4_err2, BotReply.add_reply_on_target_parse_input_error, True
         )
         ctx.should_rejected()
 

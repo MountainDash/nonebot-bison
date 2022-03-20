@@ -64,6 +64,7 @@ async def test_add_with_target(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -115,7 +116,7 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_4_err = fake_group_message_event(
@@ -181,6 +182,7 @@ async def test_add_with_target_no_cat(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.ncm_artist import NcmArtist
 
     config = Config()
     config.user_target.truncate()
@@ -208,7 +210,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(NcmArtist)),
             True,
         )
         event_4_ok = fake_group_message_event(
@@ -332,6 +334,7 @@ async def test_add_with_get_id(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -373,7 +376,7 @@ async def test_add_with_get_id(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_4_query = fake_group_message_event(
@@ -462,9 +465,7 @@ async def test_add_with_target_parser(app: App):
         assert Bilibili.parse_target_promot
         ctx.should_call_send(
             event_3,
-            Message(
-                "1." + Bilibili.parse_target_promot + "\n2." + BotReply.add_reply_on_id
-            ),
+            Message(BotReply.add_reply_on_id(Bilibili)),
             True,
         )
         event_4_err = fake_group_message_event(

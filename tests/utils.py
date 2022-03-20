@@ -1,3 +1,4 @@
+from ast import Str
 from typing import TYPE_CHECKING
 
 from typing_extensions import Literal
@@ -130,9 +131,18 @@ class BotReply:
     def add_reply_subscribe_success(name):
         return "添加 {} 成功".format(name)
 
+    @staticmethod
+    def add_reply_on_id(platform: object) -> Str:
+        base_text = "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
+        extra_text = (
+            ("1." + platform.parse_target_promot + "\n2.")
+            if platform.parse_target_promot
+            else ""
+        )
+        return extra_text + base_text
+
     add_reply_on_id_input_error = "id输入错误"
     add_reply_on_target_parse_input_error = "不能从你的输入中提取出id，请检查你输入的内容是否符合预期"
     add_reply_on_platform_input_error = "平台输入错误"
-    add_reply_on_id = "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
     add_reply_on_tags = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
     add_reply_abort = "已中止订阅"

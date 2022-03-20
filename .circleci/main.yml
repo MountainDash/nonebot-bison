@@ -90,13 +90,13 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-          tag: ${CIRCLE_BRANCH}
+          tag: ${CIRCLE_BRANCH//\//-}
           cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}'
       - docker/publish:
           <<: *docker-push
           dockerfile: docker/Dockerfile_with_frontend_sentry
           name: "docker/publish-sentry"
-          tag: sentry,${CIRCLE_TAG}-sentry
+          tag: sentry,${CIRCLE_TAG//\//-}-sentry
           cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:sentry'
       - docker/publish:
           <<: *docker-push
@@ -107,7 +107,7 @@ workflows:
               only: [main, dev]
             tags:
               ignore: /.*/
-          tag: ${CIRCLE_BRANCH}-sentry
+          tag: ${CIRCLE_BRANCH//\//-}-sentry
           cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}-sentry'
 
 jobs:

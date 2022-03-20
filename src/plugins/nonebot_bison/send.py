@@ -80,14 +80,28 @@ async def send_msgs(
             group_bot_info = await bot.get_group_member_info(
                 group_id=user, user_id=int(bot.self_id), no_cache=True
             )  # 调用api获取群内bot的相关参数
-            forward_msg = Message(
-                [
-                    MessageSegment.node_custom(
-                        group_bot_info["user_id"],
-                        nickname=group_bot_info["card"] or group_bot_info["nickname"],
-                        content=msg,
-                    )
-                    for msg in msgs
-                ]
-            )
+            # forward_msg = Message(
+            #     [
+            #         MessageSegment.node_custom(
+            #             group_bot_info["user_id"],
+            #             nickname=group_bot_info["card"] or group_bot_info["nickname"],
+            #             content=msg,
+            #         )
+            #         for msg in msgs
+            #     ]
+            # )
+            # FIXME: Because of https://github.com/nonebot/adapter-onebot/issues/9
+
+            forward_msg = [
+                {
+                    "type": "node",
+                    "data": {
+                        "name": group_bot_info["card"] or group_bot_info["nickname"],
+                        "uin": group_bot_info["user_id"],
+                        "content": msg,
+                    },
+                }
+                for msg in msgs
+            ]
+
             await _send_msgs_dispatch(bot, user, "group-forward", forward_msg)

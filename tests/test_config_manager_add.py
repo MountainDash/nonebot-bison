@@ -462,7 +462,9 @@ async def test_add_with_target_parser(app: App):
         assert Bilibili.parse_target_promot
         ctx.should_call_send(
             event_3,
-            Message(Bilibili.parse_target_promot),
+            Message(
+                "1." + Bilibili.parse_target_promot + "\n2." + BotReply.add_reply_on_id
+            ),
             True,
         )
         event_4_err = fake_group_message_event(

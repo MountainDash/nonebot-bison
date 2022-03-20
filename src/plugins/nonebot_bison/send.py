@@ -64,7 +64,9 @@ async def _send_msgs_dispatch(
         await _do_send(bot, user, user_type, msg)
 
 
-async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs: list):
+async def send_msgs(
+    bot: Bot, user, user_type: Literal["private", "group"], msgs: list[Message]
+):
     if not plugin_config.bison_use_pic_merge or user_type == "private":
         for msg in msgs:
             await _send_msgs_dispatch(bot, user, user_type, msg)

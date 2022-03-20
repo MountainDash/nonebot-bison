@@ -112,8 +112,10 @@ def do_add_sub(add_sub: Type[Matcher]):
         cur_platform = platform_manager[state["platform"]]
         if cur_platform.has_target:
             state["_prompt"] = (
-                cur_platform.parse_target_promot or "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
-            )
+                ("1." + cur_platform.parse_target_promot + "\n2.")
+                if cur_platform.parse_target_promot
+                else ""
+            ) + "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         else:
             state["id"] = "default"
             state["name"] = await platform_manager[state["platform"]].get_target_name(

@@ -24,13 +24,13 @@ import nonebot
 try:
     nonebot.get_driver()
     __as_plugin = True
+    target_metadata = None
 except:
     __as_plugin = False
     nonebot.init()
+    from nonebot_bison.config.db_model import Base
 
-from nonebot_bison.config.db_model import Base
-
-target_metadata = Base.metadata
+    target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -63,7 +63,10 @@ def run_migrations_offline():
 
 
 def do_run_migration(connection: Connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+    if __as_plugin:
+        context.configure(connection=connection)
+    else:
+        context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()

@@ -1,11 +1,8 @@
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.orm.decl_api import DeclarativeMeta
 from sqlalchemy.sql.schema import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import Integer, String
 
-
-class Base(metaclass=DeclarativeMeta):
-    __abstract__ = True
+Base = declarative_base()
 
 
 class User(Base):
@@ -28,6 +25,7 @@ class Target(Base):
 class Subscribe(Base):
     __tablename__ = "subscribe"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
     target_id = Column(Integer, ForeignKey(Target.id))
     user_id = Column(Integer, ForeignKey(User.id))
     categories = Column(String(1024))

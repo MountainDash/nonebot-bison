@@ -45,7 +45,7 @@ class Weibo(NewMessage):
     async def parse_target(self, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif match := re.match(r"(?:https?://)?weibo.com/u/(\d+)", target_text):
+        elif match := re.match(r"(?:https?://)?weibo\.com/u/(\d+)", target_text):
             # 都2202年了应该不会有http了吧，不过还是防一手
             return Target(match.group(1))
         else:
@@ -139,9 +139,9 @@ class Weibo(NewMessage):
                     "https://m.weibo.cn/detail/{}".format(info["mid"]), headers=header
                 )
             try:
-                full_json_text = re.search(
-                    r'"status": ([\s\S]+),\s+"hotScheme"', res.text
-                ).group(1)
+                match = re.search(r'"status": ([\s\S]+),\s+"hotScheme"', res.text)
+                assert match
+                full_json_text = match.group(1)
                 info = json.loads(full_json_text)
             except:
                 logger.info(

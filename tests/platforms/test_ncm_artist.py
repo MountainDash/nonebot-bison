@@ -1,4 +1,5 @@
 import time
+import typing
 
 import pytest
 import respx
@@ -6,6 +7,9 @@ from httpx import Response
 from nonebug.app import App
 
 from .utils import get_json
+
+if typing.TYPE_CHECKING:
+    from nonebot_bison.platform.ncm_artist import NcmArtist
 
 
 @pytest.fixture
@@ -48,3 +52,16 @@ async def test_fetch_new(ncm_artist, ncm_artist_0, ncm_artist_1, dummy_user_subi
     assert post.target_type == "ncm-artist"
     assert post.text == "新专辑发布：Y1K"
     assert post.url == "https://music.163.com/#/album?id=131074504"
+
+
+async def test_parse_target(ncm_artist: "NcmArtist"):
+    from nonebot_bison.platform.platform import Platform
+
+    res = await ncm_artist.parse_target("32540734")
+    assert res == "32540734"
+    res = await ncm_artist.parse_target("https://music.163.com/#/artist?id=32540734")
+    assert res == "32540734"
+    res = await ncm_artist.parse_target("music.163.com/#/artist?id=32540734")
+    assert res == "32540734"
+    with pytest.raises(Platform.ParseTargetException):
+        await ncm_artist.parse_target("music.163.com/#/rad?id=32540734")

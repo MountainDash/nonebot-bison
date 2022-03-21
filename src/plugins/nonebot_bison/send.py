@@ -71,6 +71,7 @@ async def send_msgs(
         for msg in msgs:
             await _send_msgs_dispatch(bot, user, user_type, msg)
         return
+    msgs = msgs.copy()
     if plugin_config.bison_use_pic_merge == 1:
         await _send_msgs_dispatch(bot, user, "group", msgs.pop(0))
     if msgs:

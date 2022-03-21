@@ -141,7 +141,7 @@ class Post:
             msgs.extend(self.extra_msg)
             self._message = msgs
         assert len(self._message) > 0, f"message list empty, {self}"
-        return self._message
+        return self._message.copy()
 
     def __str__(self):
         return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(

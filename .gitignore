@@ -22,6 +22,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+venv_test/
 
 # C extensions
 *.so
@@ -274,6 +275,7 @@ dist
 
 # vuepress build output
 .vuepress/dist
+docs/.vuepress/.temp/
 
 # Serverless directories
 .serverless/

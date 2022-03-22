@@ -24,7 +24,7 @@ class Post:
     pics: list[Union[str, bytes]] = field(default_factory=list)
     extra_msg: list[Message] = field(default_factory=list)
 
-    _message: Optional[list] = None
+    _message: Optional[list[Message]] = None
 
     def _use_pic(self):
         if not self.override_use_pic is None:
@@ -107,10 +107,10 @@ class Post:
         self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
 
-    async def generate_messages(self):
+    async def generate_messages(self) -> list[Message]:
         if self._message is None:
             await self._pic_merge()
-            msgs = []
+            msg_segments: list[MessageSegment] = []
             text = ""
             if self.text:
                 if self._use_pic():
@@ -123,22 +123,24 @@ class Post:
             if self.target_name:
                 text += " {}".format(self.target_name)
             if self._use_pic():
-                msgs.append(await parse_text(text))
+                msg_segments.append(await parse_text(text))
                 if not self.target_type == "rss" and self.url:
-                    msgs.append(MessageSegment.text(self.url))
+                    msg_segments.append(MessageSegment.text(self.url))
             else:
                 if self.url:
                     text += " \n详情: {}".format(self.url)
-                msgs.append(MessageSegment.text(text))
+                msg_segments.append(MessageSegment.text(text))
             for pic in self.pics:
-                # if isinstance(pic, bytes):
-                #     pic = 'base64://' + base64.b64encode(pic).decode()
-                # msgs.append(Message("[CQ:image,file={url}]".format(url=pic)))
-                msgs.append(MessageSegment.image(pic))
+                msg_segments.append(MessageSegment.image(pic))
             if self.compress:
-                msgs = [reduce(lambda x, y: x.append(y), msgs, Message())]
+                msgs = [reduce(lambda x, y: x.append(y), msg_segments, Message())]
+            else:
+                msgs = list(
+                    map(lambda msg_segment: Message([msg_segment]), msg_segments)
+                )
             msgs.extend(self.extra_msg)
             self._message = msgs
+        assert len(self._message) > 0, f"message list empty, {self}"
         return self._message
 
     def __str__(self):

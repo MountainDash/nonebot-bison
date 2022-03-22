@@ -13,11 +13,10 @@ from .utils import BotReply, fake_admin_user, fake_group_message_event
 async def test_abort_add_on_platform(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ak_list_router = respx.get(
@@ -64,11 +63,10 @@ async def test_abort_add_on_platform(app: App):
 async def test_abort_add_on_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ak_list_router = respx.get(
@@ -124,11 +122,10 @@ async def test_abort_add_on_id(app: App):
 async def test_abort_add_on_cats(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ak_list_router = respx.get(
@@ -204,11 +201,10 @@ async def test_abort_add_on_cats(app: App):
 async def test_abort_add_on_tag(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ak_list_router = respx.get(

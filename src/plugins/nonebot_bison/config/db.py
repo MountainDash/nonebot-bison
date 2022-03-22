@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import nonebot
-from alembic import command
 from alembic.config import Config
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script.base import ScriptDirectory
+from nonebot.log import logger
 from nonebot_plugin_datastore import PluginData, create_session, db
+from sqlalchemy.engine.base import Connection
 
 from .db_model import Base
 
@@ -18,22 +19,19 @@ async def upgrade_db():
     alembic_cfg.set_main_option(
         "script_location", str(Path(__file__).parent.joinpath("migrate"))
     )
-    alembic_cfg.set_main_option("sqlalchemy.url", "")
-    command.upgrade(alembic_cfg, "head")
 
     script = ScriptDirectory.from_config(alembic_cfg)
+    engine = db.get_engine()
+    env = EnvironmentContext(alembic_cfg, script)
 
-    def upgrade(rev, context):
-        return script._upgrade_revs("head", rev)
+    def migrate_fun(revision, context):
+        return script._upgrade_revs("head", revision)
 
-    with EnvironmentContext(
-        alembic_cfg,
-        script,
-        fn=upgrade,
-        as_sql=False,
-        starting_rev=None,
-        destination_rev="head",
-        tag=None,
-        target_metadata=Base.metadata,
-    ):
-        script.run_env()
+    def do_run_migration(connection: Connection):
+        env.configure(connection, target_metadata=Base.metadata, fn=migrate_fun)
+        with env.begin_transaction():
+            env.run_migrations()
+        logger.info("Finish auto migrate")
+
+    async with engine.connect() as connection:
+        await connection.run_sync(do_run_migration)

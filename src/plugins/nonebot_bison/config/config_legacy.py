@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
 from os import path
+from pathlib import Path
 from typing import DefaultDict, Literal, Mapping, TypedDict
 
 import nonebot
@@ -53,18 +54,24 @@ class ConfigContent(TypedDict):
 
 
 class Config(metaclass=Singleton):
+    "Dropping it!"
 
     migrate_version = 2
 
     def __init__(self):
-        self.db = TinyDB(get_config_path(), encoding="utf-8")
-        self.kv_config = self.db.table("kv")
-        self.user_target = self.db.table("user_target")
-        self.target_user_cache: dict[str, defaultdict[Target, list[User]]] = {}
-        self.target_user_cat_cache = {}
-        self.target_user_tag_cache = {}
-        self.target_list = {}
-        self.next_index: DefaultDict[str, int] = defaultdict(lambda: 0)
+        path = get_config_path()
+        if Path(path).exists():
+            self.available = True
+            self.db = TinyDB(get_config_path(), encoding="utf-8")
+            self.kv_config = self.db.table("kv")
+            self.user_target = self.db.table("user_target")
+            self.target_user_cache: dict[str, defaultdict[Target, list[User]]] = {}
+            self.target_user_cat_cache = {}
+            self.target_user_tag_cache = {}
+            self.target_list = {}
+            self.next_index: DefaultDict[str, int] = defaultdict(lambda: 0)
+        else:
+            self.available = False
 
     def add_subscribe(
         self, user, user_type, target, target_name, target_type, cats, tags

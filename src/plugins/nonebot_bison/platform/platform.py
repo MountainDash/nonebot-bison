@@ -1,11 +1,11 @@
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import Any, Collection, Literal, Optional
 
 import httpx
 from nonebot.log import logger
+from pydantic.dataclasses import dataclass
 
 from ..plugin_config import plugin_config
 from ..post import Post

@@ -61,11 +61,10 @@ async def test_configurable_at_me_false(app: App):
 async def test_add_with_target(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ak_list_router = respx.get(
@@ -178,11 +177,10 @@ async def test_add_with_target(app: App):
 async def test_add_with_target_no_cat(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
@@ -239,11 +237,10 @@ async def test_add_with_target_no_cat(app: App):
 async def test_add_no_target(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     async with app.test_matcher(add_sub_matcher) as ctx:
@@ -291,11 +288,10 @@ async def test_add_no_target(app: App):
 async def test_platform_name_err(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot()
@@ -329,11 +325,10 @@ async def test_platform_name_err(app: App):
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
     config.user_target.truncate()
 
     ak_list_router = respx.get(

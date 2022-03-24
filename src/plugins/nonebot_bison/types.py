@@ -14,6 +14,13 @@ class User:
     user_type: Literal["group", "private"]
 
 
+@dataclass(eq=True, frozen=True)
+class PlatformTarget:
+    target: str
+    platform_name: str
+    target_name: str
+
+
 class UserSubInfo(NamedTuple):
     user: User
     category_getter: Callable[[Target], list[Category]]

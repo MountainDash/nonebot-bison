@@ -48,7 +48,7 @@ class SubscribeContent(TypedDict):
 
 
 class ConfigContent(TypedDict):
-    user: str
+    user: int
     user_type: Literal["group", "private"]
     subs: list[SubscribeContent]
 

@@ -12,6 +12,7 @@ from ..platform import platform_manager
 from ..plugin_config import plugin_config
 from ..types import Target, User
 from ..utils import Singleton
+from .utils import NoSuchSubscribeException, NoSuchUserException
 
 supported_target_type = platform_manager.keys()
 
@@ -29,14 +30,6 @@ def get_config_path() -> str:
     if os.path.exists(old_path) and not os.path.exists(new_path):
         os.rename(old_path, new_path)
     return new_path
-
-
-class NoSuchUserException(Exception):
-    pass
-
-
-class NoSuchSubscribeException(Exception):
-    pass
 
 
 class SubscribeContent(TypedDict):

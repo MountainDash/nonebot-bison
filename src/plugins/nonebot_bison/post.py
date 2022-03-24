@@ -1,4 +1,5 @@
-from dataclasses import field
+# from pydantic.dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import reduce
 from io import BytesIO
 from typing import Optional, Union
@@ -7,7 +8,6 @@ import httpx
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.log import logger
 from PIL import Image
-from pydantic.dataclasses import dataclass
 
 from .plugin_config import plugin_config
 from .utils import parse_text

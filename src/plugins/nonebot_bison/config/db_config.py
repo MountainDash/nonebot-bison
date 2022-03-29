@@ -1,9 +1,11 @@
-import json
 from typing import Optional
 
 from nonebot_bison.types import Category, Tag, Target
-from nonebot_plugin_datastore.db import create_session
-from sqlalchemy.sql.expression import select
+from nonebot_plugin_datastore.db import get_engine
+from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlalchemy.orm import selectinload
+from sqlalchemy.sql.expression import delete, select
+from sqlalchemy.sql.functions import func
 
 from .db_model import Subscribe as MSubscribe
 from .db_model import Target as MTarget
@@ -11,9 +13,6 @@ from .db_model import User
 
 
 class DBConfig:
-    def __init__(self):
-        self.session = create_session()
-
     async def add_subscribe(
         self,
         user: int,
@@ -24,35 +23,98 @@ class DBConfig:
         cats: list[Category],
         tags: list[Tag],
     ):
-        db_user_stmt = (
-            select(User).where(User.uid == user).where(User.type == user_type)
-        )
-        db_user: Optional[User] = (await self.session.scalars(db_user_stmt)).first()
-        if not db_user:
-            db_user = User(uid=user, type=user_type)
-            self.session.add(db_user)
-        db_target_stmt = (
-            select(MTarget)
-            .where(MTarget.platform_name == platform_name)
-            .where(MTarget.target == target)
-        )
-        db_target: Optional[MTarget] = (
-            await self.session.scalars(db_target_stmt)
-        ).first()
-        if not db_target:
-            db_target = MTarget(
-                target=target, platform_name=platform_name, target_name=target_name
+        async with AsyncSession(get_engine()) as session:
+            db_user_stmt = (
+                select(User).where(User.uid == user).where(User.type == user_type)
             )
-        else:
-            db_target.target_name = target_name  # type: ignore
-        subscribe = MSubscribe(
-            categories=json.dumps(cats),
-            tags=json.dumps(tags),
-            user=db_user,
-            target=db_target,
-        )
-        self.session.add(subscribe)
-        await self.session.commit()
+            db_user: Optional[User] = await session.scalar(db_user_stmt)
+            if not db_user:
+                db_user = User(uid=user, type=user_type)
+                session.add(db_user)
+            db_target_stmt = (
+                select(MTarget)
+                .where(MTarget.platform_name == platform_name)
+                .where(MTarget.target == target)
+            )
+            db_target: Optional[MTarget] = await session.scalar(db_target_stmt)
+            if not db_target:
+                db_target = MTarget(
+                    target=target, platform_name=platform_name, target_name=target_name
+                )
+            else:
+                db_target.target_name = target_name  # type: ignore
+            subscribe = MSubscribe(
+                categories=cats,
+                tags=tags,
+                user=db_user,
+                target=db_target,
+            )
+            session.add(subscribe)
+            await session.commit()
+
+    async def list_subscribe(self, user: int, user_type: str) -> list[MSubscribe]:
+        async with AsyncSession(get_engine()) as session:
+            query_stmt = (
+                select(MSubscribe)
+                .where(User.type == user_type and User.uid == user)
+                .join(User)
+                .options(selectinload(MSubscribe.target))
+            )  # type:ignore
+            subs: list[MSubscribe] = (await session.scalars(query_stmt)).all()
+            return subs
+
+    async def del_subscribe(
+        self, user: int, user_type: str, target: str, platform_name: str
+    ):
+        async with AsyncSession(get_engine()) as session:
+            user_obj = await session.scalar(
+                select(User).where(User.uid == user and User.type == user_type)
+            )
+            target_obj = await session.scalar(
+                select(MTarget).where(
+                    MTarget.platform_name == platform_name and MTarget.target == target
+                )
+            )
+            await session.execute(
+                delete(MSubscribe).where(
+                    MSubscribe.user == user_obj and MSubscribe.target == target_obj
+                )
+            )
+            target_count = await session.scalar(
+                select(func.count())
+                .select_from(MSubscribe)
+                .where(MSubscribe.target == target_obj)
+            )
+            if target_count == 0:
+                # delete empty target
+                await session.delete(target_obj)
+            await session.commit()
+
+    async def update_subscribe(
+        self,
+        user: int,
+        user_type: str,
+        target: str,
+        target_name: str,
+        platform_name: str,
+        cats: list,
+        tags: list,
+    ):
+        async with AsyncSession(get_engine()) as sess:
+            subscribe_obj: MSubscribe = await sess.scalar(
+                select(MSubscribe)
+                .where(
+                    User.uid == user
+                    and User.type == user_type
+                    and MTarget.target == target
+                    and MTarget.platform_name == platform_name
+                )
+                .join(User)
+                .join(MTarget)
+            )
+            subscribe_obj.tags = tags  # type:ignore
+            subscribe_obj.categories = cats  # type:ignore
+            await sess.commit()
 
 
 config = DBConfig()

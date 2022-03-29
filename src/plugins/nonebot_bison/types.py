@@ -1,6 +1,5 @@
+from dataclasses import dataclass
 from typing import Any, Callable, Literal, NamedTuple, NewType
-
-from pydantic.dataclasses import dataclass
 
 RawPost = NewType("RawPost", Any)
 Target = NewType("Target", str)

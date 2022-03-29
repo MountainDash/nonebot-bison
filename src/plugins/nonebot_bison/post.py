@@ -1,4 +1,3 @@
-# from pydantic.dataclasses import dataclass
 from dataclasses import dataclass, field
 from functools import reduce
 from io import BytesIO

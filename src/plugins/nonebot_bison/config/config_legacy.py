@@ -52,6 +52,9 @@ class Config(metaclass=Singleton):
     migrate_version = 2
 
     def __init__(self):
+        self._do_init()
+
+    def _do_init(self):
         path = get_config_path()
         if Path(path).exists():
             self.available = True

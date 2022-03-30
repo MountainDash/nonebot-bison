@@ -58,14 +58,12 @@ async def test_configurable_at_me_false(app: App):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_target(app: App):
+async def test_add_with_target(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -160,28 +158,26 @@ async def test_add_with_target(app: App):
             event_6, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True
         )
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 1
     sub = subs[0]
-    assert sub["target"] == "6279793937"
-    assert sub["tags"] == []
-    assert sub["cats"] == [platform_manager["weibo"].reverse_category["图文"]] + [
+    assert sub.target.target == "6279793937"
+    assert sub.tags == []
+    assert sub.categories == [platform_manager["weibo"].reverse_category["图文"]] + [
         platform_manager["weibo"].reverse_category["文字"]
     ]
-    assert sub["target_type"] == "weibo"
-    assert sub["target_name"] == "明日方舟Arknights"
+    assert sub.target.platform_name == "weibo"
+    assert sub.target.target_name == "明日方舟Arknights"
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_target_no_cat(app: App):
+async def test_add_with_target_no_cat(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
     ncm_router.mock(return_value=Response(200, json=get_json("ncm_siren.json")))
@@ -222,26 +218,24 @@ async def test_add_with_target_no_cat(app: App):
             event_4_ok, BotReply.add_reply_subscribe_success("塞壬唱片-MSR"), True
         )
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 1
     sub = subs[0]
-    assert sub["target"] == "32540734"
-    assert sub["tags"] == []
-    assert sub["cats"] == []
-    assert sub["target_type"] == "ncm-artist"
-    assert sub["target_name"] == "塞壬唱片-MSR"
+    assert sub.target.target == "32540734"
+    assert sub.tags == []
+    assert sub.categories == []
+    assert sub.target.platform_name == "ncm-artist"
+    assert sub.target.target_name == "塞壬唱片-MSR"
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_no_target(app: App):
+async def test_add_no_target(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot()
@@ -274,25 +268,23 @@ async def test_add_no_target(app: App):
             event_4, BotReply.add_reply_subscribe_success("明日方舟游戏信息"), True
         )
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 1
     sub = subs[0]
-    assert sub["target"] == "default"
-    assert sub["tags"] == []
-    assert sub["cats"] == [platform_manager["arknights"].reverse_category["游戏公告"]]
-    assert sub["target_type"] == "arknights"
-    assert sub["target_name"] == "明日方舟游戏信息"
+    assert sub.target.target == "default"
+    assert sub.tags == []
+    assert sub.categories == [platform_manager["arknights"].reverse_category["游戏公告"]]
+    assert sub.target.platform_name == "arknights"
+    assert sub.target.target_name == "明日方舟游戏信息"
 
 
 @pytest.mark.asyncio
-async def test_platform_name_err(app: App):
+async def test_platform_name_err(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
-    config.user_target.truncate()
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
@@ -322,14 +314,12 @@ async def test_platform_name_err(app: App):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_get_id(app: App):
+async def test_add_with_get_id(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -398,5 +388,5 @@ async def test_add_with_get_id(app: App):
             True,
         )
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 0

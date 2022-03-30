@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
 
 
 @pytest.fixture
-def config_legacy(app: App):
+def config_legacy(app: App, use_legacy_config):
     from nonebot_bison import config
     from nonebot_bison.config import config_legacy as config
 

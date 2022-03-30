@@ -10,14 +10,11 @@ from .utils import BotReply, fake_admin_user, fake_group_message_event
 # 选择platform阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_platform(app: App):
+async def test_abort_add_on_platform(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -60,14 +57,11 @@ async def test_abort_add_on_platform(app: App):
 # 输入id阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_id(app: App):
+async def test_abort_add_on_id(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -119,14 +113,11 @@ async def test_abort_add_on_id(app: App):
 # 输入订阅类别阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_cats(app: App):
+async def test_abort_add_on_cats(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -198,14 +189,11 @@ async def test_abort_add_on_cats(app: App):
 # 输入标签阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_tag(app: App):
+async def test_abort_add_on_tag(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"

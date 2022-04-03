@@ -342,7 +342,7 @@ async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
     for idx, group in enumerate(groups, 1):
         group_number_idx[idx] = group["group_id"]
         res_text += f'{idx}. {group["group_id"]} - {group["group_name"]}\n'
-    res_text += "请输入左侧序号"
+    res_text += "请输入左侧序号\n中止操作请输入'取消'"
     # await group_manage_matcher.send(res_text)
     state["_prompt"] = res_text
     state["group_number_idx"] = group_number_idx
@@ -354,11 +354,16 @@ async def _parse_group_idx(state: T_State, event_msg: str = EventPlainText()):
     group_number_idx: Optional[dict[int, int]] = state.get("group_number_idx")
     assert group_number_idx
     try:
+        assert event_msg != "取消", "userAbort"
         idx = int(event_msg)
-        assert idx in group_number_idx.keys()
+        assert idx in group_number_idx.keys(), "idxNotInList"
         state["group_idx"] = idx
-    except:
-        await group_manage_matcher.reject("请输入正确序号")
+    except AssertionError as AE:
+        errType = AE.args[0]
+        if errType == "userAbort":
+            await group_manage_matcher.finish("已取消")
+        elif errType == "idxNotInList":
+            await group_manage_matcher.reject("请输入正确序号")
 
 
 @group_manage_matcher.got(
@@ -372,13 +377,13 @@ async def do_choose_group_number(state: T_State):
 
 
 async def _check_command(event_msg: str = EventPlainText()):
-    if event_msg not in {"添加订阅", "查询订阅", "删除订阅"}:
+    if event_msg not in {"添加订阅", "查询订阅", "删除订阅", "取消"}:
         await group_manage_matcher.reject("请输入正确的命令")
     return
 
 
 @group_manage_matcher.got(
-    "command", "请输入需要使用的命令：添加订阅，查询订阅，删除订阅", [Depends(_check_command)]
+    "command", "请输入需要使用的命令：添加订阅，查询订阅，删除订阅，取消", [Depends(_check_command)]
 )
 async def do_dispatch_command(
     bot: Bot,
@@ -387,6 +392,8 @@ async def do_dispatch_command(
     matcher: Matcher,
     command: str = ArgStr(),
 ):
+    if command == "取消":
+        await group_manage_matcher.finish("已取消")
     permission = await matcher.update_permission(bot, event)
     new_matcher = Matcher.new(
         "message",

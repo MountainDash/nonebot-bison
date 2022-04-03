@@ -1,6 +1,9 @@
 module.exports = {
   title: 'Nonebot Bison',
   description: 'Docs for Nonebot Bison',
+  head: [
+    ['link', { rel: 'icon', href: `bison2bg.png` }]
+  ],
   themeConfig: {
     navbar: [
       { text: '主页', link: '/' },

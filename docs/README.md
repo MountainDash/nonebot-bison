@@ -1,6 +1,7 @@
 ---
 home: true
 heroText: Nonebot Bison
+heroImage: /images/bison6bg.png
 tagline: 本bot励志做全泰拉骑车最快的信使
 actions:
   - text: 快速部署

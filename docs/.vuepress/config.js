@@ -2,7 +2,7 @@ module.exports = {
   title: 'Nonebot Bison',
   description: 'Docs for Nonebot Bison',
   head: [
-    ['link', { rel: 'icon', href: `bison6bg.png` }]
+    ['link', { rel: 'icon', href: `/images/bison6bg.png` }]
   ],
   themeConfig: {
     navbar: [

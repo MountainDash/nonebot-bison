@@ -64,11 +64,14 @@ async def _send_msgs_dispatch(
         await _do_send(bot, user, user_type, msg)
 
 
-async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs: list):
+async def send_msgs(
+    bot: Bot, user, user_type: Literal["private", "group"], msgs: list[Message]
+):
     if not plugin_config.bison_use_pic_merge or user_type == "private":
         for msg in msgs:
             await _send_msgs_dispatch(bot, user, user_type, msg)
         return
+    msgs = msgs.copy()
     if plugin_config.bison_use_pic_merge == 1:
         await _send_msgs_dispatch(bot, user, "group", msgs.pop(0))
     if msgs:
@@ -78,14 +81,28 @@ async def send_msgs(bot: Bot, user, user_type: Literal["private", "group"], msgs
             group_bot_info = await bot.get_group_member_info(
                 group_id=user, user_id=int(bot.self_id), no_cache=True
             )  # 调用api获取群内bot的相关参数
-            forward_msg = Message(
-                [
-                    MessageSegment.node_custom(
-                        group_bot_info["user_id"],
-                        nickname=group_bot_info["card"] or group_bot_info["nickname"],
-                        content=msg,
-                    )
-                    for msg in msgs
-                ]
-            )
+            # forward_msg = Message(
+            #     [
+            #         MessageSegment.node_custom(
+            #             group_bot_info["user_id"],
+            #             nickname=group_bot_info["card"] or group_bot_info["nickname"],
+            #             content=msg,
+            #         )
+            #         for msg in msgs
+            #     ]
+            # )
+            # FIXME: Because of https://github.com/nonebot/adapter-onebot/issues/9
+
+            forward_msg = [
+                {
+                    "type": "node",
+                    "data": {
+                        "name": group_bot_info["card"] or group_bot_info["nickname"],
+                        "uin": group_bot_info["user_id"],
+                        "content": msg,
+                    },
+                }
+                for msg in msgs
+            ]
+
             await _send_msgs_dispatch(bot, user, "group-forward", forward_msg)

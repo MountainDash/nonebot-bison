@@ -88,7 +88,7 @@ sidebar: auto
 1. 安装 pip 包`nonebot-bison`
 2. 在`bot.py`中导入插件`nonebot_bison`
 
-### 自动安装
+#### 使用 nb-cli 安装
 
 使用`nb-cli`执行：`nb plugin install nonebot_bison`
 
@@ -111,6 +111,9 @@ sidebar: auto
   默认`True`
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison`，如果你的插件部署
   在服务器上，建议配置为`http://<你的服务器ip>:8080/bison`
+  ::: warning
+  如果需要从外网或者 Docker 容器外访问后台页面，请确保`HOST=0.0.0.0`
+  :::
 - `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的 warning 级以下的 log，如果你的 bot 只运行了这个插件可以考虑
   开启，默认关
 - `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
@@ -167,9 +170,7 @@ sidebar: auto
 
 #### 私聊机器人进行配置（需要 SUPERUER 权限）
 
-- 添加订阅：`管理-添加订阅`
-- 查询订阅：`管理-查询订阅`
-- 删除订阅：`管理-删除订阅`
+请私聊 bot`群管理`
 
 ### 所支持平台的 uid
 

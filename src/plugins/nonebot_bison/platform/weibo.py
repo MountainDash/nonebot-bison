@@ -130,7 +130,7 @@ class Weibo(NewMessage):
                 )
             try:
                 full_json_text = re.search(
-                    r'"status": ([\s\S]+),\s+"hotScheme"', res.text
+                    r'"status": ([\s\S]+),\s+"call"', res.text
                 ).group(1)
                 info = json.loads(full_json_text)
             except:

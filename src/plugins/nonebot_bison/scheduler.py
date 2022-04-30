@@ -17,6 +17,18 @@ scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
 
 @get_driver().on_startup
 async def _start():
+    for platform_name, platform in platform_manager.items():
+        if platform.schedule_type in ["cron", "interval", "date"]:
+            logger.info(
+                f"start scheduler for {platform_name} with {platform.schedule_type} {platform.schedule_kw}"
+            )
+            scheduler.add_job(
+                fetch_and_send,
+                platform.schedule_type,
+                **platform.schedule_kw,
+                args=(platform_name,),
+            )
+
     scheduler.configure({"apscheduler.timezone": "Asia/Shanghai"})
     scheduler.start()
 
@@ -62,19 +74,6 @@ async def fetch_and_send(target_type: str):
                 await send_msgs(
                     bot, user.user, user.user_type, await send_post.generate_messages()
                 )
-
-
-for platform_name, platform in platform_manager.items():
-    if platform.schedule_type in ["cron", "interval", "date"]:
-        logger.info(
-            f"start scheduler for {platform_name} with {platform.schedule_type} {platform.schedule_kw}"
-        )
-        scheduler.add_job(
-            fetch_and_send,
-            platform.schedule_type,
-            **platform.schedule_kw,
-            args=(platform_name,),
-        )
 
 
 class CustomLogHandler(LoguruHandler):

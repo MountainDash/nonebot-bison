@@ -56,10 +56,10 @@ class DBConfig:
         async with AsyncSession(get_engine()) as session:
             query_stmt = (
                 select(MSubscribe)
-                .where(User.type == user_type and User.uid == user)
+                .where(User.type == user_type, User.uid == user)
                 .join(User)
-                .options(selectinload(MSubscribe.target))
-            )  # type:ignore
+                .options(selectinload(MSubscribe.target))  # type:ignore
+            )
             subs: list[MSubscribe] = (await session.scalars(query_stmt)).all()
             return subs
 
@@ -68,16 +68,16 @@ class DBConfig:
     ):
         async with AsyncSession(get_engine()) as session:
             user_obj = await session.scalar(
-                select(User).where(User.uid == user and User.type == user_type)
+                select(User).where(User.uid == user, User.type == user_type)
             )
             target_obj = await session.scalar(
                 select(MTarget).where(
-                    MTarget.platform_name == platform_name and MTarget.target == target
+                    MTarget.platform_name == platform_name, MTarget.target == target
                 )
             )
             await session.execute(
                 delete(MSubscribe).where(
-                    MSubscribe.user == user_obj and MSubscribe.target == target_obj
+                    MSubscribe.user == user_obj, MSubscribe.target == target_obj
                 )
             )
             target_count = await session.scalar(
@@ -104,16 +104,18 @@ class DBConfig:
             subscribe_obj: MSubscribe = await sess.scalar(
                 select(MSubscribe)
                 .where(
-                    User.uid == user
-                    and User.type == user_type
-                    and MTarget.target == target
-                    and MTarget.platform_name == platform_name
+                    User.uid == user,
+                    User.type == user_type,
+                    MTarget.target == target,
+                    MTarget.platform_name == platform_name,
                 )
                 .join(User)
                 .join(MTarget)
+                .options(selectinload(MSubscribe.target))  # type:ignore
             )
             subscribe_obj.tags = tags  # type:ignore
             subscribe_obj.categories = cats  # type:ignore
+            subscribe_obj.target.target_name = target_name
             await sess.commit()
 
 

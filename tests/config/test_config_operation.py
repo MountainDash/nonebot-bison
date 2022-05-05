@@ -20,6 +20,15 @@ async def test_add_subscribe(app: App, db_migration):
         cats=[],
         tags=[],
     )
+    await config.add_subscribe(
+        user=234,
+        user_type="group",
+        target=TTarget("weibo_id"),
+        target_name="weibo_name",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
     confs = await config.list_subscribe(123, "group")
     assert len(confs) == 1
     conf: Subscribe = confs[0]
@@ -35,6 +44,32 @@ async def test_add_subscribe(app: App, db_migration):
     assert related_target_obj.target == "weibo_id"
     assert conf.target.target == "weibo_id"
     assert conf.categories == []
+
+    await config.update_subscribe(
+        user=123,
+        user_type="group",
+        target=TTarget("weibo_id"),
+        platform_name="weibo",
+        target_name="weibo_name2",
+        cats=[1],
+        tags=["tag"],
+    )
+    confs = await config.list_subscribe(123, "group")
+    assert len(confs) == 1
+    conf: Subscribe = confs[0]
+    async with AsyncSession(get_engine()) as sess:
+        related_user_obj = await sess.scalar(
+            select(User).where(User.id == conf.user_id)
+        )
+        related_target_obj = await sess.scalar(
+            select(Target).where(Target.id == conf.target_id)
+        )
+    assert related_user_obj.uid == 123
+    assert related_target_obj.target_name == "weibo_name2"
+    assert related_target_obj.target == "weibo_id"
+    assert conf.target.target == "weibo_id"
+    assert conf.categories == [1]
+    assert conf.tags == ["tag"]
 
 
 async def test_del_subsribe(db_migration):

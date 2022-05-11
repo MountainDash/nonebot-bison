@@ -85,3 +85,30 @@ async def test_del_sub(app: App):
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 0
+
+
+@pytest.mark.asyncio
+async def test_del_empty_sub(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_bison.config import Config
+    from nonebot_bison.config_manager import del_sub_matcher
+    from nonebot_bison.platform import platform_manager
+
+    config = Config()
+    config.user_target.truncate()
+    async with app.test_matcher(del_sub_matcher) as ctx:
+        bot = ctx.create_bot(base=Bot)
+        assert isinstance(bot, Bot)
+        event = fake_group_message_event(
+            message=Message("删除订阅"), to_me=True, sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event)
+        ctx.should_pass_rule()
+        ctx.should_pass_permission()
+        ctx.should_finished()
+        ctx.should_call_send(
+            event,
+            "暂无已订阅账号\n请使用“添加订阅”命令添加订阅",
+            True,
+        )

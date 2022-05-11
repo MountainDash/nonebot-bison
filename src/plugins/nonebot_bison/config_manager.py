@@ -269,13 +269,16 @@ def do_del_sub(del_sub: Type[Matcher]):
             if platform.enable_tag:
                 res += " {}".format(", ".join(sub["tags"]))
             res += "\n"
-        res += "请输入要删除的订阅的序号"
+        res += "请输入要删除的订阅的序号\n输入'取消'中止"
         await bot.send(event=event, message=Message(await parse_text(res)))
 
     @del_sub.receive()
     async def do_del(event: Event, state: T_State):
+        user_msg = str(event.get_message()).strip()
+        if user_msg == "取消":
+            await del_sub.finish("删除中止")
         try:
-            index = int(str(event.get_message()).strip())
+            index = int(user_msg)
             config = Config()
             user_info = state["target_user_info"]
             assert isinstance(user_info, User)

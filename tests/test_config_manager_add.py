@@ -387,8 +387,8 @@ async def test_add_with_get_id(app: App):
             True,
         )
         """
-        line 362:
-        鬼知道为什么要在这里这样写，
+        关于Message([MessageSegment(*BotReply.add_reply_on_id_input_search())]):
+        异客知道为什么要在这里这样写，
         没有[]的话assert不了(should_call_send使用[MessageSegment(...)]的格式进行比较)
         不在这里MessageSegment()的话也assert不了(指不能让add_reply_on_id_input_search直接返回一个MessageSegment对象)
         amen

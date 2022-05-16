@@ -1,5 +1,4 @@
 import asyncio
-from asyncio.tasks import Task
 from datetime import datetime
 from typing import Optional, Type
 
@@ -12,7 +11,7 @@ from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
 from nonebot.log import logger
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventMessage, EventPlainText, EventToMe, EventType
+from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
@@ -245,38 +244,46 @@ def do_del_sub(del_sub: Type[Matcher]):
         config: Config = Config()
         user_info = state["target_user_info"]
         assert isinstance(user_info, User)
-        sub_list = config.list_subscribe(
-            # state.get("_user_id") or event.group_id, "group"
-            user_info.user,
-            user_info.user_type,
-        )
-        res = "订阅的帐号为：\n"
-        state["sub_table"] = {}
-        for index, sub in enumerate(sub_list, 1):
-            state["sub_table"][index] = {
-                "target_type": sub["target_type"],
-                "target": sub["target"],
-            }
-            res += "{} {} {} {}\n".format(
-                index, sub["target_type"], sub["target_name"], sub["target"]
+        try:
+            sub_list = config.list_subscribe(
+                # state.get("_user_id") or event.group_id, "group"
+                user_info.user,
+                user_info.user_type,
             )
-            platform = platform_manager[sub["target_type"]]
-            if platform.categories:
-                res += " [{}]".format(
-                    ", ".join(
-                        map(lambda x: platform.categories[Category(x)], sub["cats"])
-                    )
+            assert sub_list
+        except AssertionError:
+            await del_sub.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")
+        else:
+            res = "订阅的帐号为：\n"
+            state["sub_table"] = {}
+            for index, sub in enumerate(sub_list, 1):
+                state["sub_table"][index] = {
+                    "target_type": sub["target_type"],
+                    "target": sub["target"],
+                }
+                res += "{} {} {} {}\n".format(
+                    index, sub["target_type"], sub["target_name"], sub["target"]
                 )
-            if platform.enable_tag:
-                res += " {}".format(", ".join(sub["tags"]))
-            res += "\n"
-        res += "请输入要删除的订阅的序号"
-        await bot.send(event=event, message=Message(await parse_text(res)))
+                platform = platform_manager[sub["target_type"]]
+                if platform.categories:
+                    res += " [{}]".format(
+                        ", ".join(
+                            map(lambda x: platform.categories[Category(x)], sub["cats"])
+                        )
+                    )
+                if platform.enable_tag:
+                    res += " {}".format(", ".join(sub["tags"]))
+                res += "\n"
+            res += "请输入要删除的订阅的序号\n输入'取消'中止"
+            await bot.send(event=event, message=Message(await parse_text(res)))
 
     @del_sub.receive()
     async def do_del(event: Event, state: T_State):
+        user_msg = str(event.get_message()).strip()
+        if user_msg == "取消":
+            await del_sub.finish("删除中止")
         try:
-            index = int(str(event.get_message()).strip())
+            index = int(user_msg)
             config = Config()
             user_info = state["target_user_info"]
             assert isinstance(user_info, User)
@@ -317,11 +324,18 @@ del_sub_matcher = on_command(
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-group_manage_matcher = on_command("群管理",rule=to_me(),permission=SUPERUSER,priority=4)
+group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4)
+
 
 @group_manage_matcher.handle()
 async def send_group_list(bot: Bot, event: GroupMessageEvent, state: T_State):
     await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
+
+
+@group_manage_matcher.handle()
+async def send_group_list_private(bot: Bot, event: GroupMessageEvent, state: T_State):
+    await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
+
 
 @group_manage_matcher.handle()
 async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
@@ -381,13 +395,13 @@ async def do_dispatch_command(
         "message",
         Rule(),
         permission,
-        None,
-        True,
+        handlers=None,
+        temp=True,
         priority=0,
         block=True,
         plugin=matcher.plugin,
         module=matcher.module,
-        expire_time=datetime.now() + bot.config.session_expire_timeout,
+        expire_time=datetime.now(),
         default_state=matcher.state,
         default_type_updater=matcher.__class__._default_type_updater,
         default_permission_updater=matcher.__class__._default_permission_updater,
@@ -400,34 +414,3 @@ async def do_dispatch_command(
         do_del_sub(new_matcher)
     new_matcher_ins = new_matcher()
     asyncio.create_task(new_matcher_ins.run(bot, event, state))
-
-
-test_matcher = on_command("testtt")
-
-
-@test_matcher.handle()
-async def _handler(bot: Bot, event: Event, matcher: Matcher, state: T_State):
-    permission = await matcher.update_permission(bot, event)
-    new_matcher = Matcher.new(
-        "message",
-        Rule(),
-        permission,
-        None,
-        True,
-        priority=0,
-        block=True,
-        plugin=matcher.plugin,
-        module=matcher.module,
-        expire_time=datetime.now() + bot.config.session_expire_timeout,
-        default_state=matcher.state,
-        default_type_updater=matcher.__class__._default_type_updater,
-        default_permission_updater=matcher.__class__._default_permission_updater,
-    )
-
-    async def h():
-        logger.warning("yes")
-        await new_matcher.send("666")
-
-    new_matcher.handle()(h)
-    new_matcher_ins = new_matcher()
-    await new_matcher_ins.run(bot, event, state)

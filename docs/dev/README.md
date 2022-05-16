@@ -2,7 +2,32 @@
 sidebar: auto
 ---
 
-# 开发指南
+# 基本开发须知
+
+## 语言以及工具
+
+1. 本项目使用了`python3.9`的特性进行开发，所以请确保你的 Python 版本>=3.9
+2. 本项目使用 poetry 进行依赖管理，请确保开发之前已经进行过`poetry install`，运行时在`poetry shell`的环境中进行运行
+3. 本项目使用的 node 项目管理工具是 yarn
+
+## 前端
+
+本项目使用了前端，如果单独 clone 仓库本身，里面是**不包含**编译过的前端的，请使用`yarn && yarn build`进行前端的构建。
+如果想要开发前端，推荐在`.env.dev`中加入`BISON_OUTER_URL="http://localhost:3000/bison/"`，然后分别运行 bot 和`yarn dev`
+::: warning
+请在开发前端的时候删除项目根目录中的`node_modules`，否则编译和运行的时候可能会出现奇怪的问题。
+:::
+
+## 文档
+
+文档的相关部分在`docs`目录中，可以在项目根目录执行`yarn docs:dev`预览文件更改效果。
+
+## 代码格式
+
+本项目使用了 pre-commit 来进行代码美化和格式化。在`poetry shell`状态下执行`pre-commit install`来安装 git hook，可自动在 commit 时
+格式化代码。
+
+# 适配新网站
 
 本插件需要你的帮助！只需要会写简单的爬虫，就能给本插件适配新的网站。
 

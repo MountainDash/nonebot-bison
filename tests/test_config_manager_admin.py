@@ -82,4 +82,3 @@ async def test_query_with_superuser_group_tome(app: App):
         ctx.should_pass_rule()
         ctx.should_pass_permission()
         ctx.should_call_send(event, Message("该功能只支持私聊使用，请私聊Bot"), True)
-        

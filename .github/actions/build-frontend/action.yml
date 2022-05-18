@@ -1,0 +1,15 @@
+name: Build Frontend
+description: Build Frontend
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node Environment
+      uses: ./.github/actions/setup-node
+
+    - name: Build Frontend
+      shell: bash
+      working-directory: ./admin-frontend
+      run: |
+        yarn install
+        yarn build

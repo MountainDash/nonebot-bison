@@ -5,7 +5,7 @@ import httpx
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from .platform import CategoryNotSupport, NewMessage,StatusChange
+from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
 class Bilibili(NewMessage):
@@ -145,11 +145,12 @@ class Bilibili(NewMessage):
             raise CategoryNotSupport(post_type)
         return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
 
+
 class Bilibililive(StatusChange):
-# Author : Sichongzou
-# Date : 2022-5-18 8:54
-# Description : bilibili开播提醒
-# E-mail : 1557157806@qq.com
+    # Author : Sichongzou
+    # Date : 2022-5-18 8:54
+    # Description : bilibili开播提醒
+    # E-mail : 1557157806@qq.com
     categories = {}
     platform_name = "bilibililive"
     enable_tag = True
@@ -180,26 +181,31 @@ class Bilibililive(StatusChange):
             )
             res_dict = json.loads(res.text)
             if res_dict["code"] == 0:
-                info={}
-                info["uid"]=res_dict["data"]["mid"]
-                info["uname"]=res_dict["data"]["name"]
-                info["live_state"]=res_dict["data"]["live_room"]["liveStatus"]
-                info["url"]=res_dict["data"]["live_room"]["url"]
-                info["title"]=res_dict["data"]["live_room"]["title"]
-                info["cover"]=res_dict["data"]["live_room"]["cover"]
+                info = {}
+                info["uid"] = res_dict["data"]["mid"]
+                info["uname"] = res_dict["data"]["name"]
+                info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
+                info["url"] = res_dict["data"]["live_room"]["url"]
+                info["title"] = res_dict["data"]["live_room"]["title"]
+                info["cover"] = res_dict["data"]["live_room"]["cover"]
                 return info
             else:
                 return []
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
-        if(new_status["live_state"]!=old_status["live_state"] and new_status["live_state"]==1):
+        if (
+            new_status["live_state"] != old_status["live_state"]
+            and new_status["live_state"] == 1
+        ):
             return [new_status]
         else:
-            return[]
-            
+            return []
+
     async def parse(self, raw_post: RawPost) -> Post:
-        url=raw_post["url"]
-        pic=[raw_post["cover"]]
-        target_name=raw_post["uname"]
-        text=target_name+"老师的直播 开播啦！小伙伴们请务必速速来围观！"
-        return Post("bilibililive", text=text, url=url, pics=pic, target_name=target_name)
+        url = raw_post["url"]
+        pic = [raw_post["cover"]]
+        target_name = raw_post["uname"]
+        text = target_name + "老师的直播 开播啦！小伙伴们请务必速速来围观！"
+        return Post(
+            "bilibililive", text=text, url=url, pics=pic, target_name=target_name
+        )

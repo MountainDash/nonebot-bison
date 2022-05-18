@@ -297,12 +297,13 @@ add_sub_matcher = on_command(
     rule=configurable_to_me,
     permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
     priority=5,
+    block=True,
 )
 add_sub_matcher.handle()(set_target_user_info)
 do_add_sub(add_sub_matcher)
 
 
-query_sub_matcher = on_command("查询订阅", rule=configurable_to_me, priority=5)
+query_sub_matcher = on_command("查询订阅", rule=configurable_to_me, priority=5, block=True)
 query_sub_matcher.handle()(set_target_user_info)
 do_query_sub(query_sub_matcher)
 
@@ -312,11 +313,14 @@ del_sub_matcher = on_command(
     rule=configurable_to_me,
     permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
     priority=5,
+    block=True,
 )
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4)
+group_manage_matcher = on_command(
+    "群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True
+)
 
 
 @group_manage_matcher.handle()

@@ -29,7 +29,7 @@ jobs:
         uses: he0119/setup-python@v0.1.0
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: Install prerequisites
         run: poetry install
 
@@ -40,3 +40,28 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           env_vars: OS,PYTHON_VERSION
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    concurrency:
+      group: build-frontend-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node Environment
+        uses: ./.github/actions/setup-node
+
+      - name: Build Frontend
+        run: |
+          cd ./admin-frontend
+          yarn install
+          yarn build
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend
+          path: ${{ github.workspace }}/admin-frontend/build/

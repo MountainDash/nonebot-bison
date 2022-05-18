@@ -1,0 +1,40 @@
+name: Code Coverage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: Test Coverage
+    runs-on: ${{ matrix.os }}
+    concurrency:
+      group: test-coverage-${{ github.ref }}-${{ matrix.os }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python environment
+        uses: he0119/setup-python@v0.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run Pytest
+        run: poetry run pytest --cov-report xml --cov=./src/plugins/nonebot_bison -k 'not compare and not render'
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          env_vars: OS,PYTHON_VERSION
+          files: ./tests/coverage.xml
+          flags: unittests

@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Frontend
+        uses: ./.github/actions/build-frontend
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend
+          path: ./admin-frontend/build/
+  publish-pypi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download frontend files
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend
+          path: ./src/plugins/nonebot_bison/admin_page/dist
+
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python
+
+      - name: Publish PyPI
+        run: poetry publish --build -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} || echo "Already pushed to pypi"

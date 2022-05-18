@@ -1,4 +1,4 @@
-name: Code Coverage
+name: CI
 
 on:
   push:
@@ -51,7 +51,7 @@ jobs:
           path: ./src/plugins/nonebot_bison/admin_page/dist
 
       - name: Setup Python environment
-        uses: he0119/setup-python@v0.1.0
+        uses: ./.github/actions/setup-python
         with:
           python-version: ${{ matrix.python-version }}
 

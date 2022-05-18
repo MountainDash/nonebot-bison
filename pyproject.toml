@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.10,<4.0.0"
 nonebot2 = "^2.0.0-beta.2"
 httpx = ">=0.16.1 <1.0.0"
 bs4 = "^0.0.1"
@@ -64,7 +64,7 @@ asyncio_mode = "auto"
 
 [tool.black]
 line-length = 88
-target-version = ["py39", "py310"]
+target-version = ["py310"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''

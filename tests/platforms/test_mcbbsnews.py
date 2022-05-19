@@ -29,9 +29,9 @@ def javanews_post_1():
 
 
 @pytest.mark.asyncio
-async def test_javanews_parser(mcbbsnews, raw_post_list, javanews_post):
+async def test_javanews_parser(mcbbsnews, raw_post_list, javanews_post_0):
     post = await mcbbsnews.parse(raw_post_list[3])
-    assert post.text == javanews_post
+    assert post.text == javanews_post_0
 
 
 @pytest.mark.asyncio

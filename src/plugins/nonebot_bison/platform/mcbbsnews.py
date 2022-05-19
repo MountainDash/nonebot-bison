@@ -58,7 +58,7 @@ class McbbsJavaNews(NewMessage):
 
         return post_list
 
-    def _gen_post_list(self, raw_post_list):
+    def _gen_post_list(self, raw_post_list) -> list[RawPost]:
         post_list = []
         for raw_post in raw_post_list:
             post = {}
@@ -80,7 +80,8 @@ class McbbsJavaNews(NewMessage):
         return post["id"]
 
     def get_date(self, post: RawPost) -> int:
-        return post["date"]
+        # return post["date"]
+        return None
 
     def get_category(self, post: RawPost) -> Category:
         match post["category"]:
@@ -114,7 +115,8 @@ class McbbsJavaNews(NewMessage):
         for del_tag in soup.find_all(["div", "span"]):
             del_tag.extract()
         # 进一步删除无用尾部
-        soup.select("blockquote > strong")[0].extract()
+        # orig_info=soup.select("blockquote > strong")
+        # orig_info[0].extract()
         # 展开所有的a,u和strong标签,展开ul,font标签里的font标签
         for unwrap_tag in soup.find_all(["a", "strong", "u", "ul", "font"]):
             match unwrap_tag.name:
@@ -136,7 +138,7 @@ class McbbsJavaNews(NewMessage):
                             if isinstance(sub, NavigableString):
                                 text += sub
                         if self._check_str_chinese(text):
-                            post_text += "\n{}".format(_format_text(text, 1))
+                            post_text += "{}\n".format(_format_text(text, 1))
                             last_is_empty_line = False
                     case "ul":
                         for li_tag in element.find_all("li"):
@@ -145,7 +147,7 @@ class McbbsJavaNews(NewMessage):
                                 if isinstance(sub, NavigableString):
                                     text += sub
                             if self._check_str_chinese(text):
-                                post_text += "\n{}".format(_format_text(text, 1))
+                                post_text += "{}\n".format(_format_text(text, 1))
                                 last_is_empty_line = False
                     case _:
                         continue
@@ -155,7 +157,7 @@ class McbbsJavaNews(NewMessage):
                         post_text += "\n"
                     last_is_empty_line = True
                 else:
-                    post_text += "\n{}".format(_format_text(element, 1))
+                    post_text += "{}\n".format(_format_text(element, 1))
                     last_is_empty_line = False
             else:
                 continue
@@ -167,15 +169,18 @@ class McbbsJavaNews(NewMessage):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/51.0.2704.63 Safari/537.36"
         }
+
         async with httpx.AsyncClient() as client:
             html = await client.get(post_url, headers=headers)
-            match raw_post["category"]:
-                case "Java版本资讯":
-                    text, pic_urls = self._javanews_parser(html)
-                case _:
-                    raise CategoryNotSupport(
-                        "McbbsNews订阅暂不支持 `{}".format(raw_post["category"])
-                    )
+
+        match raw_post["category"]:
+            case "Java版本资讯":
+                text, pic_urls = self._javanews_parser(html.text)
+            case _:
+                raise CategoryNotSupport(
+                    "McbbsNews订阅暂不支持 `{}".format(raw_post["category"])
+                )
+
         return Post(
             self.name,
             text=text,

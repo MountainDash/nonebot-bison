@@ -129,8 +129,7 @@ def register_router_fastapi(driver: Driver, socketio):
 
 def init():
     driver = get_driver()
-    if "fastapi" in driver.type:
-        assert isinstance(driver, Driver)
+    if isinstance(driver, Driver):
         register_router_fastapi(driver, socket_app)
     else:
         logger.warning(f"Driver {driver.type} not supported")

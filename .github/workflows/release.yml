@@ -37,6 +37,13 @@ jobs:
 
       - name: Publish PyPI
         run: poetry publish --build -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} || echo "Already pushed to pypi"
+
+      - name: Upload Release Assets
+        uses: alexellis/upload-assets@0.2.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_paths: '["./dist/*"]'
   publish-docker:
     runs-on: ubuntu-latest
     needs: build-frontend

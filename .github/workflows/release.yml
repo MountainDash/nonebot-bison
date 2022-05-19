@@ -90,11 +90,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node Environment
-        uses: ./.github/actions/setup-node
-
       - name: Build Docs
-        run: yarn docs:build
+        uses: ./.github/actions/build-docs
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v1

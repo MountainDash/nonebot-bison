@@ -84,3 +84,27 @@ jobs:
           tags: felinae98/nonebot-bison:${{ github.event.release.tag_name }}-sentry
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  deploy-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node Environment
+        uses: ./.github/actions/setup-node
+
+      - name: Build Docs
+        run: yarn docs:build
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v1
+        with:
+          publish-dir: "./docs/.vuepress/dist"
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy ${{ github.event.release.tag_name }}"
+          enable-commit-comment: false
+          alias: ${{ github.event.release.tag_name }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

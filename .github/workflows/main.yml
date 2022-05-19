@@ -6,13 +6,14 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-frontend:
     name: Build Frontend
     runs-on: ubuntu-latest
-    concurrency:
-      group: build-frontend-${{ github.ref }}
-      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v3
@@ -29,9 +30,6 @@ jobs:
     name: Test Coverage
     runs-on: ${{ matrix.os }}
     needs: build-frontend
-    concurrency:
-      group: test-coverage-${{ github.ref }}-${{ matrix.os }}-${{ matrix.python-version }}
-      cancel-in-progress: true
     strategy:
       matrix:
         python-version: ["3.9", "3.10"]

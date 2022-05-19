@@ -15,11 +15,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup Node Environment
-        uses: ./.github/actions/setup-node
-
       - name: Build Docs
-        run: yarn docs:build
+        uses: ./.github/actions/build-docs
 
       - name: Get Deploy Name
         run: |

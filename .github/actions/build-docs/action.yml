@@ -1,0 +1,14 @@
+name: Build Docs
+description: Build Docs
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node Environment
+      uses: ./.github/actions/setup-node
+
+    - name: Build Frontend
+      shell: bash
+      run: |
+        yarn install
+        yarn docs:build

@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Frontend
+        uses: ./.github/actions/build-frontend
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend
+          path: ./admin-frontend/build/
+  test:
+    name: Test Coverage
+    runs-on: ${{ matrix.os }}
+    needs: build-frontend
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download frontend files
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend
+          path: ./src/plugins/nonebot_bison/admin_page/dist
+
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install prerequisites
+        run: poetry install
+
+      - name: Run Pytest
+        run: poetry run pytest --cov-report xml --cov=./src/plugins/nonebot_bison -k 'not compare and not render'
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          env_vars: OS,PYTHON_VERSION
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    needs: [build-frontend, test]
+    strategy:
+      matrix:
+        include:
+          - file: ./docker/Dockerfile_with_frontend
+            tags: felinae98/nonebot-bison:main
+          - file: ./docker/Dockerfile_with_frontend_sentry
+            tags: felinae98/nonebot-bison:main-sentry
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download frontend files
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend
+          path: ./src/plugins/nonebot_bison/admin_page/dist
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ matrix.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

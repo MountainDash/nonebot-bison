@@ -29,8 +29,11 @@ class Bilibili(NewMessage):
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
+            headers = {"content-type": "application/json", "Accept-Charset": "UTF-8"}
             res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+                "https://api.bilibili.com/x/space/acc/info",
+                params={"mid": target},
+                headers=headers,
             )
             res_data = json.loads(res.text)
             if res_data["code"]:
@@ -39,13 +42,15 @@ class Bilibili(NewMessage):
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         async with httpx.AsyncClient() as client:
+            headers = {"content-type": "application/json", "Accept-Charset": "UTF-8"}
             params = {"host_uid": target, "offset": 0, "need_top": 0}
             res = await client.get(
                 "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
                 params=params,
+                headers=headers,
                 timeout=4.0,
             )
-            res_dict = json.loads(res.text.encode("utf-8"))
+            res_dict = json.loads(res.text)
             if res_dict["code"] == 0:
                 return res_dict["data"].get("cards")
             else:

@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.5.2
+## 最近更新
 
 - Add GitHub Actions (#65) @he0119
 - on_command 设置 block=True (#63) @MeetWq

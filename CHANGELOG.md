@@ -2,7 +2,6 @@
 
 ## v0.5.3
 
-- Add GitHub Actions (#65) @he0119
 - on_command 设置 block=True (#63) @MeetWq
 - 修复 issue#51 存在的问题并修改相应的单元测试 (#52) @AzideCupric
 - 增添关于添加订阅命令中中止订阅的相关文档 (#45) @AzideCupric

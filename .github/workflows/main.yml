@@ -71,9 +71,9 @@ jobs:
       matrix:
         include:
           - file: ./docker/Dockerfile_with_frontend
-            tags: felinae98/nonebot-bison:main
+            tags: azide/nonebot-bison:main
           - file: ./docker/Dockerfile_with_frontend_sentry
-            tags: felinae98/nonebot-bison:main-sentry
+            tags: azide/nonebot-bison:main-sentry
 
     steps:
       - uses: actions/checkout@v3

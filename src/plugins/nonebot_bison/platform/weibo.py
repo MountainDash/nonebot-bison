@@ -133,14 +133,18 @@ class Weibo(NewMessage):
             "Mobile Safari/537.36",
         }
         info = raw_post["mblog"]
-        if info["isLongText"] or info["pic_num"] > 9:
+        retweeted = False
+        if info.get("retweeted_status"):
+            retweeted = True
+        pic_num = info["retweeted_status"]["pic_num"] if retweeted else info["pic_num"]
+        if info["isLongText"] or pic_num > 9:
             async with httpx.AsyncClient() as client:
                 res = await client.get(
                     "https://m.weibo.cn/detail/{}".format(info["mid"]), headers=header
                 )
             try:
                 full_json_text = re.search(
-                    r'"status": ([\s\S]+),\s+"hotScheme"', res.text
+                    r'"status": ([\s\S]+),\s+"call"', res.text
                 ).group(1)
                 info = json.loads(full_json_text)
             except:
@@ -150,7 +154,12 @@ class Weibo(NewMessage):
                     )
                 )
         parsed_text = self._get_text(info["text"])
-        pic_urls = [img["large"]["url"] for img in info.get("pics", [])]
+        raw_pics_list = (
+            info["retweeted_status"].get("pics", [])
+            if retweeted
+            else info.get("pics", [])
+        )
+        pic_urls = [img["large"]["url"] for img in raw_pics_list]
         detail_url = "https://weibo.com/{}/{}".format(info["user"]["id"], info["bid"])
         # return parsed_text, detail_url, pic_urls
         return Post(

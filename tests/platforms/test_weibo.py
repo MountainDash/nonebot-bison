@@ -23,7 +23,14 @@ def weibo_ak_list_1():
 
 
 @pytest.mark.asyncio
+@respx.mock
 async def test_get_name(weibo):
+    profile_router = respx.get(
+        "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
+    )
+    profile_router.mock(
+        return_value=Response(200, json=get_json("weibo_ak_profile.json"))
+    )
     name = await weibo.get_target_name("6279793937")
     assert name == "明日方舟Arknights"
 

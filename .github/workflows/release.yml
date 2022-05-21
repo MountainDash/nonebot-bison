@@ -52,6 +52,8 @@ jobs:
 
       - run: |
           gh release upload --clobber ${{ env.TAG_NAME }} dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
   publish-docker:
@@ -74,7 +76,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - run: |
-          echo "TAG_NAME=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV"
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'

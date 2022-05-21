@@ -2,9 +2,16 @@
 
 ## 最近更新
 
-- 可以发送转发微博中原微博的图片
-- 优化了删除订阅时的相关问题
-- 添加泰拉记事社的订阅
+* Add GitHub Actions (#65) @he0119
+* on_command 设置 block=True (#63) @MeetWq
+* 修复issue#51存在的问题并修改相应的单元测试 (#52) @AzideCupric
+* 增添关于添加订阅命令中中止订阅的相关文档 (#45) @AzideCupric
+* auto update by pre-commit hooks (#40) @pre-commit-ci
+
+### Bug 修复
+
+* 修复 #66 (#70) @felinae98
+* 修复#66 (#69) @felinae98
 
 ## [0.5.2]
 

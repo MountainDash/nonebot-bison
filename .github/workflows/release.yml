@@ -73,6 +73,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - run: |
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV"
+
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
@@ -88,7 +91,7 @@ jobs:
           push: true
           tags: |
             felinae98/nonebot-bison:latest
-            felinae98/nonebot-bison:${{ github.event.release.tag_name }}
+            felinae98/nonebot-bison:${{ env.TAG_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -98,7 +101,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile_with_frontend_sentry
           push: true
-          tags: felinae98/nonebot-bison:${{ github.event.release.tag_name }}-sentry
+          tags: felinae98/nonebot-bison:${{ env.TAG_NAME }}-sentry
           cache-from: type=gha
           cache-to: type=gha,mode=max
   deploy-web:
@@ -116,9 +119,9 @@ jobs:
           publish-dir: "./docs/.vuepress/dist"
           production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy ${{ github.event.release.tag_name }}"
+          deploy-message: "Deploy ${{ env.TAG_NAME }}"
           enable-commit-comment: false
-          alias: ${{ github.event.release.tag_name }}
+          alias: ${{ env.TAG_NAME }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

@@ -45,7 +45,7 @@ class Bilibili(NewMessage):
                 params=params,
                 timeout=4.0,
             )
-            res_dict = json.loads(res.text)
+            res_dict = json.loads(res.text.encode("utf-8"))
             if res_dict["code"] == 0:
                 return res_dict["data"].get("cards")
             else:

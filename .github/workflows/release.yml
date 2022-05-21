@@ -36,8 +36,8 @@ jobs:
       - name: Setup Python environment
         uses: ./.github/actions/setup-python
 
-      - name: Publish PyPI
-        run: poetry publish --build -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} || echo "Already pushed to pypi"
+      # - name: Publish PyPI
+      #   run: poetry publish --build -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} || echo "Already pushed to pypi"
 
       - run: |
           echo "TAG_NAME=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV"

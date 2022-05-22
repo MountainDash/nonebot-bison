@@ -3,12 +3,12 @@ import re
 from datetime import datetime
 from typing import Any, Optional
 
-import httpx
 from bs4 import BeautifulSoup as bs
 from nonebot.log import logger
 
 from ..post import Post
 from ..types import *
+from ..utils import http_client
 from .platform import NewMessage
 
 
@@ -30,7 +30,7 @@ class Weibo(NewMessage):
     has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             param = {"containerid": "100505" + target}
             res = await client.get(
                 "https://m.weibo.cn/api/container/getIndex", params=param
@@ -42,7 +42,7 @@ class Weibo(NewMessage):
                 return None
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             params = {"containerid": "107603" + target}
             res = await client.get(
                 "https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0
@@ -128,7 +128,7 @@ class Weibo(NewMessage):
             retweeted = True
         pic_num = info["retweeted_status"]["pic_num"] if retweeted else info["pic_num"]
         if info["isLongText"] or pic_num > 9:
-            async with httpx.AsyncClient() as client:
+            async with http_client() as client:
                 res = await client.get(
                     "https://m.weibo.cn/detail/{}".format(info["mid"]), headers=header
                 )

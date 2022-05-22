@@ -1,10 +1,9 @@
 import json
 from typing import Any, Optional
 
-import httpx
-
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
+from ..utils import http_client
 from .platform import CategoryNotSupport, NewMessage
 
 
@@ -28,7 +27,7 @@ class Bilibili(NewMessage):
     has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res = await client.get(
                 "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
             )
@@ -38,7 +37,7 @@ class Bilibili(NewMessage):
             return res_data["data"]["name"]
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             params = {"host_uid": target, "offset": 0, "need_top": 0}
             res = await client.get(
                 "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",

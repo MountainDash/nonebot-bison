@@ -215,7 +215,7 @@ class McbbsNews(NewMessage):
 
         return Post(
             self.name,
-            text=text,
+            text="{}\n\n{}".format(raw_post["title"], text),
             url=post_url,
             pics=pic_urls,
             target_name=raw_post["category"],

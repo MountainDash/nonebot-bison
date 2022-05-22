@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.10
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
 RUN apt-get update && apt-get install -y xvfb fonts-noto-color-emoji ttf-unifont \

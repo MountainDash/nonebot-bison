@@ -189,3 +189,47 @@ class MonsterSiren(NewMessage):
             compress=True,
             override_use_pic=False,
         )
+
+
+class TerraHistoricusComic(NewMessage):
+
+    categories = {4: "泰拉记事社漫画"}
+    platform_name = "arknights"
+    name = "明日方舟游戏信息"
+    enable_tag = False
+    enabled = True
+    is_common = False
+    schedule_type = "interval"
+    schedule_kw = {"seconds": 30}
+    has_target = False
+
+    async def get_target_name(self, _: Target) -> str:
+        return "明日方舟游戏信息"
+
+    async def get_sub_list(self, _) -> list[RawPost]:
+        async with httpx.AsyncClient() as client:
+            raw_data = await client.get(
+                "https://terra-historicus.hypergryph.com/api/recentUpdate"
+            )
+            return raw_data.json()["data"]
+
+    def get_id(self, post: RawPost) -> Any:
+        return f'{post["comicCid"]}/{post["episodeCid"]}'
+
+    def get_date(self, _) -> None:
+        return None
+
+    def get_category(self, _) -> Category:
+        return Category(4)
+
+    async def parse(self, raw_post: RawPost) -> Post:
+        url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
+        return Post(
+            "terra-historicus",
+            text=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
+            pics=[raw_post["coverUrl"]],
+            url=url,
+            target_name="泰拉记事社漫画",
+            compress=True,
+            override_use_pic=False,
+        )

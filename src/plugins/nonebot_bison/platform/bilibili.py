@@ -59,7 +59,7 @@ class Bilibili(NewMessage):
             )
             res_dict = json.loads(res.text)
             if res_dict["code"] == 0:
-                return res_dict["data"]["cards"]
+                return res_dict["data"].get("cards")
             else:
                 return []
 

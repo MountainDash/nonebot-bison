@@ -159,9 +159,9 @@ jobs:
       # - run: sed -e '41,45d' -i pyproject.toml
       - python/install-packages:
           pkg-manager: poetry
-      - run:
-          name: Install browser
-          command: poetry run playwright install-deps && poetry run playwright install chromium
+      # - run:
+      #     name: Install browser
+      #     command: poetry run playwright install-deps && poetry run playwright install chromium
       - run:
           name: Coverage test
           command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml
@@ -213,5 +213,6 @@ jobs:
           name: Publish to Github Release
           command: |
             go install github.com/tcnksm/ghr@latest
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./dist
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} \
+              -delete ${CIRCLE_TAG} -n ${CIRCLE_TAG} -b $(git log --format=%B -n 1 $CIRCLE_SHA1) ./dist
 

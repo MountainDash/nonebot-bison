@@ -1,13 +1,12 @@
-import asyncio
-
 import pytest
+from nonebot.adapters.onebot.v11.message import Message
 from nonebug import App
 
 
 @pytest.mark.asyncio
 async def test_send_no_queue(app: App):
-    import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 
@@ -16,16 +15,16 @@ async def test_send_no_queue(app: App):
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
         ctx.should_call_api(
-            "send_group_msg", {"group_id": "1233", "message": "msg1"}, True
+            "send_group_msg", {"group_id": "1233", "message": Message("msg1")}, True
         )
         ctx.should_call_api(
-            "send_group_msg", {"group_id": "1233", "message": "msg2"}, True
+            "send_group_msg", {"group_id": "1233", "message": Message("msg2")}, True
         )
         ctx.should_call_api(
-            "send_private_msg", {"user_id": "666", "message": "priv"}, True
+            "send_private_msg", {"user_id": "666", "message": Message("priv")}, True
         )
-        await send_msgs(bot, "1233", "group", ["msg1", "msg2"])
-        await send_msgs(bot, "666", "private", ["priv"])
+        await send_msgs(bot, "1233", "group", [Message("msg1"), Message("msg2")])
+        await send_msgs(bot, "666", "private", [Message("priv")])
         assert ctx.wait_list.empty()
 
 
@@ -33,9 +32,10 @@ async def test_send_no_queue(app: App):
 async def test_send_queue(app: App):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison import send
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.send import LAST_SEND_TIME, do_send_msgs, send_msgs
+    from nonebot_bison.send import do_send_msgs, send_msgs
 
     async with app.test_api() as ctx:
         new_bot = ctx.create_bot(base=Bot)
@@ -48,7 +48,7 @@ async def test_send_queue(app: App):
             "send_group_msg", {"group_id": "1233", "message": "test msg"}, True
         )
         await bot.call_api("send_group_msg", group_id="1233", message="test msg")
-        await send_msgs(bot, "1233", "group", ["msg"])
+        await send_msgs(bot, "1233", "group", [Message("msg")])
         ctx.should_call_api(
             "send_group_msg", {"group_id": "1233", "message": "msg"}, True
         )
@@ -57,6 +57,14 @@ async def test_send_queue(app: App):
         app.monkeypatch.setattr(send, "LAST_SEND_TIME", 0, True)
         await do_send_msgs()
         assert ctx.wait_list.empty()
+
+
+def gen_node(id, name, content: Message):
+    return {"type": "node", "data": {"name": name, "uin": id, "content": content}}
+
+
+def _merge_messge(nodes):
+    return nodes
 
 
 @pytest.mark.asyncio
@@ -103,15 +111,8 @@ async def test_send_merge_no_queue(app: App):
             {"group_id": 633, "user_id": 8888, "no_cache": True},
             {"user_id": 8888, "card": "admin", "nickname": "adminuser"},
         )
-        merged_message = Message(
-            [
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="admin", content=message[1]
-                ),
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="admin", content=message[2]
-                ),
-            ]
+        merged_message = _merge_messge(
+            [gen_node(8888, "admin", message[1]), gen_node(8888, "admin", message[2])]
         )
         ctx.should_call_api(
             "send_group_forward_msg",
@@ -136,17 +137,11 @@ async def test_send_merge_no_queue(app: App):
             {"group_id": 633, "user_id": 8888, "no_cache": True},
             {"user_id": 8888, "card": None, "nickname": "adminuser"},
         )
-        merged_message = Message(
+        merged_message = _merge_messge(
             [
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="adminuser", content=message[1]
-                ),
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="adminuser", content=message[2]
-                ),
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="adminuser", content=message[3]
-                ),
+                gen_node(8888, "adminuser", message[1]),
+                gen_node(8888, "adminuser", message[2]),
+                gen_node(8888, "adminuser", message[3]),
             ]
         )
         ctx.should_call_api(
@@ -198,17 +193,11 @@ async def test_send_merge2_no_queue(app: App):
             {"group_id": 633, "user_id": 8888, "no_cache": True},
             {"user_id": 8888, "card": "admin", "nickname": "adminuser"},
         )
-        merged_message = Message(
+        merged_message = _merge_messge(
             [
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="admin", content=message[0]
-                ),
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="admin", content=message[1]
-                ),
-                MessageSegment.node_custom(
-                    user_id=8888, nickname="admin", content=message[2]
-                ),
+                gen_node(8888, "admin", message[0]),
+                gen_node(8888, "admin", message[1]),
+                gen_node(8888, "admin", message[2]),
             ]
         )
         ctx.should_call_api(

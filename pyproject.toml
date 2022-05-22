@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-bison"
-version = "0.5.0"
+version = "0.5.3"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"
@@ -25,11 +25,11 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 nonebot2 = "^2.0.0-beta.2"
-httpx = ">=0.16.1 <1.0.0"
+httpx = ">=0.16.1"
 bs4 = "^0.0.1"
 tinydb = "^4.3.0"
 feedparser = "^6.0.2"
-pillow = "^8.1.0"
+pillow = ">=8.1,<10.0"
 apscheduler = "^3.7.0"
 expiringdict = "^1.2.1"
 pyjwt = "^2.1.0"

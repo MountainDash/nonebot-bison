@@ -1,5 +1,9 @@
 # Change Log
 
+## 最近更新
+
+* No changes
+
 ## v0.5.3
 
 - on_command 设置 block=True (#63) @MeetWq

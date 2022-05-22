@@ -59,5 +59,4 @@ Gametest框架(实验性游戏内容)
 【苦力怕553译自
 feedback.minecraft.net2022年5月12日发布的MinecraftBeta&Preview-1.19.0.32/33
 】
-【本文排版借助了：
-v2.4.7】
+

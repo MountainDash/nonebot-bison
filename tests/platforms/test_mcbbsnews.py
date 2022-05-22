@@ -46,6 +46,16 @@ async def test_bedrocknews_parser(mcbbsnews, raw_post_list, bedrocknews_post):
 
 
 @pytest.mark.asyncio
+async def test_express_merch_parser(mcbbsnews, raw_post_list):
+    java_express_post = await mcbbsnews.parse(raw_post_list[0])
+    bedrock_express_post = await mcbbsnews.parse(raw_post_list[13])
+    mc_merch_post = await mcbbsnews.parse(raw_post_list[26])
+    assert java_express_post.text == get_file("mcbbsnews_java_express_post.txt")
+    assert bedrock_express_post.text == get_file("mcbbsnews_bedrock_express_post.txt")
+    assert mc_merch_post.text == get_file("mcbbsnews_merch_post.txt")
+
+
+@pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(mcbbsnews, dummy_user_subinfo, javanews_post_1):
     news_router = respx.get("https://www.mcbbs.net/forum-news-1.html")

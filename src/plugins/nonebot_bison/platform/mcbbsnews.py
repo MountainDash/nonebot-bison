@@ -13,12 +13,15 @@ from .platform import CategoryNotSupport, NewMessage
 def _format_text(rawtext: str, mode: int) -> str:
     """处理BeautifulSoup生成的string中奇怪的回车+连续空格
     mode 0:处理标题
-    mode 1:处理推文"""
+    mode 1:处理版本资讯类推文
+    mode 2:处理快讯类推文"""
     match mode:
         case 0:
             ftext = re.sub(r"\n\s*", " ", rawtext)
         case 1:
             ftext = re.sub(r"[\n\s*]", "", rawtext)
+        case 2:
+            ftext = re.sub(r"\r\n", "", rawtext)
     return ftext
 
 
@@ -29,7 +32,7 @@ def _stamp_date(rawdate: str) -> int:
 
 
 class McbbsNews(NewMessage):
-    categories = {1: "Java版本资讯", 2: "基岩版本资讯"}
+    categories = {1: "Java版本资讯", 2: "基岩版本资讯", 3: "快讯", 4: "基岩快讯", 5: "周边消息"}
     enable_tag = False
     platform_name = "mcbbsnews"
     name = "MCBBS幻翼块讯"
@@ -191,6 +194,44 @@ class McbbsNews(NewMessage):
                 continue
         return post_text, pic_url
 
+    def _express_parser(self, raw_text: str, news_type: Literal["快讯", "基岩快讯", "周边消息"]):
+        """提取快讯/基岩快讯/周边消息的推送消息"""
+        raw_soup = BeautifulSoup(raw_text.replace("<br />", ""), "html.parser")
+        # 获取原始推文内容
+        soup = raw_soup.find("td", id=re.compile(r"postmessage_[0-9]*"))
+        if tag := soup.find("ignore_js_op"):
+            tag.extract()
+        # 获取所有图片
+        pic_urls = []
+        for img_tag in soup.find_all("img"):
+            pic_url = img_tag.get("file") or img_tag.get("src")
+            pic_urls.append(pic_url)
+        # 验证是否有blockquote标签
+        has_bolockquote = soup.find("blockquote")
+        # 删除无用的span,div段内容
+        for del_tag in soup.find_all("i"):
+            del_tag.extract()
+        soup.find(class_="attach_nopermission attach_tips").extract()
+        # 展开所有的a,strong标签
+        for unwrap_tag in soup.find_all(["a", "strong"]):
+            unwrap_tag.unwrap()
+        # 展开blockquote标签里的blockquote标签
+        for b_tag in soup.find_all("blockquote"):
+            for unwrap_tag in b_tag.find_all("blockquote"):
+                unwrap_tag.unwrap()
+        # 获取推文
+        text = ""
+        if has_bolockquote:
+            for post in soup.find_all("blockquote"):
+                # post.font.unwrap()
+                for string in post.stripped_strings:
+                    text += "{}\n".format(string)
+        else:
+            for string in soup.stripped_strings:
+                text += "{}\n".format(string)
+        ftext = _format_text(text, 2)
+        return ftext, pic_urls
+
     async def parse(self, raw_post: RawPost) -> Post:
         post_url = "https://www.mcbbs.net/{}".format(raw_post["url"])
         headers = {
@@ -207,7 +248,10 @@ class McbbsNews(NewMessage):
                 raw_text = re.sub(r"【本文排版借助了：[\s\S]*】", "", html.text)
                 text, pic_urls = self._news_parser(raw_text, raw_post["category"])
             case "基岩版本资讯":
-                text, pic_urls = self._news_parser(html.text, raw_post["category"])
+                raw_text = re.sub(r"【本文排版借助了：[\s\S]*】", "", html.text)
+                text, pic_urls = self._news_parser(raw_text, raw_post["category"])
+            case "快讯" | "基岩快讯" | "周边消息":
+                text, pic_urls = self._express_parser(html.text, raw_post["category"])
             case _:
                 raise CategoryNotSupport(
                     "McbbsNews订阅暂不支持 `{}".format(raw_post["category"])

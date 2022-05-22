@@ -1,11 +1,12 @@
 import json
+import re
 from typing import Any, Optional
 
 import httpx
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from .platform import CategoryNotSupport, NewMessage
+from .platform import CategoryNotSupport, NewMessage, Platform
 
 
 class Bilibili(NewMessage):
@@ -26,6 +27,7 @@ class Bilibili(NewMessage):
     schedule_kw = {"seconds": 10}
     name = "B站"
     has_target = True
+    parse_target_promot = "请输入用户主页的链接"
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with httpx.AsyncClient() as client:
@@ -36,6 +38,16 @@ class Bilibili(NewMessage):
             if res_data["code"]:
                 return None
             return res_data["data"]["name"]
+
+    async def parse_target(self, target_text: str) -> Target:
+        if re.match(r"\d+", target_text):
+            return Target(target_text)
+        elif match := re.match(
+            r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text
+        ):
+            return Target(match.group(1))
+        else:
+            raise Platform.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         async with httpx.AsyncClient() as client:

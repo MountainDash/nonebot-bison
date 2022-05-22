@@ -1,3 +1,5 @@
+import typing
+
 import pytest
 from httpx import Response
 from nonebug.app import App
@@ -8,6 +10,10 @@ from .utils import get_json
 @pytest.fixture(scope="module")
 def bing_dy_list():
     return get_json("bilibili_bing_list.json")["data"]["cards"]
+
+
+if typing.TYPE_CHECKING:
+    from nonebot_bison.platform.bilibili import Bilibili
 
 
 @pytest.fixture
@@ -46,3 +52,20 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
         + "\n--------------\n"
         + "#明日方舟#\n【新增服饰】\n//殿堂上的游禽 - 星极\n塞壬唱片偶像企划《闪耀阶梯》特供服饰/殿堂上的游禽。星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n_____________\n谦逊留给观众，骄傲发自歌喉，此夜，唯我璀璨。 "
     )
+
+
+async def test_parse_target(bilibili: "Bilibili"):
+    from nonebot_bison.platform.platform import Platform
+
+    res = await bilibili.parse_target(
+        "https://space.bilibili.com/161775300?from=search&seid=130517740606234234234&spm_id_from=333.337.0.0"
+    )
+    assert res == "161775300"
+    res2 = await bilibili.parse_target(
+        "space.bilibili.com/161775300?from=search&seid=130517740606234234234&spm_id_from=333.337.0.0"
+    )
+    assert res2 == "161775300"
+    with pytest.raises(Platform.ParseTargetException):
+        await bilibili.parse_target(
+            "https://www.bilibili.com/video/BV1qP4y1g738?spm_id_from=333.999.0.0"
+        )

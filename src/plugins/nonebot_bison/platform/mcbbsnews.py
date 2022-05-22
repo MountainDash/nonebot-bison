@@ -1,5 +1,6 @@
 import re
 import time
+from typing import Literal
 
 import httpx
 from bs4 import BeautifulSoup, NavigableString, Tag
@@ -27,8 +28,8 @@ def _stamp_date(rawdate: str) -> int:
     return time_stamp
 
 
-class McbbsJavaNews(NewMessage):
-    categories = {1: "Java版本资讯"}
+class McbbsNews(NewMessage):
+    categories = {1: "Java版本资讯", 2: "基岩版本资讯"}
     enable_tag = False
     platform_name = "mcbbsnews"
     name = "MCBBS幻翼块讯"
@@ -87,6 +88,8 @@ class McbbsJavaNews(NewMessage):
         match post["category"]:
             case "Java版本资讯":
                 return Category(1)
+            case "基岩版本资讯":
+                return Category(2)
             case _:
                 raise CategoryNotSupport("McbbsNews订阅暂不支持 `{}".format(post["category"]))
 
@@ -97,20 +100,45 @@ class McbbsJavaNews(NewMessage):
                 return True
         return False
 
-    def _javanews_parser(self, rawtext: str):
-        """提取Java版本资讯的推送消息"""
-        # 事先删除不需要的尾部
-        rawtext = re.sub(r"【本文排版借助了：[\s\S]*】", "", rawtext)
-        rawsoup = BeautifulSoup(rawtext.replace("<br />", ""), "html.parser")
+    def _news_parser(self, raw_text: str, news_type: Literal["Java版本资讯", "基岩版本资讯"]):
+        """提取Java/Bedrock版本资讯的推送消息"""
+        raw_soup = BeautifulSoup(raw_text.replace("<br />", ""), "html.parser")
         # 获取头图
-        pic_tag = rawsoup.find(
-            "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
-        )
-        pic_url: list[str] = [pic_tag.get("src", pic_tag.get("file"))]
-        # 获取blockquote标签下的内容
-        soup = rawsoup.find(
-            "td", id=re.compile(r"postmessage_[0-9]*")
-        ).blockquote.blockquote
+        match news_type:
+            case "Java版本资讯":
+                # 获取头图
+                pic_tag = raw_soup.find(
+                    "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
+                )
+                pic_url: list[str] = (
+                    [pic_tag.get("src", pic_tag.get("file"))] if pic_tag else []
+                )
+                # 获取blockquote标签下的内容
+                soup = raw_soup.find(
+                    "td", id=re.compile(r"postmessage_[0-9]*")
+                ).blockquote.blockquote
+            case "基岩版本资讯":
+                # 获取头图
+                pic_tag_0 = raw_soup.find(
+                    "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
+                )
+                pic_tag_1 = raw_soup.find(
+                    "img",
+                    file=re.compile(r"https://feedback.minecraft.net/\S*beta\S*.jpg"),
+                )
+                pic_url: list[str] = [
+                    pic_tag_0.get("src", pic_tag_0.get("file")) if pic_tag_0 else None,
+                    pic_tag_1.get("src", pic_tag_1.get("file")) if pic_tag_1 else None,
+                ]
+                # 获取blockquote标签下的内容
+                soup = (
+                    raw_soup.find("td", id=re.compile(r"postmessage_[0-9]*"))
+                    .select("blockquote:nth-of-type(2)")[0]
+                    .blockquote
+                )
+            case _:
+                raise CategoryNotSupport(f"该函数不支持处理{news_type}")
+        # 通用步骤
         # 删除无用的div和span段内容
         for del_tag in soup.find_all(["div", "span"]):
             del_tag.extract()
@@ -175,7 +203,11 @@ class McbbsJavaNews(NewMessage):
 
         match raw_post["category"]:
             case "Java版本资讯":
-                text, pic_urls = self._javanews_parser(html.text)
+                # 事先删除不需要的尾部
+                raw_text = re.sub(r"【本文排版借助了：[\s\S]*】", "", html.text)
+                text, pic_urls = self._news_parser(raw_text, raw_post["category"])
+            case "基岩版本资讯":
+                text, pic_urls = self._news_parser(html.text, raw_post["category"])
             case _:
                 raise CategoryNotSupport(
                     "McbbsNews订阅暂不支持 `{}".format(raw_post["category"])

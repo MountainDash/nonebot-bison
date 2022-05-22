@@ -28,10 +28,21 @@ def javanews_post_1():
     return get_file("mcbbsnews_java_post-1.txt")
 
 
+@pytest.fixture(scope="module")
+def bedrocknews_post():
+    return get_file("mcbbsnews_bedrock_post.txt")
+
+
 @pytest.mark.asyncio
 async def test_javanews_parser(mcbbsnews, raw_post_list, javanews_post_0):
     post = await mcbbsnews.parse(raw_post_list[3])
     assert post.text == javanews_post_0
+
+
+@pytest.mark.asyncio
+async def test_bedrocknews_parser(mcbbsnews, raw_post_list, bedrocknews_post):
+    post = await mcbbsnews.parse(raw_post_list[4])
+    assert post.text == bedrocknews_post
 
 
 @pytest.mark.asyncio

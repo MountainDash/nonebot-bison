@@ -8,7 +8,7 @@ class PlugConfig(BaseSettings):
     bison_use_pic: bool = False
     bison_init_filter: bool = True
     bison_use_queue: bool = True
-    bison_outer_url: str = "http://localhost:15556/bison/"
+    bison_outer_url: str = "http://localhost:8080/bison/"
     bison_filter_log: bool = False
     bison_to_me: bool = True
     bison_skip_browser_check: bool = False

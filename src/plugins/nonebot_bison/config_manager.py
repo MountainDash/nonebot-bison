@@ -332,11 +332,6 @@ group_manage_matcher = on_command(
 
 
 @group_manage_matcher.handle()
-async def send_group_list(bot: Bot, event: GroupMessageEvent, state: T_State):
-    await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
-
-
-@group_manage_matcher.handle()
 async def send_group_list_private(bot: Bot, event: GroupMessageEvent, state: T_State):
     await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
 

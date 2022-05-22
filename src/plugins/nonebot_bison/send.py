@@ -1,6 +1,5 @@
 import time
-from email import message
-from typing import List, Literal, Union
+from typing import Literal, Union
 
 from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
@@ -32,18 +31,6 @@ async def _do_send(
         await bot.send_private_msg(user_id=user, message=msg)
     elif user_type == "group-forward":
         await bot.send_group_forward_msg(group_id=user, messages=msg)
-
-
-async def _do_send_forward(bot: "Bot", user: str, msgs: list):
-    group_msg = []
-    bot_info = await bot.call_api("get_login_info")  # 猜测返回list 第一个为user_id，第二个为nickname
-    for msg in msgs:
-        sub_msg = {
-            "type": "node",
-            "data": {"name": f"{bot_info[0]}", "uin": f"{bot_info[1]}", "content": msg},
-        }
-        group_msg.append(sub_msg)
-    await bot.call_api("send_group_forward_msg", group_id=user, message=group_msg)
 
 
 async def do_send_msgs():

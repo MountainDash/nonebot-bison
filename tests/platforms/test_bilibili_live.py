@@ -20,19 +20,18 @@ def bili_live(app: App):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bilibili_live_status(bili_live, dummy_user_subinfo):
+    mock_bili_live_status = get_json("bili_live_status.json")
+
     bili_live_router = respx.get(
         "https://api.bilibili.com/x/space/acc/info?mid=13164144"
     )
-    bili_live_router.mock(
-        return_value=Response(200, json=get_json("bili_live_status-0.json"))
-    )
+    bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     target = "13164144"
     res = await bili_live.fetch_new_post(target, [dummy_user_subinfo])
     assert bili_live_router.called
     assert len(res) == 0
-    bili_live_router.mock(
-        return_value=Response(200, json=get_json("bili_live_status-1.json"))
-    )
+    mock_bili_live_status["data"]["live_room"]["liveStatus"] = 1
+    bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res2 = await bili_live.fetch_new_post(target, [dummy_user_subinfo])
     post = res2[0][1][0]
     assert post.target_type == "Bilibili直播"

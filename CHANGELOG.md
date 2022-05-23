@@ -2,7 +2,9 @@
 
 ## 最近更新
 
-- No changes
+### 新功能
+
+- 增加 Parse Target 功能 [@felinae98](https://github.com/felinae98) ([#72](https://github.com/felinae98/nonebot-bison/pull/72))
 
 ## v0.5.3
 

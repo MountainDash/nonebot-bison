@@ -1,4 +1,5 @@
 import time
+import typing
 
 import pytest
 import respx
@@ -6,6 +7,9 @@ from httpx import Response
 from nonebug.app import App
 
 from .utils import get_json
+
+if typing.TYPE_CHECKING:
+    from nonebot_bison.platform.ncm_radio import NcmRadio
 
 
 @pytest.fixture
@@ -53,3 +57,14 @@ async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo
         "http://p1.music.126.net/H5em5xUNIYXcjJhOmeaSqQ==/109951166647436789.jpg"
     ]
     assert post.target_name == "《明日方舟》游戏原声OST"
+
+
+async def test_parse_target(ncm_radio: "NcmRadio"):
+    res = await ncm_radio.parse_target("https://music.163.com/#/djradio?id=793745436")
+    assert res == "793745436"
+    res = await ncm_radio.parse_target("music.163.com/#/djradio?id=793745436")
+    assert res == "793745436"
+    res = await ncm_radio.parse_target("793745436")
+    assert res == "793745436"
+    with pytest.raises(ncm_radio.ParseTargetException):
+        await ncm_radio.parse_target("music.163.com/#/alm?id=793745436")

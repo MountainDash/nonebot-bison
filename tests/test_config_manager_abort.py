@@ -67,6 +67,7 @@ async def test_abort_add_on_id(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -103,7 +104,7 @@ async def test_abort_add_on_id(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_abort = fake_group_message_event(
@@ -127,6 +128,7 @@ async def test_abort_add_on_cats(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -167,7 +169,7 @@ async def test_abort_add_on_cats(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -207,6 +209,7 @@ async def test_abort_add_on_tag(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -247,7 +250,7 @@ async def test_abort_add_on_tag(app: App):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_3 = fake_group_message_event(

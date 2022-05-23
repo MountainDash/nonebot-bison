@@ -1,4 +1,5 @@
 import json
+from turtle import title
 from typing import Any, Optional
 
 import httpx
@@ -152,13 +153,13 @@ class Bilibililive(StatusChange):
     # Description : bilibili开播提醒
     # E-mail : 1557157806@qq.com
     categories = {}
-    platform_name = "bilibililive"
+    platform_name = "bilibili-live"
     enable_tag = True
     enabled = True
     is_common = True
     schedule_type = "interval"
     schedule_kw = {"seconds": 10}
-    name = "B站直播"
+    name = "Bilibili直播"
     has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
@@ -185,7 +186,7 @@ class Bilibililive(StatusChange):
                 info["uid"] = res_dict["data"]["mid"]
                 info["uname"] = res_dict["data"]["name"]
                 info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
-                info["url"] = res_dict["data"]["live_room"]["url"]
+                info["room_id"] = res_dict["data"]["live_room"]["roomid"]
                 info["title"] = res_dict["data"]["live_room"]["title"]
                 info["cover"] = res_dict["data"]["live_room"]["cover"]
                 return info
@@ -202,10 +203,9 @@ class Bilibililive(StatusChange):
             return []
 
     async def parse(self, raw_post: RawPost) -> Post:
-        url = raw_post["url"]
+        url = "https://live.bilibili.com/{}".format(raw_post["room_id"])
         pic = [raw_post["cover"]]
         target_name = raw_post["uname"]
-        text = target_name + "老师的直播 开播啦！小伙伴们请务必速速来围观！"
-        return Post(
-            "bilibililive", text=text, url=url, pics=pic, target_name=target_name
-        )
+        title = raw_post["title"]
+        text = "{} 直播中：\n{}\n\n小伙伴们速速前来围观！".format(target_name, title)
+        return Post(self.name, text=text, url=url, pics=pic, target_name=target_name)

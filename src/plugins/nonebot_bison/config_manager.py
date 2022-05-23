@@ -15,10 +15,9 @@ from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
-from nonebot_bison.platform.platform import Platform
 
 from .config import Config
-from .platform import check_sub_target, platform_manager
+from .platform import Platform, check_sub_target, platform_manager
 from .plugin_config import plugin_config
 from .types import Category, Target, User
 from .utils import parse_text

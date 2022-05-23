@@ -1,12 +1,12 @@
 import json
 from typing import Any
 
-import httpx
 from bs4 import BeautifulSoup as bs
 from nonebot.plugin import require
 
 from ..post import Post
 from ..types import Category, RawPost, Target
+from ..utils import http_client
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
@@ -26,7 +26,7 @@ class Arknights(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             raw_data = await client.get(
                 "https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/announcement.meta.json"
             )
@@ -44,7 +44,7 @@ class Arknights(NewMessage):
     async def parse(self, raw_post: RawPost) -> Post:
         announce_url = raw_post["webUrl"]
         text = ""
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             raw_html = await client.get(announce_url)
         soup = bs(raw_html.text, "html.parser")
         pics = []
@@ -99,7 +99,7 @@ class AkVersion(StatusChange):
         return "明日方舟游戏信息"
 
     async def get_status(self, _):
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res_ver = await client.get(
                 "https://ak-conf.hypergryph.com/config/prod/official/IOS/version"
             )
@@ -155,7 +155,7 @@ class MonsterSiren(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             raw_data = await client.get("https://monster-siren.hypergryph.com/api/news")
             return raw_data.json()["data"]["list"]
 
@@ -170,7 +170,7 @@ class MonsterSiren(NewMessage):
 
     async def parse(self, raw_post: RawPost) -> Post:
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res = await client.get(
                 f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}'
             )
@@ -207,7 +207,7 @@ class TerraHistoricusComic(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             raw_data = await client.get(
                 "https://terra-historicus.hypergryph.com/api/recentUpdate"
             )

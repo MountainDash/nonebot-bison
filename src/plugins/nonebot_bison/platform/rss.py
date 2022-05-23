@@ -2,11 +2,11 @@ import calendar
 from typing import Any, Optional
 
 import feedparser
-import httpx
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from ..types import RawPost, Target
+from ..utils import http_client
 from .platform import NewMessage
 
 
@@ -23,7 +23,7 @@ class Rss(NewMessage):
     has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res = await client.get(target, timeout=10.0)
             feed = feedparser.parse(res.text)
             return feed["feed"]["title"]
@@ -35,7 +35,7 @@ class Rss(NewMessage):
         return post.id
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res = await client.get(target, timeout=10.0)
             feed = feedparser.parse(res)
             entries = feed.entries

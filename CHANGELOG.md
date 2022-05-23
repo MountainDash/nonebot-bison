@@ -4,7 +4,8 @@
 
 ### 新功能
 
-- 增加 Parse Target 功能 [@felinae98](https://github.com/felinae98) ([#72](https://github.com/felinae98/nonebot-bison/pull/72))
+- 增加代理设置 [@felinae98](https://github.com/felinae98) ([#71](https://github.com/felinae98/nonebot-bison/pull/71))
+- 增加Parse Target功能 [@felinae98](https://github.com/felinae98) ([#72](https://github.com/felinae98/nonebot-bison/pull/72))
 
 ## v0.5.3
 

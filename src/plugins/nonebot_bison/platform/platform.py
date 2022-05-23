@@ -1,3 +1,4 @@
+import ssl
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -250,6 +251,9 @@ class NewMessage(MessageProcess, abstract=True):
                 )
             )
             return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
+            return []
 
 
 class StatusChange(Platform, abstract=True):
@@ -294,6 +298,9 @@ class StatusChange(Platform, abstract=True):
                 )
             )
             return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
+            return []
 
 
 class SimplePost(MessageProcess, abstract=True):
@@ -324,6 +331,9 @@ class SimplePost(MessageProcess, abstract=True):
                     type(err), err.request.url
                 )
             )
+            return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
             return []
 
 

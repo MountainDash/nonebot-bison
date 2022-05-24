@@ -207,5 +207,11 @@ class Bilibililive(StatusChange):
         pic = [raw_post["cover"]]
         target_name = raw_post["uname"]
         title = raw_post["title"]
-        text = "{} 直播中：\n{}\n\n小伙伴们速速前来围观！".format(target_name, title)
-        return Post(self.name, text=text, url=url, pics=pic, target_name=target_name)
+        return Post(
+            self.name,
+            text=title,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            compress=True,
+        )

@@ -93,10 +93,10 @@ sidebar: auto
     - `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
 - `get_status(Target) -> Any`
   - 对于`nonebot_bison.platform.platform.StatusChange`
-    - `get_status`用于获取对应Target当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
-- `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`  
+    - `get_status`用于获取对应 Target 当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
+- `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`
   - 对于`nonebot_bison.platform.platform.StatusChange`
-    - `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的RawPost列表
+    - `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
 
 #### 简要的处理流程
 

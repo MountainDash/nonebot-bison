@@ -80,10 +80,23 @@ sidebar: auto
 - `enable_tag` 平台发布内容是否带 Tag，例如微博
 - `platform_name` 唯一的，英文的识别标识，比如`weibo`
 - `async get_target_name(Target) -> Optional[str]` 通常用于获取帐号的名称，如果平台没有帐号概念，可以直接返回平台的`name`
-- `get_sub_lst(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
 - `get_tags(RawPost) -> Optional[Collection[Tag]]` （可选） 从 RawPost 中提取 Tag
 - `get_category(RawPos) -> Optional[Category]` （可选）从 RawPost 中提取 Category
 - `async parse(RawPost) -> Post`将获取到的 RawPost 处理成 Post
+
+不同订阅类型的需要分别实现的方法如下:
+
+- `get_sub_list(Target) -> list[RawPost]`
+  - 对于`nonebot_bison.platform.platform.NewMessage`
+    - `get_sub_list(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
+  - 对于`nonebot_bison.platform.platform.SimplePost`
+    - `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
+- `get_status(Target) -> Any`
+  - 对于`nonebot_bison.platform.platform.StatusChange`
+    - `get_status`用于获取对应Target当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
+- `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`  
+  - 对于`nonebot_bison.platform.platform.StatusChange`
+    - `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的RawPost列表
 
 #### 简要的处理流程
 

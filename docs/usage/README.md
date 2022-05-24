@@ -137,6 +137,7 @@ sidebar: auto
   :::
 
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
+- `BISON_UA`: 使用的 User-Agent，默认为 Chrome
 
 ## 使用
 

@@ -1,9 +1,8 @@
 from typing import Any
 
-import httpx
-
 from ..post import Post
 from ..types import RawPost, Target
+from ..utils import http_client
 from .platform import NewMessage
 
 
@@ -23,7 +22,7 @@ class FF14(NewMessage):
         return "最终幻想XIV官方公告"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             raw_data = await client.get(
                 "https://ff.web.sdo.com/inc/newdata.ashx?url=List?gameCode=ff&category=5309,5310,5311,5312,5313&pageIndex=0&pageSize=5"
             )

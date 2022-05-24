@@ -20,3 +20,4 @@ repos:
     hooks:
       - id: prettier
         types_or: [markdown, ts, tsx]
+exclude: 'CHANGELOG.md'

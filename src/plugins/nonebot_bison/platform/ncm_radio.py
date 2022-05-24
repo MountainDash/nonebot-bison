@@ -1,9 +1,9 @@
+import re
 from typing import Any, Optional
-
-import httpx
 
 from ..post import Post
 from ..types import RawPost, Target
+from ..utils import http_client
 from .platform import NewMessage
 
 
@@ -18,9 +18,10 @@ class NcmRadio(NewMessage):
     schedule_kw = {"minutes": 10}
     name = "网易云-电台"
     has_target = True
+    parse_target_promot = "请输入主播电台主页（包含数字ID）的链接"
 
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res = await client.post(
                 "http://music.163.com/api/dj/program/byradio",
                 headers={"Referer": "https://music.163.com/"},
@@ -31,8 +32,18 @@ class NcmRadio(NewMessage):
                 return
             return res_data["programs"][0]["radio"]["name"]
 
+    async def parse_target(self, target_text: str) -> Target:
+        if re.match(r"^\d+$", target_text):
+            return Target(target_text)
+        elif match := re.match(
+            r"(?:https?://)?music\.163\.com/#/djradio\?id=(\d+)", target_text
+        ):
+            return Target(match.group(1))
+        else:
+            raise self.ParseTargetException()
+
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             res = await client.post(
                 "http://music.163.com/api/dj/program/byradio",
                 headers={"Referer": "https://music.163.com/"},

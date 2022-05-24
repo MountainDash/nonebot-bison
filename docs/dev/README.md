@@ -80,11 +80,32 @@ sidebar: auto
 - `enable_tag` 平台发布内容是否带 Tag，例如微博
 - `platform_name` 唯一的，英文的识别标识，比如`weibo`
 - `async get_target_name(Target) -> Optional[str]` 通常用于获取帐号的名称，如果平台没有帐号概念，可以直接返回平台的`name`
-- `async parse(RawPost) -> Post`将获取到的 RawPost 处理成 Post
+- `get_sub_lst(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
 - `get_tags(RawPost) -> Optional[Collection[Tag]]` （可选） 从 RawPost 中提取 Tag
 - `get_category(RawPos) -> Optional[Category]` （可选）从 RawPost 中提取 Category
+- `async parse(RawPost) -> Post`将获取到的 RawPost 处理成 Post
 
-例如要适配微博，我希望 bot 搬运新的消息，所以微博的类应该这样定义：
+#### 简要的处理流程
+
+- `nonebot_bison.platform.platform.NewMessage`
+  ::: details 大致流程
+  1. 调用`get_sub_list`拿到 RawPost 列表
+  2. 调用`get_id`判断是否重复，如果没有重复就说明是新的 RawPost
+  3. 如果有`get_category`和`get_date`，则调用判断 RawPost 是否满足条件
+  4. 调用`parse`生成正式推文
+     :::
+  - 参考[nonebot_bison.platform.Weibo](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/weibo.py)
+- `nonebot_bison.platform.platform.StatusChange`
+  :::details 大致流程
+  1. `get_status`获取当前状态
+  2. 传入`compare_status`比较前状态
+  3. 通过则进入`parser`生成 Post
+     :::
+  - 参考[nonenot_bison.platform.AkVersion](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/arknights.py#L86)
+
+#### 一些例子
+
+例如要适配微博，我希望 bot 搬运新的消息，所以微博的类应该这样实现：
 
 ```python
 class Weibo(NewMessage):
@@ -103,10 +124,35 @@ class Weibo(NewMessage):
     schedule_type = "interval"
     schedule_kw = {"seconds": 3}
     has_target = True
+
+    async def get_target_name(self, target: Target) -> Optional[str]:
+      #获取Target对应的用户名
+      ...
+    async def get_sub_list(self, target: Target) -> list[RawPost]:
+      #获取对应Target的RawPost列表，会与上一次get_sub_list获取的列表比较，过滤出新的RawPost
+      ...
+    def get_id(self, post: RawPost) -> Any:
+      #获取可以标识每个Rawpost的，不与之前RawPost重复的id，用于过滤出新的RawPost
+      ...
+    def get_date(self, raw_post: RawPost) -> float:
+      #获取RawPost的发布时间，若bot过滤出的新RawPost发布时间与当前时间差超过2小时，该RawPost将被忽略，可以返回None
+      ...
+    def get_tags(self, raw_post: RawPost) -> Optional[list[Tag]]:
+      #获取RawPost中包含的微博话题（#xxx#中的内容）
+      ...
+    def get_category(self, raw_post: RawPost) -> Category:
+      #获取该RawPost在该类定义categories的具体分类(转发？视频？图文？...？)
+      ...
+    async def parse(self, raw_post: RawPost) -> Post:
+      #将需要bot推送的RawPost处理成正式推送的Post
+      ...
 ```
 
-当然我们非常希望你对自己适配的平台写一些单元测试，你可以模仿`tests/platforms/test_*.py`中的内容写
-一些单元测试。为保证多次运行测试的一致性，可以 mock http 的响应，测试的内容包括获取 RawPost，处理成 Post
+当然我们非常希望你对自己适配的平台写一些单元测试
+
+你可以参照`tests/platforms/test_*.py`中的内容对单元测试进行编写。
+
+为保证多次运行测试的一致性，可以 mock http 的响应，测试的内容应包括[获取 RawPost](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/tests/platforms/test_weibo.py#L59)，处理成 Post
 ，测试分类以及提取 tag 等，当然最好和 rsshub 做一个交叉验证。
 
 ::: danger

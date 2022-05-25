@@ -8,7 +8,7 @@ from nonebot.log import logger
 from PIL import Image
 
 from ..utils import http_client, parse_text
-from .abstract_post import BasePost, OptionalMixin
+from .abstract_post import AbstractPost, BasePost, OptionalMixin
 
 
 @dataclass
@@ -160,5 +160,5 @@ class _Post(BasePost):
 
 
 @dataclass
-class Post(OptionalMixin, _Post):
+class Post(AbstractPost, _Post):
     pass

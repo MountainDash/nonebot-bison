@@ -42,9 +42,14 @@ class AbstractPost(OptionalMixin, BasePost):
             msg_segments = await self.generate_pic_messages()
         else:
             msg_segments = await self.generate_text_messages()
-        if self.compress:
-            msgs = [reduce(lambda x, y: x.append(y), msg_segments, Message())]
+        if msg_segments:
+            if self.compress:
+                msgs = [reduce(lambda x, y: x.append(y), msg_segments, Message())]
+            else:
+                msgs = list(
+                    map(lambda msg_segment: Message([msg_segment]), msg_segments)
+                )
         else:
-            msgs = list(map(lambda msg_segment: Message([msg_segment]), msg_segments))
+            msgs = []
         msgs.extend(self.extra_msg)
         return msgs

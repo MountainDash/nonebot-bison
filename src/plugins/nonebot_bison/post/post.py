@@ -7,28 +7,21 @@ from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.log import logger
 from PIL import Image
 
-from .plugin_config import plugin_config
-from .utils import http_client, parse_text
+from ..utils import http_client, parse_text
+from .abstract_post import BasePost, OptionalMixin
 
 
 @dataclass
-class Post:
+class _Post(BasePost):
 
     target_type: str
     text: str
     url: Optional[str] = None
     target_name: Optional[str] = None
-    compress: bool = False
-    override_use_pic: Optional[bool] = None
     pics: list[Union[str, bytes]] = field(default_factory=list)
-    extra_msg: list[Message] = field(default_factory=list)
 
-    _message: Optional[list[Message]] = None
-
-    def _use_pic(self):
-        if not self.override_use_pic is None:
-            return self.override_use_pic
-        return plugin_config.bison_use_pic
+    _message: Optional[list[MessageSegment]] = None
+    _pic_message: Optional[list[MessageSegment]] = None
 
     async def _pic_url_to_image(self, data: Union[str, bytes]) -> Image.Image:
         pic_buffer = BytesIO()
@@ -106,41 +99,48 @@ class Post:
         self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
 
-    async def generate_messages(self) -> list[Message]:
+    async def generate_text_messages(self) -> list[MessageSegment]:
+
         if self._message is None:
             await self._pic_merge()
             msg_segments: list[MessageSegment] = []
             text = ""
             if self.text:
-                if self._use_pic():
-                    text += "{}".format(self.text)
-                else:
-                    text += "{}".format(
-                        self.text if len(self.text) < 500 else self.text[:500] + "..."
-                    )
-            text += "\n来源: {}".format(self.target_type)
+                text += "{}".format(
+                    self.text if len(self.text) < 500 else self.text[:500] + "..."
+                )
+            if text:
+                text += "\n"
+            text += "来源: {}".format(self.target_type)
             if self.target_name:
                 text += " {}".format(self.target_name)
-            if self._use_pic():
-                msg_segments.append(await parse_text(text))
-                if not self.target_type == "rss" and self.url:
-                    msg_segments.append(MessageSegment.text(self.url))
-            else:
-                if self.url:
-                    text += " \n详情: {}".format(self.url)
-                msg_segments.append(MessageSegment.text(text))
+            if self.url:
+                text += " \n详情: {}".format(self.url)
+            msg_segments.append(MessageSegment.text(text))
             for pic in self.pics:
                 msg_segments.append(MessageSegment.image(pic))
-            if self.compress:
-                msgs = [reduce(lambda x, y: x.append(y), msg_segments, Message())]
-            else:
-                msgs = list(
-                    map(lambda msg_segment: Message([msg_segment]), msg_segments)
-                )
-            msgs.extend(self.extra_msg)
-            self._message = msgs
-        assert len(self._message) > 0, f"message list empty, {self}"
+            self._message = msg_segments
         return self._message
+
+    async def generate_pic_messages(self) -> list[MessageSegment]:
+
+        if self._pic_message is None:
+            await self._pic_merge()
+            msg_segments: list[MessageSegment] = []
+            text = ""
+            if self.text:
+                text += "{}".format(self.text)
+                text += "\n"
+            text += "来源: {}".format(self.target_type)
+            if self.target_name:
+                text += " {}".format(self.target_name)
+            msg_segments.append(await parse_text(text))
+            if not self.target_type == "rss" and self.url:
+                msg_segments.append(MessageSegment.text(self.url))
+            for pic in self.pics:
+                msg_segments.append(MessageSegment.image(pic))
+            self._pic_message = msg_segments
+        return self._pic_message
 
     def __str__(self):
         return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(
@@ -157,3 +157,8 @@ class Post:
                 )
             ),
         )
+
+
+@dataclass
+class Post(OptionalMixin, _Post):
+    pass

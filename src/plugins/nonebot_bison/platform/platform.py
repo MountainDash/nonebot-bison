@@ -1,3 +1,4 @@
+import ssl
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -47,6 +48,7 @@ class Platform(metaclass=RegistryABCMeta, base=True):
     enable_tag: bool
     store: dict[Target, Any]
     platform_name: str
+    parse_target_promot: Optional[str] = None
 
     @abstractmethod
     async def get_target_name(self, target: Target) -> Optional[str]:
@@ -72,6 +74,12 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         for key, val in self.categories.items():
             self.reverse_category[val] = key
         self.store = dict()
+
+    class ParseTargetException(Exception):
+        pass
+
+    async def parse_target(self, target_string: str) -> Target:
+        return Target(target_string)
 
     @abstractmethod
     def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
@@ -243,6 +251,9 @@ class NewMessage(MessageProcess, abstract=True):
                 )
             )
             return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
+            return []
 
 
 class StatusChange(Platform, abstract=True):
@@ -287,6 +298,9 @@ class StatusChange(Platform, abstract=True):
                 )
             )
             return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
+            return []
 
 
 class SimplePost(MessageProcess, abstract=True):
@@ -317,6 +331,9 @@ class SimplePost(MessageProcess, abstract=True):
                     type(err), err.request.url
                 )
             )
+            return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
             return []
 
 

@@ -64,6 +64,7 @@ async def test_add_with_target(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -115,7 +116,7 @@ async def test_add_with_target(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_4_err = fake_group_message_event(
@@ -181,6 +182,7 @@ async def test_add_with_target_no_cat(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.ncm_artist import NcmArtist
 
     config = Config()
     config.user_target.truncate()
@@ -208,7 +210,7 @@ async def test_add_with_target_no_cat(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(NcmArtist)),
             True,
         )
         event_4_ok = fake_group_message_event(
@@ -332,6 +334,7 @@ async def test_add_with_get_id(app: App):
     from nonebot_bison.config import Config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     config = Config()
     config.user_target.truncate()
@@ -373,7 +376,7 @@ async def test_add_with_get_id(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_4_query = fake_group_message_event(
@@ -387,7 +390,7 @@ async def test_add_with_get_id(app: App):
             True,
         )
         """
-        line 362:
+        关于：Message([MessageSegment(*BotReply.add_reply_on_id_input_search())])
         鬼知道为什么要在这里这样写，
         没有[]的话assert不了(should_call_send使用[MessageSegment(...)]的格式进行比较)
         不在这里MessageSegment()的话也assert不了(指不能让add_reply_on_id_input_search直接返回一个MessageSegment对象)
@@ -405,3 +408,125 @@ async def test_add_with_get_id(app: App):
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")
     assert len(subs) == 0
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_add_with_bilibili_target_parser(app: App):
+    from nonebot.adapters.onebot.v11.event import Sender
+    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_bison.config import Config
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.bilibili import Bilibili
+
+    config = Config()
+    config.user_target.truncate()
+
+    ak_list_router = respx.get(
+        "https://api.bilibili.com/x/space/acc/info?mid=161775300"
+    )
+    ak_list_router.mock(
+        return_value=Response(200, json=get_json("bilibili_arknights_profile.json"))
+    )
+
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot()
+        event_1 = fake_group_message_event(
+            message=Message("添加订阅"),
+            sender=Sender(card="", nickname="test", role="admin"),
+            to_me=True,
+        )
+        ctx.receive_event(bot, event_1)
+        ctx.should_pass_rule()
+        ctx.should_call_send(
+            event_1,
+            Message(
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
+            ),
+            True,
+        )
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
+        ctx.receive_event(bot, event_2)
+        ctx.should_rejected()
+        ctx.should_call_send(
+            event_2,
+            BotReply.add_reply_on_platform_input_allplatform(platform_manager),
+            True,
+        )
+        event_3 = fake_group_message_event(
+            message=Message("bilibili"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_3)
+        assert Bilibili.parse_target_promot
+        ctx.should_call_send(
+            event_3,
+            Message(BotReply.add_reply_on_id(Bilibili)),
+            True,
+        )
+        event_4_err1 = fake_group_message_event(
+            message=Message(
+                "https://live.bilibili.com/5555734?broadcast_type=0&is_room_feed=1&spm_id_from=333.999.0.0"
+            ),
+            sender=fake_admin_user,
+        )
+        ctx.receive_event(bot, event_4_err1)
+        ctx.should_call_send(
+            event_4_err1, BotReply.add_reply_on_target_parse_input_error, True
+        )
+        ctx.should_rejected()
+
+        event_4_err1 = fake_group_message_event(
+            message=Message(
+                "https://space.bilibili.com/ark161775300?from=search&seid=13051774060625135297&spm_id_from=333.337.0.0"
+            ),
+            sender=fake_admin_user,
+        )
+        ctx.receive_event(bot, event_4_err1)
+        ctx.should_call_send(
+            event_4_err1, BotReply.add_reply_on_target_parse_input_error, True
+        )
+        ctx.should_rejected()
+
+        event_4_ok = fake_group_message_event(
+            message=Message(
+                "https://space.bilibili.com/161775300?from=search&seid=13051774060625135297&spm_id_from=333.337.0.0"
+            ),
+            sender=fake_admin_user,
+        )
+        ctx.receive_event(bot, event_4_ok)
+        ctx.should_call_send(
+            event_4_ok,
+            BotReply.add_reply_on_target_confirm("bilibili", "明日方舟", "161775300"),
+            True,
+        )
+        ctx.should_call_send(
+            event_4_ok,
+            Message(BotReply.add_reply_on_cats(platform_manager, "bilibili")),
+            True,
+        )
+        event_5_ok = fake_group_message_event(
+            message=Message("视频"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_5_ok)
+        ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
+        event_6 = fake_group_message_event(
+            message=Message("全部标签"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_6)
+        ctx.should_call_send(
+            event_6, BotReply.add_reply_subscribe_success("明日方舟"), True
+        )
+        ctx.should_finished()
+    subs = config.list_subscribe(10000, "group")
+    assert len(subs) == 1
+    sub = subs[0]
+    assert sub["target"] == "161775300"
+    assert sub["tags"] == []
+    assert sub["cats"] == [platform_manager["bilibili"].reverse_category["视频"]]
+    assert sub["target_type"] == "bilibili"
+    assert sub["target_name"] == "明日方舟"

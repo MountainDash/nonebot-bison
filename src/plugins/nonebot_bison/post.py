@@ -3,13 +3,12 @@ from functools import reduce
 from io import BytesIO
 from typing import Optional, Union
 
-import httpx
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.log import logger
 from PIL import Image
 
 from .plugin_config import plugin_config
-from .utils import parse_text
+from .utils import http_client, parse_text
 
 
 @dataclass
@@ -34,7 +33,7 @@ class Post:
     async def _pic_url_to_image(self, data: Union[str, bytes]) -> Image.Image:
         pic_buffer = BytesIO()
         if isinstance(data, str):
-            async with httpx.AsyncClient() as client:
+            async with http_client() as client:
                 res = await client.get(data)
             pic_buffer.write(res.content)
         else:

@@ -17,7 +17,7 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 
 from .config import Config
-from .platform import check_sub_target, platform_manager
+from .platform import Platform, check_sub_target, platform_manager
 from .plugin_config import plugin_config
 from .types import Category, Target, User
 from .utils import parse_text
@@ -108,8 +108,13 @@ def do_add_sub(add_sub: Type[Matcher]):
         "platform", _gen_prompt_template("{_prompt}"), [Depends(parse_platform)]
     )
     async def init_id(state: T_State):
-        if platform_manager[state["platform"]].has_target:
-            state["_prompt"] = "请输入订阅用户的id:\n查询id获取方法请回复:“查询”"
+        cur_platform = platform_manager[state["platform"]]
+        if cur_platform.has_target:
+            state["_prompt"] = (
+                ("1." + cur_platform.parse_target_promot + "\n2.")
+                if cur_platform.parse_target_promot
+                else ""
+            ) + "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         else:
             state["id"] = "default"
             state["name"] = await platform_manager[state["platform"]].get_target_name(
@@ -125,6 +130,8 @@ def do_add_sub(add_sub: Type[Matcher]):
                 raise LookupError
             if target == "取消":
                 raise KeyboardInterrupt
+            platform = platform_manager[state["platform"]]
+            target = await platform.parse_target(target)
             name = await check_sub_target(state["platform"], target)
             if not name:
                 raise ValueError
@@ -141,6 +148,8 @@ def do_add_sub(add_sub: Type[Matcher]):
             await add_sub.finish("已中止订阅")
         except (ValueError):
             await add_sub.reject("id输入错误")
+        except (Platform.ParseTargetException):
+            await add_sub.reject("不能从你的输入中提取出id，请检查你输入的内容是否符合预期")
         else:
             await add_sub.send(
                 "即将订阅的用户为:{} {} {}\n如有错误请输入“取消”重新订阅".format(
@@ -244,38 +253,46 @@ def do_del_sub(del_sub: Type[Matcher]):
         config: Config = Config()
         user_info = state["target_user_info"]
         assert isinstance(user_info, User)
-        sub_list = config.list_subscribe(
-            # state.get("_user_id") or event.group_id, "group"
-            user_info.user,
-            user_info.user_type,
-        )
-        res = "订阅的帐号为：\n"
-        state["sub_table"] = {}
-        for index, sub in enumerate(sub_list, 1):
-            state["sub_table"][index] = {
-                "target_type": sub["target_type"],
-                "target": sub["target"],
-            }
-            res += "{} {} {} {}\n".format(
-                index, sub["target_type"], sub["target_name"], sub["target"]
+        try:
+            sub_list = config.list_subscribe(
+                # state.get("_user_id") or event.group_id, "group"
+                user_info.user,
+                user_info.user_type,
             )
-            platform = platform_manager[sub["target_type"]]
-            if platform.categories:
-                res += " [{}]".format(
-                    ", ".join(
-                        map(lambda x: platform.categories[Category(x)], sub["cats"])
-                    )
+            assert sub_list
+        except AssertionError:
+            await del_sub.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")
+        else:
+            res = "订阅的帐号为：\n"
+            state["sub_table"] = {}
+            for index, sub in enumerate(sub_list, 1):
+                state["sub_table"][index] = {
+                    "target_type": sub["target_type"],
+                    "target": sub["target"],
+                }
+                res += "{} {} {} {}\n".format(
+                    index, sub["target_type"], sub["target_name"], sub["target"]
                 )
-            if platform.enable_tag:
-                res += " {}".format(", ".join(sub["tags"]))
-            res += "\n"
-        res += "请输入要删除的订阅的序号"
-        await bot.send(event=event, message=Message(await parse_text(res)))
+                platform = platform_manager[sub["target_type"]]
+                if platform.categories:
+                    res += " [{}]".format(
+                        ", ".join(
+                            map(lambda x: platform.categories[Category(x)], sub["cats"])
+                        )
+                    )
+                if platform.enable_tag:
+                    res += " {}".format(", ".join(sub["tags"]))
+                res += "\n"
+            res += "请输入要删除的订阅的序号\n输入'取消'中止"
+            await bot.send(event=event, message=Message(await parse_text(res)))
 
     @del_sub.receive()
     async def do_del(event: Event, state: T_State):
+        user_msg = str(event.get_message()).strip()
+        if user_msg == "取消":
+            await del_sub.finish("删除中止")
         try:
-            index = int(str(event.get_message()).strip())
+            index = int(user_msg)
             config = Config()
             user_info = state["target_user_info"]
             assert isinstance(user_info, User)
@@ -297,12 +314,13 @@ add_sub_matcher = on_command(
     rule=configurable_to_me,
     permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
     priority=5,
+    block=True,
 )
 add_sub_matcher.handle()(set_target_user_info)
 do_add_sub(add_sub_matcher)
 
 
-query_sub_matcher = on_command("查询订阅", rule=configurable_to_me, priority=5)
+query_sub_matcher = on_command("查询订阅", rule=configurable_to_me, priority=5, block=True)
 query_sub_matcher.handle()(set_target_user_info)
 do_query_sub(query_sub_matcher)
 
@@ -312,11 +330,14 @@ del_sub_matcher = on_command(
     rule=configurable_to_me,
     permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
     priority=5,
+    block=True,
 )
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4)
+group_manage_matcher = on_command(
+    "群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True
+)
 
 
 @group_manage_matcher.handle()

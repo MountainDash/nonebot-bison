@@ -8,7 +8,10 @@ from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebot.log import default_format, logger
 from nonebot.plugin import require
 
-from .plugin_config import plugin_config
+from ..plugin_config import plugin_config
+from .http import http_client
+
+__all__ = ["http_client", "Singleton", "parse_text", "html_to_text"]
 
 
 class Singleton(type):

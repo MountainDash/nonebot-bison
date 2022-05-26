@@ -53,7 +53,7 @@ sidebar: auto
    例如：微博，Bilibili
 - `nonebot_bison.platform.platform.StatusChange` 每次爬虫获取一个状态，在状态改变时发布推送  
    例如：游戏开服提醒，主播上播提醒
-- `nonebot_bison.platform.platform.SimplePost` 与`NewMessage`相似，但是不过滤新的消息
+- `nonebot_bison.platform.platform.SimplePost` 与`NewMessage`相似，但是不过滤之前发过的
   ，每次发送全部消息  
    例如：每日榜单定时发送
 
@@ -64,10 +64,14 @@ sidebar: auto
 - 没有账号的概念  
   例如：游戏公告，教务处公告
 
+## 实现方法
+
 现在你需要在`src/plugins/nonebot_bison/platform`下新建一个 py 文件，
 在里面新建一个类，继承推送类型的基类，重载一些关键的函数，然后……就完成了，不需要修改别的东西了。
 
-任何一种订阅类型需要实现的方法/字段如下：
+### 公共方法/成员
+
+任何一种订阅类型需要实现的方法/成员如下：
 
 - `schedule_type`, `schedule_kw` 调度的参数，本质是使用 apscheduler 的[trigger 参数](https://apscheduler.readthedocs.io/en/3.x/userguide.html?highlight=trigger#choosing-the-right-scheduler-job-store-s-executor-s-and-trigger-s)，`schedule_type`可以是`date`,`interval`和`cron`，
   `schedule_kw`是对应的参数，一个常见的配置是`schedule_type=interval`, `schedule_kw={'seconds':30}`
@@ -82,39 +86,72 @@ sidebar: auto
 - `async get_target_name(Target) -> Optional[str]` 通常用于获取帐号的名称，如果平台没有帐号概念，可以直接返回平台的`name`
 - `get_tags(RawPost) -> Optional[Collection[Tag]]` （可选） 从 RawPost 中提取 Tag
 - `get_category(RawPos) -> Optional[Category]` （可选）从 RawPost 中提取 Category
-- `async parse(RawPost) -> Post`将获取到的 RawPost 处理成 Post
+- `async parse(RawPost) -> Post` 将获取到的 RawPost 处理成 Post
+- `async parse_target(str) -> Target` （可选）定制化处理传入用户输入的 Target 字符串，返回 Target（一般是把用户的主页链接解析为 Target），如果输入本身就是 Target，则直接返回 Target
+- `parse_target_promot` （可选）在要求用户输入 Target 的时候显示的提示文字
 
-不同订阅类型的需要分别实现的方法如下:
+### 特有的方法/成员
 
-- `get_sub_list(Target) -> list[RawPost]`
+- `async get_sub_list(Target) -> list[RawPost]` 输入一个`Target`，输出一个`RawPost`的 list
   - 对于`nonebot_bison.platform.platform.NewMessage`
     - `get_sub_list(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
   - 对于`nonebot_bison.platform.platform.SimplePost`
     - `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
-- `get_status(Target) -> Any`
+- `get_id(RawPost) -> Any` 输入一个`RawPost`，从`RawPost`中获取一个唯一的 ID，这个 ID 会用来判断这条`RawPost`是不是之前收到过
+- `get_date(RawPost) -> Optional[int]` 输入一个`RawPost`，如果可以从`RawPost`中提取出发文的时间，返回发文时间的 timestamp，否则返回`None`
+- `async get_status(Target) -> Any`
   - 对于`nonebot_bison.platform.platform.StatusChange`
     - `get_status`用于获取对应 Target 当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
 - `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`
   - 对于`nonebot_bison.platform.platform.StatusChange`
     - `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
 
-#### 简要的处理流程
+### 不同类型 Platform 的实现适配以及逻辑
 
 - `nonebot_bison.platform.platform.NewMessage`
+  需要实现：
+
+  - `async get_sub_list(Target) -> list[RawPost]`
+  - `get_id(RawPost)`
+  - `get_date(RawPost)` (可选)
+
   ::: details 大致流程
+
   1. 调用`get_sub_list`拿到 RawPost 列表
   2. 调用`get_id`判断是否重复，如果没有重复就说明是新的 RawPost
   3. 如果有`get_category`和`get_date`，则调用判断 RawPost 是否满足条件
   4. 调用`parse`生成正式推文
      :::
+
   - 参考[nonebot_bison.platform.Weibo](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/weibo.py)
+
 - `nonebot_bison.platform.platform.StatusChange`
+  需要实现：
+
+  - `async get_status(Target) -> Any`
+  - `compare_status(Target, old_status, new_status) -> list[RawPost]`
+
   :::details 大致流程
+
   1. `get_status`获取当前状态
   2. 传入`compare_status`比较前状态
   3. 通过则进入`parser`生成 Post
      :::
+
   - 参考[nonenot_bison.platform.AkVersion](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/arknights.py#L86)
+
+- `nonebot_bison.platform.platform.SimplePost`
+  需要实现：
+
+  - `async get_sub_list(Target) -> list[RawPost]`
+  - `get_date(RawPost)` (可选)
+
+  ::: details 大致流程
+
+  1. 调用`get_sub_list`拿到 RawPost 列表
+  2. 如果有`get_category`和`get_date`，则调用判断 RawPost 是否满足条件
+  3. 调用`parse`生成正式推文
+     :::
 
 #### 一些例子
 
@@ -172,7 +209,3 @@ class Weibo(NewMessage):
 Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Python asyncio 的机制有一定了解，当然，
 依葫芦画瓢也是足够的
 :::
-
-## 类的方法与成员变量
-
-## 方法与变量的定义

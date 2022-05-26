@@ -31,6 +31,11 @@ sidebar: auto
 
 本插件需要你的帮助！只需要会写简单的爬虫，就能给本插件适配新的网站。
 
+::: danger
+Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Python asyncio 的机制有一定了解，当然，
+依葫芦画瓢也是足够的
+:::
+
 ## 基本概念
 
 - `nonebot_bison.post.Post`: 可以理解为推送内容，其中包含需要发送的文字，图片，链接，平台信息等
@@ -153,17 +158,14 @@ sidebar: auto
   - 对于`nonebot_bison.platform.platform.StatusChange`  
     `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
 
+### 单元测试
+
 当然我们非常希望你对自己适配的平台写一些单元测试
 
 你可以参照`tests/platforms/test_*.py`中的内容对单元测试进行编写。
 
 为保证多次运行测试的一致性，可以 mock http 的响应，测试的内容应包括[获取 RawPost](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/tests/platforms/test_weibo.py#L59)，处理成 Post
 ，测试分类以及提取 tag 等，当然最好和 rsshub 做一个交叉验证。
-
-::: danger
-Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Python asyncio 的机制有一定了解，当然，
-依葫芦画瓢也是足够的
-:::
 
 ## 一些例子
 

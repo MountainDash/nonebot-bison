@@ -93,18 +93,18 @@ sidebar: auto
 ### 特有的方法/成员
 
 - `async get_sub_list(Target) -> list[RawPost]` 输入一个`Target`，输出一个`RawPost`的 list
-  - 对于`nonebot_bison.platform.platform.NewMessage`
-    - `get_sub_list(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
-  - 对于`nonebot_bison.platform.platform.SimplePost`
-    - `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
+  - 对于`nonebot_bison.platform.platform.NewMessage`  
+    `get_sub_list(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
+  - 对于`nonebot_bison.platform.platform.SimplePost`  
+    `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
 - `get_id(RawPost) -> Any` 输入一个`RawPost`，从`RawPost`中获取一个唯一的 ID，这个 ID 会用来判断这条`RawPost`是不是之前收到过
 - `get_date(RawPost) -> Optional[int]` 输入一个`RawPost`，如果可以从`RawPost`中提取出发文的时间，返回发文时间的 timestamp，否则返回`None`
 - `async get_status(Target) -> Any`
-  - 对于`nonebot_bison.platform.platform.StatusChange`
-    - `get_status`用于获取对应 Target 当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
+  - 对于`nonebot_bison.platform.platform.StatusChange`  
+    `get_status`用于获取对应 Target 当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
 - `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`
-  - 对于`nonebot_bison.platform.platform.StatusChange`
-    - `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
+  - 对于`nonebot_bison.platform.platform.StatusChange`  
+    `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
 
 ### 不同类型 Platform 的实现适配以及逻辑
 
@@ -123,7 +123,7 @@ sidebar: auto
   4. 调用`parse`生成正式推文
      :::
 
-  - 参考[nonebot_bison.platform.Weibo](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/weibo.py)
+  参考[nonebot_bison.platform.Weibo](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/weibo.py)
 
 - `nonebot_bison.platform.platform.StatusChange`
   需要实现：
@@ -138,7 +138,7 @@ sidebar: auto
   3. 通过则进入`parser`生成 Post
      :::
 
-  - 参考[nonenot_bison.platform.AkVersion](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/arknights.py#L86)
+  参考[nonenot_bison.platform.AkVersion](https://github.com/felinae98/nonebot-bison/blob/v0.5.3/src/plugins/nonebot_bison/platform/arknights.py#L86)
 
 - `nonebot_bison.platform.platform.SimplePost`
   需要实现：

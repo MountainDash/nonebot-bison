@@ -69,43 +69,6 @@ sidebar: auto
 现在你需要在`src/plugins/nonebot_bison/platform`下新建一个 py 文件，
 在里面新建一个类，继承推送类型的基类，重载一些关键的函数，然后……就完成了，不需要修改别的东西了。
 
-### 公共方法/成员
-
-任何一种订阅类型需要实现的方法/成员如下：
-
-- `schedule_type`, `schedule_kw` 调度的参数，本质是使用 apscheduler 的[trigger 参数](https://apscheduler.readthedocs.io/en/3.x/userguide.html?highlight=trigger#choosing-the-right-scheduler-job-store-s-executor-s-and-trigger-s)，`schedule_type`可以是`date`,`interval`和`cron`，
-  `schedule_kw`是对应的参数，一个常见的配置是`schedule_type=interval`, `schedule_kw={'seconds':30}`
-- `is_common` 是否常用，如果被标记为常用，那么和机器人交互式对话添加订阅时，会直接出现在选择列表中，否则
-  需要输入`全部`才会出现。
-- `enabled` 是否启用
-- `name` 平台的正式名称，例如`微博`
-- `has_target` 平台是否有“帐号”
-- `category` 平台的发布内容分类，例如 B 站包括专栏，视频，图文动态，普通动态等，如果不包含分类功能则设为`{}`
-- `enable_tag` 平台发布内容是否带 Tag，例如微博
-- `platform_name` 唯一的，英文的识别标识，比如`weibo`
-- `async get_target_name(Target) -> Optional[str]` 通常用于获取帐号的名称，如果平台没有帐号概念，可以直接返回平台的`name`
-- `get_tags(RawPost) -> Optional[Collection[Tag]]` （可选） 从 RawPost 中提取 Tag
-- `get_category(RawPos) -> Optional[Category]` （可选）从 RawPost 中提取 Category
-- `async parse(RawPost) -> Post` 将获取到的 RawPost 处理成 Post
-- `async parse_target(str) -> Target` （可选）定制化处理传入用户输入的 Target 字符串，返回 Target（一般是把用户的主页链接解析为 Target），如果输入本身就是 Target，则直接返回 Target
-- `parse_target_promot` （可选）在要求用户输入 Target 的时候显示的提示文字
-
-### 特有的方法/成员
-
-- `async get_sub_list(Target) -> list[RawPost]` 输入一个`Target`，输出一个`RawPost`的 list
-  - 对于`nonebot_bison.platform.platform.NewMessage`  
-    `get_sub_list(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
-  - 对于`nonebot_bison.platform.platform.SimplePost`  
-    `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
-- `get_id(RawPost) -> Any` 输入一个`RawPost`，从`RawPost`中获取一个唯一的 ID，这个 ID 会用来判断这条`RawPost`是不是之前收到过
-- `get_date(RawPost) -> Optional[int]` 输入一个`RawPost`，如果可以从`RawPost`中提取出发文的时间，返回发文时间的 timestamp，否则返回`None`
-- `async get_status(Target) -> Any`
-  - 对于`nonebot_bison.platform.platform.StatusChange`  
-    `get_status`用于获取对应 Target 当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
-- `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`
-  - 对于`nonebot_bison.platform.platform.StatusChange`  
-    `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
-
 ### 不同类型 Platform 的实现适配以及逻辑
 
 - `nonebot_bison.platform.platform.NewMessage`
@@ -153,7 +116,44 @@ sidebar: auto
   3. 调用`parse`生成正式推文
      :::
 
-#### 一些例子
+### 公共方法/成员
+
+任何一种订阅类型需要实现的方法/成员如下：
+
+- `schedule_type`, `schedule_kw` 调度的参数，本质是使用 apscheduler 的[trigger 参数](https://apscheduler.readthedocs.io/en/3.x/userguide.html?highlight=trigger#choosing-the-right-scheduler-job-store-s-executor-s-and-trigger-s)，`schedule_type`可以是`date`,`interval`和`cron`，
+  `schedule_kw`是对应的参数，一个常见的配置是`schedule_type=interval`, `schedule_kw={'seconds':30}`
+- `is_common` 是否常用，如果被标记为常用，那么和机器人交互式对话添加订阅时，会直接出现在选择列表中，否则
+  需要输入`全部`才会出现。
+- `enabled` 是否启用
+- `name` 平台的正式名称，例如`微博`
+- `has_target` 平台是否有“帐号”
+- `category` 平台的发布内容分类，例如 B 站包括专栏，视频，图文动态，普通动态等，如果不包含分类功能则设为`{}`
+- `enable_tag` 平台发布内容是否带 Tag，例如微博
+- `platform_name` 唯一的，英文的识别标识，比如`weibo`
+- `async get_target_name(Target) -> Optional[str]` 通常用于获取帐号的名称，如果平台没有帐号概念，可以直接返回平台的`name`
+- `get_tags(RawPost) -> Optional[Collection[Tag]]` （可选） 从 RawPost 中提取 Tag
+- `get_category(RawPos) -> Optional[Category]` （可选）从 RawPost 中提取 Category
+- `async parse(RawPost) -> Post` 将获取到的 RawPost 处理成 Post
+- `async parse_target(str) -> Target` （可选）定制化处理传入用户输入的 Target 字符串，返回 Target（一般是把用户的主页链接解析为 Target），如果输入本身就是 Target，则直接返回 Target
+- `parse_target_promot` （可选）在要求用户输入 Target 的时候显示的提示文字
+
+### 特有的方法/成员
+
+- `async get_sub_list(Target) -> list[RawPost]` 输入一个`Target`，输出一个`RawPost`的 list
+  - 对于`nonebot_bison.platform.platform.NewMessage`  
+    `get_sub_list(Target) -> list[RawPost]` 用于获取对应 Target 的 RawPost 列表，与上一次`get_sub_list`获取的列表比较，过滤出新的 RawPost
+  - 对于`nonebot_bison.platform.platform.SimplePost`  
+    `get_sub_list` 用于获取对应 Target 的 RawPost 列表，但不会与上次获取的结果进行比较，而是直接进行发送
+- `get_id(RawPost) -> Any` 输入一个`RawPost`，从`RawPost`中获取一个唯一的 ID，这个 ID 会用来判断这条`RawPost`是不是之前收到过
+- `get_date(RawPost) -> Optional[int]` 输入一个`RawPost`，如果可以从`RawPost`中提取出发文的时间，返回发文时间的 timestamp，否则返回`None`
+- `async get_status(Target) -> Any`
+  - 对于`nonebot_bison.platform.platform.StatusChange`  
+    `get_status`用于获取对应 Target 当前的状态，随后将获取的状态作为参数`new_status`传入`compare_status`中
+- `compare_status(self, target: Target, old_status, new_status) -> list[RawPost]`
+  - 对于`nonebot_bison.platform.platform.StatusChange`  
+    `compare_status` 用于比较储存的`old_status`与新传入的`new_status`，并返回发生变更的 RawPost 列表
+
+## 一些例子
 
 例如要适配微博，我希望 bot 搬运新的消息，所以微博的类应该这样实现：
 

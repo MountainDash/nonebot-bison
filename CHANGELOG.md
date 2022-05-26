@@ -13,6 +13,10 @@
 
 - 捕获SSL异常 [@felinae98](https://github.com/felinae98) ([#75](https://github.com/felinae98/nonebot-bison/pull/75))
 
+### 文档
+
+- 完善开发文档 [@AzideCupric](https://github.com/AzideCupric) ([#80](https://github.com/felinae98/nonebot-bison/pull/80))
+
 ## v0.5.3
 
 - on_command 设置 block=True (#63) @MeetWq

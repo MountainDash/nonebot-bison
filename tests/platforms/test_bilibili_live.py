@@ -35,6 +35,8 @@ async def test_fetch_bilibili_live_status(bili_live, dummy_user_subinfo):
     res2 = await bili_live.fetch_new_post(target, [dummy_user_subinfo])
     post = res2[0][1][0]
     assert post.target_type == "Bilibili直播"
-    assert post.text == "魔法Zc目录 直播中：\n【Zc】早朝危机合约！\n\n小伙伴们速速前来围观！"
+    assert post.text == "【Zc】早朝危机合约！"
     assert post.url == "https://live.bilibili.com/3044248"
     assert post.target_name == "魔法Zc目录"
+    assert post.pics == ["http://i0.hdslb.com/bfs/live/new_room_cover/cf7d4d3b2f336c6dba299644c3af952c5db82612.jpg"]
+    assert post.compress == True

@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 
 import feedparser
@@ -8,6 +9,9 @@ from nonebug.app import App
 from pytz import timezone
 
 from .utils import get_file, get_json
+
+if typing.TYPE_CHECKING:
+    from nonebot_bison.platform.weibo import Weibo
 
 
 @pytest.fixture
@@ -23,7 +27,14 @@ def weibo_ak_list_1():
 
 
 @pytest.mark.asyncio
+@respx.mock
 async def test_get_name(weibo):
+    profile_router = respx.get(
+        "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
+    )
+    profile_router.mock(
+        return_value=Response(200, json=get_json("weibo_ak_profile.json"))
+    )
     name = await weibo.get_target_name("6279793937")
     assert name == "明日方舟Arknights"
 
@@ -125,3 +136,16 @@ def test_chaohua_tag(weibo):
     tags = weibo.get_tags(test_post)
     assert "刚出生的小羊驼长啥样" in tags
     assert "小羊驼三三超话" in tags
+
+
+async def test_parse_target(weibo: "Weibo"):
+    from nonebot_bison.platform.platform import Platform
+
+    res = await weibo.parse_target("https://weibo.com/u/6441489862")
+    assert res == "6441489862"
+    res = await weibo.parse_target("weibo.com/u/6441489862")
+    assert res == "6441489862"
+    res = await weibo.parse_target("6441489862")
+    assert res == "6441489862"
+    with pytest.raises(Platform.ParseTargetException):
+        await weibo.parse_target("https://weibo.com/arknights")

@@ -3,12 +3,12 @@ import re
 from datetime import datetime
 from typing import Any, Optional
 
-import httpx
 from bs4 import BeautifulSoup as bs
 from nonebot.log import logger
 
 from ..post import Post
 from ..types import *
+from ..utils import http_client
 from .platform import NewMessage
 
 
@@ -28,9 +28,10 @@ class Weibo(NewMessage):
     schedule_type = "interval"
     schedule_kw = {"seconds": 3}
     has_target = True
+    parse_target_promot = "请输入用户主页（包含数字UID）的链接"
 
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             param = {"containerid": "100505" + target}
             res = await client.get(
                 "https://m.weibo.cn/api/container/getIndex", params=param
@@ -41,8 +42,17 @@ class Weibo(NewMessage):
             else:
                 return None
 
+    async def parse_target(self, target_text: str) -> Target:
+        if re.match(r"\d+", target_text):
+            return Target(target_text)
+        elif match := re.match(r"(?:https?://)?weibo\.com/u/(\d+)", target_text):
+            # 都2202年了应该不会有http了吧，不过还是防一手
+            return Target(match.group(1))
+        else:
+            raise self.ParseTargetException()
+
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with httpx.AsyncClient() as client:
+        async with http_client() as client:
             params = {"containerid": "107603" + target}
             res = await client.get(
                 "https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0
@@ -123,15 +133,19 @@ class Weibo(NewMessage):
             "Mobile Safari/537.36",
         }
         info = raw_post["mblog"]
-        if info["isLongText"] or info["pic_num"] > 9:
-            async with httpx.AsyncClient() as client:
+        retweeted = False
+        if info.get("retweeted_status"):
+            retweeted = True
+        pic_num = info["retweeted_status"]["pic_num"] if retweeted else info["pic_num"]
+        if info["isLongText"] or pic_num > 9:
+            async with http_client() as client:
                 res = await client.get(
                     "https://m.weibo.cn/detail/{}".format(info["mid"]), headers=header
                 )
             try:
-                full_json_text = re.search(
-                    r'"status": ([\s\S]+),\s+"call"', res.text
-                ).group(1)
+                match = re.search(r'"status": ([\s\S]+),\s+"call"', res.text)
+                assert match
+                full_json_text = match.group(1)
                 info = json.loads(full_json_text)
             except:
                 logger.info(
@@ -140,7 +154,12 @@ class Weibo(NewMessage):
                     )
                 )
         parsed_text = self._get_text(info["text"])
-        pic_urls = [img["large"]["url"] for img in info.get("pics", [])]
+        raw_pics_list = (
+            info["retweeted_status"].get("pics", [])
+            if retweeted
+            else info.get("pics", [])
+        )
+        pic_urls = [img["large"]["url"] for img in raw_pics_list]
         detail_url = "https://weibo.com/{}/{}".format(info["user"]["id"], info["bid"])
         # return parsed_text, detail_url, pic_urls
         return Post(

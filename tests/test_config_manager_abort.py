@@ -62,6 +62,7 @@ async def test_abort_add_on_id(app: App, db_migration):
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -95,7 +96,7 @@ async def test_abort_add_on_id(app: App, db_migration):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_abort = fake_group_message_event(
@@ -118,6 +119,7 @@ async def test_abort_add_on_cats(app: App, db_migration):
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -155,7 +157,7 @@ async def test_abort_add_on_cats(app: App, db_migration):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -194,6 +196,7 @@ async def test_abort_add_on_tag(app: App, db_migration):
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -231,7 +234,7 @@ async def test_abort_add_on_tag(app: App, db_migration):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id),
+            Message(BotReply.add_reply_on_id(Weibo)),
             True,
         )
         event_3 = fake_group_message_event(
@@ -265,3 +268,49 @@ async def test_abort_add_on_tag(app: App, db_migration):
             True,
         )
         ctx.should_finished()
+
+
+# 删除订阅阶段中止
+@pytest.mark.asyncio
+async def test_abort_del_sub(app: App):
+    from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_bison.config import Config
+    from nonebot_bison.config_manager import del_sub_matcher
+    from nonebot_bison.platform import platform_manager
+
+    config = Config()
+    config.user_target.truncate()
+    config.add_subscribe(
+        10000,
+        "group",
+        "6279793937",
+        "明日方舟Arknights",
+        "weibo",
+        [platform_manager["weibo"].reverse_category["图文"]],
+        ["明日方舟"],
+    )
+    async with app.test_matcher(del_sub_matcher) as ctx:
+        bot = ctx.create_bot(base=Bot)
+        assert isinstance(bot, Bot)
+        event = fake_group_message_event(
+            message=Message("删除订阅"), to_me=True, sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event)
+        ctx.should_pass_rule()
+        ctx.should_pass_permission()
+        ctx.should_call_send(
+            event,
+            Message(
+                "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n请输入要删除的订阅的序号\n输入'取消'中止"
+            ),
+            True,
+        )
+        event_abort = fake_group_message_event(
+            message=Message("取消"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_abort)
+        ctx.should_call_send(event_abort, "删除中止", True)
+        ctx.should_finished()
+    subs = config.list_subscribe(10000, "group")
+    assert subs

@@ -11,6 +11,7 @@
 
 ### Bug 修复
 
+- 捕获 JSONDecodeError [@felinae98](https://github.com/felinae98) ([#82](https://github.com/felinae98/nonebot-bison/pull/82))
 - 捕获SSL异常 [@felinae98](https://github.com/felinae98) ([#75](https://github.com/felinae98/nonebot-bison/pull/75))
 
 ### 文档

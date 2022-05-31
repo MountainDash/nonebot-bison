@@ -58,7 +58,7 @@ async def fetch_and_send(target_type: str):
             send_user_list,
         )
     )
-    to_send = await platform_manager[target_type].fetch_new_post(
+    to_send = await platform_manager[target_type].do_fetch_new_post(
         target, send_userinfo_list
     )
     if not to_send:

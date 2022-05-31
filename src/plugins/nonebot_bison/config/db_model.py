@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.sql.sqltypes import JSON, DateTime, Integer, String
+from sqlalchemy.sql.sqltypes import JSON, DateTime, Integer, String, Time
 
 Base = declarative_base()
 
@@ -29,11 +29,22 @@ class Target(Base):
     platform_name = Column(String(20), nullable=False)
     target = Column(String(1024), nullable=False)
     target_name = Column(String(1024), nullable=False)
-    last_schedule_time = Column(
-        DateTime(timezone=True), default=datetime(year=2000, month=1, day=1)
-    )
+    default_schedule_weight = Column(Integer, default=10)
 
     subscribes = relationship("Subscribe", back_populates="target")
+    time_weight = relationship("ScheduleTimeWeight", back_populates="target")
+
+
+class ScheduleTimeWeight(Base):
+    __tablename__ = "schedule_time_weight"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    target_id = Column(Integer, ForeignKey(Target.id))
+    start_time = Column(Time)
+    end_time = Column(Time)
+    weight = Column(Integer)
+
+    target = relationship("Target", back_populates="time_weight")
 
 
 class Subscribe(Base):

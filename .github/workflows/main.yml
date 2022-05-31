@@ -4,7 +4,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - admin-frontend/**
+      - docker/**
+      - src/**
+      - tests/**
+      - pyproject.toml
+      - poetry.lock
   pull_request:
+    paths:
+      - admin-frontend/**
+      - docker/**
+      - src/**
+      - tests/**
+      - pyproject.toml
+      - poetry.lock
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

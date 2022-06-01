@@ -1,0 +1,119 @@
+from datetime import time
+
+from nonebug import App
+
+
+async def test_create_config(app: App, db_migration):
+    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
+    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.types import Target as T_Target
+    from nonebot_plugin_datastore.db import get_engine
+
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id"),
+        target_name="weibo_name",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name1",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    await config.update_time_weight_config(
+        target=T_Target("weibo_id"),
+        platform_name="weibo",
+        conf=WeightConfig(
+            default=10,
+            time_config=[
+                TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20)
+            ],
+        ),
+    )
+
+    test_config = await config.get_time_weight_config(
+        target=T_Target("weibo_id"), platform_name="weibo"
+    )
+    assert test_config.default == 10
+    assert test_config.time_config == [
+        TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20)
+    ]
+    test_config1 = await config.get_time_weight_config(
+        target=T_Target("weibo_id1"), platform_name="weibo"
+    )
+    assert test_config1.default == 10
+    assert test_config1.time_config == []
+
+
+async def test_get_current_weight(app: App, db_migration):
+    from datetime import time
+
+    from nonebot_bison.config import db_config
+    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
+    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.types import Target as T_Target
+    from nonebot_plugin_datastore.db import get_engine
+
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id"),
+        target_name="weibo_name",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name1",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name2",
+        platform_name="weibo2",
+        cats=[],
+        tags=[],
+    )
+    await config.update_time_weight_config(
+        target=T_Target("weibo_id"),
+        platform_name="weibo",
+        conf=WeightConfig(
+            default=10,
+            time_config=[
+                TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20),
+                TimeWeightConfig(start_time=time(4, 0), end_time=time(5, 0), weight=30),
+            ],
+        ),
+    )
+    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(1, 30))
+    weight = await config.get_current_weight_val(["weibo", "weibo2"])
+    assert len(weight) == 3
+    assert weight["weibo-weibo_id"] == 20
+    assert weight["weibo-weibo_id1"] == 10
+    assert weight["weibo2-weibo_id1"] == 10
+    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(4, 0))
+    weight = await config.get_current_weight_val(["weibo", "weibo2"])
+    assert len(weight) == 3
+    assert weight["weibo-weibo_id"] == 30
+    assert weight["weibo-weibo_id1"] == 10
+    assert weight["weibo2-weibo_id1"] == 10
+    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(5, 0))
+    weight = await config.get_current_weight_val(["weibo", "weibo2"])
+    assert len(weight) == 3
+    assert weight["weibo-weibo_id"] == 10
+    assert weight["weibo-weibo_id1"] == 10
+    assert weight["weibo2-weibo_id1"] == 10

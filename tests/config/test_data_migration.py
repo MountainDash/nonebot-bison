@@ -1,9 +1,9 @@
 import pytest
 
 
-async def test_migration(use_legacy_config, db_migration):
+async def test_migration(use_legacy_config):
     from nonebot_bison.config.config_legacy import config as config_legacy
-    from nonebot_bison.config.db import data_migrate
+    from nonebot_bison.config.db import data_migrate, upgrade_db
     from nonebot_bison.config.db_config import config
 
     config_legacy.add_subscribe(
@@ -33,7 +33,8 @@ async def test_migration(use_legacy_config, db_migration):
         cats=[1],
         tags=[],
     )
-    await data_migrate()
+    # await data_migrate()
+    await upgrade_db()
     user123_config = await config.list_subscribe(123, "group")
     assert len(user123_config) == 2
     for c in user123_config:

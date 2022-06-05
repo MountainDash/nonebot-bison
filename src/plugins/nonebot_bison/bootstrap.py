@@ -1,4 +1,5 @@
 from nonebot import get_driver
+from nonebot.log import logger
 
 from .config.config_legacy import start_up as legacy_db_startup
 from .config.db import upgrade_db
@@ -16,3 +17,4 @@ async def bootstrap():
     await init_scheduler()
     # start scheduler
     start_scheduler()
+    logger.info("nonebot-bison bootstrap done")

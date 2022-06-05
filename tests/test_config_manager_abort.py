@@ -275,16 +275,15 @@ async def test_abort_add_on_tag(app: App, db_migration):
 async def test_abort_del_sub(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.types import Target as T_Target
 
-    config = Config()
-    config.user_target.truncate()
-    config.add_subscribe(
+    await config.add_subscribe(
         10000,
         "group",
-        "6279793937",
+        T_Target("6279793937"),
         "明日方舟Arknights",
         "weibo",
         [platform_manager["weibo"].reverse_category["图文"]],
@@ -312,5 +311,5 @@ async def test_abort_del_sub(app: App):
         ctx.receive_event(bot, event_abort)
         ctx.should_call_send(event_abort, "删除中止", True)
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert subs

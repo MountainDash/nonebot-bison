@@ -4,7 +4,7 @@ from sqlalchemy.sql.functions import func
 from sqlmodel.sql.expression import select
 
 
-async def test_add_subscribe(app: App, db_migration):
+async def test_add_subscribe(app: App, init_scheduler):
 
     from nonebot_bison.config.db_config import config
     from nonebot_bison.config.db_model import Subscribe, Target, User
@@ -72,7 +72,7 @@ async def test_add_subscribe(app: App, db_migration):
     assert conf.tags == ["tag"]
 
 
-async def test_del_subsribe(db_migration):
+async def test_del_subsribe(init_scheduler):
     from nonebot_bison.config.db_config import config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as TTarget
@@ -95,7 +95,7 @@ async def test_del_subsribe(db_migration):
     )
     async with AsyncSession(get_engine()) as sess:
         assert (await sess.scalar(select(func.count()).select_from(Subscribe))) == 0
-        assert (await sess.scalar(select(func.count()).select_from(Target))) == 0
+        assert (await sess.scalar(select(func.count()).select_from(Target))) == 1
 
     await config.add_subscribe(
         user=123,

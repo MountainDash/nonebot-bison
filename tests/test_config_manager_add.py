@@ -397,16 +397,13 @@ async def test_add_with_get_id(app: App, db_migration):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_bilibili_target_parser(app: App):
+async def test_add_with_bilibili_target_parser(app: App, db_migration):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import Bilibili
-
-    config = Config()
-    config.user_target.truncate()
 
     ak_list_router = respx.get(
         "https://api.bilibili.com/x/space/acc/info?mid=161775300"
@@ -507,7 +504,7 @@ async def test_add_with_bilibili_target_parser(app: App):
             event_6, BotReply.add_reply_subscribe_success("明日方舟"), True
         )
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 1
     sub = subs[0]
     assert sub["target"] == "161775300"

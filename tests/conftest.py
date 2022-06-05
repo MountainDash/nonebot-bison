@@ -30,7 +30,7 @@ def dummy_user_subinfo(app: App):
     from nonebot_bison.types import User, UserSubInfo
 
     user = User(123, "group")
-    return UserSubInfo(user=user, category_getter=lambda _: [], tag_getter=lambda _: [])
+    return UserSubInfo(user=user, categories=[], tags=[])
 
 
 @pytest.fixture
@@ -46,6 +46,13 @@ async def db_migration(app: App):
         await sess.execute(delete(Target))
         await sess.commit()
         await sess.close()
+
+
+@pytest.fixture
+async def init_scheduler(db_migration):
+    from nonebot_bison.scheduler.manager import init_scheduler
+
+    await init_scheduler()
 
 
 @pytest.fixture

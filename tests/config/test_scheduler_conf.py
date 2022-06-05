@@ -3,7 +3,7 @@ from datetime import time
 from nonebug import App
 
 
-async def test_create_config(app: App, db_migration):
+async def test_create_config(app: App, init_scheduler):
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
@@ -52,7 +52,7 @@ async def test_create_config(app: App, db_migration):
     assert test_config1.time_config == []
 
 
-async def test_get_current_weight(app: App, db_migration):
+async def test_get_current_weight(app: App, init_scheduler):
     from datetime import time
 
     from nonebot_bison.config import db_config
@@ -84,7 +84,7 @@ async def test_get_current_weight(app: App, db_migration):
         user_type="group",
         target=T_Target("weibo_id1"),
         target_name="weibo_name2",
-        platform_name="weibo2",
+        platform_name="bilibili",
         cats=[],
         tags=[],
     )
@@ -100,26 +100,26 @@ async def test_get_current_weight(app: App, db_migration):
         ),
     )
     app.monkeypatch.setattr(db_config, "_get_time", lambda: time(1, 30))
-    weight = await config.get_current_weight_val(["weibo", "weibo2"])
+    weight = await config.get_current_weight_val(["weibo", "bilibili"])
     assert len(weight) == 3
     assert weight["weibo-weibo_id"] == 20
     assert weight["weibo-weibo_id1"] == 10
-    assert weight["weibo2-weibo_id1"] == 10
+    assert weight["bilibili-weibo_id1"] == 10
     app.monkeypatch.setattr(db_config, "_get_time", lambda: time(4, 0))
-    weight = await config.get_current_weight_val(["weibo", "weibo2"])
+    weight = await config.get_current_weight_val(["weibo", "bilibili"])
     assert len(weight) == 3
     assert weight["weibo-weibo_id"] == 30
     assert weight["weibo-weibo_id1"] == 10
-    assert weight["weibo2-weibo_id1"] == 10
+    assert weight["bilibili-weibo_id1"] == 10
     app.monkeypatch.setattr(db_config, "_get_time", lambda: time(5, 0))
-    weight = await config.get_current_weight_val(["weibo", "weibo2"])
+    weight = await config.get_current_weight_val(["weibo", "bilibili"])
     assert len(weight) == 3
     assert weight["weibo-weibo_id"] == 10
     assert weight["weibo-weibo_id1"] == 10
-    assert weight["weibo2-weibo_id1"] == 10
+    assert weight["bilibili-weibo_id1"] == 10
 
 
-async def test_get_platform_target(app: App, db_migration):
+async def test_get_platform_target(app: App, init_scheduler):
     from nonebot_bison.config import db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
@@ -167,3 +167,52 @@ async def test_get_platform_target(app: App, db_migration):
     async with AsyncSession(get_engine()) as sess:
         res = await sess.scalars(select(Target).where(Target.platform_name == "weibo"))
         assert len(res.all()) == 2
+
+
+async def test_get_platform_target_subscribers(app: App, init_scheduler):
+    from nonebot_bison.config import db_config
+    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
+    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.types import User as T_User
+    from nonebot_bison.types import UserSubInfo
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.expression import select
+
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id"),
+        target_name="weibo_name",
+        platform_name="weibo",
+        cats=[1],
+        tags=["tag1"],
+    )
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name1",
+        platform_name="weibo",
+        cats=[2],
+        tags=["tag2"],
+    )
+    await config.add_subscribe(
+        user=245,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name1",
+        platform_name="weibo",
+        cats=[3],
+        tags=["tag3"],
+    )
+
+    res = await config.get_platform_target_subscribers("weibo", T_Target("weibo_id"))
+    assert len(res) == 1
+    assert res[0] == UserSubInfo(T_User(123, "group"), [1], ["tag1"])
+
+    res = await config.get_platform_target_subscribers("weibo", T_Target("weibo_id1"))
+    assert len(res) == 2
+    assert UserSubInfo(T_User(123, "group"), [2], ["tag2"]) in res
+    assert UserSubInfo(T_User(245, "group"), [3], ["tag3"]) in res

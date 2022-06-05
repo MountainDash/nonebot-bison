@@ -135,9 +135,7 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         self, target: Target, new_posts: list[RawPost], users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
         res: list[tuple[User, list[Post]]] = []
-        for user, category_getter, tag_getter in users:
-            required_tags = tag_getter(target) if self.enable_tag else []
-            cats = category_getter(target)
+        for user, cats, required_tags in users:
             user_raw_post = await self.filter_user_custom(
                 new_posts, cats, required_tags
             )

@@ -2,6 +2,7 @@ from nonebot import get_driver
 
 from .config.config_legacy import start_up as legacy_db_startup
 from .config.db import upgrade_db
+from .scheduler.aps import start_scheduler
 from .scheduler.manager import init_scheduler
 
 
@@ -13,3 +14,5 @@ async def bootstrap():
     await upgrade_db()
     # init scheduler
     await init_scheduler()
+    # start scheduler
+    start_scheduler()

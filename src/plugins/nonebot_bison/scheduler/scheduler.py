@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import nonebot
+from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import logger
 
 from ..config import config
+from ..platform import platform_manager
 from ..platform.platform import Platform
+from ..send import send_msgs
 from ..types import Target
 from ..utils import SchedulerConfig
+from .aps import aps
 
 
 @dataclass
@@ -22,6 +27,7 @@ class Scheduler:
 
     def __init__(self, name: str, schedulables: list[tuple[str, Target]]):
         conf = SchedulerConfig.registry.get(name)
+        self.name = name
         if not conf:
             logger.error(f"scheduler config [{name}] not found, exiting")
             raise RuntimeError(f"{name} not found")
@@ -37,8 +43,16 @@ class Scheduler:
             platform_name_set.add(platform_name)
         self.platform_name_list = list(platform_name_set)
         self.pre_weight_val = 0  # 轮调度中“本轮”增加权重和的初值
+        logger.info(
+            f"register scheduler for {name} with {self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"
+        )
+        aps.add_job(
+            self.exec_fetch,
+            self.scheduler_config.schedule_type,
+            **self.scheduler_config.schedule_setting,
+        )
 
-    async def schedule(self) -> Optional[Schedulable]:
+    async def get_next_schedulable(self) -> Optional[Schedulable]:
         if not self.schedulable_list:
             return None
         cur_weight = await config.get_current_weight_val(self.platform_name_list)
@@ -60,6 +74,35 @@ class Scheduler:
         assert cur_max_schedulable
         cur_max_schedulable.current_weight -= weight_sum
         return cur_max_schedulable
+
+    async def exec_fetch(self):
+        if not (schedulable := await self.get_next_schedulable()):
+            return
+        logger.debug(
+            f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}"
+        )
+        send_userinfo_list = await config.get_platform_target_subscribers(
+            schedulable.platform_name, schedulable.target
+        )
+        to_send = await platform_manager[schedulable.platform_name].do_fetch_new_post(
+            schedulable.target, send_userinfo_list
+        )
+        if not to_send:
+            return
+        bot = nonebot.get_bot()
+        assert isinstance(bot, Bot)
+        for user, send_list in to_send:
+            for send_post in send_list:
+                logger.info("send to {}: {}".format(user, send_post))
+                if not bot:
+                    logger.warning("no bot connected")
+                else:
+                    await send_msgs(
+                        bot,
+                        user.user,
+                        user.user_type,
+                        await send_post.generate_messages(),
+                    )
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

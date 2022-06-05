@@ -10,6 +10,8 @@ from sqlalchemy.sql.functions import func
 
 from ..types import Category, Tag
 from ..types import Target as T_Target
+from ..types import User as T_User
+from ..types import UserSubInfo
 from .db_model import ScheduleTimeWeight, Subscribe, Target, User
 
 
@@ -237,6 +239,28 @@ class DBConfig:
                         break
                 res[key] = weight
         return res
+
+    async def get_platform_target_subscribers(
+        self, platform_name: str, target: T_Target
+    ) -> list[UserSubInfo]:
+        async with AsyncSession(get_engine()) as sess:
+            query = (
+                select(Subscribe)
+                .join(Target)
+                .where(Target.platform_name == platform_name, Target.target == target)
+                .options(selectinload(Subscribe.user))
+            )
+            subsribes: list[Subscribe] = (await sess.scalars(query)).all()
+            return list(
+                map(
+                    lambda subscribe: UserSubInfo(
+                        T_User(subscribe.user.uid, subscribe.user.type),
+                        subscribe.categories,
+                        subscribe.tags,
+                    ),
+                    subsribes,
+                )
+            )
 
 
 config = DBConfig()

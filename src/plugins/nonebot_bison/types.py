@@ -22,5 +22,5 @@ class PlatformTarget:
 
 class UserSubInfo(NamedTuple):
     user: User
-    category_getter: Callable[[Target], list[Category]]
-    tag_getter: Callable[[Target], list[Tag]]
+    categories: list[Category]
+    tags: list[Tag]

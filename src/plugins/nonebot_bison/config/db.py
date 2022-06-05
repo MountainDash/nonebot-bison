@@ -10,7 +10,7 @@ from nonebot_plugin_datastore.db import get_engine
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from .config_legacy import ConfigContent, config
+from .config_legacy import ConfigContent, config, drop
 from .db_model import Base, Subscribe, Target, User
 
 DATA = PluginData("bison")
@@ -67,6 +67,7 @@ async def data_migrate():
                 + subscribe_to_create
             )
             await sess.commit()
+            drop()
             logger.info("migrate success")
 
 

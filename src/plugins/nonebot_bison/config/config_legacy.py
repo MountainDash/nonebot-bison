@@ -32,6 +32,22 @@ def get_config_path() -> str:
     return new_path
 
 
+def drop():
+    if plugin_config.bison_config_path:
+        data_dir = plugin_config.bison_config_path
+    else:
+        working_dir = os.getcwd()
+        data_dir = path.join(working_dir, "data")
+    old_path = path.join(data_dir, "bison.json")
+    new_path = path.join(data_dir, "bison-legacy.json")
+    if os.path.exists(old_path):
+        config.db.close()
+        config.available = False
+        os.rename(old_path, new_path)
+        return True
+    return False
+
+
 class SubscribeContent(TypedDict):
     target: str
     target_type: str
@@ -223,6 +239,8 @@ class Config(metaclass=Singleton):
 
 def start_up():
     config = Config()
+    if not config.available:
+        return
     if not (search_res := config.kv_config.search(Query().name == "version")):
         config.kv_config.insert({"name": "version", "value": config.migrate_version})
     elif search_res[0].get("value") < config.migrate_version:

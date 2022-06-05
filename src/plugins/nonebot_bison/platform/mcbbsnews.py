@@ -7,7 +7,14 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 
 from ..post import Post
 from ..types import Category, RawPost, Target
+from ..utils import SchedulerConfig
 from .platform import CategoryNotSupport, NewMessage
+
+
+class McbbsSchedConf(SchedulerConfig, name="mcbbs"):
+
+    schedule_type = "interval"
+    schedule_setting = {"hours": 1}
 
 
 def _format_text(rawtext: str, mode: int) -> str:
@@ -38,8 +45,7 @@ class McbbsNews(NewMessage):
     name = "MCBBS幻翼块讯"
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"hours": 1}
+    scheduler_class = "msbbs"
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:

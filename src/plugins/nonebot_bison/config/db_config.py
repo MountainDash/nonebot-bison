@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, time
-from typing import Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from nonebot_plugin_datastore.db import get_engine
 from sqlalchemy.ext.asyncio.session import AsyncSession
@@ -34,6 +34,16 @@ class WeightConfig:
 
 
 class DBConfig:
+    def __init__(self):
+        self.add_target_hook: Optional[Callable[[str, T_Target], Awaitable]] = None
+        self.delete_target_hook: Optional[Callable[[str, T_Target], Awaitable]] = None
+
+    def register_add_target_hook(self, fun: Callable[[str, T_Target], Awaitable]):
+        self.add_target_hook = fun
+
+    def register_delete_target_hook(self, fun: Callable[[str, T_Target], Awaitable]):
+        self.delete_target_hook = fun
+
     async def add_subscribe(
         self,
         user: int,
@@ -62,6 +72,8 @@ class DBConfig:
                 db_target = Target(
                     target=target, platform_name=platform_name, target_name=target_name
                 )
+                if self.add_target_hook:
+                    await self.add_target_hook(platform_name, target)
             else:
                 db_target.target_name = target_name  # type: ignore
             subscribe = Subscribe(
@@ -93,12 +105,12 @@ class DBConfig:
             )
             target_obj = await session.scalar(
                 select(Target).where(
-                    Target.platform_name == platform_name, MTarget.target == target
+                    Target.platform_name == platform_name, Target.target == target
                 )
             )
             await session.execute(
                 delete(Subscribe).where(
-                    Subscribe.user == user_obj, MSubscribe.target == target_obj
+                    Subscribe.user == user_obj, Subscribe.target == target_obj
                 )
             )
             target_count = await session.scalar(
@@ -108,7 +120,9 @@ class DBConfig:
             )
             if target_count == 0:
                 # delete empty target
-                await session.delete(target_obj)
+                # await session.delete(target_obj)
+                if self.delete_target_hook:
+                    await self.delete_target_hook(platform_name, T_Target(target))
             await session.commit()
 
     async def update_subscribe(
@@ -139,15 +153,27 @@ class DBConfig:
             subscribe_obj.target.target_name = target_name
             await sess.commit()
 
+    async def get_platform_target(self, platform_name: str) -> list[Target]:
+        async with AsyncSession(get_engine()) as sess:
+            subq = select(Subscribe.target_id).distinct().subquery()
+            query = (
+                select(Target).join(subq).where(Target.platform_name == platform_name)
+            )
+            return (await sess.scalars(query)).all()
+
     async def get_time_weight_config(
         self, target: T_Target, platform_name: str
     ) -> WeightConfig:
         async with AsyncSession(get_engine()) as sess:
-            time_weight_conf: list[ScheduleTimeWeight] = await sess.scalars(
-                select(ScheduleTimeWeight)
-                .where(Target.platform_name == platform_name, Target.target == target)
-                .join(Target)
-            )
+            time_weight_conf: list[ScheduleTimeWeight] = (
+                await sess.scalars(
+                    select(ScheduleTimeWeight)
+                    .where(
+                        Target.platform_name == platform_name, Target.target == target
+                    )
+                    .join(Target)
+                )
+            ).all()
             targetObj: Target = await sess.scalar(
                 select(Target).where(
                     Target.platform_name == platform_name, Target.target == target
@@ -192,11 +218,13 @@ class DBConfig:
         res = {}
         cur_time = _get_time()
         async with AsyncSession(get_engine()) as sess:
-            targets: list[Target] = await sess.scalars(
-                select(Target)
-                .where(Target.platform_name.in_(platform_list))
-                .options(selectinload(Target.time_weight))
-            )
+            targets: list[Target] = (
+                await sess.scalars(
+                    select(Target)
+                    .where(Target.platform_name.in_(platform_list))
+                    .options(selectinload(Target.time_weight))
+                )
+            ).all()
             for target in targets:
                 key = f"{target.platform_name}-{target.target}"
                 weight = target.default_schedule_weight

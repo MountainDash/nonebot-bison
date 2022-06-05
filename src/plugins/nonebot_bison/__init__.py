@@ -2,6 +2,7 @@ from nonebot.plugin import require
 
 from . import (
     admin_page,
+    bootstrap,
     config,
     config_manager,
     platform,

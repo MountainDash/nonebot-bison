@@ -117,3 +117,53 @@ async def test_get_current_weight(app: App, db_migration):
     assert weight["weibo-weibo_id"] == 10
     assert weight["weibo-weibo_id1"] == 10
     assert weight["weibo2-weibo_id1"] == 10
+
+
+async def test_get_platform_target(app: App, db_migration):
+    from nonebot_bison.config import db_config
+    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
+    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.types import Target as T_Target
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.expression import select
+
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id"),
+        target_name="weibo_name",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name1",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    await config.add_subscribe(
+        user=245,
+        user_type="group",
+        target=T_Target("weibo_id1"),
+        target_name="weibo_name1",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+    res = await config.get_platform_target("weibo")
+    assert len(res) == 2
+    await config.del_subscribe(123, "group", T_Target("weibo_id1"), "weibo")
+    res = await config.get_platform_target("weibo")
+    assert len(res) == 2
+    await config.del_subscribe(123, "group", T_Target("weibo_id"), "weibo")
+    res = await config.get_platform_target("weibo")
+    assert len(res) == 1
+
+    async with AsyncSession(get_engine()) as sess:
+        res = await sess.scalars(select(Target).where(Target.platform_name == "weibo"))
+        assert len(res.all()) == 2

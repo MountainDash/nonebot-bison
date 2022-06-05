@@ -14,8 +14,7 @@ class NcmRadio(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"minutes": 10}
+    scheduler_class = "music.163.com"
     name = "网易云-电台"
     has_target = True
     parse_target_promot = "请输入主播电台主页（包含数字ID）的链接"

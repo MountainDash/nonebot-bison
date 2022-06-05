@@ -39,8 +39,7 @@ class RegistryABCMeta(RegistryMeta, ABC):
 
 class Platform(metaclass=RegistryABCMeta, base=True):
 
-    schedule_type: Literal["date", "interval", "cron"]
-    schedule_kw: dict
+    scheduler_class: str
     is_common: bool
     enabled: bool
     name: str
@@ -332,11 +331,11 @@ class NoTargetGroup(Platform, abstract=True):
 
     def __init__(self, platform_list: list[Platform]):
         self.platform_list = platform_list
+        self.platform_name = platform_list[0].platform_name
         name = self.DUMMY_STR
         self.categories = {}
         categories_keys = set()
-        self.schedule_type = platform_list[0].schedule_type
-        self.schedule_kw = platform_list[0].schedule_kw
+        self.scheduler_class = platform_list[0].scheduler_class
         for platform in platform_list:
             if platform.has_target:
                 raise RuntimeError(
@@ -355,10 +354,7 @@ class NoTargetGroup(Platform, abstract=True):
                 )
             categories_keys |= platform_category_key_set
             self.categories.update(platform.categories)
-            if (
-                platform.schedule_kw != self.schedule_kw
-                or platform.schedule_type != self.schedule_type
-            ):
+            if platform.scheduler_class != self.scheduler_class:
                 raise RuntimeError(
                     "Platform scheduler for {} not fit".format(self.platform_name)
                 )

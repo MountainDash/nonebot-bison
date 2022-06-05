@@ -243,6 +243,4 @@ def start_up():
     config.update_send_cache()
 
 
-nonebot.get_driver().on_startup(start_up)
-
 config = Config()

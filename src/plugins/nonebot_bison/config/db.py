@@ -70,7 +70,6 @@ async def data_migrate():
             logger.info("migrate success")
 
 
-@nonebot.get_driver().on_startup
 async def upgrade_db():
     alembic_cfg = Config()
     alembic_cfg.set_main_option(

@@ -28,6 +28,7 @@ class Weibo(NewMessage):
     schedule_type = "interval"
     schedule_kw = {"seconds": 3}
     has_target = True
+    parse_target_promot = "请输入用户主页（包含数字UID）的链接"
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with http_client() as client:
@@ -40,6 +41,15 @@ class Weibo(NewMessage):
                 return res_dict["data"]["userInfo"]["screen_name"]
             else:
                 return None
+
+    async def parse_target(self, target_text: str) -> Target:
+        if re.match(r"\d+", target_text):
+            return Target(target_text)
+        elif match := re.match(r"(?:https?://)?weibo\.com/u/(\d+)", target_text):
+            # 都2202年了应该不会有http了吧，不过还是防一手
+            return Target(match.group(1))
+        else:
+            raise self.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         async with http_client() as client:
@@ -133,9 +143,9 @@ class Weibo(NewMessage):
                     "https://m.weibo.cn/detail/{}".format(info["mid"]), headers=header
                 )
             try:
-                full_json_text = re.search(
-                    r'"status": ([\s\S]+),\s+"call"', res.text
-                ).group(1)
+                match = re.search(r'"status": ([\s\S]+),\s+"call"', res.text)
+                assert match
+                full_json_text = match.group(1)
                 info = json.loads(full_json_text)
             except:
                 logger.info(

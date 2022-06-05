@@ -1,3 +1,4 @@
+import re
 from typing import Any, Optional
 
 from ..post import Post
@@ -17,6 +18,7 @@ class NcmArtist(NewMessage):
     schedule_kw = {"minutes": 1}
     name = "网易云-歌手"
     has_target = True
+    parse_target_promot = "请输入歌手主页（包含数字ID）的链接"
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with http_client() as client:
@@ -28,6 +30,16 @@ class NcmArtist(NewMessage):
             if res_data["code"] != 200:
                 return
             return res_data["artist"]["name"]
+
+    async def parse_target(self, target_text: str) -> Target:
+        if re.match(r"^\d+$", target_text):
+            return Target(target_text)
+        elif match := re.match(
+            r"(?:https?://)?music\.163\.com/#/artist\?id=(\d+)", target_text
+        ):
+            return Target(match.group(1))
+        else:
+            raise self.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         async with http_client() as client:

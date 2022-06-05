@@ -1,3 +1,5 @@
+import json
+import ssl
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -47,6 +49,7 @@ class Platform(metaclass=RegistryABCMeta, base=True):
     enable_tag: bool
     store: dict[Target, Any]
     platform_name: str
+    parse_target_promot: Optional[str] = None
 
     @abstractmethod
     async def get_target_name(self, target: Target) -> Optional[str]:
@@ -57,6 +60,25 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         self, target: Target, users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
         ...
+
+    async def do_fetch_new_post(
+        self, target: Target, users: list[UserSubInfo]
+    ) -> list[tuple[User, list[Post]]]:
+        try:
+            return await self.fetch_new_post(target, users)
+        except httpx.RequestError as err:
+            logger.warning(
+                "network connection error: {}, url: {}".format(
+                    type(err), err.request.url
+                )
+            )
+            return []
+        except ssl.SSLError as err:
+            logger.warning(f"ssl error: {err}")
+            return []
+        except json.JSONDecodeError as err:
+            logger.warning(f"json error, parsing: {err.doc}")
+            return []
 
     @abstractmethod
     async def parse(self, raw_post: RawPost) -> Post:
@@ -72,6 +94,12 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         for key, val in self.categories.items():
             self.reverse_category[val] = key
         self.store = dict()
+
+    class ParseTargetException(Exception):
+        pass
+
+    async def parse_target(self, target_string: str) -> Target:
+        return Target(target_string)
 
     @abstractmethod
     def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
@@ -219,30 +247,22 @@ class NewMessage(MessageProcess, abstract=True):
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
-        try:
-            post_list = await self.get_sub_list(target)
-            new_posts = await self.filter_common_with_diff(target, post_list)
-            if not new_posts:
-                return []
-            else:
-                for post in new_posts:
-                    logger.info(
-                        "fetch new post from {} {}: {}".format(
-                            self.platform_name,
-                            target if self.has_target else "-",
-                            self.get_id(post),
-                        )
-                    )
-            res = await self.dispatch_user_post(target, new_posts, users)
-            self.parse_cache = {}
-            return res
-        except httpx.RequestError as err:
-            logger.warning(
-                "network connection error: {}, url: {}".format(
-                    type(err), err.request.url
-                )
-            )
+        post_list = await self.get_sub_list(target)
+        new_posts = await self.filter_common_with_diff(target, post_list)
+        if not new_posts:
             return []
+        else:
+            for post in new_posts:
+                logger.info(
+                    "fetch new post from {} {}: {}".format(
+                        self.platform_name,
+                        target if self.has_target else "-",
+                        self.get_id(post),
+                    )
+                )
+        res = await self.dispatch_user_post(target, new_posts, users)
+        self.parse_cache = {}
+        return res
 
 
 class StatusChange(Platform, abstract=True):
@@ -263,30 +283,22 @@ class StatusChange(Platform, abstract=True):
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
-        try:
-            new_status = await self.get_status(target)
-            res = []
-            if old_status := self.get_stored_data(target):
-                diff = self.compare_status(target, old_status, new_status)
-                if diff:
-                    logger.info(
-                        "status changes {} {}: {} -> {}".format(
-                            self.platform_name,
-                            target if self.has_target else "-",
-                            old_status,
-                            new_status,
-                        )
+        new_status = await self.get_status(target)
+        res = []
+        if old_status := self.get_stored_data(target):
+            diff = self.compare_status(target, old_status, new_status)
+            if diff:
+                logger.info(
+                    "status changes {} {}: {} -> {}".format(
+                        self.platform_name,
+                        target if self.has_target else "-",
+                        old_status,
+                        new_status,
                     )
-                    res = await self.dispatch_user_post(target, diff, users)
-            self.set_stored_data(target, new_status)
-            return res
-        except httpx.RequestError as err:
-            logger.warning(
-                "network connection error: {}, url: {}".format(
-                    type(err), err.request.url
                 )
-            )
-            return []
+                res = await self.dispatch_user_post(target, diff, users)
+        self.set_stored_data(target, new_status)
+        return res
 
 
 class SimplePost(MessageProcess, abstract=True):
@@ -295,29 +307,21 @@ class SimplePost(MessageProcess, abstract=True):
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
-        try:
-            new_posts = await self.get_sub_list(target)
-            if not new_posts:
-                return []
-            else:
-                for post in new_posts:
-                    logger.info(
-                        "fetch new post from {} {}: {}".format(
-                            self.platform_name,
-                            target if self.has_target else "-",
-                            self.get_id(post),
-                        )
-                    )
-            res = await self.dispatch_user_post(target, new_posts, users)
-            self.parse_cache = {}
-            return res
-        except httpx.RequestError as err:
-            logger.warning(
-                "network connection error: {}, url: {}".format(
-                    type(err), err.request.url
-                )
-            )
+        new_posts = await self.get_sub_list(target)
+        if not new_posts:
             return []
+        else:
+            for post in new_posts:
+                logger.info(
+                    "fetch new post from {} {}: {}".format(
+                        self.platform_name,
+                        target if self.has_target else "-",
+                        self.get_id(post),
+                    )
+                )
+        res = await self.dispatch_user_post(target, new_posts, users)
+        self.parse_cache = {}
+        return res
 
 
 class NoTargetGroup(Platform, abstract=True):

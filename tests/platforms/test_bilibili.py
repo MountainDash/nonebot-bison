@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 
 import pytest
@@ -12,6 +13,10 @@ from .utils import get_file, get_json
 @pytest.fixture(scope="module")
 def bing_dy_list():
     return get_json("bilibili_bing_list.json")["data"]["cards"]
+
+
+if typing.TYPE_CHECKING:
+    from nonebot_bison.platform.bilibili import Bilibili
 
 
 @pytest.fixture
@@ -76,3 +81,20 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
         post.text
         == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
     )
+
+
+async def test_parse_target(bilibili: "Bilibili"):
+    from nonebot_bison.platform.platform import Platform
+
+    res = await bilibili.parse_target(
+        "https://space.bilibili.com/161775300?from=search&seid=130517740606234234234&spm_id_from=333.337.0.0"
+    )
+    assert res == "161775300"
+    res2 = await bilibili.parse_target(
+        "space.bilibili.com/161775300?from=search&seid=130517740606234234234&spm_id_from=333.337.0.0"
+    )
+    assert res2 == "161775300"
+    with pytest.raises(Platform.ParseTargetException):
+        await bilibili.parse_target(
+            "https://www.bilibili.com/video/BV1qP4y1g738?spm_id_from=333.999.0.0"
+        )

@@ -2,7 +2,21 @@
 
 ## 最近更新
 
-- No changes
+### 新功能
+
+- 添加bilibili开播提醒 [@Sichongzou](https://github.com/Sichongzou) ([#60](https://github.com/felinae98/nonebot-bison/pull/60))
+- 添加User-Agent配置 [@felinae98](https://github.com/felinae98) ([#78](https://github.com/felinae98/nonebot-bison/pull/78))
+- 增加代理设置 [@felinae98](https://github.com/felinae98) ([#71](https://github.com/felinae98/nonebot-bison/pull/71))
+- 增加Parse Target功能 [@felinae98](https://github.com/felinae98) ([#72](https://github.com/felinae98/nonebot-bison/pull/72))
+
+### Bug 修复
+
+- 捕获 JSONDecodeError [@felinae98](https://github.com/felinae98) ([#82](https://github.com/felinae98/nonebot-bison/pull/82))
+- 捕获SSL异常 [@felinae98](https://github.com/felinae98) ([#75](https://github.com/felinae98/nonebot-bison/pull/75))
+
+### 文档
+
+- 完善开发文档 [@AzideCupric](https://github.com/AzideCupric) ([#80](https://github.com/felinae98/nonebot-bison/pull/80))
 
 ## v0.5.3
 

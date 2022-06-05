@@ -1,6 +1,5 @@
 import pytest
 from nonebug import App
-from nonebug.fixture import nonebug_init
 
 
 async def test_without_proxy(app: App):
@@ -8,6 +7,8 @@ async def test_without_proxy(app: App):
 
     c = http_client()
     assert not c._mounts
+    req = c.build_request("GET", "http://example.com")
+    assert "Chrome" in req.headers["User-Agent"]
 
 
 @pytest.mark.parametrize(

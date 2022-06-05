@@ -1,10 +1,11 @@
 import json
+import re
 from typing import Any, Optional
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
 from ..utils import http_client
-from .platform import CategoryNotSupport, NewMessage
+from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
 class Bilibili(NewMessage):
@@ -25,6 +26,7 @@ class Bilibili(NewMessage):
     schedule_kw = {"seconds": 10}
     name = "B站"
     has_target = True
+    parse_target_promot = "请输入用户主页的链接"
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with http_client() as client:
@@ -35,6 +37,16 @@ class Bilibili(NewMessage):
             if res_data["code"]:
                 return None
             return res_data["data"]["name"]
+
+    async def parse_target(self, target_text: str) -> Target:
+        if re.match(r"\d+", target_text):
+            return Target(target_text)
+        elif match := re.match(
+            r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text
+        ):
+            return Target(match.group(1))
+        else:
+            raise self.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         async with http_client() as client:
@@ -143,3 +155,73 @@ class Bilibili(NewMessage):
         else:
             raise CategoryNotSupport(post_type)
         return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
+
+
+class Bilibililive(StatusChange):
+    # Author : Sichongzou
+    # Date : 2022-5-18 8:54
+    # Description : bilibili开播提醒
+    # E-mail : 1557157806@qq.com
+    categories = {}
+    platform_name = "bilibili-live"
+    enable_tag = True
+    enabled = True
+    is_common = True
+    schedule_type = "interval"
+    schedule_kw = {"seconds": 10}
+    name = "Bilibili直播"
+    has_target = True
+
+    async def get_target_name(self, target: Target) -> Optional[str]:
+        async with http_client() as client:
+            res = await client.get(
+                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+            )
+            res_data = json.loads(res.text)
+            if res_data["code"]:
+                return None
+            return res_data["data"]["name"]
+
+    async def get_status(self, target: Target):
+        async with http_client() as client:
+            params = {"mid": target}
+            res = await client.get(
+                "https://api.bilibili.com/x/space/acc/info",
+                params=params,
+                timeout=4.0,
+            )
+            res_dict = json.loads(res.text)
+            if res_dict["code"] == 0:
+                info = {}
+                info["uid"] = res_dict["data"]["mid"]
+                info["uname"] = res_dict["data"]["name"]
+                info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
+                info["room_id"] = res_dict["data"]["live_room"]["roomid"]
+                info["title"] = res_dict["data"]["live_room"]["title"]
+                info["cover"] = res_dict["data"]["live_room"]["cover"]
+                return info
+            else:
+                return []
+
+    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
+        if (
+            new_status["live_state"] != old_status["live_state"]
+            and new_status["live_state"] == 1
+        ):
+            return [new_status]
+        else:
+            return []
+
+    async def parse(self, raw_post: RawPost) -> Post:
+        url = "https://live.bilibili.com/{}".format(raw_post["room_id"])
+        pic = [raw_post["cover"]]
+        target_name = raw_post["uname"]
+        title = raw_post["title"]
+        return Post(
+            self.name,
+            text=title,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            compress=True,
+        )

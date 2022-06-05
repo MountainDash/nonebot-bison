@@ -45,7 +45,7 @@ class McbbsNews(NewMessage):
     name = "MCBBS幻翼块讯"
     enabled = True
     is_common = False
-    scheduler_class = "msbbs"
+    scheduler_class = "mcbbs"
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:

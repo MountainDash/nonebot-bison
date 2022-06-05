@@ -49,7 +49,7 @@ class McbbsNews(NewMessage):
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
-        return f"{self.name} {self.categories[1]}"
+        return self.name
 
     async def get_sub_list(self, _: Target) -> list[RawPost]:
         url = "https://www.mcbbs.net/forum-news-1.html"
@@ -68,12 +68,37 @@ class McbbsNews(NewMessage):
 
         return post_list
 
+    @staticmethod
+    def _format_text(rawtext: str, mode: int) -> str:
+        """处理BeautifulSoup生成的string中奇怪的回车+连续空格
+        mode 0:处理标题
+        mode 1:处理版本资讯类推文
+        mode 2:处理快讯类推文"""
+        if mode == 0:
+            ftext = re.sub(r"\n\s*", " ", rawtext)
+        elif mode == 1:
+            ftext = re.sub(r"[\n\s*]", "", rawtext)
+        elif mode == 2:
+            ftext = re.sub(r"\r\n", "", rawtext)
+        else:
+            raise NotImplementedError
+        return ftext
+
+    @staticmethod
+    def _stamp_date(rawdate: str) -> int:
+        """将时间转化为时间戳yyyy-mm-dd->timestamp"""
+        time_stamp = int(time.mktime(time.strptime(rawdate, "%Y-%m-%d")))
+        return time_stamp
+
     def _gen_post_list(self, raw_post_list) -> list[RawPost]:
+        """解析生成推文列表"""
         post_list = []
         for raw_post in raw_post_list:
             post = {}
             post["url"] = raw_post.find("a", class_="s xst")["href"]
-            post["title"] = _format_text(raw_post.find("a", class_="s xst").string, 0)
+            post["title"] = self._format_text(
+                raw_post.find("a", class_="s xst").string, 0
+            )
             post["category"] = raw_post.select("th em a")[0].string
             post["author"] = raw_post.select("td:nth-of-type(2) cite a")[0].string
             post["id"] = raw_post["id"]
@@ -82,7 +107,7 @@ class McbbsNews(NewMessage):
                 if raw_post.select("td:nth-of-type(2) em span span")
                 else raw_post.select("td:nth-of-type(2) em span")[0].string
             )
-            post["date"] = _stamp_date(rawdate)
+            post["date"] = self._stamp_date(rawdate)
             post_list.append(post)
         return post_list
 
@@ -90,19 +115,20 @@ class McbbsNews(NewMessage):
         return post["id"]
 
     def get_date(self, post: RawPost) -> int:
+        # 获取datetime精度只到日期，故暂时舍弃
         # return post["date"]
         return None
 
     def get_category(self, post: RawPost) -> Category:
-        match post["category"]:
-            case "Java版本资讯":
-                return Category(1)
-            case "基岩版本资讯":
-                return Category(2)
-            case _:
-                raise CategoryNotSupport("McbbsNews订阅暂不支持 `{}".format(post["category"]))
+        if post["category"] == "Java版本资讯":
+            return Category(1)
+        elif post["category"] == "基岩版本资讯":
+            return Category(2)
+        else:
+            raise CategoryNotSupport("McbbsNews订阅暂不支持 `{}".format(post["category"]))
 
-    def _check_str_chinese(self, check_str: str) -> bool:
+    @staticmethod
+    def _check_str_chinese(check_str: str) -> bool:
         """检测字符串是否含有中文（有一个就算）"""
         for ch in check_str:
             if "\u4e00" <= ch <= "\u9fff":
@@ -113,40 +139,40 @@ class McbbsNews(NewMessage):
         """提取Java/Bedrock版本资讯的推送消息"""
         raw_soup = BeautifulSoup(raw_text.replace("<br />", ""), "html.parser")
         # 获取头图
-        match news_type:
-            case "Java版本资讯":
-                # 获取头图
-                pic_tag = raw_soup.find(
-                    "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
-                )
-                pic_url: list[str] = (
-                    [pic_tag.get("src", pic_tag.get("file"))] if pic_tag else []
-                )
-                # 获取blockquote标签下的内容
-                soup = raw_soup.find(
-                    "td", id=re.compile(r"postmessage_[0-9]*")
-                ).blockquote.blockquote
-            case "基岩版本资讯":
-                # 获取头图
-                pic_tag_0 = raw_soup.find(
-                    "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
-                )
-                pic_tag_1 = raw_soup.find(
-                    "img",
-                    file=re.compile(r"https://feedback.minecraft.net/\S*beta\S*.jpg"),
-                )
-                pic_url: list[str] = [
-                    pic_tag_0.get("src", pic_tag_0.get("file")) if pic_tag_0 else None,
-                    pic_tag_1.get("src", pic_tag_1.get("file")) if pic_tag_1 else None,
-                ]
-                # 获取blockquote标签下的内容
-                soup = (
-                    raw_soup.find("td", id=re.compile(r"postmessage_[0-9]*"))
-                    .select("blockquote:nth-of-type(2)")[0]
-                    .blockquote
-                )
-            case _:
-                raise CategoryNotSupport(f"该函数不支持处理{news_type}")
+        if news_type == "Java版本资讯":
+            # 获取头图
+            pic_tag = raw_soup.find(
+                "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
+            )
+            pic_url: list[str] = (
+                [pic_tag.get("src", pic_tag.get("file"))] if pic_tag else []
+            )
+            # 获取blockquote标签下的内容
+            soup = raw_soup.find(
+                "td", id=re.compile(r"postmessage_[0-9]*")
+            ).blockquote.blockquote
+        elif news_type == "基岩版本资讯":
+            # 获取头图
+            pic_tag_0 = raw_soup.find(
+                "img", file=re.compile(r"https://www.minecraft.net/\S*header.jpg")
+            )
+            pic_tag_1 = raw_soup.find(
+                "img",
+                file=re.compile(r"https://feedback.minecraft.net/\S*beta\S*.jpg"),
+            )
+            pic_url: list[str] = [
+                pic_tag_0.get("src", pic_tag_0.get("file")) if pic_tag_0 else None,
+                pic_tag_1.get("src", pic_tag_1.get("file")) if pic_tag_1 else None,
+            ]
+            # 获取blockquote标签下的内容
+            soup = (
+                raw_soup.find("td", id=re.compile(r"postmessage_[0-9]*"))
+                .select("blockquote:nth-of-type(2)")[0]
+                .blockquote
+            )
+        else:
+            raise CategoryNotSupport(f"该函数不支持处理{news_type}")
+
         # 通用步骤
         # 删除无用的div和span段内容
         for del_tag in soup.find_all(["div", "span"]):
@@ -156,45 +182,43 @@ class McbbsNews(NewMessage):
         # orig_info[0].extract()
         # 展开所有的a,u和strong标签,展开ul,font标签里的font标签
         for unwrap_tag in soup.find_all(["a", "strong", "u", "ul", "font"]):
-            match unwrap_tag.name:
-                case "a" | "strong" | "u":  # 展开所有的a,u和strong标签
-                    unwrap_tag.unwrap()
-                case "ul" | "font":  # 展开ul,font里的font标签
-                    for font_tag in unwrap_tag.find_all("font"):
-                        font_tag.unwrap()
+            if unwrap_tag.name in ["a", "strong", "u"]:  # 展开所有的a,u和strong标签
+                unwrap_tag.unwrap()
+            elif unwrap_tag.name in ["ul", "font"]:  # 展开ul,font里的font标签
+                for font_tag in unwrap_tag.find_all("font"):
+                    font_tag.unwrap()
 
         # 获取所有的中文句子
         post_text = ""
         last_is_empty_line = True
         for element in soup.contents:
             if isinstance(element, Tag):
-                match element.name:
-                    case "font":
+                if element.name == "font":
+                    text = ""
+                    for sub in element.contents:
+                        if isinstance(sub, NavigableString):
+                            text += sub
+                    if self._check_str_chinese(text):
+                        post_text += "{}\n".format(self._format_text(text, 1))
+                        last_is_empty_line = False
+                elif element.name == "ul":
+                    for li_tag in element.find_all("li"):
                         text = ""
-                        for sub in element.contents:
+                        for sub in li_tag.contents:
                             if isinstance(sub, NavigableString):
                                 text += sub
                         if self._check_str_chinese(text):
-                            post_text += "{}\n".format(_format_text(text, 1))
+                            post_text += "{}\n".format(self._format_text(text, 1))
                             last_is_empty_line = False
-                    case "ul":
-                        for li_tag in element.find_all("li"):
-                            text = ""
-                            for sub in li_tag.contents:
-                                if isinstance(sub, NavigableString):
-                                    text += sub
-                            if self._check_str_chinese(text):
-                                post_text += "{}\n".format(_format_text(text, 1))
-                                last_is_empty_line = False
-                    case _:
-                        continue
+                else:
+                    continue
             elif isinstance(element, NavigableString):
                 if str(element) == "\n":
                     if not last_is_empty_line:
                         post_text += "\n"
                     last_is_empty_line = True
                 else:
-                    post_text += "{}\n".format(_format_text(element, 1))
+                    post_text += "{}\n".format(self._format_text(element, 1))
                     last_is_empty_line = False
             else:
                 continue
@@ -217,7 +241,8 @@ class McbbsNews(NewMessage):
         # 删除无用的span,div段内容
         for del_tag in soup.find_all("i"):
             del_tag.extract()
-        soup.find(class_="attach_nopermission attach_tips").extract()
+        if extag := soup.find(class_="attach_nopermission attach_tips"):
+            extag.extract()
         # 展开所有的a,strong标签
         for unwrap_tag in soup.find_all(["a", "strong"]):
             unwrap_tag.unwrap()
@@ -235,10 +260,11 @@ class McbbsNews(NewMessage):
         else:
             for string in soup.stripped_strings:
                 text += "{}\n".format(string)
-        ftext = _format_text(text, 2)
+        ftext = self._format_text(text, 2)
         return ftext, pic_urls
 
     async def parse(self, raw_post: RawPost) -> Post:
+        """获取并分配正式推文交由相应的函数解析"""
         post_url = "https://www.mcbbs.net/{}".format(raw_post["url"])
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -248,20 +274,14 @@ class McbbsNews(NewMessage):
         async with httpx.AsyncClient() as client:
             html = await client.get(post_url, headers=headers)
 
-        match raw_post["category"]:
-            case "Java版本资讯":
-                # 事先删除不需要的尾部
-                raw_text = re.sub(r"【本文排版借助了：[\s\S]*】", "", html.text)
-                text, pic_urls = self._news_parser(raw_text, raw_post["category"])
-            case "基岩版本资讯":
-                raw_text = re.sub(r"【本文排版借助了：[\s\S]*】", "", html.text)
-                text, pic_urls = self._news_parser(raw_text, raw_post["category"])
-            case "快讯" | "基岩快讯" | "周边消息":
-                text, pic_urls = self._express_parser(html.text, raw_post["category"])
-            case _:
-                raise CategoryNotSupport(
-                    "McbbsNews订阅暂不支持 `{}".format(raw_post["category"])
-                )
+        if raw_post["category"] in ["Java版本资讯", "基岩版本资讯"]:
+            # 事先删除不需要的尾部
+            raw_text = re.sub(r"【本文排版借助了：[\s\S]*】", "", html.text)
+            text, pic_urls = self._news_parser(raw_text, raw_post["category"])
+        elif raw_post["category"] in ["快讯", "基岩快讯", "周边消息"]:
+            text, pic_urls = self._express_parser(html.text, raw_post["category"])
+        else:
+            raise CategoryNotSupport("McbbsNews订阅暂不支持 `{}".format(raw_post["category"]))
 
         return Post(
             self.name,

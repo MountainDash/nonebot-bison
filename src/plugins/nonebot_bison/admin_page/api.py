@@ -1,7 +1,7 @@
 import nonebot
 from nonebot.adapters.onebot.v11.bot import Bot
 
-from ..config import Config, NoSuchSubscribeException, NoSuchUserException
+from ..config import NoSuchSubscribeException, NoSuchUserException, config
 from ..platform import check_sub_target, platform_manager
 from .jwt import pack_jwt
 from .token_manager import token_manager
@@ -83,7 +83,6 @@ async def get_subs_info(jwt_obj: dict):
     res = {}
     for group in groups:
         group_id = group["id"]
-        config = Config()
         subs = list(
             map(
                 lambda sub: {
@@ -112,7 +111,6 @@ async def add_group_sub(
     cats: list[int],
     tags: list[str],
 ):
-    config = Config()
     config.add_subscribe(
         int(group_number), "group", target, target_name, platform_name, cats, tags
     )
@@ -120,7 +118,6 @@ async def add_group_sub(
 
 
 async def del_group_sub(group_number: str, platform_name: str, target: str):
-    config = Config()
     try:
         config.del_subscribe(int(group_number), "group", target, platform_name)
     except (NoSuchUserException, NoSuchSubscribeException):
@@ -136,7 +133,6 @@ async def update_group_sub(
     cats: list[int],
     tags: list[str],
 ):
-    config = Config()
     try:
         config.update_subscribe(
             int(group_number), "group", target, target_name, platform_name, cats, tags

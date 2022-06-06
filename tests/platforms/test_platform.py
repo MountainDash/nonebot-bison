@@ -22,7 +22,7 @@ raw_post_list_2 = raw_post_list_1 + [
 def dummy_user(app: App):
     from nonebot_bison.types import User
 
-    user = User("123", "group")
+    user = User(123, "group")
     return user
 
 
@@ -90,6 +90,12 @@ def mock_platform(app: App):
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import SchedulerConfig
+
+    class MockPlatformSchedConf(SchedulerConfig, name="mock"):
+
+        schedule_type = "interval"
+        schedule_setting = {"seconds": 100}
 
     class MockPlatform(NewMessage):
 
@@ -97,9 +103,9 @@ def mock_platform(app: App):
         name = "Mock Platform"
         enabled = True
         is_common = True
-        schedule_interval = 10
         enable_tag = True
         has_target = True
+        scheduler_class = "mock"
         categories = {
             Category(1): "转发",
             Category(2): "视频",
@@ -148,6 +154,12 @@ def mock_platform_no_target(app: App):
     from nonebot_bison.platform.platform import CategoryNotSupport, NewMessage
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import SchedulerConfig
+
+    class MockPlatformSchedConf(SchedulerConfig, name="mock"):
+
+        schedule_type = "interval"
+        schedule_setting = {"seconds": 100}
 
     class MockPlatform(NewMessage):
 
@@ -155,8 +167,7 @@ def mock_platform_no_target(app: App):
         name = "Mock Platform"
         enabled = True
         is_common = True
-        schedule_type = "interval"
-        schedule_kw = {"seconds": 30}
+        scheduler_class = "mock"
         enable_tag = True
         has_target = False
         categories = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
@@ -206,14 +217,19 @@ def mock_platform_no_target_2(app: App):
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import SchedulerConfig
+
+    class MockPlatformSchedConf(SchedulerConfig, name="mock"):
+
+        schedule_type = "interval"
+        schedule_setting = {"seconds": 100}
 
     class MockPlatform(NewMessage):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
         enabled = True
-        schedule_type = "interval"
-        schedule_kw = {"seconds": 30}
+        scheduler_class = "mock"
         is_common = True
         enable_tag = True
         has_target = False
@@ -324,13 +340,13 @@ async def test_new_message_target_without_cats_tags(
     mock_platform_without_cats_tags, user_info_factory
 ):
     res1 = await mock_platform_without_cats_tags.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
+        "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res1) == 0
     res2 = await mock_platform_without_cats_tags.fetch_new_post(
         "dummy",
         [
-            user_info_factory(lambda _: [], lambda _: []),
+            user_info_factory([], []),
         ],
     )
     assert len(res2) == 1
@@ -342,16 +358,14 @@ async def test_new_message_target_without_cats_tags(
 
 @pytest.mark.asyncio
 async def test_new_message_target(mock_platform, user_info_factory):
-    res1 = await mock_platform.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
-    )
+    res1 = await mock_platform.fetch_new_post("dummy", [user_info_factory([1, 2], [])])
     assert len(res1) == 0
     res2 = await mock_platform.fetch_new_post(
         "dummy",
         [
-            user_info_factory(lambda _: [1, 2], lambda _: []),
-            user_info_factory(lambda _: [1], lambda _: []),
-            user_info_factory(lambda _: [1, 2], lambda _: ["tag1"]),
+            user_info_factory([1, 2], []),
+            user_info_factory([1], []),
+            user_info_factory([1, 2], ["tag1"]),
         ],
     )
     assert len(res2) == 3
@@ -372,15 +386,15 @@ async def test_new_message_target(mock_platform, user_info_factory):
 @pytest.mark.asyncio
 async def test_new_message_no_target(mock_platform_no_target, user_info_factory):
     res1 = await mock_platform_no_target.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
+        "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res1) == 0
     res2 = await mock_platform_no_target.fetch_new_post(
         "dummy",
         [
-            user_info_factory(lambda _: [1, 2], lambda _: []),
-            user_info_factory(lambda _: [1], lambda _: []),
-            user_info_factory(lambda _: [1, 2], lambda _: ["tag1"]),
+            user_info_factory([1, 2], []),
+            user_info_factory([1], []),
+            user_info_factory([1, 2], ["tag1"]),
         ],
     )
     assert len(res2) == 3
@@ -397,7 +411,7 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert "p2" in id_set_2
     assert "p2" in id_set_3
     res3 = await mock_platform_no_target.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
+        "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res3) == 0
 
@@ -405,11 +419,11 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
 @pytest.mark.asyncio
 async def test_status_change(mock_status_change, user_info_factory):
     res1 = await mock_status_change.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
+        "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res1) == 0
     res2 = await mock_status_change.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
+        "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res2) == 1
     posts = res2[0][1]
@@ -418,8 +432,8 @@ async def test_status_change(mock_status_change, user_info_factory):
     res3 = await mock_status_change.fetch_new_post(
         "dummy",
         [
-            user_info_factory(lambda _: [1, 2], lambda _: []),
-            user_info_factory(lambda _: [1], lambda _: []),
+            user_info_factory([1, 2], []),
+            user_info_factory([1], []),
         ],
     )
     assert len(res3) == 2
@@ -427,7 +441,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert res3[0][1][0].text == "off"
     assert len(res3[1][1]) == 0
     res4 = await mock_status_change.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 2], lambda _: [])]
+        "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res4) == 0
 
@@ -445,19 +459,13 @@ async def test_group(
     from nonebot_bison.types import Category, RawPost, Tag, Target
 
     group_platform = NoTargetGroup([mock_platform_no_target, mock_platform_no_target_2])
-    res1 = await group_platform.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 4], lambda _: [])]
-    )
+    res1 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])
     assert len(res1) == 0
-    res2 = await group_platform.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 4], lambda _: [])]
-    )
+    res2 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 2
     id_set_2 = set(map(lambda x: x.text, posts))
     assert "p2" in id_set_2 and "p6" in id_set_2
-    res3 = await group_platform.fetch_new_post(
-        "dummy", [user_info_factory(lambda _: [1, 4], lambda _: [])]
-    )
+    res3 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])
     assert len(res3) == 0

@@ -3,8 +3,14 @@ from typing import Any, Optional
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import http_client
+from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage
+
+
+class NcmSchedConf(SchedulerConfig, name="music.163.com"):
+
+    schedule_type = "interval"
+    schedule_setting = {"minutes": 1}
 
 
 class NcmArtist(NewMessage):
@@ -14,8 +20,7 @@ class NcmArtist(NewMessage):
     enable_tag = False
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"minutes": 1}
+    scheduler_class = "music.163.com"
     name = "网易云-歌手"
     has_target = True
     parse_target_promot = "请输入歌手主页（包含数字ID）的链接"

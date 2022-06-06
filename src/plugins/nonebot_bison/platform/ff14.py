@@ -2,8 +2,14 @@ from typing import Any
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import http_client
+from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage
+
+
+class FF14SchedConf(SchedulerConfig, name="ff14"):
+
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 60}
 
 
 class FF14(NewMessage):
@@ -14,8 +20,7 @@ class FF14(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 60}
+    scheduler_class = "ff14"
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:

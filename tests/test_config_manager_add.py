@@ -58,7 +58,7 @@ async def test_configurable_at_me_false(app: App):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_target(app: App, db_migration):
+async def test_add_with_target(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
@@ -173,7 +173,7 @@ async def test_add_with_target(app: App, db_migration):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_target_no_cat(app: App, db_migration):
+async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
@@ -232,7 +232,7 @@ async def test_add_with_target_no_cat(app: App, db_migration):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_no_target(app: App, db_migration):
+async def test_add_no_target(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
@@ -397,7 +397,7 @@ async def test_add_with_get_id(app: App, db_migration):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_bilibili_target_parser(app: App, db_migration):
+async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
@@ -507,8 +507,8 @@ async def test_add_with_bilibili_target_parser(app: App, db_migration):
     subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 1
     sub = subs[0]
-    assert sub["target"] == "161775300"
-    assert sub["tags"] == []
-    assert sub["cats"] == [platform_manager["bilibili"].reverse_category["视频"]]
-    assert sub["target_type"] == "bilibili"
-    assert sub["target_name"] == "明日方舟"
+    assert sub.target.target == "161775300"
+    assert sub.tags == []
+    assert sub.categories == [platform_manager["bilibili"].reverse_category["视频"]]
+    assert sub.target.platform_name == "bilibili"
+    assert sub.target.target_name == "明日方舟"

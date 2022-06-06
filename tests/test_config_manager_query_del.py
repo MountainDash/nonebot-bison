@@ -8,7 +8,7 @@ from .utils import fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
-async def test_query_sub(app: App, db_migration):
+async def test_query_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import query_sub_matcher
@@ -36,7 +36,7 @@ async def test_query_sub(app: App, db_migration):
 
 
 @pytest.mark.asyncio
-async def test_del_sub(app: App, db_migration):
+async def test_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config
@@ -86,15 +86,13 @@ async def test_del_sub(app: App, db_migration):
 
 
 @pytest.mark.asyncio
-async def test_del_empty_sub(app: App):
+async def test_del_empty_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
-    config.user_target.truncate()
     async with app.test_matcher(del_sub_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)

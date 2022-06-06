@@ -272,7 +272,7 @@ async def test_abort_add_on_tag(app: App, db_migration):
 
 # 删除订阅阶段中止
 @pytest.mark.asyncio
-async def test_abort_del_sub(app: App):
+async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config import config

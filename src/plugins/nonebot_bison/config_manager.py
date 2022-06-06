@@ -266,21 +266,27 @@ def do_del_sub(del_sub: Type[Matcher]):
             state["sub_table"] = {}
             for index, sub in enumerate(sub_list, 1):
                 state["sub_table"][index] = {
-                    "target_type": sub["target_type"],
-                    "target": sub["target"],
+                    "platform_name": sub.target.platform_name,
+                    "target": sub.target.target,
                 }
                 res += "{} {} {} {}\n".format(
-                    index, sub["target_type"], sub["target_name"], sub["target"]
+                    index,
+                    sub.target.platform_name,
+                    sub.target.target_name,
+                    sub.target.target,
                 )
-                platform = platform_manager[sub["target_type"]]
+                platform = platform_manager[sub.target.platform_name]
                 if platform.categories:
                     res += " [{}]".format(
                         ", ".join(
-                            map(lambda x: platform.categories[Category(x)], sub["cats"])
+                            map(
+                                lambda x: platform.categories[Category(x)],
+                                sub.categories,
+                            )
                         )
                     )
                 if platform.enable_tag:
-                    res += " {}".format(", ".join(sub["tags"]))
+                    res += " {}".format(", ".join(sub.tags))
                 res += "\n"
             res += "请输入要删除的订阅的序号\n输入'取消'中止"
             await bot.send(event=event, message=Message(await parse_text(res)))

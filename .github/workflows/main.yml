@@ -12,6 +12,7 @@ on:
       - tests/**
       - pyproject.toml
       - poetry.lock
+      - .github/**
   pull_request:
     paths:
       - admin-frontend/**
@@ -20,6 +21,7 @@ on:
       - tests/**
       - pyproject.toml
       - poetry.lock
+      - .github/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -122,7 +124,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile_with_frontend
           push: true
-          tags: felinae98/nonebot-bison:${{ env.GITHUB_REF_NAME }}
+          tags: felinae98/nonebot-bison:${GITHUB_REF##*/}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -159,6 +161,6 @@ jobs:
           context: .
           file: ./docker/Dockerfile_with_frontend_sentry
           push: ${{ github.event_name != 'pull_request' }}
-          tags: felinae98/nonebot-bison:${{ env.GITHUB_REF_NAME }}-sentry
+          tags: felinae98/nonebot-bison:${GITHUB_REF##*/}-sentry
           cache-from: type=gha
           cache-to: type=gha,mode=max

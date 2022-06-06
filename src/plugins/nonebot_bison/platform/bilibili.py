@@ -4,8 +4,14 @@ from typing import Any, Optional
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from ..utils import http_client
+from ..utils import SchedulerConfig, http_client
 from .platform import CategoryNotSupport, NewMessage, StatusChange
+
+
+class BilibiliSchedConf(SchedulerConfig, name="bilibili.com"):
+
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 10}
 
 
 class Bilibili(NewMessage):
@@ -22,8 +28,7 @@ class Bilibili(NewMessage):
     enable_tag = True
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 10}
+    scheduler_class = "bilibili.com"
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
@@ -167,8 +172,7 @@ class Bilibililive(StatusChange):
     enable_tag = True
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 10}
+    scheduler_class = "bilibili.com"
     name = "Bilibili直播"
     has_target = True
 

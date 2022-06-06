@@ -10,8 +10,9 @@ from nonebot.plugin import require
 
 from ..plugin_config import plugin_config
 from .http import http_client
+from .scheduler_config import SchedulerConfig
 
-__all__ = ["http_client", "Singleton", "parse_text", "html_to_text"]
+__all__ = ["http_client", "Singleton", "parse_text", "html_to_text", "SchedulerConfig"]
 
 
 class Singleton(type):

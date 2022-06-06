@@ -7,24 +7,24 @@ if typing.TYPE_CHECKING:
     import sys
 
     sys.path.append("./src/plugins")
-    import nonebot_bison
-    from nonebot_bison.config import Config
+    from nonebot_bison.config.config_legacy import Config
 
 
 @pytest.fixture
-def config(app: App):
+def config_legacy(app: App, use_legacy_config):
     from nonebot_bison import config
+    from nonebot_bison.config import config_legacy as config
 
     config.start_up()
     return config.Config()
 
 
-def test_create_and_get(config: "Config", app: App):
+def test_create_and_get(config_legacy: "Config", app: App):
     from nonebot_bison import types
     from nonebot_bison.types import Target
 
-    config.add_subscribe(
-        user="123",
+    config_legacy.add_subscribe(
+        user=123,
         user_type="group",
         target="weibo_id",
         target_name="weibo_name",
@@ -32,14 +32,14 @@ def test_create_and_get(config: "Config", app: App):
         cats=[],
         tags=[],
     )
-    confs = config.list_subscribe("123", "group")
+    confs = config_legacy.list_subscribe(123, "group")
     assert len(confs) == 1
-    assert config.target_user_cache["weibo"][Target("weibo_id")] == [
-        types.User("123", "group")
+    assert config_legacy.target_user_cache["weibo"][Target("weibo_id")] == [
+        types.User(123, "group")
     ]
     assert confs[0]["cats"] == []
-    config.update_subscribe(
-        user="123",
+    config_legacy.update_subscribe(
+        user=123,
         user_type="group",
         target="weibo_id",
         target_name="weibo_name",
@@ -47,6 +47,6 @@ def test_create_and_get(config: "Config", app: App):
         cats=["1"],
         tags=[],
     )
-    confs = config.list_subscribe("123", "group")
+    confs = config_legacy.list_subscribe(123, "group")
     assert len(confs) == 1
     assert confs[0]["cats"] == ["1"]

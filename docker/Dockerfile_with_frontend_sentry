@@ -15,6 +15,7 @@ RUN poetry add nonebot-plugin-sentry && \
 RUN poetry install --no-dev --no-root
 RUN playwright install chromium
 ADD src /app/src
+RUN echo 'DATASTORE_DATA_DIR=/data' > .env
 ENV HOST=0.0.0.0
 CMD ["python", "bot.py"]
 

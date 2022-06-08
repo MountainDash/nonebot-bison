@@ -25,7 +25,12 @@ class Scheduler:
 
     schedulable_list: list[Schedulable]
 
-    def __init__(self, name: str, schedulables: list[tuple[str, Target]]):
+    def __init__(
+        self,
+        name: str,
+        schedulables: list[tuple[str, Target]],
+        platform_name_list: list[str],
+    ):
         conf = SchedulerConfig.registry.get(name)
         self.name = name
         if not conf:
@@ -33,15 +38,13 @@ class Scheduler:
             raise RuntimeError(f"{name} not found")
         self.scheduler_config = conf
         self.schedulable_list = []
-        platform_name_set = set()
         for platform_name, target in schedulables:
             self.schedulable_list.append(
                 Schedulable(
                     platform_name=platform_name, target=target, current_weight=0
                 )
             )
-            platform_name_set.add(platform_name)
-        self.platform_name_list = list(platform_name_set)
+        self.platform_name_list = platform_name_list
         self.pre_weight_val = 0  # 轮调度中“本轮”增加权重和的初值
         logger.info(
             f"register scheduler for {name} with {self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"

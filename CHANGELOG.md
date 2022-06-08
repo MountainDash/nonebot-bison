@@ -2,10 +2,10 @@
 
 ## 最近更新
 
-- 添加新的订阅平台mcbbsnews [@AzideCupric](https://github.com/AzideCupric) ([#84](https://github.com/felinae98/nonebot-bison/pull/84))
-
 ### 新功能
 
+- 增加rss对media_content中图片的支持 [@felinae98](https://github.com/felinae98) ([#87](https://github.com/felinae98/nonebot-bison/pull/87))
+- 添加新的订阅平台mcbbsnews [@AzideCupric](https://github.com/AzideCupric) ([#84](https://github.com/felinae98/nonebot-bison/pull/84))
 - 添加bilibili开播提醒 [@Sichongzou](https://github.com/Sichongzou) ([#60](https://github.com/felinae98/nonebot-bison/pull/60))
 - 添加User-Agent配置 [@felinae98](https://github.com/felinae98) ([#78](https://github.com/felinae98/nonebot-bison/pull/78))
 - 增加代理设置 [@felinae98](https://github.com/felinae98) ([#71](https://github.com/felinae98/nonebot-bison/pull/71))

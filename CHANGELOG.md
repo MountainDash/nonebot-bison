@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- 添加新的订阅平台mcbbsnews [@AzideCupric](https://github.com/AzideCupric) ([#84](https://github.com/felinae98/nonebot-bison/pull/84))
+
 ### 新功能
 
 - 添加bilibili开播提醒 [@Sichongzou](https://github.com/Sichongzou) ([#60](https://github.com/felinae98/nonebot-bison/pull/60))

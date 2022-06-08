@@ -169,7 +169,7 @@ class Bilibililive(StatusChange):
     # E-mail : 1557157806@qq.com
     categories = {}
     platform_name = "bilibili-live"
-    enable_tag = True
+    enable_tag = False
     enabled = True
     is_common = True
     scheduler_class = "bilibili.com"

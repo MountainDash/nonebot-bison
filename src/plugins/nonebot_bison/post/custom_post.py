@@ -66,6 +66,8 @@ class CustomPost(_CustomPost, AbstractPost):
 
     通过将text/image转换成对应的markdown语法, 生成markdown文本
 
+    理论上text部分可以直接使用markdown语法, 例如 ###123
+
     最后使用htmlrender渲染为图片
     """
 

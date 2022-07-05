@@ -32,7 +32,7 @@ class _CustomPost(BasePost):
                 md += "{}<br>".format(message_segment.data.get("text", ""))
             elif message_segment.type == "image":
                 try:
-                    # 先尝试获取file的值，没有在尝试获取url的值，都没有则为空
+                    # 先尝试获取file的值，没有再尝试获取url的值，都没有则为空
                     pic_res = message_segment.data.get(
                         "file", message_segment.data.get("url", "")
                     )

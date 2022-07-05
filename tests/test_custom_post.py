@@ -1,8 +1,10 @@
 import base64
 import hashlib
-import logging
+from pathlib import Path
 
 import pytest
+import respx
+from httpx import Response
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebug.app import App
 
@@ -41,9 +43,20 @@ def test_gene_md(app: App, expect_md, ms_list):
     assert cp_md == expect_md
 
 
+@respx.mock
 @pytest.mark.asyncio
 async def test_gene_pic(app: App, ms_list, pic_hash):
     from nonebot_bison.post.custom_post import CustomPost
+
+    pic_router = respx.get(
+        "http://i0.hdslb.com/bfs/live/new_room_cover/cf7d4d3b2f336c6dba299644c3af952c5db82612.jpg"
+    )
+
+    pic_path = Path(__file__).parent / "platforms" / "static" / "custom_post_pic.jpg"
+    with open(pic_path, mode="rb") as f:
+        mock_pic = f.read()
+
+    pic_router.mock(return_value=Response(200, stream=mock_pic))
 
     cp = CustomPost(message_segments=ms_list)
     cp_pic_bytes: list[MessageSegment] = await cp.generate_pic_messages()

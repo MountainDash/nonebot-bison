@@ -1,5 +1,7 @@
 import base64
 import hashlib
+import platform
+from io import UnsupportedOperation
 from pathlib import Path
 
 import pytest
@@ -27,7 +29,15 @@ def ms_list():
 
 @pytest.fixture
 def pic_hash():
-    return "58723fdc24b473b6dbd8ec8cbc3b7e46160c83df"
+    platform_name = platform.system()
+    if platform_name == "Windows":
+        return "58723fdc24b473b6dbd8ec8cbc3b7e46160c83df"
+    elif platform_name == "Linux":
+        return "4d540798108762df76de34f7bdbc667dada6b5cb"
+    elif platform_name == "Darwin":
+        return "a482bf8317d56e5ddc71437584343ace29ff545c"
+    else:
+        raise UnsupportedOperation(f"未支持的平台{platform_name}")
 
 
 @pytest.fixture

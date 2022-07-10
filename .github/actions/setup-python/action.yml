@@ -18,23 +18,14 @@ runs:
     - name: Install poetry
       uses: Gr1N/setup-poetry@v7
 
-    - name: Cache Windows dependencies
-      uses: actions/cache@v2
-      if: ${{ runner.os == 'Windows' }}
-      with:
-        path: ~/AppData/Local/pypoetry/Cache/virtualenvs
-        key: ${{ runner.os }}-poetry-${{ inputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+    - id: poetry-cache
+      run: echo "::set-output name=dir::$(poetry config virtualenvs.path)"
+      shell: bash
 
-    - name: Cache Linux dependencies
-      uses: actions/cache@v2
-      if: ${{ runner.os == 'Linux' }}
+    - uses: actions/cache@v2
       with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-poetry-${{ inputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        path: ${{ steps.poetry-cache.outputs.dir }}
+        key: ${{ runner.os }}-poetry-${{ steps.python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - name: Cache macOS dependencies
-      uses: actions/cache@v2
-      if: ${{ runner.os == 'macOS' }}
-      with:
-        path: ~/Library/Caches/pypoetry/virtualenvs
-        key: ${{ runner.os }}-poetry-${{ inputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+    - run: poetry install
+      shell: bash

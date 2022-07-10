@@ -2,6 +2,10 @@ name: Site Deploy(Preview)
 
 on:
   pull_request_target:
+    paths:
+      - docs/**
+      - package.json
+      - yarn.lock
 
 jobs:
   preview:

@@ -94,23 +94,27 @@ sidebar: auto
 
 ## 配置
 
-可参考[源文件](https://github.com/felinae98/nonebot-bison/blob/main/src/plugins/nonebot_bison/plugin_config.py)
+::: tip INFO
+
+- 所有配置项可参考[源文件](https://github.com/felinae98/nonebot-bison/blob/main/src/plugins/nonebot_bison/plugin_config.py)
+- **配置项的配置方法** 请参考[NoneBot 配置方式](https://v2.nonebot.dev/docs/tutorial/configuration#%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F)，在`.env`/`.env.*`文件中写入希望配置的 Bison 配置项
+  :::
 
 - `BISON_CONFIG_PATH`: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录
 - `BISON_USE_PIC`: 将文字渲染成图片后进行发送，多用于规避风控
 - `BISON_BROWSER`: 本插件使用 Chrome 来渲染图片
-  - 使用 browserless 提供的 Chrome 管理服务，设置为`ws://xxxxxxxx`，值为 Chrome Endpoint（推荐）
-  - 使用 cdp 连接相关服务，设置为`wsc://xxxxxxxxx`
-  - 使用本地安装的 Chrome，设置为`local:<chrome path>`，例如`local:/usr/bin/google-chrome-stable`
   - 如果不进行配置，那么会在启动时候自动进行安装，在官方的 docker 镜像中已经安装了浏览器
+  - 使用本地安装的 Chrome，设置为`local:<chrome path>`，例如`local:/usr/bin/google-chrome-stable`
+  - 使用 cdp 连接相关服务，设置为`wsc://xxxxxxxxx`
+  - 使用 browserless 提供的 Chrome 管理服务，设置为`ws://xxxxxxxx`，值为 Chrome Endpoint
     ::: warning
     截止发布时，本项目尚不能完全与 browserless 兼容，目前建议使用镜像内自带的浏览器，即
     不要配置这个变量
     :::
 - `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`False`会在用到浏览器时自动下载，
   默认`True`
-- `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison`，如果你的插件部署
-  在服务器上，建议配置为`http://<你的服务器ip>:8080/bison`
+- `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison/`，如果你的插件部署
+  在服务器上，建议配置为`http://<你的服务器ip>:8080/bison/`
   ::: warning
   如果需要从外网或者 Docker 容器外访问后台页面，请确保`HOST=0.0.0.0`
   :::
@@ -124,7 +128,7 @@ sidebar: auto
   - `1`: 首条消息单独发送，剩余图片合并转发
   - `2`: 所有消息全部合并转发
 
-  ::: details 配置项示例
+  ::: details BISON_USE_PIC_MERGE 配置项示例
 
   - 当`BISON_USE_PIC_MERGE=1`时:
     ![simple1](/images/forward-msg-simple1.png)
@@ -155,12 +159,16 @@ sidebar: auto
 所有命令都需要@bot 触发
 
 - 添加订阅（仅管理员和群主和 SUPERUSER）：`添加订阅`
-  ::: tip 关于中止订阅
-  对于[**v0.5.1**](https://github.com/felinae98/nonebot-bison/releases/tag/v0.5.1)及以上的版本中，已经为`添加订阅`命令添加了中止订阅的功能。  
-  在添加订阅命令的~~几乎~~各个阶段，都可以向 Bot 发送`取消`消息来中止订阅过程(需要订阅发起者本人发送)
+  ::: details 关于中止添加订阅
+  对于[**v0.5.1**](https://github.com/felinae98/nonebot-bison/releases/tag/v0.5.1)及以上的版本中，已经为`添加订阅`命令添加了中止添加功能。  
+  在`添加订阅`命令的~~几乎~~各个阶段，都可以向 Bot 发送`取消`消息来中止订阅过程(需要发起者本人发送)
   :::
 - 查询订阅：`查询订阅`
 - 删除订阅（仅管理员和群主和 SUPERUSER）：`删除订阅`
+  ::: details 关于中止删除订阅
+  对于[**v0.5.3**](https://github.com/felinae98/nonebot-bison/releases/tag/v0.5.3)及以上的版本中，已经为`删除订阅`命令添加了中止删除功能。
+  在`删除订阅`命令的~~几乎~~各个阶段，都可以向 Bot 发送`取消`消息来中止订阅过程(需要发起者本人发送)
+  :::
 
 #### 私聊机器人获取后台地址
 
@@ -179,8 +187,8 @@ sidebar: auto
 #### 私聊机器人进行配置（需要 SUPERUER 权限）
 
 请私聊 bot`群管理`
-::: tip 关于中止订阅
-与普通的[`添加订阅`](#在本群中进行配置)命令一样，在`群管理`命令中使用的`添加订阅`命令也可以使用`取消`来中止订阅过程
+::: details 关于中止订阅
+与普通的[`添加订阅`/`删除订阅`](#在本群中进行配置)命令一样，在`群管理`命令中使用的`添加订阅`/`删除订阅`命令也可以使用`取消`来中止订阅过程
 :::
 
 ### 所支持平台的 uid

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional
 
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.log import logger
@@ -12,10 +13,14 @@ from .abstract_post import AbstractPost, BasePost
 class _CustomPost(BasePost):
 
     message_segments: list[MessageSegment] = field(default_factory=list)
-    css_path: str = None  # 模板文件所用css路径
+    css_path: Optional[str] = None  # 模板文件所用css路径
+    only_pic: Optional[bool] = False  # 开启时只发送图片
 
     async def generate_text_messages(self) -> list[MessageSegment]:
-        return self.message_segments
+        if not self.only_pic:
+            return self.message_segments
+        else:
+            return self.generate_pic_messages()
 
     async def generate_pic_messages(self) -> list[MessageSegment]:
         require("nonebot_plugin_htmlrender")

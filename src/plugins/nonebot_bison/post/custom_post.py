@@ -14,13 +14,9 @@ class _CustomPost(BasePost):
 
     message_segments: list[MessageSegment] = field(default_factory=list)
     css_path: Optional[str] = None  # 模板文件所用css路径
-    only_pic: Optional[bool] = False  # 开启时只发送图片
 
     async def generate_text_messages(self) -> list[MessageSegment]:
-        if not self.only_pic:
-            return self.message_segments
-        else:
-            return self.generate_pic_messages()
+        return self.message_segments
 
     async def generate_pic_messages(self) -> list[MessageSegment]:
         require("nonebot_plugin_htmlrender")
@@ -53,16 +49,26 @@ class _CustomPost(BasePost):
 
 @dataclass
 class CustomPost(_CustomPost, AbstractPost):
-    """
-    CustomPost所支持的MessageSegment type为text/image
+    """基于 markdown 语法的，自由度较高的推送内容格式
 
-    通过将text/image转换成对应的markdown语法, 生成markdown文本
+    简介:
+    支持处理text/image两种MessageSegment,
+    通过将text/image转换成对应的markdown语法以生成markdown文本。
+    理论上text类型中可以直接使用markdown语法,例如`##第一章`。
+    但会导致不启用`override_use_pic`时, 发送不会被渲染的纯文本消息。
+    图片渲染最终由htmlrender执行。
 
-    理论上text部分可以直接使用markdown语法, 例如 ###123
+    注意:
+    每一个MessageSegment元素都会被解释为单独的一行
 
-    注意：list中的每一个text都会被解释为独立的一行文字
+    可选参数:
+    `override_use_pic`:是否覆盖`bison_use_pic`全局配置
+    `compress`:将所有消息压缩为一条进行发送
+    `extra_msg`:需要附带发送的额外消息
 
-    最后使用htmlrender渲染为图片
+    成员函数:
+    `generate_text_messages()`:负责生成文本消息
+    `generate_pic_messages()`:负责生成图片消息
     """
 
     pass

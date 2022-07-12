@@ -227,8 +227,9 @@ class Weibo(NewMessage):
 
 ### 什么是`nonebot_bison.post.Post`
 
-Post 类能接受的消息分为`text`与`pics`，对应文本与图片类消息，其中 pics 接受的是一个列表 List，列表中的值可以为 url、base64 或者 bytes。  
+Post 类存在参数`text`与`pics`，分别对应接收文本与图片类消息，需要注意的是`pics`接收的是一个列表 List，列表中的值可以为 url 或者 bytes。  
 Post 会将`text`与`pics`分为若干条消息进行分别发送  
+可选参数:  
 使用`compress`参数将所有消息压缩为一条进行发送。  
 使用`extra_msg`可以携带额外的消息进行发送  
 使用`override_use_pic`参数可以无视全局配置中的 bison_use_pic 配置进行强制指定  
@@ -243,8 +244,9 @@ CustomPost 类能接受的消息为[`List[MessageSegment]`](https://github.com/b
 表示聊天消息的一个部分，在一些平台上，聊天消息支持图文混排，其中就会有多个消息段，分别表示每个图片和每段文字。
 :::
 准确来说，CustomPost 只支持使用 MessageSegment 内的`text`和`image`类型，CustomPost 会将 List 中的每个`text`类型元素理解为一个单行的 text 文本，
-当然，markdown 语法可以在每个`text`类型元素使用，但这样的话，在不开启`bison_use_pic`**全局配置项** 的情况下，bison 会将写在 text 类型元素里的 markdown 语法按原文推送，不会解析。  
-对于上述情况，建议开启 CustomPost 的`only_pic`选项，这样 CustomPost 只会发送经过 markdown 语法渲染好的图片，而非文本消息。
+当然，markdown 语法可以在每个`text`类型元素使用，但如果这样，在不开启`bison_use_pic`**全局配置项** 的情况下，bison 会将写在 text 类型元素里的 markdown 语法按原样推送，不会解析。  
+对于上述情况，建议开启 CustomPost 的`override_use_pic`选项，这样 CustomPost 只会发送经过 markdown 语法渲染好的图片，而非文本消息。  
+CustomPost 的可选参数及作用与上文中的[Post](#什么是nonebot-bison-post-post)一致。
 ::: details CustomPost 例子
 
 ```python

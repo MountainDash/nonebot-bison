@@ -2,7 +2,9 @@
 
 ## 最近更新
 
-* No changes
+### 新功能
+
+- 添加 CustomPost [@felinae98](https://github.com/felinae98) ([#81](https://github.com/felinae98/nonebot-bison/pull/81))
 
 ## v0.5.4
 

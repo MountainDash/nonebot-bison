@@ -38,7 +38,10 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 ## 基本概念
 
-- `nonebot_bison.post.Post`: 可以理解为推送内容，其中包含需要发送的文字，图片，链接，平台信息等
+- `nonebot_bison.post`: 可以理解为推送内容，其中包含需要发送的文字，图片，链接，平台信息等，分为：
+  - `nonebot_bison.post.Post`: 简单的推送内容格式，需要发送的内容由 bison 处理
+  - `nonebot_bison.post.CustomPost`: 基于 markdown 语法的，自由度较高的推送内容格式
+  - 详细的介绍可参见[生成 bison 的推送文本](#生成bison的推送文本)
 - `nonebot_bison.types.RawPost`: 从站点/平台中爬到的单条信息
 - `nonebot_bison.types.Target`: 目标账号，Bilibili，微博等社交媒体中的账号
 - `nonebot_bison.types.Category`: 信息分类，例如视频，动态，图文，文章等
@@ -211,3 +214,46 @@ class Weibo(NewMessage):
       #将需要bot推送的RawPost处理成正式推送的Post
       ...
 ```
+
+## 生成 bison 的推送文本
+
+### 什么是`nonebot_bison.post`
+
+可以认为`nonebot_bison.post`是最终要交付给 bison 推送到群内的内容，经过`parse`函数处理过后的报文应该返回属于`nonebot_bison.post`下的某个类  
+目前 bison 所支持的类有：
+
+- `nonebot_bison.post.Post`
+- `nonebot_bison.post.CustomPost`
+
+### 什么是`nonebot_bison.post.Post`
+
+Post 类存在参数`text`与`pics`，分别对应接收文本与图片类消息，需要注意的是`pics`接收的是一个列表 List，列表中的值可以为 url 或者 bytes。  
+Post 会将`text`与`pics`分为若干条消息进行分别发送  
+可选参数:  
+使用`compress`参数将所有消息压缩为一条进行发送。  
+使用`extra_msg`可以携带额外的消息进行发送  
+使用`override_use_pic`参数可以无视全局配置中的 bison_use_pic 配置进行强制指定  
+可参考[Post 的用法](https://github.com/felinae98/nonebot-bison/blob/v0.5.4/src/plugins/nonebot_bison/platform/arknights.py#L227)
+
+### 什么是`nonebot_bison.post.CustomPost`
+
+CustomPost 类能接受的消息为[`List[MessageSegment]`](https://github.com/botuniverse/onebot-11/blob/master/message/array.md#%E6%B6%88%E6%81%AF%E6%AE%B5)  
+::: tip
+
+消息段（Message Segment 或 Segment）  
+表示聊天消息的一个部分，在一些平台上，聊天消息支持图文混排，其中就会有多个消息段，分别表示每个图片和每段文字。
+:::
+准确来说，CustomPost 只支持使用 MessageSegment 内的`text`和`image`类型，CustomPost 会将 List 中的每个`text`类型元素理解为一个单行的 text 文本，
+当然，markdown 语法可以在每个`text`类型元素使用，但如果这样，在不开启`bison_use_pic`**全局配置项** 的情况下，bison 会将写在 text 类型元素里的 markdown 语法按原样推送，不会解析。  
+对于上述情况，建议开启 CustomPost 的`override_use_pic`选项，这样 CustomPost 只会发送经过 markdown 语法渲染好的图片，而非文本消息。  
+CustomPost 的可选参数及作用与上文中的[Post](#什么是nonebot-bison-post-post)一致。
+::: details CustomPost 例子
+
+```python
+  async def parse(self, raw_post:RawPost) -> str:
+    #假定传入的raw_post为List[MessageSegment]
+    #do something...
+    return CustomPost(message_segments=raw_post, only_pic=True)
+```
+
+:::

@@ -53,6 +53,10 @@ class Rss(NewMessage):
         soup = bs(raw_post.description, "html.parser")
         text += soup.text.strip()
         pics = list(map(lambda x: x.attrs["src"], soup("img")))
+        if raw_post.get("media_content"):
+            for media in raw_post["media_content"]:
+                if media.get("medium") == "image" and media.get("url"):
+                    pics.append(media.get("url"))
         return Post(
             "rss",
             text=text,

@@ -3,6 +3,7 @@ from nonebot.adapters.onebot.v11.bot import Bot
 
 from ..config import NoSuchSubscribeException, NoSuchUserException, config
 from ..platform import check_sub_target, platform_manager
+from ..types import Target as T_Target
 from .jwt import pack_jwt
 from .token_manager import token_manager
 
@@ -45,7 +46,7 @@ async def auth(token: str):
         groups = await bot.call_api("get_group_list")
         if str(qq) in nonebot.get_driver().config.superusers:
             jwt_obj = {
-                "id": str(qq),
+                "id": qq,
                 "groups": list(
                     map(
                         lambda info: {
@@ -59,7 +60,7 @@ async def auth(token: str):
             ret_obj = {
                 "type": "admin",
                 "name": nickname,
-                "id": str(qq),
+                "id": qq,
                 "token": pack_jwt(jwt_obj),
             }
             return {"status": 200, **ret_obj}
@@ -68,14 +69,14 @@ async def auth(token: str):
             ret_obj = {
                 "type": "user",
                 "name": nickname,
-                "id": str(qq),
+                "id": qq,
                 "token": pack_jwt(jwt_obj),
             }
             return {"status": 200, **ret_obj}
         else:
-            return {"status": 400, "type": "", "name": "", "id": "", "token": ""}
+            return {"status": 400, "type": "", "name": "", "id": 0, "token": ""}
     else:
-        return {"status": 400, "type": "", "name": "", "id": "", "token": ""}
+        return {"status": 400, "type": "", "name": "", "id": 0, "token": ""}
 
 
 async def get_subs_info(jwt_obj: dict):
@@ -83,18 +84,16 @@ async def get_subs_info(jwt_obj: dict):
     res = {}
     for group in groups:
         group_id = group["id"]
+        raw_subs = await config.list_subscribe(group_id, "group")
         subs = list(
-            map(
-                lambda sub: {
-                    "platformName": sub["target_type"],
-                    "target": sub["target"],
-                    "targetName": sub["target_name"],
-                    "cats": sub["cats"],
-                    "tags": sub["tags"],
-                },
-                config.list_subscribe(group_id, "group"),
-            )
-        )
+                map(lambda sub: {
+                    "platformName": sub.target.platform_name,
+                    "targetName": sub.target.name,
+                    "cats": sub.categories,
+                    "tags": sub.tags
+                    },
+                raw_subs)
+                )
         res[group_id] = {"name": group["name"], "subscribes": subs}
     return res
 
@@ -111,15 +110,15 @@ async def add_group_sub(
     cats: list[int],
     tags: list[str],
 ):
-    config.add_subscribe(
-        int(group_number), "group", target, target_name, platform_name, cats, tags
-    )
+    await config.add_subscribe(
+            int(group_number), "group", T_Target(target), target_name, platform_name, cats, tags
+            )
     return {"status": 200, "msg": ""}
 
 
 async def del_group_sub(group_number: str, platform_name: str, target: str):
     try:
-        config.del_subscribe(int(group_number), "group", target, platform_name)
+        await config.del_subscribe(int(group_number), "group", target, platform_name)
     except (NoSuchUserException, NoSuchSubscribeException):
         return {"status": 400, "msg": "删除错误"}
     return {"status": 200, "msg": ""}
@@ -134,7 +133,7 @@ async def update_group_sub(
     tags: list[str],
 ):
     try:
-        config.update_subscribe(
+        await config.update_subscribe(
             int(group_number), "group", target, target_name, platform_name, cats, tags
         )
     except (NoSuchUserException, NoSuchSubscribeException):

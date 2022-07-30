@@ -1,43 +1,31 @@
-import "antd/dist/antd.css";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import "./App.css";
-import { Admin } from "./pages/admin";
-import { Auth } from "./pages/auth";
-import { getGlobalConf } from "./store/globalConfSlice";
-import { useAppSelector } from "./store/hooks";
-import { loadLoginState, loginSelector } from "./store/loginSlice";
-
-function LoginSwitch() {
-  const login = useSelector(loginSelector);
-  if (login.login) {
-    return <Admin />;
-  } else {
-    return <div>not login</div>;
-  }
-}
+import React, { useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import './App.css';
+import { useAppDispatch, useAppSelector } from './app/hooks';
+import Auth from './features/auth/Auth';
+import { loadGlobalConf, selectGlobalConfLoaded } from './features/globalConf/globalConfSlice';
+import Home from './pages/Home';
+import Unauthed from './pages/Unauthed';
 
 function App() {
-  const dispatch = useDispatch();
-  const globalConf = useAppSelector((state) => state.globalConf);
+  const dispatch = useAppDispatch();
+  const globalConfLoaded = useAppSelector(selectGlobalConfLoaded);
+
   useEffect(() => {
-    dispatch(getGlobalConf());
-    dispatch(loadLoginState());
-  }, [dispatch]);
+    if (!globalConfLoaded) {
+      dispatch(loadGlobalConf());
+    }
+  }, [globalConfLoaded]);
+
   return (
     <>
-      {globalConf.loaded && (
-        <Router basename="/bison">
-          <Switch>
-            <Route path="/auth/:code">
-              <Auth />
-            </Route>
-            <Route path="/admin/">
-              <LoginSwitch />
-            </Route>
-          </Switch>
-        </Router>
+      { globalConfLoaded
+      && (
+      <Routes>
+        <Route path="/auth/:code" element={<Auth />} />
+        <Route path="/unauthed" element={<Unauthed />} />
+        <Route path="/home" element={<Home />} />
+      </Routes>
       )}
     </>
   );

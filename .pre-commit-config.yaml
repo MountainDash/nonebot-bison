@@ -20,4 +20,12 @@ repos:
     hooks:
       - id: prettier
         types_or: [markdown, ts, tsx]
+
+  - repo: local
+    hooks:
+      - id: admin-eslint
+        name: eslint
+        entry: bash -c 'yarn --cwd admin-frontend lint || exit 0'
+        language: system
+        pass_filenames: false
 exclude: 'CHANGELOG.md'

@@ -1,5 +1,5 @@
 import React from 'react';
-import { SubscribeManager } from '../features/subsribeConfigManager/SubscribeManager';
+import SubscribeManager from '../features/subsribeConfigManager/SubscribeManager';
 
 export default function Home() {
   return (

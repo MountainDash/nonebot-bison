@@ -1,7 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../../app/store';
-import { StatusResp, SubscribeResp, SubscribeConfig } from '../../utils/type';
-import { subsribeUrl } from '../../utils/urls';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { StatusResp, SubscribeConfig, SubscribeResp } from '../../utils/type';
 import { baseQueryWithAuth } from '../auth/authQuery';
 
 export const subscribeApi = createApi({

@@ -14,11 +14,12 @@ export default function Auth() {
       dispatch(login(code));
     }
   }, [isLogin, code]);
-  return (
-      { isLogin
-        ? <Navigate to="/home" />
-        : isFailed
-          ? <Navigate to="/unauthed" />
-          : <div> login </div>}
-  );
+
+  if (isLogin) {
+    return <Navigate to="/home" />;
+  }
+  if (isFailed) {
+    return <Navigate to="/unauthed" />;
+  }
+  return <div> login </div>;
 }

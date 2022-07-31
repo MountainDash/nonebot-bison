@@ -229,3 +229,61 @@ class Bilibililive(StatusChange):
             target_name=target_name,
             compress=True,
         )
+
+
+class BilibiliBangumi(NewMessage):
+
+    categories = {}
+    platform_name = "bilibili-bangumi"
+    enable_tag = False
+    enabled = True
+    is_common = True
+    scheduler_class = "bilibili.com"
+    name = "Bilibili剧集"
+    has_target = True
+
+    _url = "https://api.bilibili.com/pgc/review/user"
+
+    async def get_target_name(self, target: Target) -> Optional[str]:
+        async with http_client() as client:
+            res = await client.get(self._url, params={"media_id": target})
+            res_data = res.json()
+            if res_data["code"]:
+                return None
+            return res_data["result"]["media"]["title"]
+
+    async def get_status(self, target: Target):
+        async with http_client() as client:
+            res = await client.get(
+                self._url,
+                params={"media_id": target},
+                timeout=4.0,
+            )
+            res_dict = res.json()
+            if res_dict["code"] == 0:
+                return {
+                    "index": res_dict["result"]["media"]["new_ep"]["index"],
+                    "index_show": res_dict["result"]["media"]["new_ep"]["index"],
+                }
+            else:
+                return []  # TODO
+
+    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
+        if new_status["index"] != old_status["index"]:
+            return [new_status]
+        else:
+            return []
+
+    async def parse(self, raw_post: RawPost) -> Post:
+        url = "https://live.bilibili.com/{}".format(raw_post["room_id"])
+        pic = [raw_post["cover"]]
+        target_name = raw_post["uname"]
+        title = raw_post["title"]
+        return Post(
+            self.name,
+            text=title,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            compress=True,
+        )

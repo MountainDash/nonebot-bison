@@ -86,14 +86,16 @@ async def get_subs_info(jwt_obj: dict):
         group_id = group["id"]
         raw_subs = await config.list_subscribe(group_id, "group")
         subs = list(
-                map(lambda sub: {
+            map(
+                lambda sub: {
                     "platformName": sub.target.platform_name,
                     "targetName": sub.target.name,
                     "cats": sub.categories,
-                    "tags": sub.tags
-                    },
-                raw_subs)
-                )
+                    "tags": sub.tags,
+                },
+                raw_subs,
+            )
+        )
         res[group_id] = {"name": group["name"], "subscribes": subs}
     return res
 
@@ -111,8 +113,14 @@ async def add_group_sub(
     tags: list[str],
 ):
     await config.add_subscribe(
-            int(group_number), "group", T_Target(target), target_name, platform_name, cats, tags
-            )
+        int(group_number),
+        "group",
+        T_Target(target),
+        target_name,
+        platform_name,
+        cats,
+        tags,
+    )
     return {"status": 200, "msg": ""}
 
 

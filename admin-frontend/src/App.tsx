@@ -19,13 +19,13 @@ function App() {
 
   return (
     globalConfLoaded
-      && (
-      <Routes>
-        <Route path="/auth/:code" element={<Auth />} />
-        <Route path="/unauthed" element={<Unauthed />} />
-        <Route path="/home" element={<Home />} />
-      </Routes>
-      )
+      ? (
+        <Routes>
+          <Route path="/auth/:code" element={<Auth />} />
+          <Route path="/unauthed" element={<Unauthed />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      ) : <div>loading</div>
   );
 }
 

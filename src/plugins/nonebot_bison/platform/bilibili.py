@@ -201,7 +201,7 @@ class Bilibililive(StatusChange):
                 info["cover"] = res_dict["data"]["live_room"]["cover"]
                 return info
             else:
-                return []
+                raise self.ParseTargetException(res.text)
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
         if (

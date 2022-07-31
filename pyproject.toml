@@ -50,7 +50,6 @@ nonebug = {git = "https://github.com/nonebot/nonebug.git", rev = "40fcd4f"}
 black = "^22.1.0"
 isort = "^5.10.1"
 pre-commit = "^2.17.0"
-nb-cli = "^0.6.6"
 flaky = "^3.7.0"
 sqlalchemy-stubs = "^0.4"
 

@@ -1,5 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { StatusResp, SubscribeConfig, SubscribeResp } from '../../utils/type';
+import {
+  StatusResp, SubmitParam, SubscribeResp,
+} from '../../utils/type';
 import { baseQueryWithAuth } from '../auth/authQuery';
 
 export const subscribeApi = createApi({
@@ -11,23 +13,33 @@ export const subscribeApi = createApi({
       query: () => '/subs',
       providesTags: ['Subscribe'],
     }),
-    newSub: builder.mutation<StatusResp, SubscribeConfig>({
-      query: (config) => ({
+    newSub: builder.mutation<StatusResp, SubmitParam>({
+      query: ({ groupNumber, sub }) => ({
         method: 'POST',
-        url: '/subs',
-        body: config,
+        url: `/subs?groupNumber=${groupNumber}`,
+        body: sub,
       }),
       invalidatesTags: ['Subscribe'],
     }),
-    updateSub: builder.mutation<StatusResp, SubscribeResp>({
-      query: (config) => ({
+    updateSub: builder.mutation<StatusResp, SubmitParam>({
+      query: ({ groupNumber, sub }) => ({
         method: 'PATCH',
-        url: '/subs',
-        body: config,
+        url: `/subs?groupNumber=${groupNumber}`,
+        body: sub,
       }),
       invalidatesTags: ['Subscribe'],
     }),
+    deleteSub: builder.mutation<StatusResp,
+      { groupNumber: number; target: string; platformName: string }>({
+        query: ({ groupNumber, target, platformName }) => ({
+          method: 'DELETE',
+          url: `/subs?groupNumber=${groupNumber}&target=${target}&platformName=${platformName}`,
+        }),
+        invalidatesTags: ['Subscribe'],
+      }),
   }),
 });
 
-export const { useGetSubsQuery } = subscribeApi;
+export const {
+  useGetSubsQuery, useNewSubMutation, useDeleteSubMutation, useUpdateSubMutation,
+} = subscribeApi;

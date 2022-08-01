@@ -47,3 +47,8 @@ export interface StatusResp {
   status: number;
   msg: string;
 }
+
+export interface SubmitParam {
+  groupNumber: number;
+  sub: SubscribeConfig;
+}

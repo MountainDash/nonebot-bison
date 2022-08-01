@@ -66,7 +66,7 @@ def register_router_fastapi(driver: Driver, socketio):
         return obj
 
     async def check_group_permission(
-        groupNumber: str, token_obj: dict = Depends(get_jwt_obj)
+        groupNumber: int, token_obj: dict = Depends(get_jwt_obj)
     ):
         groups = token_obj["groups"]
         for group in groups:
@@ -99,7 +99,7 @@ def register_router_fastapi(driver: Driver, socketio):
         return await get_target_name(platformName, target, jwt_obj)
 
     @app.post(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
-    async def _add_group_subs(groupNumber: str, req: AddSubscribeReq):
+    async def _add_group_subs(groupNumber: int, req: AddSubscribeReq):
         return await add_group_sub(
             group_number=groupNumber,
             platform_name=req.platformName,
@@ -110,7 +110,7 @@ def register_router_fastapi(driver: Driver, socketio):
         )
 
     @app.patch(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
-    async def _update_group_subs(groupNumber: str, req: AddSubscribeReq):
+    async def _update_group_subs(groupNumber: int, req: AddSubscribeReq):
         return await update_group_sub(
             group_number=groupNumber,
             platform_name=req.platformName,
@@ -121,7 +121,7 @@ def register_router_fastapi(driver: Driver, socketio):
         )
 
     @app.delete(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
-    async def _del_group_subs(groupNumber: str, target: str, platformName: str):
+    async def _del_group_subs(groupNumber: int, target: str, platformName: str):
         return await del_group_sub(groupNumber, platformName, target)
 
     app.mount(URL_BASE, SinglePageApplication(directory=static_path), name="bison")

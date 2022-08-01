@@ -89,7 +89,7 @@ async def get_subs_info(jwt_obj: dict):
             map(
                 lambda sub: {
                     "platformName": sub.target.platform_name,
-                    "targetName": sub.target.name,
+                    "targetName": sub.target.target_name,
                     "cats": sub.categories,
                     "tags": sub.tags,
                 },
@@ -105,7 +105,7 @@ async def get_target_name(platform_name: str, target: str, jwt_obj: dict):
 
 
 async def add_group_sub(
-    group_number: str,
+    group_number: int,
     platform_name: str,
     target: str,
     target_name: str,
@@ -124,7 +124,7 @@ async def add_group_sub(
     return {"status": 200, "msg": ""}
 
 
-async def del_group_sub(group_number: str, platform_name: str, target: str):
+async def del_group_sub(group_number: int, platform_name: str, target: str):
     try:
         await config.del_subscribe(int(group_number), "group", target, platform_name)
     except (NoSuchUserException, NoSuchSubscribeException):
@@ -133,7 +133,7 @@ async def del_group_sub(group_number: str, platform_name: str, target: str):
 
 
 async def update_group_sub(
-    group_number: str,
+    group_number: int,
     platform_name: str,
     target: str,
     target_name: str,

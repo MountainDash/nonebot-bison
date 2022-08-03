@@ -18,8 +18,7 @@ RUN --mount=type=cache,target=/root/.cache/pypoetry \
     sed '/nonebot.load_builtin_plugins("echo")/a nonebot.load_plugin("nonebot_plugin_sentry")' -i bot.py
 RUN --mount=type=cache,target=/root/.cache/pypoetry \
     poetry install --no-dev --no-root
-RUN --mount=type=cache,target=/root/.cache/ms-playwright \
-    playwright install chromium
+RUN playwright install chromium
 ADD src /app/src
 ENV HOST=0.0.0.0
 CMD ["python", "bot.py"]

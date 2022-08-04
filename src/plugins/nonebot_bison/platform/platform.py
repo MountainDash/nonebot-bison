@@ -265,6 +265,9 @@ class NewMessage(MessageProcess, abstract=True):
 class StatusChange(Platform, abstract=True):
     "Watch a status, and fire a post when status changes"
 
+    class FetchError(RuntimeError):
+        pass
+
     @abstractmethod
     async def get_status(self, target: Target) -> Any:
         ...
@@ -280,7 +283,11 @@ class StatusChange(Platform, abstract=True):
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
-        new_status = await self.get_status(target)
+        try:
+            new_status = await self.get_status(target)
+        except self.FetchError as err:
+            logger.warning(f"fetching {self.name}-{target} error: {err}")
+            return []
         res = []
         if old_status := self.get_stored_data(target):
             diff = self.compare_status(target, old_status, new_status)

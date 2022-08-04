@@ -15,8 +15,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
 COPY ./pyproject.toml ./poetry.lock* /app/
 RUN --mount=type=cache,target=/root/.cache/pypoetry \
     poetry install --no-dev --no-root
-RUN --mount=type=cache,target=/root/.cache/ms-playwright \
-    playwright install chromium
+RUN playwright install chromium
 ADD src /app/src
 ADD bot.py /app/
 RUN echo 'DATASTORE_DATA_DIR=/data' > .env

@@ -231,7 +231,7 @@ class Bilibililive(StatusChange):
         )
 
 
-class BilibiliBangumi(NewMessage):
+class BilibiliBangumi(StatusChange):
 
     categories = {}
     platform_name = "bilibili-bangumi"
@@ -264,9 +264,10 @@ class BilibiliBangumi(NewMessage):
                 return {
                     "index": res_dict["result"]["media"]["new_ep"]["index"],
                     "index_show": res_dict["result"]["media"]["new_ep"]["index"],
+                    "season_id": res_dict["result"]["media"]["season_id"],
                 }
             else:
-                return []  # TODO
+                raise self.FetchError
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
         if new_status["index"] != old_status["index"]:
@@ -275,13 +276,26 @@ class BilibiliBangumi(NewMessage):
             return []
 
     async def parse(self, raw_post: RawPost) -> Post:
-        url = "https://live.bilibili.com/{}".format(raw_post["room_id"])
-        pic = [raw_post["cover"]]
-        target_name = raw_post["uname"]
-        title = raw_post["title"]
+        async with http_client() as client:
+            detail_res = await client.get(
+                f'http://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
+            )
+        detail_dict = detail_res.json()
+        lastest_episode = None
+        for episode in detail_dict["result"]["episodes"][::-1]:
+            if episode["badge"] in ("", "会员"):
+                lastest_episode = episode
+                break
+        if not lastest_episode:
+            lastest_episode = detail_dict["result"]["episodes"]
+
+        url = lastest_episode["link"]
+        pic = [lastest_episode["cover"]]
+        target_name = detail_dict["result"]["season_title"]
+        text = lastest_episode["share_copy"]
         return Post(
             self.name,
-            text=title,
+            text=text,
             url=url,
             pics=pic,
             target_name=target_name,

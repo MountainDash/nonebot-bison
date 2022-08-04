@@ -1,13 +1,9 @@
-from datetime import datetime
-
-import feedparser
 import pytest
 import respx
 from httpx import Response
 from nonebug.app import App
-from pytz import timezone
 
-from .utils import get_file, get_json
+from .utils import get_json
 
 
 @pytest.fixture

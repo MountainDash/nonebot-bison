@@ -46,10 +46,8 @@ class Bilibili(NewMessage):
     async def parse_target(self, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif match := re.match(
-            r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text
-        ):
-            return Target(match.group(1))
+        elif m := re.match(r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text):
+            return Target(m.group(1))
         else:
             raise self.ParseTargetException()
 
@@ -241,6 +239,7 @@ class BilibiliBangumi(StatusChange):
     scheduler_class = "bilibili.com"
     name = "Bilibili剧集"
     has_target = True
+    parse_target_promot = "请输入剧集主页"
 
     _url = "https://api.bilibili.com/pgc/review/user"
 
@@ -251,6 +250,17 @@ class BilibiliBangumi(StatusChange):
             if res_data["code"]:
                 return None
             return res_data["result"]["media"]["title"]
+
+    async def parse_target(self, target_string: str) -> Target:
+        if re.match(r"\d+", target_string):
+            return Target(target_string)
+        elif m := re.match(r"md(\d+)", target_string):
+            return Target(m.group(1))
+        elif m := re.match(
+            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)/", target_string
+        ):
+            return Target(m.group(1))
+        raise self.ParseTargetException()
 
     async def get_status(self, target: Target):
         async with http_client() as client:

@@ -52,3 +52,9 @@ export interface SubmitParam {
   groupNumber: number;
   sub: SubscribeConfig;
 }
+
+export interface TimeWeightConfig {
+  start_time: string;
+  end_time: string;
+  weight: number;
+}

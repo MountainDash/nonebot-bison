@@ -14,6 +14,7 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 
 from ..plugin_config import plugin_config
+from ..types import WeightConfig
 from .api import (
     add_group_sub,
     auth,
@@ -21,8 +22,10 @@ from .api import (
     get_global_conf,
     get_subs_info,
     get_target_name,
+    get_weight_config,
     test,
     update_group_sub,
+    update_weigth_config,
 )
 from .jwt import load_jwt
 from .token_manager import token_manager as tm
@@ -32,6 +35,7 @@ GLOBAL_CONF_URL = f"{URL_BASE}api/global_conf"
 AUTH_URL = f"{URL_BASE}api/auth"
 SUBSCRIBE_URL = f"{URL_BASE}api/subs"
 GET_TARGET_NAME_URL = f"{URL_BASE}api/target_name"
+WEIGHT_URL = f"{URL_BASE}api/weight"
 TEST_URL = f"{URL_BASE}test"
 
 STATIC_PATH = (Path(__file__).parent / "dist").resolve()
@@ -73,6 +77,10 @@ def register_router_fastapi(driver: Driver, socketio):
             if int(groupNumber) == group["id"]:
                 return
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    async def check_is_superuser(token_obj: dict = Depends(get_jwt_obj)):
+        if token_obj.get("type") != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     @dataclass
     class AddSubscribeReq:
@@ -123,6 +131,14 @@ def register_router_fastapi(driver: Driver, socketio):
     @app.delete(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
     async def _del_group_subs(groupNumber: int, target: str, platformName: str):
         return await del_group_sub(groupNumber, platformName, target)
+
+    @app.get(WEIGHT_URL, dependencies=[Depends(check_is_superuser)])
+    async def _get_weight_config():
+        return await get_weight_config()
+
+    @app.patch(WEIGHT_URL, dependencies=[Depends(check_is_superuser)])
+    async def _update_weight_config(platformName: str, target: str, req: WeightConfig):
+        return await update_weigth_config(platformName, target, req)
 
     app.mount(URL_BASE, SinglePageApplication(directory=static_path), name="bison")
 

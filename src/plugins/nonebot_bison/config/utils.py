@@ -4,3 +4,7 @@ class NoSuchUserException(Exception):
 
 class NoSuchSubscribeException(Exception):
     pass
+
+
+class NoSuchTargetException(Exception):
+    pass

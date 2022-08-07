@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import time
 from typing import Any, Callable, Literal, NamedTuple, NewType
 
 RawPost = NewType("RawPost", Any)
@@ -24,3 +25,24 @@ class UserSubInfo(NamedTuple):
     user: User
     categories: list[Category]
     tags: list[Tag]
+
+
+@dataclass
+class TimeWeightConfig:
+    start_time: time
+    end_time: time
+    weight: int
+
+
+@dataclass
+class WeightConfig:
+
+    default: int
+    time_config: list[TimeWeightConfig]
+
+
+@dataclass
+class PlatformWeightConfigResp:
+    target: Target
+    target_name: str
+    weight: WeightConfig

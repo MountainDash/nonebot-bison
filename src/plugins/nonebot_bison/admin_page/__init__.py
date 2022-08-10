@@ -136,9 +136,9 @@ def register_router_fastapi(driver: Driver, socketio):
     async def _get_weight_config():
         return await get_weight_config()
 
-    @app.patch(WEIGHT_URL, dependencies=[Depends(check_is_superuser)])
-    async def _update_weight_config(platformName: str, target: str, req: WeightConfig):
-        return await update_weigth_config(platformName, target, req)
+    @app.put(WEIGHT_URL, dependencies=[Depends(check_is_superuser)])
+    async def _update_weight_config(platform_name: str, target: str, req: WeightConfig):
+        return await update_weigth_config(platform_name, target, req)
 
     app.mount(URL_BASE, SinglePageApplication(directory=static_path), name="bison")
 

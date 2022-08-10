@@ -195,7 +195,10 @@ class DBConfig:
                 raise NoSuchTargetException()
             target_id = targetObj.id
             targetObj.default_schedule_weight = conf.default
-            delete(ScheduleTimeWeight).where(ScheduleTimeWeight.target_id == target_id)
+            delete_statement = delete(ScheduleTimeWeight).where(
+                ScheduleTimeWeight.target_id == target_id
+            )
+            await sess.execute(delete_statement)
             for time_conf in conf.time_config:
                 new_conf = ScheduleTimeWeight(
                     start_time=time_conf.start_time,
@@ -271,6 +274,7 @@ class DBConfig:
                 res[platform_name][target.target] = PlatformWeightConfigResp(
                     target=T_Target(target.target),
                     target_name=target.target_name,
+                    platform_name=platform_name,
                     weight=WeightConfig(
                         default=target.default_schedule_weight, time_config=[]
                     ),

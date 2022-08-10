@@ -58,3 +58,15 @@ export interface TimeWeightConfig {
   end_time: string;
   weight: number;
 }
+
+export interface WeightConfig {
+  default: number;
+  time_config: TimeWeightConfig[];
+}
+
+export interface PlatformWeightConfigResp {
+  target: string;
+  target_name: string;
+  platform_name: string;
+  weight: WeightConfig;
+}

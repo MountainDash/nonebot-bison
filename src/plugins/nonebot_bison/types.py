@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import time
-from typing import Any, Callable, Literal, NamedTuple, NewType
+from typing import Any, Literal, NamedTuple, NewType
+
+from pydantic import BaseModel
 
 RawPost = NewType("RawPost", Any)
 Target = NewType("Target", str)
@@ -27,22 +29,19 @@ class UserSubInfo(NamedTuple):
     tags: list[Tag]
 
 
-@dataclass
-class TimeWeightConfig:
+class TimeWeightConfig(BaseModel):
     start_time: time
     end_time: time
     weight: int
 
 
-@dataclass
-class WeightConfig:
-
+class WeightConfig(BaseModel):
     default: int
     time_config: list[TimeWeightConfig]
 
 
-@dataclass
-class PlatformWeightConfigResp:
+class PlatformWeightConfigResp(BaseModel):
     target: Target
     target_name: str
+    platform_name: str
     weight: WeightConfig

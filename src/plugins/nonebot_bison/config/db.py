@@ -1,11 +1,10 @@
 from pathlib import Path
 
-import nonebot
 from alembic.config import Config
 from alembic.runtime.environment import EnvironmentContext
 from alembic.script.base import ScriptDirectory
 from nonebot.log import logger
-from nonebot_plugin_datastore import PluginData, create_session, db
+from nonebot_plugin_datastore import PluginData, db
 from nonebot_plugin_datastore.db import get_engine
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.ext.asyncio.session import AsyncSession

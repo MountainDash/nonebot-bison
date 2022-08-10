@@ -1,9 +1,7 @@
-from datetime import datetime
-
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.sql.sqltypes import JSON, DateTime, Integer, String, Time
+from sqlalchemy.sql.sqltypes import JSON, Integer, String, Time
 
 Base = declarative_base()
 

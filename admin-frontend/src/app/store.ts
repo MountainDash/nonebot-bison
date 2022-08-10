@@ -11,7 +11,9 @@ export const store = configureStore({
     [subscribeApi.reducerPath]: subscribeApi.reducer,
     [weightApi.reducerPath]: weightApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(subscribeApi.middleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+    .concat(subscribeApi.middleware)
+    .concat(weightApi.middleware),
 });
 
 export type AppDispatch = typeof store.dispatch;

@@ -111,6 +111,30 @@ class Platform(metaclass=RegistryABCMeta, base=True):
     def set_stored_data(self, target: Target, data: Any):
         self.store[target] = data
 
+    def tag_separator(self, stored_tags: list[Tag]):
+        subscribed_tags = []
+        banned_tags = []
+        for tag in stored_tags:
+            if tag.startswith("~"):
+                banned_tags.append(tag.lstrip("~"))
+            else:
+                subscribed_tags.append(tag)
+        return subscribed_tags, banned_tags
+
+    def is_banned_post(
+        self,
+        post_tags: Collection[Tag],
+        subscribed_tags: list[Tag],
+        banned_tags: list[Tag],
+    ) -> bool:
+        for tag in post_tags or []:
+            if banned_tags and tag in banned_tags:
+                return True
+            elif subscribed_tags and tag not in subscribed_tags:
+                return True
+
+        return False
+
     async def filter_user_custom(
         self, raw_post_list: list[RawPost], cats: list[Category], tags: list[Tag]
     ) -> list[RawPost]:
@@ -121,13 +145,8 @@ class Platform(metaclass=RegistryABCMeta, base=True):
                 if cats and cat not in cats:
                     continue
             if self.enable_tag and tags:
-                flag = False
                 post_tags = self.get_tags(raw_post)
-                for tag in post_tags or []:
-                    if tag in tags:
-                        flag = True
-                        break
-                if not flag:
+                if self.is_banned_post(post_tags, **self.tag_separator(tags)):
                     continue
             res.append(raw_post)
         return res

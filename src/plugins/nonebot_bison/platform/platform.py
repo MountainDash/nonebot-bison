@@ -127,13 +127,26 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         subscribed_tags: list[Tag],
         banned_tags: list[Tag],
     ) -> bool:
-        for tag in post_tags or []:
-            if banned_tags and tag in banned_tags:
-                return True
-            elif subscribed_tags and tag not in subscribed_tags:
-                return True
+        """只要存在任意屏蔽tag则返回真，此行为优先级最高。
+        存在任意被订阅tag则返回假，此行为优先级次之。
+        若被订阅tag为空，则返回假。
+        """
+        # 存在任意需要屏蔽的tag则为真
+        if banned_tags:
+            for tag in post_tags or []:
+                if tag in banned_tags:
+                    return True
+        # 检测屏蔽tag后检测订阅tag
+        # 存在任意需要订阅的tag则为假
+        ban_it = True
+        if subscribed_tags:
+            for tag in post_tags or []:
+                if tag in subscribed_tags:
+                    ban_it = False
+        else:
+            ban_it = False
 
-        return False
+        return ban_it
 
     async def filter_user_custom(
         self, raw_post_list: list[RawPost], cats: list[Category], tags: list[Tag]
@@ -145,8 +158,9 @@ class Platform(metaclass=RegistryABCMeta, base=True):
                 if cats and cat not in cats:
                     continue
             if self.enable_tag and tags:
-                post_tags = self.get_tags(raw_post)
-                if self.is_banned_post(post_tags, **self.tag_separator(tags)):
+                if self.is_banned_post(
+                    self.get_tags(raw_post), *self.tag_separator(tags)
+                ):
                     continue
             res.append(raw_post)
         return res

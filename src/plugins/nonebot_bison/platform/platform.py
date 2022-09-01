@@ -112,6 +112,7 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         self.store[target] = data
 
     def tag_separator(self, stored_tags: list[Tag]):
+        """返回分离好的正反tag元组"""
         subscribed_tags = []
         banned_tags = []
         for tag in stored_tags:

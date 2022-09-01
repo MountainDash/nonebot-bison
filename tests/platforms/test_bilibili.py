@@ -69,3 +69,33 @@ async def test_parse_target(bilibili: "Bilibili"):
         await bilibili.parse_target(
             "https://www.bilibili.com/video/BV1qP4y1g738?spm_id_from=333.999.0.0"
         )
+
+
+@pytest.fixture(scope="module")
+def post_list():
+    return get_json("bilibili_fake_dy_list.json")["data"]["cards"]
+
+
+# 测试新tag机制的平台推送情况
+@pytest.mark.asyncio
+async def test_filter_user_custom(bilibili, post_list):
+
+    only_banned_tags = ["~可露希尔的秘密档案"]
+    res0 = await bilibili.filter_user_custom(post_list, [], only_banned_tags)
+    assert len(res0) == 8
+
+    only_subscribed_tags = ["可露希尔的秘密档案"]
+    res1 = await bilibili.filter_user_custom(post_list, [], only_subscribed_tags)
+    assert len(res1) == 4
+
+    multi_subs_tags_1 = ["可露希尔的秘密档案", "罗德岛相簿"]
+    res2 = await bilibili.filter_user_custom(post_list, [], multi_subs_tags_1)
+    assert len(res2) == 4
+
+    multi_subs_tags_2 = ["罗德岛相簿", "风暴瞭望"]
+    res3 = await bilibili.filter_user_custom(post_list, [], multi_subs_tags_2)
+    assert len(res3) == 4
+
+    multi_subs_tags_3 = ["明日方舟", "~饼学大厦"]
+    res4 = await bilibili.filter_user_custom(post_list, [], multi_subs_tags_3)
+    assert len(res4) == 2

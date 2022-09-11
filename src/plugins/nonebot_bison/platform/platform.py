@@ -111,7 +111,7 @@ class Platform(metaclass=RegistryABCMeta, base=True):
     def set_stored_data(self, target: Target, data: Any):
         self.store[target] = data
 
-    def tag_separator(self, stored_tags: list[Tag]):
+    def tag_separator(self, stored_tags: list[Tag]) -> tuple[list[Tag], list[Tag]]:
         """返回分离好的正反tag元组"""
         subscribed_tags = []
         banned_tags = []
@@ -137,17 +137,16 @@ class Platform(metaclass=RegistryABCMeta, base=True):
             for tag in post_tags or []:
                 if tag in banned_tags:
                     return True
-        # 检测屏蔽tag后检测订阅tag
+        # 检测屏蔽tag后，再检测订阅tag
         # 存在任意需要订阅的tag则为假
-        ban_it = True
         if subscribed_tags:
+            ban_it = True
             for tag in post_tags or []:
                 if tag in subscribed_tags:
                     ban_it = False
+            return ban_it
         else:
-            ban_it = False
-
-        return ban_it
+            return False
 
     async def filter_user_custom(
         self, raw_post_list: list[RawPost], cats: list[Category], tags: list[Tag]

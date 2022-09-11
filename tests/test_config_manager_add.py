@@ -1,3 +1,5 @@
+from email import message
+
 import pytest
 import respx
 from httpx import Response
@@ -154,12 +156,20 @@ async def test_add_with_target(app: App):
         )
         ctx.receive_event(bot, event_5_ok)
         ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
-        event_6 = fake_group_message_event(
+        event_6_more_info = fake_group_message_event(
+            message=Message("详情"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_6_more_info)
+        ctx.should_call_send(
+            event_6_more_info, BotReply.add_reply_on_tags_need_more_info, True
+        )
+        ctx.should_rejected()
+        event_6_ok = fake_group_message_event(
             message=Message("全部标签"), sender=fake_admin_user
         )
-        ctx.receive_event(bot, event_6)
+        ctx.receive_event(bot, event_6_ok)
         ctx.should_call_send(
-            event_6, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True
+            event_6_ok, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True
         )
         ctx.should_finished()
     subs = config.list_subscribe(10000, "group")

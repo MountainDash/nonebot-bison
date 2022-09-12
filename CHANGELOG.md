@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- feat (issue #67 ):添加屏蔽特定tag的功能 [@AzideCupric](https://github.com/AzideCupric) ([#101](https://github.com/felinae98/nonebot-bison/pull/101))
+
 ### 新功能
 
 - 在StatusChange中提供了如果api返回错误不更新status的方法 [@felinae98](https://github.com/felinae98) ([#96](https://github.com/felinae98/nonebot-bison/pull/96))

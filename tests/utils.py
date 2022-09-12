@@ -99,7 +99,7 @@ class BotReply:
 
     @staticmethod
     def add_reply_on_id_input_search():
-        search_url = "https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
+        search_url = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
         search_title = "Bison所支持的平台UID"
         search_content = "查询相关平台的uid格式或获取方式"
         search_image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
@@ -144,5 +144,6 @@ class BotReply:
     add_reply_on_id_input_error = "id输入错误"
     add_reply_on_target_parse_input_error = "不能从你的输入中提取出id，请检查你输入的内容是否符合预期"
     add_reply_on_platform_input_error = "平台输入错误"
-    add_reply_on_tags = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
+    add_reply_on_tags = '请输入要订阅/屏蔽的tag(不含#号)\n多个tag请使用空格隔开\n具体规则回复"详情"'
+    add_reply_on_tags_need_more_info = '订阅tag直接输入tag内容\n订阅所有tag输入"全部标签"\n屏蔽tag请在tag名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#平台订阅标签-tag'
     add_reply_abort = "已中止订阅"

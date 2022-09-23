@@ -27,7 +27,7 @@ sidebar: auto
 本项目使用了 pre-commit 来进行代码美化和格式化。在`poetry shell`状态下执行`pre-commit install`来安装 git hook，可自动在 commit 时
 格式化代码。
 
-# 适配新网站
+## 适配新网站
 
 本插件需要你的帮助！只需要会写简单的爬虫，就能给本插件适配新的网站。
 
@@ -41,7 +41,7 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 - `nonebot_bison.post`: 可以理解为推送内容，其中包含需要发送的文字，图片，链接，平台信息等，分为：
   - `nonebot_bison.post.Post`: 简单的推送内容格式，需要发送的内容由 bison 处理
   - `nonebot_bison.post.CustomPost`: 基于 markdown 语法的，自由度较高的推送内容格式
-  - 详细的介绍可参见[生成 bison 的推送文本](#生成bison的推送文本)
+  - 详细的介绍可参见[生成 bison 的推送文本](#生成-bison-的推送文本)
 - `nonebot_bison.types.RawPost`: 从站点/平台中爬到的单条信息
 - `nonebot_bison.types.Target`: 目标账号，Bilibili，微博等社交媒体中的账号
 - `nonebot_bison.types.Category`: 信息分类，例如视频，动态，图文，文章等
@@ -53,7 +53,7 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 先明确需要适配的站点类型，先明确两个问题：
 
-#### 我要发送什么样的推送
+### 我要发送什么样的推送
 
 - `nonebot_bison.platform.platform.NewMessage` 最常见的类型，每次爬虫向特定接口爬取一个消息列表，
   与之前爬取的信息对比，过滤出新的消息，再根据用户自定义的分类和标签进行过滤，最后处理消息，把
@@ -65,7 +65,7 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
   ，每次发送全部消息  
    例如：每日榜单定时发送
 
-#### 这个平台是否有账号的概念
+### 这个平台是否有账号的概念
 
 - 有账号的概念  
    例如：B 站用户动态，微博用户动态，网易云电台更新

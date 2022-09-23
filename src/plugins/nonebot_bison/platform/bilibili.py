@@ -27,16 +27,11 @@ class Bilibili(NewMessage):
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
-    UA = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko",
-    }
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with http_client() as client:
             res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info",
-                params={"mid": target},
-                headers=self.UA,
+                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
             )
             res_data = json.loads(res.text)
             if res_data["code"]:
@@ -176,16 +171,11 @@ class Bilibililive(StatusChange):
     schedule_kw = {"seconds": 10}
     name = "Bilibili直播"
     has_target = True
-    UA = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko",
-    }
 
     async def get_target_name(self, target: Target) -> Optional[str]:
         async with http_client() as client:
             res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info",
-                params={"mid": target},
-                headers=self.UA,
+                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
             )
             res_data = json.loads(res.text)
             if res_data["code"]:
@@ -198,7 +188,6 @@ class Bilibililive(StatusChange):
             res = await client.get(
                 "https://api.bilibili.com/x/space/acc/info",
                 params=params,
-                headers=self.UA,
                 timeout=4.0,
             )
             res_dict = json.loads(res.text)

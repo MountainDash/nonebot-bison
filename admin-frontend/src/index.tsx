@@ -7,6 +7,7 @@ import App from './App';
 import { persistor, store } from './app/store';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import '@arco-design/web-react/dist/css/arco.css';
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);

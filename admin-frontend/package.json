@@ -5,6 +5,7 @@
   "homepage": "bison",
   "proxy": "http://127.0.0.1:8080",
   "dependencies": {
+    "@arco-design/web-react": "^2.39.3",
     "@reduxjs/toolkit": "^1.8.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.0.1",

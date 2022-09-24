@@ -137,7 +137,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             state["id"] = target
             state["name"] = name
         except (LookupError):
-            url = "https://nonebot-bison.vercel.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
+            url = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
             title = "Bison所支持的平台UID"
             content = "查询相关平台的uid格式或获取方式"
             image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
@@ -182,13 +182,17 @@ def do_add_sub(add_sub: Type[Matcher]):
         if not platform_manager[state["platform"]].enable_tag:
             state["tags"] = []
             return
-        state["_prompt"] = '请输入要订阅的tag，订阅所有tag输入"全部标签"'
+        state["_prompt"] = '请输入要订阅/屏蔽的tag(不含#号)\n多个tag请使用空格隔开\n具体规则回复"详情"'
 
     async def parser_tags(event: MessageEvent, state: T_State):
         if not isinstance(state["tags"], Message):
             return
         if str(event.get_message()).strip() == "取消":  # 一般不会有叫 取消 的tag吧
             await add_sub.finish("已中止订阅")
+        if str(event.get_message()).strip() == "详情":
+            await add_sub.reject(
+                '订阅tag直接输入tag内容\n订阅所有tag输入"全部标签"\n屏蔽tag请在tag名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#平台订阅标签-tag'
+            )
         if str(event.get_message()).strip() == "全部标签":
             state["tags"] = []
         else:

@@ -440,6 +440,9 @@ async def test_add_with_bilibili_target_parser(app: App):
         return_value=Response(200, json=get_json("bilibili_arknights_profile.json"))
     )
 
+    bilibili_main_page_router = respx.get("https://bilibili.com")
+    bilibili_main_page_router.mock(return_value=Response(200))
+
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(

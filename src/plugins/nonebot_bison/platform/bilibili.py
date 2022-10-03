@@ -1,14 +1,42 @@
+import functools
 import json
 import re
+from datetime import datetime, timedelta
 from typing import Any, Optional
+
+import httpx
+from nonebot.log import logger
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from ..utils import http_client
+from ..utils.http import http_args
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
-class Bilibili(NewMessage):
+class _BilibiliClient:
+
+    _http_client: httpx.AsyncClient
+    _client_refresh_time: Optional[datetime]
+    cookie_expire_time = timedelta(hours=5)
+
+    async def _init_session(self):
+        self._http_client = httpx.AsyncClient(**http_args)
+        res = await self._http_client.get("https://bilibili.com")
+        if res.status_code != 200:
+            logger.warning("unable to refresh temp cookie")
+        else:
+            self._client_refresh_time = datetime.now()
+
+    async def _refresh_client(self):
+        if (
+            self._client_refresh_time is None
+            or datetime.now() - self._client_refresh_time > self.cookie_expire_time
+            or self._http_client is None
+        ):
+            await self._init_session()
+
+
+class Bilibili(_BilibiliClient, NewMessage):
 
     categories = {
         1: "一般动态",
@@ -28,15 +56,23 @@ class Bilibili(NewMessage):
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
 
+    def ensure_client(fun):
+        @functools.wraps(fun)
+        async def wrapped(self, *args, **kwargs):
+            await self._refresh_client()
+            return await fun(self, *args, **kwargs)
+
+        return wrapped
+
+    @ensure_client
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with http_client() as client:
-            res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
-            )
-            res_data = json.loads(res.text)
-            if res_data["code"]:
-                return None
-            return res_data["data"]["name"]
+        res = await self._http_client.get(
+            "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+        )
+        res_data = json.loads(res.text)
+        if res_data["code"]:
+            return None
+        return res_data["data"]["name"]
 
     async def parse_target(self, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
@@ -48,19 +84,19 @@ class Bilibili(NewMessage):
         else:
             raise self.ParseTargetException()
 
+    @ensure_client
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with http_client() as client:
-            params = {"host_uid": target, "offset": 0, "need_top": 0}
-            res = await client.get(
-                "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
-                params=params,
-                timeout=4.0,
-            )
-            res_dict = json.loads(res.text)
-            if res_dict["code"] == 0:
-                return res_dict["data"].get("cards")
-            else:
-                return []
+        params = {"host_uid": target, "offset": 0, "need_top": 0}
+        res = await self._http_client.get(
+            "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
+            params=params,
+            timeout=4.0,
+        )
+        res_dict = json.loads(res.text)
+        if res_dict["code"] == 0:
+            return res_dict["data"].get("cards")
+        else:
+            return []
 
     def get_id(self, post: RawPost) -> Any:
         return post["desc"]["dynamic_id"]
@@ -157,7 +193,7 @@ class Bilibili(NewMessage):
         return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
 
 
-class Bilibililive(StatusChange):
+class Bilibililive(_BilibiliClient, StatusChange):
     # Author : Sichongzou
     # Date : 2022-5-18 8:54
     # Description : bilibili开播提醒
@@ -172,36 +208,44 @@ class Bilibililive(StatusChange):
     name = "Bilibili直播"
     has_target = True
 
-    async def get_target_name(self, target: Target) -> Optional[str]:
-        async with http_client() as client:
-            res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
-            )
-            res_data = json.loads(res.text)
-            if res_data["code"]:
-                return None
-            return res_data["data"]["name"]
+    def ensure_client(fun):
+        @functools.wraps(fun)
+        async def wrapped(self, *args, **kwargs):
+            await self._refresh_client()
+            return await fun(self, *args, **kwargs)
 
+        return wrapped
+
+    @ensure_client
+    async def get_target_name(self, target: Target) -> Optional[str]:
+        res = await self._http_client.get(
+            "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+        )
+        res_data = json.loads(res.text)
+        if res_data["code"]:
+            return None
+        return res_data["data"]["name"]
+
+    @ensure_client
     async def get_status(self, target: Target):
-        async with http_client() as client:
-            params = {"mid": target}
-            res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info",
-                params=params,
-                timeout=4.0,
-            )
-            res_dict = json.loads(res.text)
-            if res_dict["code"] == 0:
-                info = {}
-                info["uid"] = res_dict["data"]["mid"]
-                info["uname"] = res_dict["data"]["name"]
-                info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
-                info["room_id"] = res_dict["data"]["live_room"]["roomid"]
-                info["title"] = res_dict["data"]["live_room"]["title"]
-                info["cover"] = res_dict["data"]["live_room"]["cover"]
-                return info
-            else:
-                raise self.FetchError()
+        params = {"mid": target}
+        res = await self._http_client.get(
+            "https://api.bilibili.com/x/space/acc/info",
+            params=params,
+            timeout=4.0,
+        )
+        res_dict = json.loads(res.text)
+        if res_dict["code"] == 0:
+            info = {}
+            info["uid"] = res_dict["data"]["mid"]
+            info["uname"] = res_dict["data"]["name"]
+            info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
+            info["room_id"] = res_dict["data"]["live_room"]["roomid"]
+            info["title"] = res_dict["data"]["live_room"]["title"]
+            info["cover"] = res_dict["data"]["live_room"]["cover"]
+            return info
+        else:
+            raise self.FetchError()
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
         if (

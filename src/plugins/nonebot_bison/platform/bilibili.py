@@ -29,7 +29,7 @@ class _BilibiliClient:
 
     async def _refresh_client(self):
         if (
-            self._client_refresh_time is None
+            getattr(self, "_client_refresh_time", None) is None
             or datetime.now() - self._client_refresh_time > self.cookie_expire_time
             or self._http_client is None
         ):

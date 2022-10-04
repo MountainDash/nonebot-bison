@@ -21,8 +21,11 @@ class _BilibiliClient:
 
     async def _init_session(self):
         self._http_client = httpx.AsyncClient(**http_args)
-        res = await self._http_client.get("https://bilibili.com")
+        res = await self._http_client.get("https://www.bilibili.com/")
         if res.status_code != 200:
+            import ipdb
+
+            ipdb.set_trace()
             logger.warning("unable to refresh temp cookie")
         else:
             self._client_refresh_time = datetime.now()

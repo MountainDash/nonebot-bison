@@ -1,42 +1,102 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Breadcrumb, Layout, Menu } from '@arco-design/web-react';
 import { IconRobot, IconDashboard } from '@arco-design/web-react/icon';
+import './Home.css';
+// import SubscribeManager from '../features/subsribeConfigManager/SubscribeManager';
+import {
+  Link, Outlet, useLocation, useNavigate,
+} from 'react-router-dom';
+
+export function homeLoader() {
+}
 
 export default function Home() {
-  const [selectedTab, changeSelectTab] = useState('1');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const path = location.pathname;
+  useEffect(() => {
+    if (path === '/home') {
+      navigate('/home/groups');
+    }
+
+    if (path !== '/home/groups' && !path.startsWith('/home/groups/')) {
+      console.log(path);
+      navigate('/home/groups');
+    }
+  }, [path]);
+
+  let currentKey: string = '';
+  if (path === '/home/groups') {
+    currentKey = 'groups';
+  } else if (path.startsWith('/home/groups/')) {
+    currentKey = 'subs';
+  }
+
+  const [selectedTab, changeSelectTab] = useState(currentKey);
+
+  const handleTabSelect = (tab: string) => {
+    changeSelectTab(tab);
+    if (tab === 'groups') {
+      navigate('/home/navigate');
+    } else if (tab === 'weight') {
+      navigate('/home/weight');
+    }
+  };
+
   let breadcrumbContent: ReactNode;
-  if (selectedTab === '1') {
+  if (selectedTab === 'groups') {
     breadcrumbContent = (
-      <Breadcrumb.Item>
-        <IconRobot />
-        订阅管理
-      </Breadcrumb.Item>
+      <Breadcrumb style={{ margin: '16px 0' }}>
+        <Breadcrumb.Item>
+          <IconRobot />
+          订阅管理
+        </Breadcrumb.Item>
+      </Breadcrumb>
+    );
+  } else if (selectedTab === 'subs') {
+    breadcrumbContent = (
+      <Breadcrumb style={{ margin: '16px 0' }}>
+        <Breadcrumb.Item>
+          <Link to="/home/groups">
+            <IconRobot />
+            订阅管理
+          </Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>
+          groupman
+        </Breadcrumb.Item>
+      </Breadcrumb>
     );
   }
-  // let content: ReactNode;
   return (
-    <Layout style={{ height: '100vh' }}>
+    <Layout className="layout-collapse-demo">
       <Layout.Header>
-        heade
+        <div className="logo" />
       </Layout.Header>
-      <Layout>
+      <Layout className="layout-collapse-demo">
         <Layout.Sider>
-          <Menu defaultSelectedKeys={['1']} onClickMenuItem={(key) => { changeSelectTab(key); }}>
-            <Menu.Item key="1">
+          <Menu
+            defaultSelectedKeys={[selectedTab]}
+            onClickMenuItem={(key) => { handleTabSelect(key); }}
+          >
+            <Menu.Item key="groups">
               <IconRobot />
               订阅管理
             </Menu.Item>
-            <Menu.Item key="2">
+            <Menu.Item key="weight">
               <IconDashboard />
               调度权重
             </Menu.Item>
           </Menu>
         </Layout.Sider>
         <Layout.Content style={{ padding: '0 24px' }}>
-          <Breadcrumb style={{ margin: '16px 0' }}>
+          <Layout style={{ height: '100%' }}>
             { breadcrumbContent }
-          </Breadcrumb>
-          <div>123</div>
+            <Layout.Content style={{ margin: '10px', padding: '40px' }}>
+              <Outlet />
+            </Layout.Content>
+          </Layout>
         </Layout.Content>
       </Layout>
     </Layout>

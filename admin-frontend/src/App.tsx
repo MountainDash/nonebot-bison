@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import Auth from './features/auth/Auth';
 import { loadGlobalConf, selectGlobalConfLoaded } from './features/globalConf/globalConfSlice';
+import GroupManager from './features/subsribeConfigManager/GroupManager';
+import SubscribeManager from './features/subsribeConfigManager/SubscribeManager';
 import Home from './pages/Home';
 import Unauthed from './pages/Unauthed';
 
@@ -17,14 +19,36 @@ function App() {
     }
   }, [globalConfLoaded]);
 
+  const router = createBrowserRouter([
+    {
+      path: '/auth/:code',
+      element: <Auth />,
+    },
+    {
+      path: '/unauthed',
+      element: <Unauthed />,
+    },
+    {
+      path: '/home/',
+      element: <Home />,
+      // loader: homeLoader,
+      children: [
+        {
+          path: 'groups',
+          element: <GroupManager />,
+        },
+        {
+          path: 'groups/:groupNumber',
+          element: <SubscribeManager />,
+        },
+      ],
+    },
+  ], { basename: '/bison' });
+
   return (
     globalConfLoaded
       ? (
-        <Routes>
-          <Route path="/auth/:code" element={<Auth />} />
-          <Route path="/unauthed" element={<Unauthed />} />
-          <Route path="/home" element={<Home />} />
-        </Routes>
+        <RouterProvider router={router} />
       ) : <div>loading</div>
   );
 }

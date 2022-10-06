@@ -80,7 +80,7 @@ function SubscribeModal({
       if (newVal.target === '') {
         newVal.target = 'default';
       }
-      let postPromise: Promise<any>;
+      let postPromise: ReturnType<typeof updateSub>;
       if (initval) {
         postPromise = updateSub({
           groupNumber: parseInt(groupNumber, 10),

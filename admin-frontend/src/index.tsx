@@ -8,6 +8,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import '@arco-design/web-react/dist/css/arco.css';
 
+// eslint-disable-next-line
 const container = document.getElementById('root')!;
 const root = createRoot(container);
 

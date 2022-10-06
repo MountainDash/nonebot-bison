@@ -33,7 +33,7 @@ export default function SubscribeManager() {
     {
       title: '平台名称',
       dataIndex: 'platformName',
-      render: (col: any, record: SubscribeConfig) => (
+      render: (col: string, record: SubscribeConfig) => (
         <span>{platformConf[record.platformName].name}</span>
       ),
     },
@@ -42,7 +42,7 @@ export default function SubscribeManager() {
     {
       title: '订阅分类',
       dataIndex: 'cats',
-      render: (col: any, record: SubscribeConfig) => (
+      render: (col: string[], record: SubscribeConfig) => (
         <span>
           <Space>
             {
@@ -57,7 +57,7 @@ export default function SubscribeManager() {
     {
       title: '订阅标签',
       dataIndex: 'tags',
-      render: (col: any, record: SubscribeConfig) => (
+      render: (col: string[], record: SubscribeConfig) => (
         <span>
           <Space>
             {
@@ -73,7 +73,7 @@ export default function SubscribeManager() {
     {
       title: '操作',
       dataIndex: 'op',
-      render: (_: any, record: SubscribeConfig) => (
+      render: (_: null, record: SubscribeConfig) => (
         <Space>
           <Button type="text" onClick={handleEdit(record)}>编辑</Button>
           <Button type="text" status="success" onClick={() => Message.error('懒得写了')}>复制</Button>
@@ -81,7 +81,7 @@ export default function SubscribeManager() {
             title={`确认删除订阅 ${record.targetName} ?`}
             onOk={() => {
               deleteSub({
-                groupNumber: parseInt(groupNumber!, 10),
+                groupNumber: parseInt(groupNumber || '0', 10),
                 target: record.target,
                 platformName: record.platformName,
               });

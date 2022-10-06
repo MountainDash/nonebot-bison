@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, time
 from typing import Any, Awaitable, Callable, Optional
@@ -8,31 +9,19 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import delete, select
 from sqlalchemy.sql.functions import func
 
-from ..types import Category, Tag
+from ..types import Category, PlatformWeightConfigResp, Tag
 from ..types import Target as T_Target
+from ..types import TimeWeightConfig
 from ..types import User as T_User
-from ..types import UserSubInfo
+from ..types import UserSubInfo, WeightConfig
 from .db_model import ScheduleTimeWeight, Subscribe, Target, User
+from .utils import NoSuchTargetException
 
 
 def _get_time():
     dt = datetime.now()
     cur_time = time(hour=dt.hour, minute=dt.minute, second=dt.second)
     return cur_time
-
-
-@dataclass
-class TimeWeightConfig:
-    start_time: time
-    end_time: time
-    weight: int
-
-
-@dataclass
-class WeightConfig:
-
-    default: int
-    time_config: list[TimeWeightConfig]
 
 
 class DBConfig:
@@ -202,9 +191,14 @@ class DBConfig:
                     Target.platform_name == platform_name, Target.target == target
                 )
             )
+            if not targetObj:
+                raise NoSuchTargetException()
             target_id = targetObj.id
             targetObj.default_schedule_weight = conf.default
-            delete(ScheduleTimeWeight).where(ScheduleTimeWeight.target_id == target_id)
+            delete_statement = delete(ScheduleTimeWeight).where(
+                ScheduleTimeWeight.target_id == target_id
+            )
+            await sess.execute(delete_statement)
             for time_conf in conf.time_config:
                 new_conf = ScheduleTimeWeight(
                     start_time=time_conf.start_time,
@@ -261,6 +255,42 @@ class DBConfig:
                     subsribes,
                 )
             )
+
+    async def get_all_weight_config(
+        self,
+    ) -> dict[str, dict[str, PlatformWeightConfigResp]]:
+        res: dict[str, dict[str, PlatformWeightConfigResp]] = defaultdict(dict)
+        async with AsyncSession(get_engine()) as sess:
+            query = select(Target)
+            targets: list[Target] = (await sess.scalars(query)).all()
+            query = select(ScheduleTimeWeight).options(
+                selectinload(ScheduleTimeWeight.target)
+            )
+            time_weights: list[ScheduleTimeWeight] = (await sess.scalars(query)).all()
+
+        for target in targets:
+            platform_name = target.platform_name
+            if platform_name not in res.keys():
+                res[platform_name][target.target] = PlatformWeightConfigResp(
+                    target=T_Target(target.target),
+                    target_name=target.target_name,
+                    platform_name=platform_name,
+                    weight=WeightConfig(
+                        default=target.default_schedule_weight, time_config=[]
+                    ),
+                )
+
+        for time_weight_config in time_weights:
+            platform_name = time_weight_config.target.platform_name
+            target = time_weight_config.target.target
+            res[platform_name][target].weight.time_config.append(
+                TimeWeightConfig(
+                    start_time=time_weight_config.start_time,
+                    end_time=time_weight_config.end_time,
+                    weight=time_weight_config.weight,
+                )
+            )
+        return res
 
 
 config = DBConfig()

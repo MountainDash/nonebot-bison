@@ -1,20 +1,25 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import App from "./App";
-import "./index.css";
-import reportWebVitals from "./reportWebVitals";
-import store from "./store";
-import { injectStore } from "src/api/utils";
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import App from './App';
+import { persistor, store } from './app/store';
+import './index.css';
+import reportWebVitals from './reportWebVitals';
+import '@arco-design/web-react/dist/css/arco.css';
 
-injectStore(store);
-ReactDOM.render(
+// eslint-disable-next-line
+const container = document.getElementById('root')!;
+const root = createRoot(container);
+
+root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
     </Provider>
   </React.StrictMode>,
-  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function

@@ -4,15 +4,15 @@ import { IconRobot, IconDashboard } from '@arco-design/web-react/icon';
 import './Home.css';
 // import SubscribeManager from '../features/subsribeConfigManager/SubscribeManager';
 import {
-  Link, Outlet, useLocation, useNavigate,
+  Link, Navigate, Outlet, useLocation, useNavigate,
 } from 'react-router-dom';
-
-export function homeLoader() {
-}
+import { useAppSelector } from '../app/hooks';
+import { selectIsLogin } from '../features/auth/authSlice';
 
 export default function Home() {
   const location = useLocation();
   const navigate = useNavigate();
+  const isLogin = useAppSelector(selectIsLogin);
 
   const path = location.pathname;
   useEffect(() => {
@@ -20,13 +20,12 @@ export default function Home() {
       navigate('/home/groups');
     }
 
-    if (path !== '/home/groups' && !path.startsWith('/home/groups/')) {
-      console.log(path);
+    if (path !== '/home/groups' && !path.startsWith('/home/groups/') && path !== '/home/weight') {
       navigate('/home/groups');
     }
   }, [path]);
 
-  let currentKey: string = '';
+  let currentKey = '';
   if (path === '/home/groups') {
     currentKey = 'groups';
   } else if (path.startsWith('/home/groups/')) {
@@ -38,14 +37,18 @@ export default function Home() {
   const handleTabSelect = (tab: string) => {
     changeSelectTab(tab);
     if (tab === 'groups') {
-      navigate('/home/navigate');
+      navigate('/home/groups');
     } else if (tab === 'weight') {
       navigate('/home/weight');
     }
   };
 
+  if (!isLogin) {
+    return <Navigate to="/unauthed" />;
+  }
+
   let breadcrumbContent: ReactNode;
-  if (selectedTab === 'groups') {
+  if (path === '/home/groups') {
     breadcrumbContent = (
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>
@@ -54,17 +57,26 @@ export default function Home() {
         </Breadcrumb.Item>
       </Breadcrumb>
     );
-  } else if (selectedTab === 'subs') {
+  } else if (path.startsWith('/home/groups/')) {
     breadcrumbContent = (
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>
           <Link to="/home/groups">
-            <IconRobot />
-            订阅管理
+            <IconDashboard />
+            调度权重
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          groupman
+          群管理
+        </Breadcrumb.Item>
+      </Breadcrumb>
+    );
+  } else if (path === '/home/weight') {
+    breadcrumbContent = (
+      <Breadcrumb style={{ margin: '16px 0' }}>
+        <Breadcrumb.Item>
+          <IconDashboard />
+          调度权重
         </Breadcrumb.Item>
       </Breadcrumb>
     );
@@ -72,7 +84,9 @@ export default function Home() {
   return (
     <Layout className="layout-collapse-demo">
       <Layout.Header>
-        <div className="logo" />
+        <span>
+          Nonebot Bison
+        </span>
       </Layout.Header>
       <Layout className="layout-collapse-demo">
         <Layout.Sider>

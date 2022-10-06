@@ -7,7 +7,15 @@
 .layout-collapse-demo .arco-layout-header .logo {
   height: 32px;
   margin: 12px 8px;
+  width: 150px;
   background: var(--color-fill-2);
+}
+
+.layout-collapse-demo .arco-layout-header span {
+    height: 100%;
+    line-height: 100%; 
+    font-size: 20px;
+    margin: 0 20px;
 }
 
 .layout-collapse-demo .arco-layout-content .arco-layout-footer,

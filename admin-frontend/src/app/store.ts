@@ -15,6 +15,7 @@ import storage from 'redux-persist/lib/storage';
 import authReducer from '../features/auth/authSlice';
 import globalConfReducer from '../features/globalConf/globalConfSlice';
 import { subscribeApi } from '../features/subsribeConfigManager/subscribeConfigSlice';
+import { targetNameApi } from '../features/targetName/targetNameSlice';
 import { weightApi } from '../features/weightConfig/weightConfigSlice';
 
 const rootReducer = combineReducers({
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   globalConf: globalConfReducer,
   [subscribeApi.reducerPath]: subscribeApi.reducer,
   [weightApi.reducerPath]: weightApi.reducer,
+  [targetNameApi.reducerPath]: targetNameApi.reducer,
 });
 
 const persistConfig = {
@@ -40,7 +42,8 @@ export const store = configureStore({
     },
   })
     .concat(subscribeApi.middleware)
-    .concat(weightApi.middleware),
+    .concat(weightApi.middleware)
+    .concat(targetNameApi.middleware),
 });
 
 export const persistor = persistStore(store);

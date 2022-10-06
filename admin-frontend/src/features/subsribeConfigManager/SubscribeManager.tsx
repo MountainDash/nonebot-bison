@@ -1,17 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Button, Empty, Space, Table, Tag,
+  Button, Empty, Message, Popconfirm, Space, Table, Tag, Typography,
 } from '@arco-design/web-react';
 import { useParams } from 'react-router-dom';
-import { useGetSubsQuery } from './subscribeConfigSlice';
+import { useDeleteSubMutation, useGetSubsQuery } from './subscribeConfigSlice';
 import { useAppSelector } from '../../app/hooks';
 import { selectPlatformConf } from '../globalConf/globalConfSlice';
 import { SubscribeConfig } from '../../utils/type';
+import SubscribeModal from './SubscribeModal';
 
 export default function SubscribeManager() {
   const { data: subs } = useGetSubsQuery();
+  const [deleteSub, { isLoading: deleteIsLoading }] = useDeleteSubMutation();
   const { groupNumber } = useParams();
   const platformConf = useAppSelector(selectPlatformConf);
+
+  const isLoading = deleteIsLoading;
+  const [showModal, setShowModal] = useState(false);
+  const [formInitVal, setFormInitVal] = useState(null as SubscribeConfig | null);
+
+  const handleNewSub = () => {
+    setFormInitVal(null);
+    setShowModal(true);
+  };
+
+  const handleEdit = (sub: SubscribeConfig) => () => {
+    setFormInitVal(sub);
+    setShowModal(true);
+  };
 
   const columns = [
     {
@@ -59,9 +75,20 @@ export default function SubscribeManager() {
       dataIndex: 'op',
       render: (_: any, record: SubscribeConfig) => (
         <Space>
-          <Button type="text">编辑</Button>
-          <Button type="text" status="success">复制</Button>
-          <Button type="text" status="danger" onClick={() => { console.log(record); }}>删除</Button>
+          <Button type="text" onClick={handleEdit(record)}>编辑</Button>
+          <Button type="text" status="success" onClick={() => Message.error('懒得写了')}>复制</Button>
+          <Popconfirm
+            title={`确认删除订阅 ${record.targetName} ?`}
+            onOk={() => {
+              deleteSub({
+                groupNumber: parseInt(groupNumber!, 10),
+                target: record.target,
+                platformName: record.platformName,
+              });
+            }}
+          >
+            <Button type="text" status="danger">删除</Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -71,14 +98,21 @@ export default function SubscribeManager() {
     return (
       <>
         <span>
-          {subs[groupNumber].name}
-          {groupNumber}
+          <Typography.Title heading={3}>{subs[groupNumber].name}</Typography.Title>
+          <Typography.Text type="secondary">{groupNumber}</Typography.Text>
         </span>
-        <Button style={{ width: '90px', margin: '20px' }} type="primary">添加</Button>
+        <Button style={{ width: '90px', margin: '20px 10px' }} type="primary" onClick={handleNewSub}>添加</Button>
         <Table
           columns={columns}
           data={subs[groupNumber].subscribes}
           rowKey={(record: SubscribeConfig) => `${record.platformName}-${record.target}`}
+          loading={isLoading}
+        />
+        <SubscribeModal
+          visible={showModal}
+          setVisible={setShowModal}
+          groupNumber={groupNumber}
+          initval={formInitVal}
         />
       </>
     );

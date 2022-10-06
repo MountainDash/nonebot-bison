@@ -6,6 +6,7 @@ import Auth from './features/auth/Auth';
 import { loadGlobalConf, selectGlobalConfLoaded } from './features/globalConf/globalConfSlice';
 import GroupManager from './features/subsribeConfigManager/GroupManager';
 import SubscribeManager from './features/subsribeConfigManager/SubscribeManager';
+import WeightConfig from './features/weightConfig/WeightManager';
 import Home from './pages/Home';
 import Unauthed from './pages/Unauthed';
 
@@ -40,6 +41,10 @@ function App() {
         {
           path: 'groups/:groupNumber',
           element: <SubscribeManager />,
+        },
+        {
+          path: 'weight',
+          element: <WeightConfig />,
         },
       ],
     },

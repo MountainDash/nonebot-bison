@@ -22,6 +22,10 @@ async def test_fetch_bilibili_live_status(bili_live, dummy_user_subinfo):
         "https://api.bilibili.com/x/space/acc/info?mid=13164144"
     )
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
+
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
+
     target = "13164144"
     res = await bili_live.fetch_new_post(target, [dummy_user_subinfo])
     assert bili_live_router.called

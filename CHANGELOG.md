@@ -6,8 +6,13 @@
 
 ### 新功能
 
+- feat: 临时解决 bilibili 的反爬机制 [@felinae98](https://github.com/felinae98) ([#110](https://github.com/felinae98/nonebot-bison/pull/110))
 - 在StatusChange中提供了如果api返回错误不更新status的方法 [@felinae98](https://github.com/felinae98) ([#96](https://github.com/felinae98/nonebot-bison/pull/96))
 - 添加 CustomPost [@felinae98](https://github.com/felinae98) ([#81](https://github.com/felinae98/nonebot-bison/pull/81))
+
+### Bug 修复
+
+- fix: 修复 bilibili-live 中获取状态错误后产生的错误行为 [@felinae98](https://github.com/felinae98) ([#111](https://github.com/felinae98/nonebot-bison/pull/111))
 
 ## v0.5.4
 

@@ -1,6 +1,6 @@
 # Change Log
 
-## 最近更新
+## v0.5.5
 
 - feat (issue #67 ):添加屏蔽特定tag的功能 [@AzideCupric](https://github.com/AzideCupric) ([#101](https://github.com/felinae98/nonebot-bison/pull/101))
 

@@ -34,6 +34,8 @@ async def test_fetch_bilibili_bangumi_status(
     bili_bangumi_router.mock(
         return_value=Response(200, json=get_json("bilibili-gangumi-hanhua0.json"))
     )
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
     target = Target("28235413")
     res = await bili_bangumi.fetch_new_post(target, [dummy_user_subinfo])
     assert len(res) == 0

@@ -66,6 +66,8 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     post_router.mock(
         return_value=Response(200, json=get_json("bilibili_strange_post-0.json"))
     )
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
     target = "161775300"
     res = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
     assert post_router.called

@@ -1,5 +1,9 @@
 # Change Log
 
+## 最近更新
+
+- 0.6.0 [@felinae98](https://github.com/felinae98) ([#113](https://github.com/felinae98/nonebot-bison/pull/113))
+
 ## v0.5.5
 
 ### 新功能

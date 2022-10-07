@@ -1,11 +1,6 @@
-import typing
 from datetime import time
 
-import pytest
 from nonebug import App
-
-if typing.TYPE_CHECKING:
-    from nonebot_bison.scheduler.scheduler import Schedulable
 
 
 async def get_schedule_times(scheduler_class: str, time: int) -> dict[str, int]:
@@ -24,7 +19,7 @@ async def get_schedule_times(scheduler_class: str, time: int) -> dict[str, int]:
 async def test_scheduler_without_time(init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.config.db_config import WeightConfig
-    from nonebot_bison.scheduler.manager import init_scheduler, scheduler_dict
+    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
@@ -38,10 +33,10 @@ async def test_scheduler_without_time(init_scheduler):
     )
 
     await config.update_time_weight_config(
-        T_Target("t2"), "bilibili", WeightConfig(20, [])
+        T_Target("t2"), "bilibili", WeightConfig(default=20, time_config=[])
     )
     await config.update_time_weight_config(
-        T_Target("t2"), "bilibili-live", WeightConfig(30, [])
+        T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[])
     )
 
     await init_scheduler()
@@ -60,7 +55,7 @@ async def test_scheduler_without_time(init_scheduler):
 async def test_scheduler_with_time(app: App, init_scheduler):
     from nonebot_bison.config import config, db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig
-    from nonebot_bison.scheduler.manager import init_scheduler, scheduler_dict
+    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
@@ -76,10 +71,15 @@ async def test_scheduler_with_time(app: App, init_scheduler):
     await config.update_time_weight_config(
         T_Target("t2"),
         "bilibili",
-        WeightConfig(20, [TimeWeightConfig(time(10), time(11), 1000)]),
+        WeightConfig(
+            default=20,
+            time_config=[
+                TimeWeightConfig(start_time=time(10), end_time=time(11), weight=1000)
+            ],
+        ),
     )
     await config.update_time_weight_config(
-        T_Target("t2"), "bilibili-live", WeightConfig(30, [])
+        T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[])
     )
 
     await init_scheduler()
@@ -103,8 +103,7 @@ async def test_scheduler_with_time(app: App, init_scheduler):
 
 async def test_scheduler_add_new(init_scheduler):
     from nonebot_bison.config import config
-    from nonebot_bison.config.db_config import WeightConfig
-    from nonebot_bison.scheduler.manager import init_scheduler, scheduler_dict
+    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
@@ -125,8 +124,7 @@ async def test_scheduler_add_new(init_scheduler):
 
 async def test_schedule_delete(init_scheduler):
     from nonebot_bison.config import config
-    from nonebot_bison.config.db_config import WeightConfig
-    from nonebot_bison.scheduler.manager import init_scheduler, scheduler_dict
+    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(

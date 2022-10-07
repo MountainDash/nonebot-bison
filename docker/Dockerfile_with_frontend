@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-FROM python:3.9-slim as base
+FROM python:3.10-slim as base
 
 FROM base as builder
 
@@ -12,7 +12,7 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_NO_INTERACTION=1 \
   POETRY_VIRTUALENVS_CREATE=false \
   PATH="$PATH:/runtime/bin" \
-  PYTHONPATH="$PYTHONPATH:/runtime/lib/python3.9/site-packages" \
+  PYTHONPATH="$PYTHONPATH:/runtime/lib/python3.10/site-packages" \
   # Versions:
   POETRY_VERSION=1.1.14
 RUN apt-get update && apt-get install -y build-essential unzip wget python-dev git

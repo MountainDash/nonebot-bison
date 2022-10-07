@@ -20,4 +20,6 @@ repos:
     hooks:
       - id: prettier
         types_or: [markdown, ts, tsx]
+        exclude: 'admin-frontend/'
+
 exclude: 'CHANGELOG.md'

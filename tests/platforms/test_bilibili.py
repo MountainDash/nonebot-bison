@@ -1,10 +1,13 @@
 import typing
+from datetime import datetime
 
 import pytest
+import respx
 from httpx import Response
 from nonebug.app import App
+from pytz import timezone
 
-from .utils import get_json
+from .utils import get_file, get_json
 
 
 @pytest.fixture(scope="module")
@@ -51,6 +54,34 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
         == "饼组主线饼学预测——9.11版\n①今日结果\n9.11 殿堂上的游禽-星极(x，新运营实锤了)\n②后续预测\n9.12 #罗德岛相簿#+#可露希尔的秘密档案#11话\n9.13 六星先锋(执旗手)干员-琴柳\n9.14 宣传策略-空弦+家具\n9.15 轮换池（+中文语音前瞻）\n9.16 停机\n9.17 #罗德岛闲逛部#+新六星EP+EP09·风暴瞭望开启\n9.19 #罗德岛相簿#"
         + "\n--------------\n"
         + "#明日方舟#\n【新增服饰】\n//殿堂上的游禽 - 星极\n塞壬唱片偶像企划《闪耀阶梯》特供服饰/殿堂上的游禽。星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n_____________\n谦逊留给观众，骄傲发自歌喉，此夜，唯我璀璨。 "
+    )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_fetch_new(bilibili, dummy_user_subinfo):
+    post_router = respx.get(
+        "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
+    )
+    post_router.mock(
+        return_value=Response(200, json=get_json("bilibili_strange_post-0.json"))
+    )
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
+    target = "161775300"
+    res = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
+    assert post_router.called
+    assert len(res) == 0
+
+    mock_data = get_json("bilibili_strange_post.json")
+    mock_data["data"]["cards"][0]["desc"]["timestamp"] = int(datetime.now().timestamp())
+    post_router.mock(return_value=Response(200, json=mock_data))
+    res2 = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
+    assert len(res2[0][1]) == 1
+    post = res2[0][1][0]
+    assert (
+        post.text
+        == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
     )
 
 

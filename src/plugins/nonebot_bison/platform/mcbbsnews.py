@@ -7,7 +7,35 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 
 from ..post import Post
 from ..types import Category, RawPost, Target
+from ..utils import SchedulerConfig
 from .platform import CategoryNotSupport, NewMessage
+
+
+class McbbsSchedConf(SchedulerConfig, name="mcbbs"):
+
+    schedule_type = "interval"
+    schedule_setting = {"hours": 1}
+
+
+def _format_text(rawtext: str, mode: int) -> str:
+    """处理BeautifulSoup生成的string中奇怪的回车+连续空格
+    mode 0:处理标题
+    mode 1:处理版本资讯类推文
+    mode 2:处理快讯类推文"""
+    match mode:
+        case 0:
+            ftext = re.sub(r"\n\s*", " ", rawtext)
+        case 1:
+            ftext = re.sub(r"[\n\s*]", "", rawtext)
+        case 2:
+            ftext = re.sub(r"\r\n", "", rawtext)
+    return ftext
+
+
+def _stamp_date(rawdate: str) -> int:
+    """将时间转化为时间戳yyyy-mm-dd->timestamp"""
+    time_stamp = int(time.mktime(time.strptime(rawdate, "%Y-%m-%d")))
+    return time_stamp
 
 
 class McbbsNews(NewMessage):
@@ -17,8 +45,7 @@ class McbbsNews(NewMessage):
     name = "MCBBS幻翼块讯"
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"hours": 1}
+    scheduler_class = "mcbbs"
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:

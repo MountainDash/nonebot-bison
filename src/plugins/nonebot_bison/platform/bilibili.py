@@ -2,14 +2,24 @@ import functools
 import json
 import re
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import httpx
 from nonebot.log import logger
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
+from ..utils import SchedulerConfig
 from ..utils.http import http_args
+from .platform import CategoryNotSupport, NewMessage, StatusChange
+
+
+class BilibiliSchedConf(SchedulerConfig, name="bilibili.com"):
+
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 10}
+
+
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
@@ -33,7 +43,8 @@ class _BilibiliClient:
     async def _refresh_client(self):
         if (
             getattr(self, "_client_refresh_time", None) is None
-            or datetime.now() - self._client_refresh_time > self.cookie_expire_time
+            or datetime.now() - self._client_refresh_time
+            > self.cookie_expire_time  # type:ignore
             or self._http_client is None
         ):
             await self._init_session()
@@ -53,13 +64,12 @@ class Bilibili(_BilibiliClient, NewMessage):
     enable_tag = True
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 10}
+    scheduler_class = "bilibili.com"
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
 
-    def ensure_client(fun):
+    def ensure_client(fun: Callable):  # type:ignore
         @functools.wraps(fun)
         async def wrapped(self, *args, **kwargs):
             await self._refresh_client()
@@ -80,10 +90,8 @@ class Bilibili(_BilibiliClient, NewMessage):
     async def parse_target(self, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif match := re.match(
-            r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text
-        ):
-            return Target(match.group(1))
+        elif m := re.match(r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text):
+            return Target(m.group(1))
         else:
             raise self.ParseTargetException()
 
@@ -206,12 +214,11 @@ class Bilibililive(_BilibiliClient, StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 10}
+    scheduler_class = "bilibili.com"
     name = "Bilibili直播"
     has_target = True
 
-    def ensure_client(fun):
+    def ensure_client(fun: Callable):  # type:ignore
         @functools.wraps(fun)
         async def wrapped(self, *args, **kwargs):
             await self._refresh_client()
@@ -267,6 +274,98 @@ class Bilibililive(_BilibiliClient, StatusChange):
         return Post(
             self.name,
             text=title,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            compress=True,
+        )
+
+
+class BilibiliBangumi(_BilibiliClient, StatusChange):
+
+    categories = {}
+    platform_name = "bilibili-bangumi"
+    enable_tag = False
+    enabled = True
+    is_common = True
+    scheduler_class = "bilibili.com"
+    name = "Bilibili剧集"
+    has_target = True
+    parse_target_promot = "请输入剧集主页"
+
+    _url = "https://api.bilibili.com/pgc/review/user"
+
+    def ensure_client(fun: Callable):  # type:ignore
+        @functools.wraps(fun)
+        async def wrapped(self, *args, **kwargs):
+            await self._refresh_client()
+            return await fun(self, *args, **kwargs)
+
+        return wrapped
+
+    @ensure_client
+    async def get_target_name(self, target: Target) -> Optional[str]:
+        res = await self._http_client.get(self._url, params={"media_id": target})
+        res_data = res.json()
+        if res_data["code"]:
+            return None
+        return res_data["result"]["media"]["title"]
+
+    async def parse_target(self, target_string: str) -> Target:
+        if re.match(r"\d+", target_string):
+            return Target(target_string)
+        elif m := re.match(r"md(\d+)", target_string):
+            return Target(m.group(1))
+        elif m := re.match(
+            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)/", target_string
+        ):
+            return Target(m.group(1))
+        raise self.ParseTargetException()
+
+    @ensure_client
+    async def get_status(self, target: Target):
+        res = await self._http_client.get(
+            self._url,
+            params={"media_id": target},
+            timeout=4.0,
+        )
+        res_dict = res.json()
+        if res_dict["code"] == 0:
+            return {
+                "index": res_dict["result"]["media"]["new_ep"]["index"],
+                "index_show": res_dict["result"]["media"]["new_ep"]["index"],
+                "season_id": res_dict["result"]["media"]["season_id"],
+            }
+        else:
+            raise self.FetchError
+
+    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
+        if new_status["index"] != old_status["index"]:
+            return [new_status]
+        else:
+            return []
+
+    @ensure_client
+    async def parse(self, raw_post: RawPost) -> Post:
+        detail_res = await self._http_client.get(
+            f'http://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
+        )
+        detail_dict = detail_res.json()
+        lastest_episode = None
+        for episode in detail_dict["result"]["episodes"][::-1]:
+            if episode["badge"] in ("", "会员"):
+                lastest_episode = episode
+                break
+        if not lastest_episode:
+            lastest_episode = detail_dict["result"]["episodes"]
+
+        url = lastest_episode["link"]
+        pic = [lastest_episode["cover"]]
+        target_name = detail_dict["result"]["season_title"]
+        text = lastest_episode["share_copy"]
+        return Post(
+            self.name,
+            text=text,
             url=url,
             pics=pic,
             target_name=target_name,

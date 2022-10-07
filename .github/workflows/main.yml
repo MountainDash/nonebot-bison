@@ -12,6 +12,7 @@ on:
       - tests/**
       - pyproject.toml
       - poetry.lock
+      - .github/**
   pull_request:
     paths:
       - admin-frontend/**
@@ -20,6 +21,7 @@ on:
       - tests/**
       - pyproject.toml
       - poetry.lock
+      - .github/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -47,7 +49,7 @@ jobs:
     needs: build-frontend
     strategy:
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.10"]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
     env:

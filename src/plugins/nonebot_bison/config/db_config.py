@@ -23,8 +23,10 @@ def _get_time():
     cur_time = time(hour=dt.hour, minute=dt.minute, second=dt.second)
     return cur_time
 
+
 class SubscribeDupException(Exception):
     ...
+
 
 class DBConfig:
     def __init__(self):
@@ -79,7 +81,7 @@ class DBConfig:
             try:
                 await session.commit()
             except IntegrityError as e:
-                if len(e.args) > 0 and 'UNIQUE constraint failed' in e.args[0]:
+                if len(e.args) > 0 and "UNIQUE constraint failed" in e.args[0]:
                     raise SubscribeDupException()
                 raise e
 

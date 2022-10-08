@@ -7,10 +7,10 @@ from ..config import (
     NoSuchUserException,
     config,
 )
+from ..config.db_config import SubscribeDupException
 from ..platform import check_sub_target, platform_manager
 from ..types import Target as T_Target
 from ..types import WeightConfig
-from ..config.db_config import SubscribeDupException
 from .jwt import pack_jwt
 from .token_manager import token_manager
 

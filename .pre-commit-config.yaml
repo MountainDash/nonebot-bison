@@ -41,6 +41,6 @@ repos:
         types_or: [ts, tsx]
         types: []
         files: ^admin-frontend/
-        args: [--fix, -c, './admin-frontend/.eslintrc.json']
+        args: [--fix, -c, './admin-frontend/.eslintrc.json', --rule, 'import/no-unresolved: off']
 
 exclude: 'CHANGELOG.md'

@@ -215,11 +215,11 @@ def do_add_sub(add_sub: Type[Matcher]):
                 cats=state.get("cats", []),
                 tags=state.get("tags", []),
             )
-            await add_sub.finish("添加 {} 成功".format(state["name"]))
         except SubscribeDupException:
             await add_sub.finish(f"添加 {state['name']} 失败: 已存在该订阅")
         except Exception as e:
             await add_sub.finish(f"添加 {state['name']} 失败: {e}")
+        await add_sub.finish("添加 {} 成功".format(state["name"]))
 
 
 def do_query_sub(query_sub: Type[Matcher]):

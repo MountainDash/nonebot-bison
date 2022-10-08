@@ -1,9 +1,9 @@
 from collections import defaultdict
-from dataclasses import dataclass
 from datetime import datetime, time
-from typing import Any, Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 from nonebot_plugin_datastore.db import get_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import delete, select
@@ -23,6 +23,8 @@ def _get_time():
     cur_time = time(hour=dt.hour, minute=dt.minute, second=dt.second)
     return cur_time
 
+class SubscribeDupException(Exception):
+    ...
 
 class DBConfig:
     def __init__(self):
@@ -74,7 +76,12 @@ class DBConfig:
                 target=db_target,
             )
             session.add(subscribe)
-            await session.commit()
+            try:
+                await session.commit()
+            except IntegrityError as e:
+                if len(e.args) > 0 and 'UNIQUE constraint failed' in e.args[0]:
+                    raise SubscribeDupException()
+                raise e
 
     async def list_subscribe(self, user: int, user_type: str) -> list[Subscribe]:
         async with AsyncSession(get_engine()) as session:

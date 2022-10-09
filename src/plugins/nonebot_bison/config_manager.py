@@ -16,6 +16,7 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 
 from .config import config
+from .config.db_config import SubscribeDupException
 from .platform import Platform, check_sub_target, platform_manager
 from .plugin_config import plugin_config
 from .types import Category, Target, User
@@ -202,17 +203,22 @@ def do_add_sub(add_sub: Type[Matcher]):
     async def add_sub_process(event: Event, state: T_State):
         user = cast(User, state.get("target_user_info"))
         assert isinstance(user, User)
-        await config.add_subscribe(
-            # state.get("_user_id") or event.group_id,
-            # user_type="group",
-            user=user.user,
-            user_type=user.user_type,
-            target=state["id"],
-            target_name=state["name"],
-            platform_name=state["platform"],
-            cats=state.get("cats", []),
-            tags=state.get("tags", []),
-        )
+        try:
+            await config.add_subscribe(
+                # state.get("_user_id") or event.group_id,
+                # user_type="group",
+                user=user.user,
+                user_type=user.user_type,
+                target=state["id"],
+                target_name=state["name"],
+                platform_name=state["platform"],
+                cats=state.get("cats", []),
+                tags=state.get("tags", []),
+            )
+        except SubscribeDupException:
+            await add_sub.finish(f"添加 {state['name']} 失败: 已存在该订阅")
+        except Exception as e:
+            await add_sub.finish(f"添加 {state['name']} 失败: {e}")
         await add_sub.finish("添加 {} 成功".format(state["name"]))
 
 

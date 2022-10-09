@@ -7,6 +7,7 @@ from ..config import (
     NoSuchUserException,
     config,
 )
+from ..config.db_config import SubscribeDupException
 from ..platform import check_sub_target, platform_manager
 from ..types import Target as T_Target
 from ..types import WeightConfig
@@ -120,16 +121,19 @@ async def add_group_sub(
     cats: list[int],
     tags: list[str],
 ):
-    await config.add_subscribe(
-        int(group_number),
-        "group",
-        T_Target(target),
-        target_name,
-        platform_name,
-        cats,
-        tags,
-    )
-    return {"status": 200, "msg": ""}
+    try:
+        await config.add_subscribe(
+            int(group_number),
+            "group",
+            T_Target(target),
+            target_name,
+            platform_name,
+            cats,
+            tags,
+        )
+        return {"status": 200, "msg": ""}
+    except SubscribeDupException:
+        return {"status": 403, "msg": ""}
 
 
 async def del_group_sub(group_number: int, platform_name: str, target: str):

@@ -1,3 +1,4 @@
+import pytest
 from nonebug.app import App
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.sql.functions import func
@@ -70,6 +71,33 @@ async def test_add_subscribe(app: App, init_scheduler):
     assert conf.target.target == "weibo_id"
     assert conf.categories == [1]
     assert conf.tags == ["tag"]
+
+
+async def test_add_dup_sub(init_scheduler):
+
+    from nonebot_bison.config.db_config import SubscribeDupException, config
+    from nonebot_bison.types import Target as TTarget
+
+    await config.add_subscribe(
+        user=123,
+        user_type="group",
+        target=TTarget("weibo_id"),
+        target_name="weibo_name",
+        platform_name="weibo",
+        cats=[],
+        tags=[],
+    )
+
+    with pytest.raises(SubscribeDupException):
+        await config.add_subscribe(
+            user=123,
+            user_type="group",
+            target=TTarget("weibo_id"),
+            target_name="weibo_name",
+            platform_name="weibo",
+            cats=[],
+            tags=[],
+        )
 
 
 async def test_del_subsribe(init_scheduler):

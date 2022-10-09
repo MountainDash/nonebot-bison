@@ -28,34 +28,21 @@ def ms_list():
 
 
 @pytest.fixture
-def pic_hash():
-    platform_name = platform.system()
-    if platform_name == "Windows":
-        return "58723fdc24b473b6dbd8ec8cbc3b7e46160c83df"
-    elif platform_name == "Linux":
-        return "4d540798108762df76de34f7bdbc667dada6b5cb"
-    elif platform_name == "Darwin":
-        return "a482bf8317d56e5ddc71437584343ace29ff545c"
-    else:
-        raise UnsupportedOperation(f"未支持的平台{platform_name}")
-
-
-@pytest.fixture
-def expect_md():
+def expected_md():
     return "【Zc】每早合约日替攻略！<br>![Image](http://i0.hdslb.com/bfs/live/new_room_cover/cf7d4d3b2f336c6dba299644c3af952c5db82612.jpg)\n来源: Bilibili直播 魔法Zc目录<br>详情: https://live.bilibili.com/3044248<br>"
 
 
-def test_gene_md(app: App, expect_md, ms_list):
+def test_gene_md(app: App, expected_md, ms_list):
     from nonebot_bison.post.custom_post import CustomPost
 
     cp = CustomPost(message_segments=ms_list)
     cp_md = cp._generate_md()
-    assert cp_md == expect_md
+    assert cp_md == expected_md
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_gene_pic(app: App, ms_list, pic_hash):
+async def test_gene_pic(app: App, ms_list, expected_md):
     from nonebot_bison.post.custom_post import CustomPost
 
     pic_router = respx.get(
@@ -69,12 +56,6 @@ async def test_gene_pic(app: App, ms_list, pic_hash):
     pic_router.mock(return_value=Response(200, stream=mock_pic))
 
     cp = CustomPost(message_segments=ms_list)
-    cp_pic_bytes: list[MessageSegment] = await cp.generate_pic_messages()
+    cp_pic_msg_md: str = cp._generate_md()
 
-    pure_b64 = base64.b64decode(
-        cp_pic_bytes[0].data.get("file").replace("base64://", "")
-    )
-    sha1obj = hashlib.sha1()
-    sha1obj.update(pure_b64)
-    sha1hash = sha1obj.hexdigest()
-    assert sha1hash == pic_hash
+    assert cp_pic_msg_md == expected_md

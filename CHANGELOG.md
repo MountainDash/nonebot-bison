@@ -4,6 +4,10 @@
 
 - 0.6.0 [@felinae98](https://github.com/felinae98) ([#113](https://github.com/felinae98/nonebot-bison/pull/113))
 
+### Bug 修复
+
+- 处理「添加重复订阅」异常 [@felinae98](https://github.com/felinae98) ([#115](https://github.com/felinae98/nonebot-bison/pull/115))
+
 ## v0.5.5
 
 ### 新功能

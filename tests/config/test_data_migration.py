@@ -1,9 +1,6 @@
-import pytest
-
-
 async def test_migration(use_legacy_config):
     from nonebot_bison.config.config_legacy import config as config_legacy
-    from nonebot_bison.config.db import data_migrate, upgrade_db
+    from nonebot_bison.config.db import upgrade_db
     from nonebot_bison.config.db_config import config
 
     config_legacy.add_subscribe(
@@ -54,3 +51,32 @@ async def test_migration(use_legacy_config):
     assert user234_config[0].target.target == "weibo_id"
     assert user234_config[0].target.target_name == "weibo_name"
     assert user234_config[0].tags == []
+
+
+async def test_migrate_dup(use_legacy_config):
+    from nonebot_bison.config.config_legacy import config as config_legacy
+    from nonebot_bison.config.db import upgrade_db
+    from nonebot_bison.config.db_config import config
+
+    config_legacy.add_subscribe(
+        user=123,
+        user_type="group",
+        target="weibo_id",
+        target_name="weibo_name",
+        target_type="weibo",
+        cats=[2, 3],
+        tags=[],
+    )
+    config_legacy.add_subscribe(
+        user=123,
+        user_type="group",
+        target="weibo_id",
+        target_name="weibo_name",
+        target_type="weibo",
+        cats=[2, 3],
+        tags=[],
+    )
+    # await data_migrate()
+    await upgrade_db()
+    user123_config = await config.list_subscribe(123, "group")
+    assert len(user123_config) == 1

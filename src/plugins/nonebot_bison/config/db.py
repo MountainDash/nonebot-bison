@@ -28,11 +28,20 @@ async def data_migrate():
             for user in all_subs:
                 db_user = User(uid=user["user"], type=user["user_type"])
                 user_to_create.append(db_user)
+                user_sub_set = set()
                 for sub in user["subs"]:
                     target = sub["target"]
                     platform_name = sub["target_type"]
                     target_name = sub["target_name"]
                     key = f"{target}-{platform_name}"
+                    if key in user_sub_set:
+                        # a user subscribe a target twice
+                        logger.error(
+                            f"用户 {user['user_type']}-{user['user']} 订阅了 {platform_name}-{target_name} 两次，"
+                            "随机采用了一个订阅"
+                        )
+                        continue
+                    user_sub_set.add(key)
                     if key in platform_target_map.keys():
                         target_obj, ext_user_type, ext_user = platform_target_map[key]
                         if target_obj.target_name != target_name:

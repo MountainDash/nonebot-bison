@@ -4,7 +4,7 @@ import {
 } from '@arco-design/web-react';
 import useForm from '@arco-design/web-react/es/Form/useForm';
 import { IconInfoCircle } from '@arco-design/web-react/icon';
-import { useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectPlatformConf } from '../globalConf/globalConfSlice';
 import { CategoryConfig, SubscribeConfig } from '../../utils/type';
 import getTargetName from '../targetName/targetNameReq';
@@ -67,6 +67,7 @@ function SubscribeModal({
   const platformConf = useAppSelector(selectPlatformConf);
   const [updateSub] = useUpdateSubMutation();
   const [newSub] = useNewSubMutation();
+  const dispatch = useAppDispatch();
 
   const onSubmit = () => {
     form.validate().then((value: SubscribeConfig) => {
@@ -115,7 +116,7 @@ function SubscribeModal({
     setPlatformStates(platform);
     form.setFieldValue('cats', []);
     if (!platformConf[platform].hasTarget) {
-      getTargetName(platform, 'default').then((res) => {
+      dispatch(getTargetName(platform, 'default')).then((res) => {
         form.setFieldsValue({
           targetName: res,
           target: '',
@@ -168,7 +169,7 @@ function SubscribeModal({
             { required: hasTarget, message: '请输入账号' },
             {
               validator: (value, callback) => new Promise<void>((resolve) => {
-                getTargetName(form.getFieldValue('platformName'), value)
+                dispatch(getTargetName(form.getFieldValue('platformName'), value))
                   .then((res) => {
                     if (res) {
                       form.setFieldsValue({

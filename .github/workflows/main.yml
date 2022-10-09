@@ -79,6 +79,7 @@ jobs:
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
         with:
+          flags: smoke-test
           env_vars: OS,PYTHON_VERSION
 
   docker-main:

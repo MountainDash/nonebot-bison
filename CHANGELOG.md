@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- 使用新的文件来标志 legacy db 已弃用 [@felinae98](https://github.com/felinae98) ([#120](https://github.com/felinae98/nonebot-bison/pull/120))
 - 修复添加按钮没反应 [@felinae98](https://github.com/felinae98) ([#119](https://github.com/felinae98/nonebot-bison/pull/119))
 - 修复前端面包屑错误 [@felinae98](https://github.com/felinae98) ([#118](https://github.com/felinae98/nonebot-bison/pull/118))
 

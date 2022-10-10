@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- 修复添加按钮没反应 [@felinae98](https://github.com/felinae98) ([#119](https://github.com/felinae98/nonebot-bison/pull/119))
 - 修复前端面包屑错误 [@felinae98](https://github.com/felinae98) ([#118](https://github.com/felinae98/nonebot-bison/pull/118))
 
 ## v0.6.0

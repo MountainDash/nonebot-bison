@@ -2,7 +2,15 @@
 
 ## 最近更新
 
-- 0.6.0 [@felinae98](https://github.com/felinae98) ([#113](https://github.com/felinae98/nonebot-bison/pull/113))
+### 破坏性更新
+
+- 弃用 tinydb，使用 sqlite 作为数据库（届时将自动迁移数据库，可能存在失败的情况）
+- 放弃对 Python3.9 的支持
+- 重写前端
+
+### 新功能
+
+- 使用了新的调度器
 
 ### Bug 修复
 

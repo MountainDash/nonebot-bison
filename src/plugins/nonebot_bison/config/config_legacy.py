@@ -1,5 +1,7 @@
+import json
 import os
 from collections import defaultdict
+from datetime import datetime
 from os import path
 from pathlib import Path
 from typing import DefaultDict, Literal, Mapping, TypedDict
@@ -17,7 +19,7 @@ from .utils import NoSuchSubscribeException, NoSuchUserException
 supported_target_type = platform_manager.keys()
 
 
-def get_config_path() -> str:
+def get_config_path() -> tuple[str, str]:
     if plugin_config.bison_config_path:
         data_dir = plugin_config.bison_config_path
     else:
@@ -27,9 +29,10 @@ def get_config_path() -> str:
         os.makedirs(data_dir)
     old_path = path.join(data_dir, "hk_reporter.json")
     new_path = path.join(data_dir, "bison.json")
+    deprecated_maker_path = path.join(data_dir, "bison.json.deprecated")
     if os.path.exists(old_path) and not os.path.exists(new_path):
         os.rename(old_path, new_path)
-    return new_path
+    return new_path, deprecated_maker_path
 
 
 def drop():
@@ -39,11 +42,15 @@ def drop():
         working_dir = os.getcwd()
         data_dir = path.join(working_dir, "data")
     old_path = path.join(data_dir, "bison.json")
-    new_path = path.join(data_dir, "bison-legacy.json")
+    deprecated_marker_path = path.join(data_dir, "bison.json.deprecated")
     if os.path.exists(old_path):
         config.db.close()
         config.available = False
-        os.rename(old_path, new_path)
+        with open(deprecated_marker_path, "w") as file:
+            content = {
+                "migration_time": datetime.now().isoformat(),
+            }
+            file.write(json.dumps(content))
         return True
     return False
 
@@ -71,10 +78,12 @@ class Config(metaclass=Singleton):
         self._do_init()
 
     def _do_init(self):
-        path = get_config_path()
-        if Path(path).exists():
+        path, deprecated_marker_path = get_config_path()
+        if Path(deprecated_marker_path).exists():
+            self.available = False
+        elif Path(path).exists():
             self.available = True
-            self.db = TinyDB(get_config_path(), encoding="utf-8")
+            self.db = TinyDB(path, encoding="utf-8")
             self.kv_config = self.db.table("kv")
             self.user_target = self.db.table("user_target")
             self.target_user_cache: dict[str, defaultdict[Target, list[User]]] = {}

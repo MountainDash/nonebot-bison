@@ -62,8 +62,8 @@ export default function Home() {
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>
           <Link to="/home/groups">
-            <IconDashboard />
-            调度权重
+            <IconRobot />
+            订阅管理
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>

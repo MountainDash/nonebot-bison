@@ -1,5 +1,6 @@
 import json
 import re
+from collections.abc import Callable
 from datetime import datetime
 from typing import Any, Optional
 
@@ -12,7 +13,8 @@ from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage
 
 
-class WeiboSchedConf(SchedulerConfig, name="weibo.com"):
+class WeiboSchedConf(SchedulerConfig):
+    name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
 
@@ -30,7 +32,7 @@ class Weibo(NewMessage):
     name = "新浪微博"
     enabled = True
     is_common = True
-    scheduler_class = "weibo.com"
+    scheduler = WeiboSchedConf
     has_target = True
     parse_target_promot = "请输入用户主页（包含数字UID）的链接"
 

@@ -11,8 +11,9 @@ from ..utils.scheduler_config import SchedulerConfig
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
-class ArknightsSchedConf(SchedulerConfig, name="arknights"):
+class ArknightsSchedConf(SchedulerConfig):
 
+    name = "arknights"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
 
@@ -25,7 +26,7 @@ class Arknights(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler_class = "arknights"
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
@@ -97,7 +98,7 @@ class AkVersion(StatusChange):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler_class = "arknights"
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
@@ -152,7 +153,7 @@ class MonsterSiren(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler_class = "arknights"
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
@@ -203,7 +204,7 @@ class TerraHistoricusComic(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler_class = "arknights"
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:

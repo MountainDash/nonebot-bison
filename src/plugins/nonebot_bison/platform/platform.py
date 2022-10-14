@@ -4,7 +4,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Collection, Literal, Optional
+from typing import Any, Collection, Literal, Optional, Type
 
 import httpx
 from nonebot.log import logger
@@ -12,6 +12,7 @@ from nonebot.log import logger
 from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target, User, UserSubInfo
+from ..utils.scheduler_config import SchedulerConfig
 
 
 class CategoryNotSupport(Exception):
@@ -39,7 +40,7 @@ class RegistryABCMeta(RegistryMeta, ABC):
 
 class Platform(metaclass=RegistryABCMeta, base=True):
 
-    scheduler_class: str
+    scheduler: Type[SchedulerConfig]
     is_common: bool
     enabled: bool
     name: str
@@ -373,7 +374,7 @@ class NoTargetGroup(Platform, abstract=True):
         name = self.DUMMY_STR
         self.categories = {}
         categories_keys = set()
-        self.scheduler_class = platform_list[0].scheduler_class
+        self.scheduler = platform_list[0].scheduler
         for platform in platform_list:
             if platform.has_target:
                 raise RuntimeError(
@@ -392,7 +393,7 @@ class NoTargetGroup(Platform, abstract=True):
                 )
             categories_keys |= platform_category_key_set
             self.categories.update(platform.categories)
-            if platform.scheduler_class != self.scheduler_class:
+            if platform.scheduler != self.scheduler:
                 raise RuntimeError(
                     "Platform scheduler for {} not fit".format(self.platform_name)
                 )

@@ -92,8 +92,9 @@ def mock_platform(app: App):
     from nonebot_bison.types import Category, RawPost, Tag, Target
     from nonebot_bison.utils import SchedulerConfig
 
-    class MockPlatformSchedConf(SchedulerConfig, name="mock"):
+    class MockPlatformSchedConf(SchedulerConfig):
 
+        name = "mock"
         schedule_type = "interval"
         schedule_setting = {"seconds": 100}
 
@@ -105,7 +106,7 @@ def mock_platform(app: App):
         is_common = True
         enable_tag = True
         has_target = True
-        scheduler_class = "mock"
+        scheduler = MockPlatformSchedConf
         categories = {
             Category(1): "转发",
             Category(2): "视频",
@@ -150,16 +151,23 @@ def mock_platform(app: App):
 
 
 @pytest.fixture
-def mock_platform_no_target(app: App):
+def mock_scheduler_conf(app):
+    from nonebot_bison.utils import SchedulerConfig
+
+    class MockPlatformSchedConf(SchedulerConfig):
+
+        name = "mock"
+        schedule_type = "interval"
+        schedule_setting = {"seconds": 100}
+
+    return MockPlatformSchedConf
+
+
+@pytest.fixture
+def mock_platform_no_target(app: App, mock_scheduler_conf):
     from nonebot_bison.platform.platform import CategoryNotSupport, NewMessage
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
-    from nonebot_bison.utils import SchedulerConfig
-
-    class MockPlatformSchedConf(SchedulerConfig, name="mock"):
-
-        schedule_type = "interval"
-        schedule_setting = {"seconds": 100}
 
     class MockPlatform(NewMessage):
 
@@ -167,7 +175,7 @@ def mock_platform_no_target(app: App):
         name = "Mock Platform"
         enabled = True
         is_common = True
-        scheduler_class = "mock"
+        scheduler = mock_scheduler_conf
         enable_tag = True
         has_target = False
         categories = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
@@ -213,23 +221,18 @@ def mock_platform_no_target(app: App):
 
 
 @pytest.fixture
-def mock_platform_no_target_2(app: App):
+def mock_platform_no_target_2(app: App, mock_scheduler_conf):
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
     from nonebot_bison.utils import SchedulerConfig
-
-    class MockPlatformSchedConf(SchedulerConfig, name="mock"):
-
-        schedule_type = "interval"
-        schedule_setting = {"seconds": 100}
 
     class MockPlatform(NewMessage):
 
         platform_name = "mock_platform"
         name = "Mock Platform"
         enabled = True
-        scheduler_class = "mock"
+        scheduler = mock_scheduler_conf
         is_common = True
         enable_tag = True
         has_target = False

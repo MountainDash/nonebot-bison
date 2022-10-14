@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Type
 
 import nonebot
 from nonebot.adapters.onebot.v11.bot import Bot
@@ -27,16 +27,15 @@ class Scheduler:
 
     def __init__(
         self,
-        name: str,
+        scheduler_config: Type[SchedulerConfig],
         schedulables: list[tuple[str, Target]],
         platform_name_list: list[str],
     ):
-        conf = SchedulerConfig.registry.get(name)
-        self.name = name
-        if not conf:
-            logger.error(f"scheduler config [{name}] not found, exiting")
-            raise RuntimeError(f"{name} not found")
-        self.scheduler_config = conf
+        self.name = scheduler_config.name
+        if not scheduler_config:
+            logger.error(f"scheduler config [{self.name}] not found, exiting")
+            raise RuntimeError(f"{self.name} not found")
+        self.scheduler_config = scheduler_config
         self.schedulable_list = []
         for platform_name, target in schedulables:
             self.schedulable_list.append(
@@ -47,7 +46,7 @@ class Scheduler:
         self.platform_name_list = platform_name_list
         self.pre_weight_val = 0  # 轮调度中“本轮”增加权重和的初值
         logger.info(
-            f"register scheduler for {name} with {self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"
+            f"register scheduler for {self.name} with {self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"
         )
         aps.add_job(
             self.exec_fetch,

@@ -4,6 +4,7 @@ from typing import Any, Optional
 from ..post import Post
 from ..types import RawPost, Target
 from ..utils import http_client
+from .ncm_artist import NcmSchedConf
 from .platform import NewMessage
 
 
@@ -14,7 +15,7 @@ class NcmRadio(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler_class = "music.163.com"
+    scheduler = NcmSchedConf
     name = "网易云-电台"
     has_target = True
     parse_target_promot = "请输入主播电台主页（包含数字ID）的链接"

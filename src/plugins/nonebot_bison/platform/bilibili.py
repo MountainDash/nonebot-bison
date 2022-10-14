@@ -14,8 +14,9 @@ from ..utils.http import http_args
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
-class BilibiliSchedConf(SchedulerConfig, name="bilibili.com"):
+class BilibiliSchedConf(SchedulerConfig):
 
+    name = "bilibili.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 10}
 
@@ -33,9 +34,6 @@ class _BilibiliClient:
         self._http_client = httpx.AsyncClient(**http_args)
         res = await self._http_client.get("https://www.bilibili.com/")
         if res.status_code != 200:
-            import ipdb
-
-            ipdb.set_trace()
             logger.warning("unable to refresh temp cookie")
         else:
             self._client_refresh_time = datetime.now()
@@ -64,7 +62,7 @@ class Bilibili(_BilibiliClient, NewMessage):
     enable_tag = True
     enabled = True
     is_common = True
-    scheduler_class = "bilibili.com"
+    scheduler = BilibiliSchedConf
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
@@ -214,7 +212,7 @@ class Bilibililive(_BilibiliClient, StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler_class = "bilibili.com"
+    scheduler = BilibiliSchedConf
     name = "Bilibili直播"
     has_target = True
 
@@ -288,7 +286,7 @@ class BilibiliBangumi(_BilibiliClient, StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler_class = "bilibili.com"
+    scheduler = BilibiliSchedConf
     name = "Bilibili剧集"
     has_target = True
     parse_target_promot = "请输入剧集主页"

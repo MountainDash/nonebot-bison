@@ -89,7 +89,10 @@ export default function Home() {
         </span>
       </Layout.Header>
       <Layout className="layout-collapse-demo">
-        <Layout.Sider>
+        <Layout.Sider
+          collapsible
+          breakpoint="lg"
+        >
           <Menu
             defaultSelectedKeys={[selectedTab]}
             onClickMenuItem={(key) => { handleTabSelect(key); }}
@@ -104,10 +107,10 @@ export default function Home() {
             </Menu.Item>
           </Menu>
         </Layout.Sider>
-        <Layout.Content style={{ padding: '0 24px' }}>
+        <Layout.Content style={{ padding: '0 1em' }}>
           <Layout style={{ height: '100%' }}>
             { breadcrumbContent }
-            <Layout.Content style={{ margin: '10px', padding: '40px' }}>
+            <Layout.Content style={{ margin: '0.5em', padding: '2em' }}>
               <Outlet />
             </Layout.Content>
           </Layout>

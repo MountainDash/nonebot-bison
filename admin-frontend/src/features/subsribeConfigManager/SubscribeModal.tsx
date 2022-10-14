@@ -9,6 +9,7 @@ import { selectPlatformConf } from '../globalConf/globalConfSlice';
 import { CategoryConfig, SubscribeConfig } from '../../utils/type';
 import getTargetName from '../targetName/targetNameReq';
 import { useUpdateSubMutation, useNewSubMutation } from './subscribeConfigSlice';
+import useWindowDimensions from '../../utils/hooks';
 
 function SubscribeTag({
   value, onChange, disabled,
@@ -68,6 +69,7 @@ function SubscribeModal({
   const [updateSub] = useUpdateSubMutation();
   const [newSub] = useNewSubMutation();
   const dispatch = useAppDispatch();
+  const { width } = useWindowDimensions();
 
   const onSubmit = () => {
     form.validate().then((value: SubscribeConfig) => {
@@ -147,9 +149,11 @@ function SubscribeModal({
       onCancel={() => setVisible(false)}
       confirmLoading={confirmLoading}
       onOk={onSubmit}
+      style={{ maxWidth: '90vw' }}
     >
       <Form
         form={form}
+        layout={width > 520 ? 'horizontal' : 'vertical'}
       >
         <Form.Item label="平台" field="platformName">
           <Select placeholder="平台" onChange={handlePlatformSelected}>

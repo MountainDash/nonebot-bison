@@ -36,45 +36,45 @@ export default function SubscribeManager() {
       render: (col: string, record: SubscribeConfig) => (
         <span>{platformConf[record.platformName].name}</span>
       ),
+      width: '7em',
     },
-    { title: '帐号名称', dataIndex: 'targetName' },
-    { title: '订阅帐号', dataIndex: 'target' },
+    { title: '帐号名称', dataIndex: 'targetName', width: '10em' },
+    { title: '订阅帐号', dataIndex: 'target', width: '10em' },
     {
       title: '订阅分类',
       dataIndex: 'cats',
+      ellipsis: true,
       render: (col: string[], record: SubscribeConfig) => (
-        <span>
-          <Space>
-            {
-            record.cats.map((catNumber: number) => (
-              <Tag>{platformConf[record.platformName].categories[catNumber]}</Tag>
-            ))
-            }
-          </Space>
-        </span>
+        <Space wrap>
+          {
+          record.cats.map((catNumber: number) => (
+            <Tag>{platformConf[record.platformName].categories[catNumber]}</Tag>
+          ))
+          }
+        </Space>
       ),
+      width: '20em',
     },
     {
       title: '订阅标签',
       dataIndex: 'tags',
       render: (col: string[], record: SubscribeConfig) => (
-        <span>
-          <Space>
-            {
-              record.tags.length === 0 ? <Tag color="green">全部标签</Tag>
-                : record.tags.map((tag: string) => (
-                  <Tag color="blue">{tag}</Tag>
-                ))
-            }
-          </Space>
-        </span>
+        <Space wrap>
+          {
+            record.tags.length === 0 ? <Tag color="green">全部标签</Tag>
+              : record.tags.map((tag: string) => (
+                <Tag color="blue">{tag}</Tag>
+              ))
+          }
+        </Space>
       ),
+      width: '20em',
     },
     {
       title: '操作',
       dataIndex: 'op',
       render: (_: null, record: SubscribeConfig) => (
-        <Space>
+        <Space size="small">
           <Button type="text" onClick={handleEdit(record)}>编辑</Button>
           <Button type="text" status="success" onClick={() => Message.error('懒得写了')}>复制</Button>
           <Popconfirm
@@ -91,6 +91,7 @@ export default function SubscribeManager() {
           </Popconfirm>
         </Space>
       ),
+      width: '16em',
     },
   ];
 
@@ -107,6 +108,7 @@ export default function SubscribeManager() {
           data={subs[groupNumber].subscribes}
           rowKey={(record: SubscribeConfig) => `${record.platformName}-${record.target}`}
           loading={isLoading}
+          scroll={{ x: true }}
         />
         <SubscribeModal
           visible={showModal}

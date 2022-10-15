@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-from typing import Optional, Type
+from typing import Optional, Type, cast
 
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageEvent
@@ -9,14 +9,14 @@ from nonebot.adapters.onebot.v11.message import Message
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
-from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 
-from .config import Config
+from .config import config
+from .config.db_config import SubscribeDupException
 from .platform import Platform, check_sub_target, platform_manager
 from .plugin_config import plugin_config
 from .types import Category, Target, User
@@ -201,20 +201,24 @@ def do_add_sub(add_sub: Type[Matcher]):
 
     @add_sub.got("tags", _gen_prompt_template("{_prompt}"), [Depends(parser_tags)])
     async def add_sub_process(event: Event, state: T_State):
-        config = Config()
-        user = state.get("target_user_info")
+        user = cast(User, state.get("target_user_info"))
         assert isinstance(user, User)
-        config.add_subscribe(
-            # state.get("_user_id") or event.group_id,
-            # user_type="group",
-            user=user.user,
-            user_type=user.user_type,
-            target=state["id"],
-            target_name=state["name"],
-            target_type=state["platform"],
-            cats=state.get("cats", []),
-            tags=state.get("tags", []),
-        )
+        try:
+            await config.add_subscribe(
+                # state.get("_user_id") or event.group_id,
+                # user_type="group",
+                user=user.user,
+                user_type=user.user_type,
+                target=state["id"],
+                target_name=state["name"],
+                platform_name=state["platform"],
+                cats=state.get("cats", []),
+                tags=state.get("tags", []),
+            )
+        except SubscribeDupException:
+            await add_sub.finish(f"添加 {state['name']} 失败: 已存在该订阅")
+        except Exception as e:
+            await add_sub.finish(f"添加 {state['name']} 失败: {e}")
         await add_sub.finish("添加 {} 成功".format(state["name"]))
 
 
@@ -223,10 +227,9 @@ def do_query_sub(query_sub: Type[Matcher]):
 
     @query_sub.handle()
     async def _(state: T_State):
-        config: Config = Config()
         user_info = state["target_user_info"]
         assert isinstance(user_info, User)
-        sub_list = config.list_subscribe(
+        sub_list = await config.list_subscribe(
             # state.get("_user_id") or event.group_id, "group"
             user_info.user,
             user_info.user_type,
@@ -234,17 +237,20 @@ def do_query_sub(query_sub: Type[Matcher]):
         res = "订阅的帐号为：\n"
         for sub in sub_list:
             res += "{} {} {}".format(
-                sub["target_type"], sub["target_name"], sub["target"]
+                # sub["target_type"], sub["target_name"], sub["target"]
+                sub.target.platform_name,
+                sub.target.target_name,
+                sub.target.target,
             )
-            platform = platform_manager[sub["target_type"]]
+            platform = platform_manager[sub.target.platform_name]
             if platform.categories:
                 res += " [{}]".format(
                     ", ".join(
-                        map(lambda x: platform.categories[Category(x)], sub["cats"])
+                        map(lambda x: platform.categories[Category(x)], sub.categories)
                     )
                 )
             if platform.enable_tag:
-                res += " {}".format(", ".join(sub["tags"]))
+                res += " {}".format(", ".join(sub.tags))
             res += "\n"
         await query_sub.finish(Message(await parse_text(res)))
 
@@ -254,11 +260,10 @@ def do_del_sub(del_sub: Type[Matcher]):
 
     @del_sub.handle()
     async def send_list(bot: Bot, event: Event, state: T_State):
-        config: Config = Config()
         user_info = state["target_user_info"]
         assert isinstance(user_info, User)
         try:
-            sub_list = config.list_subscribe(
+            sub_list = await config.list_subscribe(
                 # state.get("_user_id") or event.group_id, "group"
                 user_info.user,
                 user_info.user_type,
@@ -271,21 +276,27 @@ def do_del_sub(del_sub: Type[Matcher]):
             state["sub_table"] = {}
             for index, sub in enumerate(sub_list, 1):
                 state["sub_table"][index] = {
-                    "target_type": sub["target_type"],
-                    "target": sub["target"],
+                    "platform_name": sub.target.platform_name,
+                    "target": sub.target.target,
                 }
                 res += "{} {} {} {}\n".format(
-                    index, sub["target_type"], sub["target_name"], sub["target"]
+                    index,
+                    sub.target.platform_name,
+                    sub.target.target_name,
+                    sub.target.target,
                 )
-                platform = platform_manager[sub["target_type"]]
+                platform = platform_manager[sub.target.platform_name]
                 if platform.categories:
                     res += " [{}]".format(
                         ", ".join(
-                            map(lambda x: platform.categories[Category(x)], sub["cats"])
+                            map(
+                                lambda x: platform.categories[Category(x)],
+                                sub.categories,
+                            )
                         )
                     )
                 if platform.enable_tag:
-                    res += " {}".format(", ".join(sub["tags"]))
+                    res += " {}".format(", ".join(sub.tags))
                 res += "\n"
             res += "请输入要删除的订阅的序号\n输入'取消'中止"
             await bot.send(event=event, message=Message(await parse_text(res)))
@@ -297,10 +308,9 @@ def do_del_sub(del_sub: Type[Matcher]):
             await del_sub.finish("删除中止")
         try:
             index = int(user_msg)
-            config = Config()
             user_info = state["target_user_info"]
             assert isinstance(user_info, User)
-            config.del_subscribe(
+            await config.del_subscribe(
                 # state.get("_user_id") or event.group_id,
                 # "group",
                 user_info.user,

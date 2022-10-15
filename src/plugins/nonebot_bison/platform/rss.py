@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import http_client
+from ..utils import http_client, scheduler
 from .platform import NewMessage
 
 
@@ -18,8 +18,7 @@ class Rss(NewMessage):
     name = "Rss"
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 30}
+    scheduler = scheduler("interval", {"seconds": 30})
     has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:

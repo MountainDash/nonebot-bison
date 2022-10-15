@@ -1,45 +1,60 @@
-import "antd/dist/antd.css";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import "./App.css";
-import { Admin } from "./pages/admin";
-import { Auth } from "./pages/auth";
-import { getGlobalConf } from "./store/globalConfSlice";
-import { useAppSelector } from "./store/hooks";
-import { loadLoginState, loginSelector } from "./store/loginSlice";
-
-function LoginSwitch() {
-  const login = useSelector(loginSelector);
-  if (login.login) {
-    return <Admin />;
-  } else {
-    return <div>not login</div>;
-  }
-}
+import React, { useEffect } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import './App.css';
+import { useAppDispatch, useAppSelector } from './app/hooks';
+import Auth from './features/auth/Auth';
+import { loadGlobalConf, selectGlobalConfLoaded } from './features/globalConf/globalConfSlice';
+import GroupManager from './features/subsribeConfigManager/GroupManager';
+import SubscribeManager from './features/subsribeConfigManager/SubscribeManager';
+import WeightConfig from './features/weightConfig/WeightManager';
+import Home from './pages/Home';
+import Unauthed from './pages/Unauthed';
 
 function App() {
-  const dispatch = useDispatch();
-  const globalConf = useAppSelector((state) => state.globalConf);
+  const dispatch = useAppDispatch();
+  const globalConfLoaded = useAppSelector(selectGlobalConfLoaded);
+
   useEffect(() => {
-    dispatch(getGlobalConf());
-    dispatch(loadLoginState());
-  }, [dispatch]);
+    if (!globalConfLoaded) {
+      dispatch(loadGlobalConf());
+    }
+  }, [globalConfLoaded]);
+
+  const router = createBrowserRouter([
+    {
+      path: '/auth/:code',
+      element: <Auth />,
+    },
+    {
+      path: '/unauthed',
+      element: <Unauthed />,
+    },
+    {
+      path: '/home/',
+      element: <Home />,
+      // loader: homeLoader,
+      children: [
+        {
+          path: 'groups',
+          element: <GroupManager />,
+        },
+        {
+          path: 'groups/:groupNumber',
+          element: <SubscribeManager />,
+        },
+        {
+          path: 'weight',
+          element: <WeightConfig />,
+        },
+      ],
+    },
+  ], { basename: '/bison' });
+
   return (
-    <>
-      {globalConf.loaded && (
-        <Router basename="/bison">
-          <Switch>
-            <Route path="/auth/:code">
-              <Auth />
-            </Route>
-            <Route path="/admin/">
-              <LoginSwitch />
-            </Route>
-          </Switch>
-        </Router>
-      )}
-    </>
+    globalConfLoaded
+      ? (
+        <RouterProvider router={router} />
+      ) : <div>loading</div>
   );
 }
 

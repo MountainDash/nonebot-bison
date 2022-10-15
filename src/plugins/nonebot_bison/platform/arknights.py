@@ -7,7 +7,15 @@ from nonebot.plugin import require
 from ..post import Post
 from ..types import Category, RawPost, Target
 from ..utils import http_client
+from ..utils.scheduler_config import SchedulerConfig
 from .platform import CategoryNotSupport, NewMessage, StatusChange
+
+
+class ArknightsSchedConf(SchedulerConfig):
+
+    name = "arknights"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 30}
 
 
 class Arknights(NewMessage):
@@ -18,8 +26,7 @@ class Arknights(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 30}
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
@@ -91,8 +98,7 @@ class AkVersion(StatusChange):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 30}
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
@@ -147,8 +153,7 @@ class MonsterSiren(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 30}
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:
@@ -199,8 +204,7 @@ class TerraHistoricusComic(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 30}
+    scheduler = ArknightsSchedConf
     has_target = False
 
     async def get_target_name(self, _: Target) -> str:

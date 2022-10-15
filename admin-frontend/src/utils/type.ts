@@ -1,31 +1,10 @@
-interface QQGroup {
-  id: string;
-  name: string;
-}
-
-export interface LoginStatus {
-  login: boolean;
-  type: string;
-  name: string;
-  id: string;
-  // groups: Array<QQGroup>
+export interface TokenResp {
+  status: number;
   token: string;
-  failed: boolean;
+  type: string;
+  id: number;
+  name: string;
 }
-
-export type LoginContextType = {
-  login: LoginStatus;
-  save: (status: LoginStatus) => void;
-};
-
-export interface SubscribeConfig {
-  platformName: string;
-  target: string;
-  targetName: string;
-  cats: Array<number>;
-  tags: Array<string>;
-}
-
 export interface GlobalConf {
   platformConf: AllPlatformConf;
   loaded: boolean;
@@ -47,12 +26,12 @@ export interface PlatformConfig {
   hasTarget: boolean;
 }
 
-export interface TokenResp {
-  status: number;
-  token: string;
-  type: string;
-  id: string;
-  name: string;
+export interface SubscribeConfig {
+  platformName: string;
+  target: string;
+  targetName: string;
+  cats: Array<number>;
+  tags: Array<string>;
 }
 
 export interface SubscribeGroupDetail {
@@ -64,6 +43,30 @@ export interface SubscribeResp {
   [idx: string]: SubscribeGroupDetail;
 }
 
-export interface TargetNameResp {
-  targetName: string;
+export interface StatusResp {
+  status: number;
+  msg: string;
+}
+
+export interface SubmitParam {
+  groupNumber: number;
+  sub: SubscribeConfig;
+}
+
+export interface TimeWeightConfig {
+  start_time: string;
+  end_time: string;
+  weight: number;
+}
+
+export interface WeightConfig {
+  default: number;
+  time_config: TimeWeightConfig[];
+}
+
+export interface PlatformWeightConfigResp {
+  target: string;
+  target_name: string;
+  platform_name: string;
+  weight: WeightConfig;
 }

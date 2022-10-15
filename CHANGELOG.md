@@ -2,12 +2,45 @@
 
 ## 最近更新
 
-- feat (issue #67 ):添加屏蔽特定tag的功能 [@AzideCupric](https://github.com/AzideCupric) ([#101](https://github.com/felinae98/nonebot-bison/pull/101))
+- 调整调度器 api [@felinae98](https://github.com/felinae98) ([#125](https://github.com/felinae98/nonebot-bison/pull/125))
+
+## v0.6.1
+
+### Bug 修复
+
+- 修复前端 title [@felinae98](https://github.com/felinae98) ([#121](https://github.com/felinae98/nonebot-bison/pull/121))
+- 使用新的文件来标志 legacy db 已弃用 [@felinae98](https://github.com/felinae98) ([#120](https://github.com/felinae98/nonebot-bison/pull/120))
+- 修复添加按钮没反应 [@felinae98](https://github.com/felinae98) ([#119](https://github.com/felinae98/nonebot-bison/pull/119))
+- 修复前端面包屑错误 [@felinae98](https://github.com/felinae98) ([#118](https://github.com/felinae98/nonebot-bison/pull/118))
+
+## v0.6.0
+
+### 破坏性更新
+
+- 弃用 tinydb，使用 sqlite 作为数据库（届时将自动迁移数据库，可能存在失败的情况）
+- 放弃对 Python3.9 的支持
+- 重写前端
 
 ### 新功能
 
+- 使用了新的调度器
+
+### Bug 修复
+
+- 处理「添加重复订阅」异常 [@felinae98](https://github.com/felinae98) ([#115](https://github.com/felinae98/nonebot-bison/pull/115))
+
+## v0.5.5
+
+### 新功能
+
+- feat (issue #67 ):添加屏蔽特定tag的功能 [@AzideCupric](https://github.com/AzideCupric) ([#101](https://github.com/felinae98/nonebot-bison/pull/101))
+- feat: 临时解决 bilibili 的反爬机制 [@felinae98](https://github.com/felinae98) ([#110](https://github.com/felinae98/nonebot-bison/pull/110))
 - 在StatusChange中提供了如果api返回错误不更新status的方法 [@felinae98](https://github.com/felinae98) ([#96](https://github.com/felinae98/nonebot-bison/pull/96))
 - 添加 CustomPost [@felinae98](https://github.com/felinae98) ([#81](https://github.com/felinae98/nonebot-bison/pull/81))
+
+### Bug 修复
+
+- fix: 修复 bilibili-live 中获取状态错误后产生的错误行为 [@felinae98](https://github.com/felinae98) ([#111](https://github.com/felinae98/nonebot-bison/pull/111))
 
 ## v0.5.4
 

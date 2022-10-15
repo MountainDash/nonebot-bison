@@ -4,7 +4,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Collection, Literal, Optional
+from typing import Any, Collection, Literal, Optional, Type
 
 import httpx
 from nonebot.log import logger
@@ -12,6 +12,7 @@ from nonebot.log import logger
 from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target, User, UserSubInfo
+from ..utils.scheduler_config import SchedulerConfig
 
 
 class CategoryNotSupport(Exception):
@@ -39,8 +40,7 @@ class RegistryABCMeta(RegistryMeta, ABC):
 
 class Platform(metaclass=RegistryABCMeta, base=True):
 
-    schedule_type: Literal["date", "interval", "cron"]
-    schedule_kw: dict
+    scheduler: Type[SchedulerConfig]
     is_common: bool
     enabled: bool
     name: str
@@ -169,9 +169,7 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         self, target: Target, new_posts: list[RawPost], users: list[UserSubInfo]
     ) -> list[tuple[User, list[Post]]]:
         res: list[tuple[User, list[Post]]] = []
-        for user, category_getter, tag_getter in users:
-            required_tags = tag_getter(target) if self.enable_tag else []
-            cats = category_getter(target)
+        for user, cats, required_tags in users:
             user_raw_post = await self.filter_user_custom(
                 new_posts, cats, required_tags
             )
@@ -372,11 +370,11 @@ class NoTargetGroup(Platform, abstract=True):
 
     def __init__(self, platform_list: list[Platform]):
         self.platform_list = platform_list
+        self.platform_name = platform_list[0].platform_name
         name = self.DUMMY_STR
         self.categories = {}
         categories_keys = set()
-        self.schedule_type = platform_list[0].schedule_type
-        self.schedule_kw = platform_list[0].schedule_kw
+        self.scheduler = platform_list[0].scheduler
         for platform in platform_list:
             if platform.has_target:
                 raise RuntimeError(
@@ -395,10 +393,7 @@ class NoTargetGroup(Platform, abstract=True):
                 )
             categories_keys |= platform_category_key_set
             self.categories.update(platform.categories)
-            if (
-                platform.schedule_kw != self.schedule_kw
-                or platform.schedule_type != self.schedule_type
-            ):
+            if platform.scheduler != self.scheduler:
                 raise RuntimeError(
                     "Platform scheduler for {} not fit".format(self.platform_name)
                 )

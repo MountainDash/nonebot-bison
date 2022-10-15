@@ -8,18 +8,17 @@ from .utils import fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
-async def test_query_sub(app: App):
+async def test_query_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import query_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.types import Target
 
-    config = Config()
-    config.user_target.truncate()
-    config.add_subscribe(
+    await config.add_subscribe(
         10000,
         "group",
-        "6279793937",
+        Target("6279793937"),
         "明日方舟Arknights",
         "weibo",
         [platform_manager["weibo"].reverse_category["图文"]],
@@ -37,19 +36,18 @@ async def test_query_sub(app: App):
 
 
 @pytest.mark.asyncio
-async def test_del_sub(app: App):
+async def test_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.types import Target
 
-    config = Config()
-    config.user_target.truncate()
-    config.add_subscribe(
+    await config.add_subscribe(
         10000,
         "group",
-        "6279793937",
+        Target("6279793937"),
         "明日方舟Arknights",
         "weibo",
         [platform_manager["weibo"].reverse_category["图文"]],
@@ -83,20 +81,18 @@ async def test_del_sub(app: App):
         ctx.receive_event(bot, event_1_ok)
         ctx.should_call_send(event_1_ok, "删除成功", True)
         ctx.should_finished()
-    subs = config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(10000, "group")
     assert len(subs) == 0
 
 
 @pytest.mark.asyncio
-async def test_del_empty_sub(app: App):
+async def test_del_empty_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_bison.config import Config
+    from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
 
-    config = Config()
-    config.user_target.truncate()
     async with app.test_matcher(del_sub_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)

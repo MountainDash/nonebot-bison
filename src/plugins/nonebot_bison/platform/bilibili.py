@@ -1,14 +1,54 @@
+import functools
 import json
 import re
-from typing import Any, Optional
+from datetime import datetime, timedelta
+from typing import Any, Callable, Optional
+
+import httpx
+from nonebot.log import logger
 
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
-from ..utils import http_client
+from ..utils import SchedulerConfig
+from ..utils.http import http_args
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
-class Bilibili(NewMessage):
+class BilibiliSchedConf(SchedulerConfig):
+
+    name = "bilibili.com"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 10}
+
+
+from .platform import CategoryNotSupport, NewMessage, StatusChange
+
+
+class _BilibiliClient:
+
+    _http_client: httpx.AsyncClient
+    _client_refresh_time: Optional[datetime]
+    cookie_expire_time = timedelta(hours=5)
+
+    async def _init_session(self):
+        self._http_client = httpx.AsyncClient(**http_args)
+        res = await self._http_client.get("https://www.bilibili.com/")
+        if res.status_code != 200:
+            logger.warning("unable to refresh temp cookie")
+        else:
+            self._client_refresh_time = datetime.now()
+
+    async def _refresh_client(self):
+        if (
+            getattr(self, "_client_refresh_time", None) is None
+            or datetime.now() - self._client_refresh_time
+            > self.cookie_expire_time  # type:ignore
+            or self._http_client is None
+        ):
+            await self._init_session()
+
+
+class Bilibili(_BilibiliClient, NewMessage):
 
     categories = {
         1: "一般动态",
@@ -22,45 +62,50 @@ class Bilibili(NewMessage):
     enable_tag = True
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 10}
+    scheduler = BilibiliSchedConf
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
 
+    def ensure_client(fun: Callable):  # type:ignore
+        @functools.wraps(fun)
+        async def wrapped(self, *args, **kwargs):
+            await self._refresh_client()
+            return await fun(self, *args, **kwargs)
+
+        return wrapped
+
+    @ensure_client
     async def get_target_name(self, target: Target) -> Optional[str]:
-        async with http_client() as client:
-            res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
-            )
-            res_data = json.loads(res.text)
-            if res_data["code"]:
-                return None
-            return res_data["data"]["name"]
+        res = await self._http_client.get(
+            "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+        )
+        res_data = json.loads(res.text)
+        if res_data["code"]:
+            return None
+        return res_data["data"]["name"]
 
     async def parse_target(self, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif match := re.match(
-            r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text
-        ):
-            return Target(match.group(1))
+        elif m := re.match(r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text):
+            return Target(m.group(1))
         else:
             raise self.ParseTargetException()
 
+    @ensure_client
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with http_client() as client:
-            params = {"host_uid": target, "offset": 0, "need_top": 0}
-            res = await client.get(
-                "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
-                params=params,
-                timeout=4.0,
-            )
-            res_dict = json.loads(res.text)
-            if res_dict["code"] == 0:
-                return res_dict["data"].get("cards")
-            else:
-                return []
+        params = {"host_uid": target, "offset": 0, "need_top": 0}
+        res = await self._http_client.get(
+            "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
+            params=params,
+            timeout=4.0,
+        )
+        res_dict = json.loads(res.text)
+        if res_dict["code"] == 0:
+            return res_dict["data"].get("cards")
+        else:
+            return []
 
     def get_id(self, post: RawPost) -> Any:
         return post["desc"]["dynamic_id"]
@@ -157,7 +202,7 @@ class Bilibili(NewMessage):
         return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
 
 
-class Bilibililive(StatusChange):
+class Bilibililive(_BilibiliClient, StatusChange):
     # Author : Sichongzou
     # Date : 2022-5-18 8:54
     # Description : bilibili开播提醒
@@ -167,41 +212,48 @@ class Bilibililive(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    schedule_type = "interval"
-    schedule_kw = {"seconds": 10}
+    scheduler = BilibiliSchedConf
     name = "Bilibili直播"
     has_target = True
 
-    async def get_target_name(self, target: Target) -> Optional[str]:
-        async with http_client() as client:
-            res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
-            )
-            res_data = json.loads(res.text)
-            if res_data["code"]:
-                return None
-            return res_data["data"]["name"]
+    def ensure_client(fun: Callable):  # type:ignore
+        @functools.wraps(fun)
+        async def wrapped(self, *args, **kwargs):
+            await self._refresh_client()
+            return await fun(self, *args, **kwargs)
 
+        return wrapped
+
+    @ensure_client
+    async def get_target_name(self, target: Target) -> Optional[str]:
+        res = await self._http_client.get(
+            "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+        )
+        res_data = json.loads(res.text)
+        if res_data["code"]:
+            return None
+        return res_data["data"]["name"]
+
+    @ensure_client
     async def get_status(self, target: Target):
-        async with http_client() as client:
-            params = {"mid": target}
-            res = await client.get(
-                "https://api.bilibili.com/x/space/acc/info",
-                params=params,
-                timeout=4.0,
-            )
-            res_dict = json.loads(res.text)
-            if res_dict["code"] == 0:
-                info = {}
-                info["uid"] = res_dict["data"]["mid"]
-                info["uname"] = res_dict["data"]["name"]
-                info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
-                info["room_id"] = res_dict["data"]["live_room"]["roomid"]
-                info["title"] = res_dict["data"]["live_room"]["title"]
-                info["cover"] = res_dict["data"]["live_room"]["cover"]
-                return info
-            else:
-                raise self.FetchError(res.text)
+        params = {"mid": target}
+        res = await self._http_client.get(
+            "https://api.bilibili.com/x/space/acc/info",
+            params=params,
+            timeout=4.0,
+        )
+        res_dict = json.loads(res.text)
+        if res_dict["code"] == 0:
+            info = {}
+            info["uid"] = res_dict["data"]["mid"]
+            info["uname"] = res_dict["data"]["name"]
+            info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
+            info["room_id"] = res_dict["data"]["live_room"]["roomid"]
+            info["title"] = res_dict["data"]["live_room"]["title"]
+            info["cover"] = res_dict["data"]["live_room"]["cover"]
+            return info
+        else:
+            raise self.FetchError()
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
         if (
@@ -220,6 +272,98 @@ class Bilibililive(StatusChange):
         return Post(
             self.name,
             text=title,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            compress=True,
+        )
+
+
+class BilibiliBangumi(_BilibiliClient, StatusChange):
+
+    categories = {}
+    platform_name = "bilibili-bangumi"
+    enable_tag = False
+    enabled = True
+    is_common = True
+    scheduler = BilibiliSchedConf
+    name = "Bilibili剧集"
+    has_target = True
+    parse_target_promot = "请输入剧集主页"
+
+    _url = "https://api.bilibili.com/pgc/review/user"
+
+    def ensure_client(fun: Callable):  # type:ignore
+        @functools.wraps(fun)
+        async def wrapped(self, *args, **kwargs):
+            await self._refresh_client()
+            return await fun(self, *args, **kwargs)
+
+        return wrapped
+
+    @ensure_client
+    async def get_target_name(self, target: Target) -> Optional[str]:
+        res = await self._http_client.get(self._url, params={"media_id": target})
+        res_data = res.json()
+        if res_data["code"]:
+            return None
+        return res_data["result"]["media"]["title"]
+
+    async def parse_target(self, target_string: str) -> Target:
+        if re.match(r"\d+", target_string):
+            return Target(target_string)
+        elif m := re.match(r"md(\d+)", target_string):
+            return Target(m.group(1))
+        elif m := re.match(
+            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)/", target_string
+        ):
+            return Target(m.group(1))
+        raise self.ParseTargetException()
+
+    @ensure_client
+    async def get_status(self, target: Target):
+        res = await self._http_client.get(
+            self._url,
+            params={"media_id": target},
+            timeout=4.0,
+        )
+        res_dict = res.json()
+        if res_dict["code"] == 0:
+            return {
+                "index": res_dict["result"]["media"]["new_ep"]["index"],
+                "index_show": res_dict["result"]["media"]["new_ep"]["index"],
+                "season_id": res_dict["result"]["media"]["season_id"],
+            }
+        else:
+            raise self.FetchError
+
+    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
+        if new_status["index"] != old_status["index"]:
+            return [new_status]
+        else:
+            return []
+
+    @ensure_client
+    async def parse(self, raw_post: RawPost) -> Post:
+        detail_res = await self._http_client.get(
+            f'http://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
+        )
+        detail_dict = detail_res.json()
+        lastest_episode = None
+        for episode in detail_dict["result"]["episodes"][::-1]:
+            if episode["badge"] in ("", "会员"):
+                lastest_episode = episode
+                break
+        if not lastest_episode:
+            lastest_episode = detail_dict["result"]["episodes"]
+
+        url = lastest_episode["link"]
+        pic = [lastest_episode["cover"]]
+        target_name = detail_dict["result"]["season_title"]
+        text = lastest_episode["share_copy"]
+        return Post(
+            self.name,
+            text=text,
             url=url,
             pics=pic,
             target_name=target_name,

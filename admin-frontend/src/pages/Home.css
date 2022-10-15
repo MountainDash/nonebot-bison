@@ -1,0 +1,52 @@
+.layout-collapse-demo {
+  height: 100vh;
+  border: 1px solid var(--color-border);
+  background: var(--color-fill-2);
+}
+
+.layout-collapse-demo .arco-layout-header .logo {
+  height: 32px;
+  margin: 12px 8px;
+  width: 150px;
+  background: var(--color-fill-2);
+}
+
+.layout-collapse-demo .arco-layout-header span {
+    height: 100%;
+    line-height: 100%; 
+    font-size: 20px;
+    margin: 0 20px;
+}
+
+.layout-collapse-demo .arco-layout-content .arco-layout-footer,
+.layout-collapse-demo .arco-layout-content .arco-layout-content {
+  color: var(--color-white);
+  /* text-align: center; */
+  font-stretch: condensed;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+}
+
+.layout-collapse-demo .arco-layout-footer {
+  color: var(--color-text-2);
+  height: 48px;
+  line-height: 48px;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.layout-collapse-demo .arco-layout-content .arco-layout-content {
+  background: var(--color-bg-3);
+  color: var(--color-text-2);
+  font-weight: 400;
+  font-size: 14px;
+  height: 100%;
+}
+
+.layout-collapse-demo .arco-layout-header {
+  height: 64px;
+  line-height: 64px;
+  background: var(--color-bg-3);
+}

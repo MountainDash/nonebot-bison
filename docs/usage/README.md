@@ -70,7 +70,7 @@ sidebar: auto
 
 #### 直接运行（不推荐）
 
-可以参考[nonebot 的运行方法](https://v2.nonebot.dev/guide/getting-started.html)
+可以参考[nonebot 的运行方法](https://docs.nonebot.dev/guide/getting-started.html)
 ::: danger
 直接克隆源代码需要自行编译前端，否则会出现无法使用管理后台等情况。
 :::

@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from bs4 import BeautifulSoup as bs
+from httpx import AsyncClient
 from nonebot.log import logger
 
 from ..post import Post
@@ -36,7 +37,10 @@ class Weibo(NewMessage):
     has_target = True
     parse_target_promot = "请输入用户主页（包含数字UID）的链接"
 
-    async def get_target_name(self, target: Target) -> Optional[str]:
+    @classmethod
+    async def get_target_name(
+        cls, client: AsyncClient, target: Target
+    ) -> Optional[str]:
         async with http_client() as client:
             param = {"containerid": "100505" + target}
             res = await client.get(
@@ -48,14 +52,15 @@ class Weibo(NewMessage):
             else:
                 return None
 
-    async def parse_target(self, target_text: str) -> Target:
+    @classmethod
+    async def parse_target(cls, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
         elif match := re.match(r"(?:https?://)?weibo\.com/u/(\d+)", target_text):
             # 都2202年了应该不会有http了吧，不过还是防一手
             return Target(match.group(1))
         else:
-            raise self.ParseTargetException()
+            raise cls.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         async with http_client() as client:

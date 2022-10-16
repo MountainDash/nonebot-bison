@@ -1,6 +1,6 @@
 import pytest
 import respx
-from httpx import Response
+from httpx import AsyncClient, Response
 from nonebug.app import App
 
 from .utils import get_file, get_json
@@ -10,7 +10,7 @@ from .utils import get_file, get_json
 def mcbbsnews(app: App):
     from nonebot_bison.platform import platform_manager
 
-    return platform_manager["mcbbsnews"]
+    return platform_manager["mcbbsnews"](AsyncClient())
 
 
 @pytest.fixture(scope="module")

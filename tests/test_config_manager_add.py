@@ -1,5 +1,3 @@
-from email import message
-
 import pytest
 import respx
 from httpx import Response
@@ -189,7 +187,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.platform.ncm_artist import NcmArtist
+    from nonebot_bison.platform.ncm import NcmArtist
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
     ncm_router.mock(return_value=Response(200, json=get_json("ncm_siren.json")))

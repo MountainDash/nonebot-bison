@@ -1,4 +1,6 @@
-from typing import Any
+from typing import Any, Optional
+
+from httpx import AsyncClient
 
 from ..post import Post
 from ..types import RawPost, Target
@@ -18,7 +20,10 @@ class FF14(NewMessage):
     scheduler = scheduler("interval", {"seconds": 60})
     has_target = False
 
-    async def get_target_name(self, _: Target) -> str:
+    @classmethod
+    async def get_target_name(
+        cls, client: AsyncClient, target: Target
+    ) -> Optional[str]:
         return "最终幻想XIV官方公告"
 
     async def get_sub_list(self, _) -> list[RawPost]:

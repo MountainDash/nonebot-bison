@@ -1,6 +1,6 @@
 import pytest
 import respx
-from httpx import Response
+from httpx import AsyncClient, Response
 from nonebug.app import App
 
 from .utils import get_json
@@ -10,7 +10,7 @@ from .utils import get_json
 def ff14(app: App):
     from nonebot_bison.platform import platform_manager
 
-    return platform_manager["ff14"]
+    return platform_manager["ff14"](AsyncClient())
 
 
 @pytest.fixture(scope="module")

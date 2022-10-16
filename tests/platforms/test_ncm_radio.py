@@ -3,20 +3,20 @@ import typing
 
 import pytest
 import respx
-from httpx import Response
+from httpx import AsyncClient, Response
 from nonebug.app import App
 
 from .utils import get_json
 
 if typing.TYPE_CHECKING:
-    from nonebot_bison.platform.ncm_radio import NcmRadio
+    from nonebot_bison.platform.ncm import NcmRadio
 
 
 @pytest.fixture
 def ncm_radio(app: App):
     from nonebot_bison.platform import platform_manager
 
-    return platform_manager["ncm-radio"]
+    return platform_manager["ncm-radio"](AsyncClient())
 
 
 @pytest.fixture(scope="module")

@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytest
 import respx
-from httpx import Response
+from httpx import AsyncClient, Response
 from nonebug.app import App
 from pytz import timezone
 
@@ -23,7 +23,7 @@ if typing.TYPE_CHECKING:
 def bilibili(app: App):
     from nonebot_bison.platform import platform_manager
 
-    return platform_manager["bilibili"]
+    return platform_manager["bilibili"](AsyncClient())
 
 
 @pytest.mark.asyncio

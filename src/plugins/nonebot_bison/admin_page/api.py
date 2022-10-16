@@ -1,6 +1,7 @@
 import nonebot
 from nonebot.adapters.onebot.v11.bot import Bot
 
+from ..apis import check_sub_target
 from ..config import (
     NoSuchSubscribeException,
     NoSuchTargetException,
@@ -8,7 +9,7 @@ from ..config import (
     config,
 )
 from ..config.db_config import SubscribeDupException
-from ..platform import check_sub_target, platform_manager
+from ..platform import platform_manager
 from ..types import Target as T_Target
 from ..types import WeightConfig
 from .jwt import pack_jwt

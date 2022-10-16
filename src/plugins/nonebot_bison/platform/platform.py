@@ -1,12 +1,14 @@
 import json
 import ssl
 import time
+import typing
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Collection, Literal, Optional, Type
+from typing import Any, Collection, Optional, Type
 
 import httpx
+from httpx import AsyncClient
 from nonebot.log import logger
 
 from ..plugin_config import plugin_config
@@ -34,11 +36,23 @@ class RegistryMeta(type):
         super().__init__(name, bases, namespace, **kwargs)
 
 
-class RegistryABCMeta(RegistryMeta, ABC):
+class PlatformMeta(RegistryMeta):
+
+    categories: dict[Category, str]
+
+    def __init__(cls, name, bases, namespace, **kwargs):
+        cls.reverse_category = {}
+        if hasattr(cls, "categories") and cls.categories:
+            for key, val in cls.categories.items():
+                cls.reverse_category[val] = key
+        super().__init__(name, bases, namespace, **kwargs)
+
+
+class PlatformABCMeta(PlatformMeta, ABC):
     ...
 
 
-class Platform(metaclass=RegistryABCMeta, base=True):
+class Platform(metaclass=PlatformABCMeta, base=True):
 
     scheduler: Type[SchedulerConfig]
     is_common: bool
@@ -50,9 +64,15 @@ class Platform(metaclass=RegistryABCMeta, base=True):
     store: dict[Target, Any]
     platform_name: str
     parse_target_promot: Optional[str] = None
+    registry: list[Type["Platform"]]
+    client: AsyncClient
+    reverse_category: dict[str, Category]
 
+    @classmethod
     @abstractmethod
-    async def get_target_name(self, target: Target) -> Optional[str]:
+    async def get_target_name(
+        cls, client: AsyncClient, target: Target
+    ) -> Optional[str]:
         ...
 
     @abstractmethod
@@ -88,17 +108,16 @@ class Platform(metaclass=RegistryABCMeta, base=True):
         "actually function called"
         return await self.parse(raw_post)
 
-    def __init__(self):
+    def __init__(self, client: AsyncClient):
         super().__init__()
-        self.reverse_category = {}
-        for key, val in self.categories.items():
-            self.reverse_category[val] = key
         self.store = dict()
+        self.client = client
 
     class ParseTargetException(Exception):
         pass
 
-    async def parse_target(self, target_string: str) -> Target:
+    @classmethod
+    async def parse_target(cls, target_string: str) -> Target:
         return Target(target_string)
 
     @abstractmethod
@@ -188,8 +207,8 @@ class Platform(metaclass=RegistryABCMeta, base=True):
 class MessageProcess(Platform, abstract=True):
     "General message process fetch, parse, filter progress"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, client: AsyncClient):
+        super().__init__(client)
         self.parse_cache: dict[Any, Post] = dict()
 
     @abstractmethod
@@ -362,55 +381,82 @@ class SimplePost(MessageProcess, abstract=True):
         return res
 
 
-class NoTargetGroup(Platform, abstract=True):
-    enable_tag = False
+def make_no_target_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
+
+    if typing.TYPE_CHECKING:
+
+        class NoTargetGroup(Platform, abstract=True):
+            platform_list: list[Type[Platform]]
+            platform_obj_list: list[Platform]
+
     DUMMY_STR = "_DUMMY"
-    enabled = True
-    has_target = False
 
-    def __init__(self, platform_list: list[Platform]):
-        self.platform_list = platform_list
-        self.platform_name = platform_list[0].platform_name
-        name = self.DUMMY_STR
-        self.categories = {}
-        categories_keys = set()
-        self.scheduler = platform_list[0].scheduler
-        for platform in platform_list:
-            if platform.has_target:
-                raise RuntimeError(
-                    "Platform {} should have no target".format(platform.name)
-                )
-            if name == self.DUMMY_STR:
-                name = platform.name
-            elif name != platform.name:
-                raise RuntimeError(
-                    "Platform name for {} not fit".format(self.platform_name)
-                )
-            platform_category_key_set = set(platform.categories.keys())
-            if platform_category_key_set & categories_keys:
-                raise RuntimeError(
-                    "Platform categories for {} duplicate".format(self.platform_name)
-                )
-            categories_keys |= platform_category_key_set
-            self.categories.update(platform.categories)
-            if platform.scheduler != self.scheduler:
-                raise RuntimeError(
-                    "Platform scheduler for {} not fit".format(self.platform_name)
-                )
-        self.name = name
-        self.is_common = platform_list[0].is_common
-        super().__init__()
+    platform_name = platform_list[0].platform_name
+    name = DUMMY_STR
+    categories_keys = set()
+    categories = {}
+    scheduler = platform_list[0].scheduler
 
-    def __str__(self):
+    for platform in platform_list:
+        if platform.has_target:
+            raise RuntimeError(
+                "Platform {} should have no target".format(platform.name)
+            )
+        if name == DUMMY_STR:
+            name = platform.name
+        elif name != platform.name:
+            raise RuntimeError("Platform name for {} not fit".format(platform_name))
+        platform_category_key_set = set(platform.categories.keys())
+        if platform_category_key_set & categories_keys:
+            raise RuntimeError(
+                "Platform categories for {} duplicate".format(platform_name)
+            )
+        categories_keys |= platform_category_key_set
+        categories.update(platform.categories)
+        if platform.scheduler != scheduler:
+            raise RuntimeError(
+                "Platform scheduler for {} not fit".format(platform_name)
+            )
+
+    def __init__(self: "NoTargetGroup", client: AsyncClient):
+        Platform.__init__(self, client)
+        self.platform_obj_list = []
+        for platform_class in self.platform_list:
+            self.platform_obj_list.append(platform_class(client))
+
+    def __str__(self: "NoTargetGroup") -> str:
         return "[" + " ".join(map(lambda x: x.name, self.platform_list)) + "]"
 
-    async def get_target_name(self, _):
-        return await self.platform_list[0].get_target_name(_)
+    @classmethod
+    async def get_target_name(cls, client: AsyncClient, target: Target):
+        return await platform_list[0].get_target_name(client, target)
 
-    async def fetch_new_post(self, target, users):
+    async def fetch_new_post(
+        self: "NoTargetGroup", target: Target, users: list[UserSubInfo]
+    ):
         res = defaultdict(list)
-        for platform in self.platform_list:
+        for platform in self.platform_obj_list:
             platform_res = await platform.fetch_new_post(target=target, users=users)
             for user, posts in platform_res:
                 res[user].extend(posts)
         return [[key, val] for key, val in res.items()]
+
+    return type(
+        "NoTargetGroup",
+        (Platform,),
+        {
+            "platform_list": platform_list,
+            "platform_name": platform_list[0].platform_name,
+            "name": name,
+            "categories": categories,
+            "scheduler": scheduler,
+            "is_common": platform_list[0].is_common,
+            "enabled": True,
+            "has_target": False,
+            "enable_tag": False,
+            "__init__": __init__,
+            "get_target_name": get_target_name,
+            "fetch_new_post": fetch_new_post,
+        },
+        abstract=True,
+    )

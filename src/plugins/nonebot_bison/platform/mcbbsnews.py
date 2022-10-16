@@ -1,9 +1,10 @@
 import re
 import time
-from typing import Literal
+from typing import Literal, Optional
 
 import httpx
 from bs4 import BeautifulSoup, NavigableString, Tag
+from httpx import AsyncClient
 
 from ..post import Post
 from ..types import Category, RawPost, Target
@@ -42,8 +43,11 @@ class McbbsNews(NewMessage):
     scheduler = scheduler("interval", {"hours": 1})
     has_target = False
 
-    async def get_target_name(self, _: Target) -> str:
-        return self.name
+    @classmethod
+    async def get_target_name(
+        cls, client: AsyncClient, target: Target
+    ) -> Optional[str]:
+        return cls.name
 
     async def get_sub_list(self, _: Target) -> list[RawPost]:
         url = "https://www.mcbbs.net/forum-news-1.html"

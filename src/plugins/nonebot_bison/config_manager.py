@@ -15,9 +15,10 @@ from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 
+from .apis import check_sub_target
 from .config import config
 from .config.db_config import SubscribeDupException
-from .platform import Platform, check_sub_target, platform_manager
+from .platform import Platform, platform_manager
 from .plugin_config import plugin_config
 from .types import Category, Target, User
 from .utils import parse_text
@@ -117,9 +118,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             ) + "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         else:
             state["id"] = "default"
-            state["name"] = await platform_manager[state["platform"]].get_target_name(
-                Target("")
-            )
+            state["name"] = await check_sub_target(state["platform"], Target(""))
 
     async def parse_id(event: MessageEvent, state: T_State):
         if not isinstance(state["id"], Message):

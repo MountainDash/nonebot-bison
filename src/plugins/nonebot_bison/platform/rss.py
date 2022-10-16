@@ -3,6 +3,7 @@ from typing import Any, Optional
 
 import feedparser
 from bs4 import BeautifulSoup as bs
+from httpx import AsyncClient
 
 from ..post import Post
 from ..types import RawPost, Target
@@ -21,7 +22,10 @@ class Rss(NewMessage):
     scheduler = scheduler("interval", {"seconds": 30})
     has_target = True
 
-    async def get_target_name(self, target: Target) -> Optional[str]:
+    @classmethod
+    async def get_target_name(
+        cls, client: AsyncClient, target: Target
+    ) -> Optional[str]:
         async with http_client() as client:
             res = await client.get(target, timeout=10.0)
             feed = feedparser.parse(res.text)

@@ -2,7 +2,7 @@ import typing
 
 import pytest
 import respx
-from httpx import Response
+from httpx import AsyncClient, Response
 from nonebug.app import App
 
 from .utils import get_json
@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 def bili_bangumi(app: App):
     from nonebot_bison.platform import platform_manager
 
-    return platform_manager["bilibili-bangumi"]
+    return platform_manager["bilibili-bangumi"](AsyncClient())
 
 
 @pytest.mark.asyncio

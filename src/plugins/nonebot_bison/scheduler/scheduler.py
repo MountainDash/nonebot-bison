@@ -7,7 +7,6 @@ from nonebot.log import logger
 
 from ..config import config
 from ..platform import platform_manager
-from ..platform.platform import Platform
 from ..send import send_msgs
 from ..types import Target
 from ..utils import SchedulerConfig
@@ -36,6 +35,7 @@ class Scheduler:
             logger.error(f"scheduler config [{self.name}] not found, exiting")
             raise RuntimeError(f"{self.name} not found")
         self.scheduler_config = scheduler_config
+        self.scheduler_config_obj = self.scheduler_config()
         self.schedulable_list = []
         for platform_name, target in schedulables:
             self.schedulable_list.append(
@@ -86,7 +86,10 @@ class Scheduler:
         send_userinfo_list = await config.get_platform_target_subscribers(
             schedulable.platform_name, schedulable.target
         )
-        to_send = await platform_manager[schedulable.platform_name].do_fetch_new_post(
+        platform_obj = platform_manager[schedulable.platform_name](
+            await self.scheduler_config_obj.get_client(schedulable.target)
+        )
+        to_send = await platform_obj.do_fetch_new_post(
             schedulable.target, send_userinfo_list
         )
         if not to_send:

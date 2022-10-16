@@ -10,7 +10,7 @@ from .utils import BotReply, fake_admin_user, fake_group_message_event
 # 选择platform阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_platform(app: App, db_migration):
+async def test_abort_add_on_platform(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -57,7 +57,7 @@ async def test_abort_add_on_platform(app: App, db_migration):
 # 输入id阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_id(app: App, db_migration):
+async def test_abort_add_on_id(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -114,7 +114,7 @@ async def test_abort_add_on_id(app: App, db_migration):
 # 输入订阅类别阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_cats(app: App, db_migration):
+async def test_abort_add_on_cats(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -191,7 +191,7 @@ async def test_abort_add_on_cats(app: App, db_migration):
 # 输入标签阶段中止
 @pytest.mark.asyncio
 @respx.mock
-async def test_abort_add_on_tag(app: App, db_migration):
+async def test_abort_add_on_tag(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform

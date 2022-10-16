@@ -53,12 +53,12 @@ def mock_platform_without_cats_tags(app: App):
         categories = {}
         has_target = True
 
-        def __init__(self):
+        def __init__(self, client):
             self.sub_index = 0
-            super().__init__()
+            super().__init__(client)
 
-        @staticmethod
-        async def get_target_name(_: "Target"):
+        @classmethod
+        async def get_target_name(cls, client, _: "Target"):
             return "MockPlatform"
 
         def get_id(self, post: "RawPost") -> Any:
@@ -82,7 +82,7 @@ def mock_platform_without_cats_tags(app: App):
             else:
                 return raw_post_list_2
 
-    return MockPlatform()
+    return MockPlatform(None)
 
 
 @pytest.fixture
@@ -112,9 +112,9 @@ def mock_platform(app: App):
             Category(2): "视频",
         }
 
-        def __init__(self):
+        def __init__(self, client):
             self.sub_index = 0
-            super().__init__()
+            super().__init__(client)
 
         @staticmethod
         async def get_target_name(_: "Target"):
@@ -147,7 +147,7 @@ def mock_platform(app: App):
             else:
                 return raw_post_list_2
 
-    return MockPlatform()
+    return MockPlatform(None)
 
 
 @pytest.fixture
@@ -180,9 +180,9 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
         has_target = False
         categories = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
 
-        def __init__(self):
+        def __init__(self, client):
             self.sub_index = 0
-            super().__init__()
+            super().__init__(client)
 
         @staticmethod
         async def get_target_name(_: "Target"):
@@ -217,7 +217,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
             else:
                 return raw_post_list_2
 
-    return MockPlatform()
+    return MockPlatform
 
 
 @pytest.fixture
@@ -241,12 +241,12 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
             Category(5): "leixing5",
         }
 
-        def __init__(self):
+        def __init__(self, client):
             self.sub_index = 0
-            super().__init__()
+            super().__init__(client)
 
-        @staticmethod
-        async def get_target_name(_: "Target"):
+        @classmethod
+        async def get_target_name(cls, client, _: "Target"):
             return "MockPlatform"
 
         def get_id(self, post: "RawPost") -> Any:
@@ -284,7 +284,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
             else:
                 return list_2
 
-    return MockPlatform()
+    return MockPlatform
 
 
 @pytest.fixture
@@ -308,9 +308,9 @@ def mock_status_change(app: App):
             Category(2): "视频",
         }
 
-        def __init__(self):
+        def __init__(self, client):
             self.sub_index = 0
-            super().__init__()
+            super().__init__(client)
 
         async def get_status(self, _: "Target"):
             if self.sub_index == 0:
@@ -335,7 +335,7 @@ def mock_status_change(app: App):
         def get_category(self, raw_post):
             return raw_post["cat"]
 
-    return MockPlatform()
+    return MockPlatform(None)
 
 
 @pytest.mark.asyncio
@@ -388,6 +388,7 @@ async def test_new_message_target(mock_platform, user_info_factory):
 
 @pytest.mark.asyncio
 async def test_new_message_no_target(mock_platform_no_target, user_info_factory):
+    mock_platform_no_target = mock_platform_no_target(None)
     res1 = await mock_platform_no_target.fetch_new_post(
         "dummy", [user_info_factory([1, 2], [])]
     )
@@ -457,11 +458,14 @@ async def test_group(
     user_info_factory,
 ):
 
-    from nonebot_bison.platform.platform import NoTargetGroup
+    from nonebot_bison.platform.platform import make_no_target_group
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
 
-    group_platform = NoTargetGroup([mock_platform_no_target, mock_platform_no_target_2])
+    group_platform_class = make_no_target_group(
+        [mock_platform_no_target, mock_platform_no_target_2]
+    )
+    group_platform = group_platform_class(None)
     res1 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])
     assert len(res1) == 0
     res2 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])

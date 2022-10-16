@@ -4,6 +4,10 @@
 
 - 调整调度器 api [@felinae98](https://github.com/felinae98) ([#125](https://github.com/felinae98/nonebot-bison/pull/125))
 
+### 新功能
+
+- 由 scheduler 提供 http client [@felinae98](https://github.com/felinae98) ([#126](https://github.com/felinae98/nonebot-bison/pull/126))
+
 ## v0.6.1
 
 ### Bug 修复

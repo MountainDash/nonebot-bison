@@ -8,6 +8,7 @@ import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 
+from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target
 from ..utils import SchedulerConfig
@@ -225,37 +226,56 @@ class Bilibililive(StatusChange):
         return res_data["data"]["name"]
 
     async def get_status(self, target: Target):
-        params = {"mid": target}
+        params = {"uids[]": target}
+        # from https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/live/info.md#%E6%89%B9%E9%87%8F%E6%9F%A5%E8%AF%A2%E7%9B%B4%E6%92%AD%E9%97%B4%E7%8A%B6%E6%80%81
         res = await self.client.get(
-            "https://api.bilibili.com/x/space/acc/info",
+            "http://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
             params=params,
             timeout=4.0,
         )
         res_dict = json.loads(res.text)
         if res_dict["code"] == 0:
+            data = res_dict["data"][target]
+
             info = {}
-            info["uid"] = res_dict["data"]["mid"]
-            info["uname"] = res_dict["data"]["name"]
-            info["live_state"] = res_dict["data"]["live_room"]["liveStatus"]
-            info["room_id"] = res_dict["data"]["live_room"]["roomid"]
-            info["title"] = res_dict["data"]["live_room"]["title"]
-            info["cover"] = res_dict["data"]["live_room"]["cover"]
+            info["uname"] = data["uname"]
+            info["live_status"] = data["live_status"]
+            info["room_id"] = data["room_id"]
+            info["title"] = data["title"]
+            info["cover"] = data["cover_from_user"]
+            info["keyframe"] = data["keyframe"]
+
             return info
         else:
             raise self.FetchError()
 
+    def is_live_streaming(old_status, new_status) -> bool:
+        # 0:关播
+        # 1:直播中
+        # 2:轮播中
+        if old_status != new_status and new_status == 1:
+            return True
+
+        return False
+
+    def is_title_update(old_title, new_title) -> bool:
+
+        if old_title != new_title:
+            return plugin_config.bison_bililive_repond_when_title_update
+
+        return False
+
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
-        if (
-            new_status["live_state"] != old_status["live_state"]
-            and new_status["live_state"] == 1
-        ):
+        if self.is_live_streaming(
+            old_status["live_status"], new_status["live_status"]
+        ) and self.is_title_update(old_status["title"], new_status["title"]):
             return [new_status]
         else:
             return []
 
     async def parse(self, raw_post: RawPost) -> Post:
         url = "https://live.bilibili.com/{}".format(raw_post["room_id"])
-        pic = [raw_post["cover"]]
+        pic = [raw_post["keyframe"]]
         target_name = raw_post["uname"]
         title = raw_post["title"]
         return Post(

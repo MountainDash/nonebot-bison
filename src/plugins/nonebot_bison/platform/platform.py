@@ -39,9 +39,11 @@ class RegistryMeta(type):
 class PlatformMeta(RegistryMeta):
 
     categories: dict[Category, str]
+    store: dict[Target, Any]
 
     def __init__(cls, name, bases, namespace, **kwargs):
         cls.reverse_category = {}
+        cls.store = {}
         if hasattr(cls, "categories") and cls.categories:
             for key, val in cls.categories.items():
                 cls.reverse_category[val] = key
@@ -61,7 +63,6 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     has_target: bool
     categories: dict[Category, str]
     enable_tag: bool
-    store: dict[Target, Any]
     platform_name: str
     parse_target_promot: Optional[str] = None
     registry: list[Type["Platform"]]
@@ -110,7 +111,6 @@ class Platform(metaclass=PlatformABCMeta, base=True):
 
     def __init__(self, client: AsyncClient):
         super().__init__()
-        self.store = dict()
         self.client = client
 
     class ParseTargetException(Exception):
@@ -124,11 +124,13 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
         "Return Tag list of given RawPost"
 
-    def get_stored_data(self, target: Target) -> Any:
-        return self.store.get(target)
+    @classmethod
+    def get_stored_data(cls, target: Target) -> Any:
+        return cls.store.get(target)
 
-    def set_stored_data(self, target: Target, data: Any):
-        self.store[target] = data
+    @classmethod
+    def set_stored_data(cls, target: Target, data: Any):
+        cls.store[target] = data
 
     def tag_separator(self, stored_tags: list[Tag]) -> tuple[list[Tag], list[Tag]]:
         """返回分离好的正反tag元组"""

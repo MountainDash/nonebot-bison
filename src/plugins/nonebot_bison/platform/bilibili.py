@@ -263,8 +263,8 @@ class Bilibililive(StatusChange):
     def is_title_update(old_title, new_title) -> bool:
 
         if (
-            plugin_config.bison_bililive_repond_when_title_update
-            or old_title != new_title
+            plugin_config.bison_bililive_respond_when_title_update
+            and old_title != new_title
         ):
             return True
 

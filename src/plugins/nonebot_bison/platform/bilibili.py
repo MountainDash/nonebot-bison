@@ -249,7 +249,8 @@ class Bilibililive(StatusChange):
         else:
             raise self.FetchError()
 
-    def is_live_streaming(old_status, new_status) -> bool:
+    @staticmethod
+    def live_turn_on(old_status, new_status) -> bool:
         # 0:关播
         # 1:直播中
         # 2:轮播中
@@ -258,17 +259,22 @@ class Bilibililive(StatusChange):
 
         return False
 
+    @staticmethod
     def is_title_update(old_title, new_title) -> bool:
 
-        if old_title != new_title:
-            return plugin_config.bison_bililive_repond_when_title_update
+        if (
+            plugin_config.bison_bililive_repond_when_title_update
+            or old_title != new_title
+        ):
+            return True
 
         return False
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
-        if self.is_live_streaming(
-            old_status["live_status"], new_status["live_status"]
-        ) and self.is_title_update(old_status["title"], new_status["title"]):
+        if self.live_turn_on(old_status["live_status"], new_status["live_status"]) or (
+            new_status["live_status"] == 1
+            and self.is_title_update(old_status["title"], new_status["title"])
+        ):
             return [new_status]
         else:
             return []

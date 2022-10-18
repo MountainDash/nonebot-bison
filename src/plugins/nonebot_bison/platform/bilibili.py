@@ -222,7 +222,7 @@ class Bilibililive(StatusChange):
         live_status: int
         room_id: str
         title: str
-        cover: str
+        cover_from_user: str
         keyframe: str
         category: Category = field(default=Category(0))
 
@@ -281,12 +281,12 @@ class Bilibililive(StatusChange):
         self, target: Target, old_status: Info, new_status: Info
     ) -> list[RawPost]:
         if new_status & old_status:
-            # 判断开播
+            # 判断开播 运算符左右有顺序要求
             current_status = deepcopy(new_status)
             current_status.category = Category(1)
             return [current_status]
         elif new_status ^ old_status:
-            # 判断直播时直播间标题变更
+            # 判断直播时直播间标题变更 运算符左右有顺序要求
             current_status = deepcopy(new_status)
             current_status.category = Category(2)
             return [current_status]

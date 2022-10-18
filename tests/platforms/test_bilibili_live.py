@@ -14,18 +14,17 @@ def bili_live(app: App):
 
 
 @pytest.fixture
-def dummy_bililive_user_subinfo(app: App, cats: list = []):
+def dummy_only_status_user_subinfo(app: App):
     from nonebot_bison.types import User, UserSubInfo
 
     user = User(123, "group")
-    return UserSubInfo(user=user, categories=cats, tags=[])
+    return UserSubInfo(user=user, categories=[1], tags=[])
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("dummy_bililive_user_subinfo", {"cats": [1]}, indirect=True)
 @respx.mock
 async def test_fetch_bililive_only_status_change(
-    bili_live, dummy_bililive_user_subinfo
+    bili_live, dummy_only_status_user_subinfo
 ):
     mock_bili_live_status = get_json("bili_live_status.json")
 
@@ -38,13 +37,13 @@ async def test_fetch_bililive_only_status_change(
     bilibili_main_page_router.mock(return_value=Response(200))
 
     target = "13164144"
-    res = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res = await bili_live.fetch_new_post(target, [dummy_only_status_user_subinfo])
     assert bili_live_router.call_count == 1
     assert len(res) == 0
     # 直播状态更新
     mock_bili_live_status["data"][target]["live_status"] = 1
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
-    res2 = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res2 = await bili_live.fetch_new_post(target, [dummy_only_status_user_subinfo])
     post = res2[0][1][0]
     assert post.target_type == "Bilibili直播"
     assert post.text == "【Zc】从0挑战到15肉鸽！目前10难度"
@@ -57,15 +56,24 @@ async def test_fetch_bililive_only_status_change(
     # 标题变更
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前11难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
-    res3 = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res3 = await bili_live.fetch_new_post(target, [dummy_only_status_user_subinfo])
     assert bili_live_router.call_count == 3
-    assert len(res3) == 0
+    assert len(res3[0][1]) == 0
+
+
+@pytest.fixture
+def dummy_only_title_user_subinfo(app: App):
+    from nonebot_bison.types import User, UserSubInfo
+
+    user = User(123, "group")
+    return UserSubInfo(user=user, categories=[2], tags=[])
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("dummy_bililive_user_subinfo", {"cats": [2]}, indirect=True)
 @respx.mock
-async def test_fetch_bililive_only_title_change(bili_live, dummy_bililive_user_subinfo):
+async def test_fetch_bililive_only_title_change(
+    bili_live, dummy_only_title_user_subinfo
+):
     mock_bili_live_status = get_json("bili_live_status.json")
     target = "13164144"
 
@@ -77,25 +85,25 @@ async def test_fetch_bililive_only_title_change(bili_live, dummy_bililive_user_s
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")
     bilibili_main_page_router.mock(return_value=Response(200))
 
-    res = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res = await bili_live.fetch_new_post(target, [dummy_only_title_user_subinfo])
     assert bili_live_router.call_count == 1
     assert len(res) == 0
     # 未开播前标题变更
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前11难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
-    res0 = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res0 = await bili_live.fetch_new_post(target, [dummy_only_title_user_subinfo])
     assert bili_live_router.call_count == 2
     assert len(res0) == 0
     # 直播状态更新
     mock_bili_live_status["data"][target]["live_status"] = 1
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
-    res2 = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res2 = await bili_live.fetch_new_post(target, [dummy_only_title_user_subinfo])
     assert bili_live_router.call_count == 3
-    assert len(res2) == 0
+    assert len(res2[0][1]) == 0
     # 标题变更
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前12难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
-    res3 = await bili_live.fetch_new_post(target, [dummy_bililive_user_subinfo])
+    res3 = await bili_live.fetch_new_post(target, [dummy_only_title_user_subinfo])
     post = res3[0][1][0]
     assert post.target_type == "Bilibili直播"
     assert post.text == "【Zc】从0挑战到15肉鸽！目前12难度"
@@ -107,10 +115,17 @@ async def test_fetch_bililive_only_title_change(bili_live, dummy_bililive_user_s
     assert post.compress == True
 
 
+@pytest.fixture
+def dummy_bililive_user_subinfo(app: App):
+    from nonebot_bison.types import User, UserSubInfo
+
+    user = User(123, "group")
+    return UserSubInfo(user=user, categories=[1, 2], tags=[])
+
+
 @pytest.mark.asyncio
-@pytest.mark.parametrize("dummy_bililive_user_subinfo", {"cats": [1, 2]}, indirect=True)
 @respx.mock
-async def test_fetch_bililive_combo(bili_live, dummy_user_subinfo):
+async def test_fetch_bililive_combo(bili_live, dummy_bililive_user_subinfo):
     mock_bili_live_status = get_json("bili_live_status.json")
     target = "13164144"
 

@@ -1,12 +1,15 @@
 import functools
 import json
 import re
+from copy import deepcopy
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Optional
 
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
+from typing_extensions import Self
 
 from ..plugin_config import plugin_config
 from ..post import Post
@@ -213,6 +216,37 @@ class Bilibililive(StatusChange):
     name = "Bilibili直播"
     has_target = True
 
+    @dataclass
+    class Info:
+        uname: str
+        live_status: int
+        room_id: str
+        title: str
+        cover: str
+        keyframe: str
+        category: Category = field(default=Category(0))
+
+        def __init__(self, raw_info: dict):
+            self.__dict__.update(raw_info)
+
+        def __and__(self, old_info: Self) -> bool:
+            # 使用 & 判断直播开始
+            # live_status:
+            # 0:关播
+            # 1:直播中
+            # 2:轮播中
+            if self.live_status == 1 and old_info.live_status != self.live_status:
+                return True
+
+            return False
+
+        def __xor__(self, old_info: Self) -> bool:
+            # 使用 ^ 判断直播时标题改变
+            if self.live_status == 1 and old_info.title != self.title:
+                return True
+
+            return False
+
     @classmethod
     async def get_target_name(
         cls, client: AsyncClient, target: Target
@@ -225,7 +259,7 @@ class Bilibililive(StatusChange):
             return None
         return res_data["data"]["name"]
 
-    async def get_status(self, target: Target):
+    async def get_status(self, target: Target) -> Info:
         params = {"uids[]": target}
         # from https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/live/info.md#%E6%89%B9%E9%87%8F%E6%9F%A5%E8%AF%A2%E7%9B%B4%E6%92%AD%E9%97%B4%E7%8A%B6%E6%80%81
         res = await self.client.get(
@@ -237,57 +271,37 @@ class Bilibililive(StatusChange):
         if res_dict["code"] == 0:
             data = res_dict["data"][target]
 
-            info = {}
-            info["uname"] = data["uname"]
-            info["live_status"] = data["live_status"]
-            info["room_id"] = data["room_id"]
-            info["title"] = data["title"]
-            info["cover"] = data["cover_from_user"]
-            info["keyframe"] = data["keyframe"]
+            info = self.Info(data)
 
             return info
         else:
             raise self.FetchError()
 
-    @staticmethod
-    def is_live_turn_on(old_status, new_status) -> bool:
-        # live_status:
-        # 0:关播
-        # 1:直播中
-        # 2:轮播中
-        if old_status != new_status and new_status == 1:
-            return True
-
-        return False
-
-    @staticmethod
-    def is_title_update(old_title, new_title) -> bool:
-
-        if old_title != new_title:
-            return True
-
-        return False
-
-    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
-        if self.is_live_turn_on(old_status["live_status"], new_status["live_status"]):
-            new_status["category"] = 1
-            return [new_status]
-        elif new_status["live_status"] == 1 and self.is_title_update(
-            old_status["title"], new_status["title"]
-        ):
-            new_status["category"] = 2
-            return [new_status]
+    def compare_status(
+        self, target: Target, old_status: Info, new_status: Info
+    ) -> list[RawPost]:
+        if new_status & old_status:
+            # 判断开播
+            current_status = deepcopy(new_status)
+            current_status.category = Category(1)
+            return [current_status]
+        elif new_status ^ old_status:
+            # 判断直播时直播间标题变更
+            current_status = deepcopy(new_status)
+            current_status.category = Category(2)
+            return [current_status]
         else:
             return []
 
-    def get_category(self, status: RawPost) -> Category:
-        return status["category"]
+    def get_category(self, status: Info) -> Category:
+        assert status.category != Category(0)
+        return status.category
 
-    async def parse(self, raw_post: RawPost) -> Post:
-        url = "https://live.bilibili.com/{}".format(raw_post["room_id"])
-        pic = [raw_post["keyframe"]]
-        target_name = raw_post["uname"]
-        title = raw_post["title"]
+    async def parse(self, raw_info: Info) -> Post:
+        url = "https://live.bilibili.com/{}".format(raw_info.room_id)
+        pic = [raw_info.keyframe]
+        target_name = raw_info.uname
+        title = raw_info.title
         return Post(
             self.name,
             text=title,

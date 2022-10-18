@@ -204,7 +204,7 @@ class Bilibililive(StatusChange):
     # Date : 2022-5-18 8:54
     # Description : bilibili开播提醒
     # E-mail : 1557157806@qq.com
-    categories = {}
+    categories = {1: "开播提醒", 2: "标题更新提醒"}
     platform_name = "bilibili-live"
     enable_tag = False
     enabled = True
@@ -250,7 +250,8 @@ class Bilibililive(StatusChange):
             raise self.FetchError()
 
     @staticmethod
-    def live_turn_on(old_status, new_status) -> bool:
+    def is_live_turn_on(old_status, new_status) -> bool:
+        # live_status:
         # 0:关播
         # 1:直播中
         # 2:轮播中
@@ -262,22 +263,25 @@ class Bilibililive(StatusChange):
     @staticmethod
     def is_title_update(old_title, new_title) -> bool:
 
-        if (
-            plugin_config.bison_bililive_respond_when_title_update
-            and old_title != new_title
-        ):
+        if old_title != new_title:
             return True
 
         return False
 
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
-        if self.live_turn_on(old_status["live_status"], new_status["live_status"]) or (
-            new_status["live_status"] == 1
-            and self.is_title_update(old_status["title"], new_status["title"])
+        if self.is_live_turn_on(old_status["live_status"], new_status["live_status"]):
+            new_status["category"] = 1
+            return [new_status]
+        elif new_status["live_status"] == 1 and self.is_title_update(
+            old_status["title"], new_status["title"]
         ):
+            new_status["category"] = 2
             return [new_status]
         else:
             return []
+
+    def get_category(self, status: RawPost) -> Category:
+        return status["category"]
 
     async def parse(self, raw_post: RawPost) -> Post:
         url = "https://live.bilibili.com/{}".format(raw_post["room_id"])

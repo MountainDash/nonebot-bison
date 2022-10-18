@@ -102,7 +102,6 @@ sidebar: auto
 
 - `BISON_CONFIG_PATH`: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录
 - `BISON_USE_PIC`: 将文字渲染成图片后进行发送，多用于规避风控
-- `BISON_BILILIVE_RESPOND_WHEN_TITLE_UPDATE`: 当直播间标题更新时 bison 同样会进行推送，默认开启
 - `BISON_BROWSER`: 本插件使用 Chrome 来渲染图片
   - 如果不进行配置，那么会在启动时候自动进行安装，在官方的 docker 镜像中已经安装了浏览器
   - 使用本地安装的 Chrome，设置为`local:<chrome path>`，例如`local:/usr/bin/google-chrome-stable`

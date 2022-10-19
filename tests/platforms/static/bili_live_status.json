@@ -1,114 +1,31 @@
 {
     "code": 0,
-    "message": "0",
-    "ttl": 1,
+    "msg": "success",
+    "message": "success",
     "data": {
-        "mid": 13164144,
-        "name": "魔法Zc目录",
-        "sex": "男",
-        "face": "http://i0.hdslb.com/bfs/face/a84fa10f90f7060d0336384954ee1cde7a8e9bc6.jpg",
-        "face_nft": 0,
-        "sign": "每日18:00~22:00欢乐直播！请勿在任何乌有相关内容中刷Zc，尊重角色；商务合作qq271374252",
-        "rank": 10000,
-        "level": 6,
-        "jointime": 0,
-        "moral": 0,
-        "silence": 0,
-        "coins": 0,
-        "fans_badge": true,
-        "fans_medal": {
-            "show": false,
-            "wear": false,
-            "medal": null
-        },
-        "official": {
-            "role": 1,
-            "title": "bilibili 2021百大UP主、知名游戏UP主、直播高能主播",
-            "desc": "",
-            "type": 0
-        },
-        "vip": {
-            "type": 2,
-            "status": 1,
-            "due_date": 1702051200000,
-            "vip_pay_type": 0,
-            "theme_type": 0,
-            "label": {
-                "path": "",
-                "text": "年度大会员",
-                "label_theme": "annual_vip",
-                "text_color": "#FFFFFF",
-                "bg_style": 1,
-                "bg_color": "#FB7299",
-                "border_color": ""
-            },
-            "avatar_subscript": 1,
-            "nickname_color": "#FB7299",
-            "role": 3,
-            "avatar_subscript_url": "http://i0.hdslb.com/bfs/vip/icon_Certification_big_member_22_3x.png"
-        },
-        "pendant": {
-            "pid": 3399,
-            "name": "2233幻星集",
-            "image": "http://i0.hdslb.com/bfs/garb/item/20c07ded13498a5b12db99660c766ddd92ecfe31.png",
-            "expire": 0,
-            "image_enhance": "http://i0.hdslb.com/bfs/garb/item/20c07ded13498a5b12db99660c766ddd92ecfe31.png",
-            "image_enhance_frame": ""
-        },
-        "nameplate": {
-            "nid": 1,
-            "name": "黄金殿堂",
-            "image": "http://i2.hdslb.com/bfs/face/82896ff40fcb4e7c7259cb98056975830cb55695.png",
-            "image_small": "http://i0.hdslb.com/bfs/face/627e342851dfda6fe7380c2fa0cbd7fae2e61533.png",
-            "level": "稀有勋章",
-            "condition": "单个自制视频总播放数\u003e=100万"
-        },
-        "user_honour_info": {
-            "mid": 0,
-            "colour": null,
-            "tags": []
-        },
-        "is_followed": true,
-        "top_photo": "http://i2.hdslb.com/bfs/space/853fea2728651588a2cdef0a1e586bcefff8e3d8.png",
-        "theme": {},
-        "sys_notice": {},
-        "live_room": {
-            "roomStatus": 1,
-            "liveStatus": 0,
-            "url": "https://live.bilibili.com/3044248?broadcast_type=0\u0026is_room_feed=1",
-            "title": "【Zc】早朝危机合约！",
-            "cover": "http://i0.hdslb.com/bfs/live/new_room_cover/cf7d4d3b2f336c6dba299644c3af952c5db82612.jpg",
-            "roomid": 3044248,
-            "roundStatus": 1,
-            "broadcast_type": 0,
-            "watched_show": {
-                "switch": true,
-                "num": 13753,
-                "text_small": "1.3万",
-                "text_large": "1.3万人看过",
-                "icon": "https://i0.hdslb.com/bfs/live/a725a9e61242ef44d764ac911691a7ce07f36c1d.png",
-                "icon_location": "",
-                "icon_web": "https://i0.hdslb.com/bfs/live/8d9d0f33ef8bf6f308742752d13dd0df731df19c.png"
-            }
-        },
-        "birthday": "07-21",
-        "school": {
-            "name": ""
-        },
-        "profession": {
-            "name": "",
-            "department": "",
-            "title": "",
-            "is_show": 0
-        },
-        "tags": [
-            "评论区UP主",
-            "目标是星辰大海"
-        ],
-        "series": {
-            "user_upgrade_status": 3,
-            "show_upgrade_window": false
-        },
-        "is_senior_member": 1
+        "13164144": {
+            "title": "【Zc】从0挑战到15肉鸽！目前10难度",
+            "room_id": 3044248,
+            "uid": 13164144,
+            "online": 270881,
+            "live_time": 0,
+            "live_status": 2,
+            "short_id": 0,
+            "area": 1,
+            "area_name": "单机联机",
+            "area_v2_id": 235,
+            "area_v2_name": "其他单机",
+            "area_v2_parent_name": "单机游戏",
+            "area_v2_parent_id": 6,
+            "uname": "魔法Zc目录",
+            "face": "https://i0.hdslb.com/bfs/face/a84fa10f90f7060d0336384954ee1cde7a8e9bc6.jpg",
+            "tag_name": "以撒,minecraft,饥荒,彩虹六号,东方",
+            "tags": "明日方舟,搞笑,单机游戏,游戏",
+            "cover_from_user": "https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg",
+            "keyframe": "https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg",
+            "lock_till": "0000-00-00 00:00:00",
+            "hidden_till": "0000-00-00 00:00:00",
+            "broadcast_type": 0
+        }
     }
 }

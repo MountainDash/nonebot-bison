@@ -24,7 +24,7 @@ export default function GroupManager() {
           <Grid.Row gutter={20}>
             { Object.keys(subs).map(
               (groupNumber: string) => (
-                <Grid.Col span={6} key={groupNumber}>
+                <Grid.Col xs={24} sm={12} md={8} lg={6} key={groupNumber} style={{ margin: '1em 0' }}>
                   <Card
                     title={subs[groupNumber].name}
                     actions={[

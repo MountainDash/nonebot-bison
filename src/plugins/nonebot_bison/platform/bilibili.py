@@ -229,7 +229,7 @@ class Bilibililive(StatusChange):
         def __init__(self, raw_info: dict):
             self.__dict__.update(raw_info)
 
-        def __and__(self, old_info: Self) -> bool:
+        def is_live_turn_on(self, old_info: Self) -> bool:
             # 使用 & 判断直播开始
             # live_status:
             # 0:关播
@@ -240,7 +240,7 @@ class Bilibililive(StatusChange):
 
             return False
 
-        def __xor__(self, old_info: Self) -> bool:
+        def is_title_update(self, old_info: Self) -> bool:
             # 使用 ^ 判断直播时标题改变
             if self.live_status == 1 and old_info.title != self.title:
                 return True
@@ -280,12 +280,12 @@ class Bilibililive(StatusChange):
     def compare_status(
         self, target: Target, old_status: Info, new_status: Info
     ) -> list[RawPost]:
-        if new_status & old_status:
+        if new_status.is_live_turn_on(old_status):
             # 判断开播 运算符左右有顺序要求
             current_status = deepcopy(new_status)
             current_status.category = Category(1)
             return [current_status]
-        elif new_status ^ old_status:
+        elif new_status.is_title_update(old_status):
             # 判断直播时直播间标题变更 运算符左右有顺序要求
             current_status = deepcopy(new_status)
             current_status.category = Category(2)

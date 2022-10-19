@@ -99,7 +99,6 @@ function SubscribeModal({
       postPromise.then(() => {
         setConfirmLoading(false);
         setVisible(false);
-        form.clearFields();
       });
     });
   };

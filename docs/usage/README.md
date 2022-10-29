@@ -70,7 +70,7 @@ sidebar: auto
 
 #### 直接运行（不推荐）
 
-可以参考[nonebot 的运行方法](https://docs.nonebot.dev/guide/getting-started.html)
+可以参考[NoneBot1](https://docs.nonebot.dev/guide/getting-started.html)或[NoneBot2 的运行方法](https://v2.nonebot.dev/docs/tutorial/create-project)。
 ::: danger
 直接克隆源代码需要自行编译前端，否则会出现无法使用管理后台等情况。
 :::
@@ -82,7 +82,7 @@ sidebar: auto
 2. clone 本项目，在项目中`poetry install`安装依赖
 3. 安装 yarn，配置 yarn 源（推荐）
 4. 在`admin-fronted`中运行`yarn && yarn build`编译前端
-5. 编辑`.env.prod`配置各种环境变量，见[Nonebot2 配置](https://v2.nonebot.dev/guide/basic-configuration.html)
+5. 编辑`.env.prod`配置各种环境变量，详见[NoneBot2 配置](https://v2.nonebot.dev/docs/tutorial/configuration)。
 6. 运行`poetry run python bot.py`启动机器人
 
 ### 作为插件使用

@@ -60,7 +60,8 @@ build-backend = "poetry.masonry.api"
 [tool.pytest.ini_options]
 markers = [
     "compare: compare fetching result with rsshub",
-    "render: render img by chrome"
+    "render: render img by chrome",
+    "external: use external resources"
 ]
 asyncio_mode = "auto"
 

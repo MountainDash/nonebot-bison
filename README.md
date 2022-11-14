@@ -28,44 +28,21 @@
 支持的平台：
 
 - 微博
-  - 图文
-  - 视频
-  - 纯文字
-  - 转发
 - Bilibili
-  - 视频
-  - 图文
-  - 专栏
-  - 转发
-  - 纯文字
 - Bilibili 直播
-  - 开播提醒
 - RSS
-  - 富文本转换为纯文本
-  - 提取出所有图片
 - 明日方舟
-  - 塞壬唱片新闻
-  - 游戏内公告
-  - 版本更新等通知
-  - 泰拉记事社漫画
 - 网易云音乐
-  - 歌手发布新专辑
-  - 电台更新
 - FF14
-  - 游戏公告
 - mcbbs 幻翼块讯
-  - Java 版本资讯
-  - 基岩版本资讯
-  - 快讯
-  - 基岩快讯
-  - 周边消息
 
 ## 功能
 
-- 定时爬取指定网站
-- 通过图片发送文本，防止风控
-- 使用队列限制发送频率
-- 使用网页后台管理 Bot 订阅
+- [x] 定时爬取指定网站
+- [x] 通过图片发送文本，防止风控
+- [x] 使用队列限制发送频率
+- [x] 使用网页后台管理 Bot 订阅
+- [ ] 使用可以设置权重的调度器按时间调节不同账号的权重
 
 ## 使用方法
 
@@ -74,16 +51,19 @@
 
 ```bash
 cd ./admin-frontend
-yarn && yarn build
+pnpm && pnpm run build
 ```
 
 可以使用 Docker，docker-compose，作为插件安装在 nonebot 中，或者直接运行  
+
+在群里 at Bot 或者直接私聊 Bot “添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
+
 参考[文档](https://nonebot-bison.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
 
 ## FAQ
 
 1. 报错`TypeError: 'type' object is not subscriptable`  
-   本项目使用了 Python 3.9 的语法，请将 Python 版本升级到 3.9 及以上，推荐使用 docker 部署
+   本项目使用了 Python 3.10 的语法，请将 Python 版本升级到 3.10 及以上，推荐使用 docker 部署
 2. bot 不理我  
    请确认自己是群主或者管理员，并且检查`COMMAND_START`环境变量是否设为`[""]`
    或者按照`COMMAND_START`中的设置添加命令前缀，例：

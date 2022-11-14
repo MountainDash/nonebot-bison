@@ -54,7 +54,7 @@ cd ./admin-frontend
 pnpm && pnpm run build
 ```
 
-可以使用 Docker，docker-compose，作为插件安装在 nonebot 中，或者直接运行  
+可以使用 Docker，docker-compose，作为插件安装在 nonebot 中，或者直接运行
 
 在群里 at Bot 或者直接私聊 Bot “添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
 

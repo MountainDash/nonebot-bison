@@ -102,7 +102,9 @@ jobs:
           context: .
           file: ./docker/Dockerfile_with_frontend_sentry
           push: true
-          tags: felinae98/nonebot-bison:${{ env.TAG_NAME }}-sentry
+          tags: |
+            felinae98/nonebot-bison:${{ env.TAG_NAME }}-sentry
+            felinae98/nonebot-bison:sentry
           cache-from: type=gha
           cache-to: type=gha,mode=max
   deploy-web:

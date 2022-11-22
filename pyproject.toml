@@ -44,7 +44,7 @@ alembic = "^1.7.6"
 ipdb = "^0.13.4"
 pytest = "^7.0.1"
 pytest-asyncio = "^0.18.1"
-respx = "^0.19.0"
+respx = "^0.20.0"
 pytest-cov = "^3.0.0"
 nonebug = {git = "https://github.com/nonebot/nonebug.git"}
 black = "^22.1.0"

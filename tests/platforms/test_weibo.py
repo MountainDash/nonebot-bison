@@ -13,6 +13,10 @@ from .utils import get_file, get_json
 if typing.TYPE_CHECKING:
     from nonebot_bison.platform.weibo import Weibo
 
+image_cdn_router = respx.route(
+    host__regex=r"wx\d.sinaimg.cn", path__startswith="/large/"
+)
+
 
 @pytest.fixture
 def weibo(app: App):
@@ -52,6 +56,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     detail_router.mock(
         return_value=Response(200, text=get_file("weibo_detail_4649031014551911"))
     )
+    image_cdn_router.mock(Response(200, content=b""))
     target = "6279793937"
     res = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert ak_list_router.called

@@ -12,6 +12,7 @@
 
 ### Bug 修复
 
+- :bug: download weibo pics in `parse` [@felinae98](https://github.com/felinae98) ([#147](https://github.com/felinae98/nonebot-bison/pull/147))
 - 修复前端两次点击编辑不能正确显示的问题 [@felinae98](https://github.com/felinae98) ([#131](https://github.com/felinae98/nonebot-bison/pull/131))
 
 ## v0.6.1

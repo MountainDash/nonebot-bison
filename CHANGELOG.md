@@ -2,13 +2,12 @@
 
 ## 最近更新
 
-- 更换哔哩哔哩直播使用的api，添加直播间标题修改时推送直播间的功能 [@AzideCupric](https://github.com/AzideCupric) ([#128](https://github.com/felinae98/nonebot-bison/pull/128))
-- 调整调度器 api [@felinae98](https://github.com/felinae98) ([#125](https://github.com/felinae98/nonebot-bison/pull/125))
-
 ### 新功能
 
+- 更换哔哩哔哩直播使用的api，添加直播间标题修改时推送直播间的功能 [@AzideCupric](https://github.com/AzideCupric) ([#128](https://github.com/felinae98/nonebot-bison/pull/128))
 - 前端适配移动端设备 [@felinae98](https://github.com/felinae98) ([#124](https://github.com/felinae98/nonebot-bison/pull/124))
 - 由 scheduler 提供 http client [@felinae98](https://github.com/felinae98) ([#126](https://github.com/felinae98/nonebot-bison/pull/126))
+- 调整调度器 api [@felinae98](https://github.com/felinae98) ([#125](https://github.com/felinae98/nonebot-bison/pull/125))
 
 ### Bug 修复
 

@@ -29,7 +29,7 @@ async def test_fetch_bililive_only_status_change(
     mock_bili_live_status = get_json("bili_live_status.json")
 
     bili_live_router = respx.get(
-        "http://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=13164144"
+        "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=13164144"
     )
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
 
@@ -78,7 +78,7 @@ async def test_fetch_bililive_only_title_change(
     target = "13164144"
 
     bili_live_router = respx.get(
-        "http://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=13164144"
+        "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=13164144"
     )
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
 
@@ -130,7 +130,7 @@ async def test_fetch_bililive_combo(bili_live, dummy_bililive_user_subinfo):
     target = "13164144"
 
     bili_live_router = respx.get(
-        "http://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=13164144"
+        "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=13164144"
     )
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
 

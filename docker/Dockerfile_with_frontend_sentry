@@ -14,8 +14,8 @@ ENV PYTHONFAULTHANDLER=1 \
   PATH="$PATH:/runtime/bin" \
   PYTHONPATH="$PYTHONPATH:/runtime/lib/python3.10/site-packages" \
   # Versions:
-  POETRY_VERSION=1.1.14
-RUN apt-get update && apt-get install -y build-essential unzip wget python-dev git
+  POETRY_VERSION=1.2.2
+RUN apt-get update && apt-get install -y build-essential unzip wget python3-dev git
 RUN pip install "poetry==$POETRY_VERSION"
 
 WORKDIR /src

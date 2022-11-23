@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- fix(bilibili-live): 修正一些错误的api [@AzideCupric](https://github.com/AzideCupric) ([#151](https://github.com/felinae98/nonebot-bison/pull/151))
+
 ## v0.6.2
 
 ### 新功能

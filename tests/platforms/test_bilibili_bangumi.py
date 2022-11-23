@@ -29,7 +29,7 @@ async def test_fetch_bilibili_bangumi_status(
         "https://api.bilibili.com/pgc/review/user?media_id=28235413"
     )
     bili_bangumi_detail_router = respx.get(
-        "http://api.bilibili.com/pgc/view/web/season?season_id=39719"
+        "https://api.bilibili.com/pgc/view/web/season?season_id=39719"
     )
     bili_bangumi_router.mock(
         return_value=Response(200, json=get_json("bilibili-gangumi-hanhua0.json"))

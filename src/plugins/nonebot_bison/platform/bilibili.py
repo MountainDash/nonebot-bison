@@ -263,7 +263,7 @@ class Bilibililive(StatusChange):
         params = {"uids[]": target}
         # from https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/live/info.md#%E6%89%B9%E9%87%8F%E6%9F%A5%E8%AF%A2%E7%9B%B4%E6%92%AD%E9%97%B4%E7%8A%B6%E6%80%81
         res = await self.client.get(
-            "http://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
+            "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
             params=params,
             timeout=4.0,
         )
@@ -372,7 +372,7 @@ class BilibiliBangumi(StatusChange):
 
     async def parse(self, raw_post: RawPost) -> Post:
         detail_res = await self.client.get(
-            f'http://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
+            f'https://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
         )
         detail_dict = detail_res.json()
         lastest_episode = None

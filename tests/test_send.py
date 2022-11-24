@@ -32,7 +32,7 @@ async def test_send_no_queue(app: App):
 async def test_send_queue(app: App):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
     from nonebot_bison import send
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import do_send_msgs, send_msgs
@@ -50,7 +50,9 @@ async def test_send_queue(app: App):
         await bot.call_api("send_group_msg", group_id="1233", message="test msg")
         await send_msgs(bot, "1233", "group", [Message("msg")])
         ctx.should_call_api(
-            "send_group_msg", {"group_id": "1233", "message": "msg"}, True
+            "send_group_msg",
+            {"group_id": "1233", "message": [MessageSegment.text("msg")]},
+            True,
         )
         await do_send_msgs()
         assert not ctx.wait_list.empty()

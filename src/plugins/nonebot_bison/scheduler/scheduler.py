@@ -9,7 +9,7 @@ from ..config import config
 from ..platform import platform_manager
 from ..send import send_msgs
 from ..types import Target
-from ..utils import SchedulerConfig
+from ..utils import ProcessContext, SchedulerConfig
 from .aps import aps
 
 
@@ -78,6 +78,7 @@ class Scheduler:
         return cur_max_schedulable
 
     async def exec_fetch(self):
+        context = ProcessContext()
         if not (schedulable := await self.get_next_schedulable()):
             return
         logger.debug(
@@ -86,12 +87,22 @@ class Scheduler:
         send_userinfo_list = await config.get_platform_target_subscribers(
             schedulable.platform_name, schedulable.target
         )
-        platform_obj = platform_manager[schedulable.platform_name](
-            await self.scheduler_config_obj.get_client(schedulable.target)
-        )
-        to_send = await platform_obj.do_fetch_new_post(
-            schedulable.target, send_userinfo_list
-        )
+
+        client = await self.scheduler_config_obj.get_client(schedulable.target)
+        context.register_to_client(client)
+
+        try:
+            platform_obj = platform_manager[schedulable.platform_name](context, client)
+            to_send = await platform_obj.do_fetch_new_post(
+                schedulable.target, send_userinfo_list
+            )
+        except Exception as err:
+            records = context.gen_req_records()
+            for record in records:
+                logger.warning("API request record: " + record)
+            err.args += (records,)
+            raise
+
         if not to_send:
             return
         bot = nonebot.get_bot()

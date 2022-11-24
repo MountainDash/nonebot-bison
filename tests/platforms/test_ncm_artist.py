@@ -15,8 +15,9 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 def ncm_artist(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["ncm-artist"](AsyncClient())
+    return platform_manager["ncm-artist"](ProcessContext(), AsyncClient())
 
 
 @pytest.fixture(scope="module")

@@ -14,8 +14,9 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 def bili_bangumi(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["bilibili-bangumi"](AsyncClient())
+    return platform_manager["bilibili-bangumi"](ProcessContext(), AsyncClient())
 
 
 @pytest.mark.asyncio

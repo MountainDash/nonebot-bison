@@ -9,6 +9,7 @@ from nonebot.log import default_format, logger
 from nonebot.plugin import require
 
 from ..plugin_config import plugin_config
+from .context import ProcessContext
 from .http import http_client
 from .scheduler_config import SchedulerConfig, scheduler
 
@@ -16,6 +17,7 @@ __all__ = [
     "http_client",
     "Singleton",
     "parse_text",
+    "ProcessContext",
     "html_to_text",
     "SchedulerConfig",
     "scheduler",

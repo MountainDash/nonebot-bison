@@ -1,21 +1,17 @@
-import functools
 import json
 import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
-import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 from typing_extensions import Self
 
-from ..plugin_config import plugin_config
 from ..post import Post
-from ..types import Category, RawPost, Tag, Target
+from ..types import ApiError, Category, RawPost, Tag, Target
 from ..utils import SchedulerConfig
-from ..utils.http import http_args
 from .platform import CategoryNotSupport, NewMessage, StatusChange
 
 
@@ -105,7 +101,7 @@ class Bilibili(NewMessage):
         if res_dict["code"] == 0:
             return res_dict["data"].get("cards")
         else:
-            return []
+            raise ApiError(res.request.url)
 
     def get_id(self, post: RawPost) -> Any:
         return post["desc"]["dynamic_id"]
@@ -306,7 +302,7 @@ class Bilibililive(StatusChange):
             self.name,
             text=title,
             url=url,
-            pics=pic,
+            pics=list(pic),
             target_name=target_name,
             compress=True,
         )
@@ -384,14 +380,14 @@ class BilibiliBangumi(StatusChange):
             lastest_episode = detail_dict["result"]["episodes"]
 
         url = lastest_episode["link"]
-        pic = [lastest_episode["cover"]]
+        pic: list[str] = [lastest_episode["cover"]]
         target_name = detail_dict["result"]["season_title"]
         text = lastest_episode["share_copy"]
         return Post(
             self.name,
             text=text,
             url=url,
-            pics=pic,
+            pics=list(pic),
             target_name=target_name,
             compress=True,
         )

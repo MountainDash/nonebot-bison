@@ -21,8 +21,9 @@ image_cdn_router = respx.route(
 @pytest.fixture
 def weibo(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["weibo"](AsyncClient())
+    return platform_manager["weibo"](ProcessContext(), AsyncClient())
 
 
 @pytest.fixture(scope="module")

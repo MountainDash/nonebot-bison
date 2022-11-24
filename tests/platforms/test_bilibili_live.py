@@ -9,8 +9,9 @@ from .utils import get_json
 @pytest.fixture
 def bili_live(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["bilibili-live"](AsyncClient())
+    return platform_manager["bilibili-live"](ProcessContext(), AsyncClient())
 
 
 @pytest.fixture

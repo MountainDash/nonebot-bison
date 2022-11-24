@@ -1,9 +1,12 @@
 from time import time
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from httpx import AsyncClient
 from nonebug.app import App
+
+if TYPE_CHECKING:
+    from nonebot_bison.platform import Platform
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -55,9 +58,6 @@ def mock_platform_without_cats_tags(app: App):
         has_target = True
 
         sub_index = 0
-
-        def __init__(self, client):
-            super().__init__(client)
 
         @classmethod
         async def get_target_name(cls, client, _: "Target"):
@@ -116,9 +116,6 @@ def mock_platform(app: App):
         }
 
         sub_index = 0
-
-        def __init__(self, client):
-            super().__init__(client)
 
         @staticmethod
         async def get_target_name(_: "Target"):
@@ -187,9 +184,6 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
         sub_index = 0
 
-        def __init__(self, client):
-            super().__init__(client)
-
         @staticmethod
         async def get_target_name(_: "Target"):
             return "MockPlatform"
@@ -249,9 +243,6 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
         }
 
         sub_index = 0
-
-        def __init__(self, client):
-            super().__init__(client)
 
         @classmethod
         async def get_target_name(cls, client, _: "Target"):
@@ -319,9 +310,6 @@ def mock_status_change(app: App):
 
         sub_index = 0
 
-        def __init__(self, client):
-            super().__init__(client)
-
         @classmethod
         async def get_status(cls, _: "Target"):
             if cls.sub_index == 0:
@@ -353,11 +341,15 @@ def mock_status_change(app: App):
 async def test_new_message_target_without_cats_tags(
     mock_platform_without_cats_tags, user_info_factory
 ):
-    res1 = await mock_platform_without_cats_tags(AsyncClient()).fetch_new_post(
-        "dummy", [user_info_factory([1, 2], [])]
-    )
+    from nonebot_bison.utils import ProcessContext
+
+    res1 = await mock_platform_without_cats_tags(
+        ProcessContext(), AsyncClient()
+    ).fetch_new_post("dummy", [user_info_factory([1, 2], [])])
     assert len(res1) == 0
-    res2 = await mock_platform_without_cats_tags(AsyncClient()).fetch_new_post(
+    res2 = await mock_platform_without_cats_tags(
+        ProcessContext(), AsyncClient()
+    ).fetch_new_post(
         "dummy",
         [
             user_info_factory([], []),
@@ -372,11 +364,13 @@ async def test_new_message_target_without_cats_tags(
 
 @pytest.mark.asyncio
 async def test_new_message_target(mock_platform, user_info_factory):
-    res1 = await mock_platform(AsyncClient()).fetch_new_post(
+    from nonebot_bison.utils import ProcessContext
+
+    res1 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res1) == 0
-    res2 = await mock_platform(AsyncClient()).fetch_new_post(
+    res2 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy",
         [
             user_info_factory([1, 2], []),
@@ -401,11 +395,15 @@ async def test_new_message_target(mock_platform, user_info_factory):
 
 @pytest.mark.asyncio
 async def test_new_message_no_target(mock_platform_no_target, user_info_factory):
-    res1 = await mock_platform_no_target(AsyncClient()).fetch_new_post(
-        "dummy", [user_info_factory([1, 2], [])]
-    )
+    from nonebot_bison.utils import ProcessContext
+
+    res1 = await mock_platform_no_target(
+        ProcessContext(), AsyncClient()
+    ).fetch_new_post("dummy", [user_info_factory([1, 2], [])])
     assert len(res1) == 0
-    res2 = await mock_platform_no_target(AsyncClient()).fetch_new_post(
+    res2 = await mock_platform_no_target(
+        ProcessContext(), AsyncClient()
+    ).fetch_new_post(
         "dummy",
         [
             user_info_factory([1, 2], []),
@@ -426,26 +424,28 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert "p2" in id_set_1 and "p3" in id_set_1
     assert "p2" in id_set_2
     assert "p2" in id_set_3
-    res3 = await mock_platform_no_target(AsyncClient()).fetch_new_post(
-        "dummy", [user_info_factory([1, 2], [])]
-    )
+    res3 = await mock_platform_no_target(
+        ProcessContext(), AsyncClient()
+    ).fetch_new_post("dummy", [user_info_factory([1, 2], [])])
     assert len(res3) == 0
 
 
 @pytest.mark.asyncio
 async def test_status_change(mock_status_change, user_info_factory):
-    res1 = await mock_status_change(AsyncClient()).fetch_new_post(
+    from nonebot_bison.utils import ProcessContext
+
+    res1 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res1) == 0
-    res2 = await mock_status_change(AsyncClient()).fetch_new_post(
+    res2 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 1
     assert posts[0].text == "on"
-    res3 = await mock_status_change(AsyncClient()).fetch_new_post(
+    res3 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy",
         [
             user_info_factory([1, 2], []),
@@ -456,7 +456,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert len(res3[0][1]) == 1
     assert res3[0][1][0].text == "off"
     assert len(res3[1][1]) == 0
-    res4 = await mock_status_change(AsyncClient()).fetch_new_post(
+    res4 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy", [user_info_factory([1, 2], [])]
     )
     assert len(res4) == 0
@@ -473,11 +473,12 @@ async def test_group(
     from nonebot_bison.platform.platform import make_no_target_group
     from nonebot_bison.post import Post
     from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import ProcessContext
 
     group_platform_class = make_no_target_group(
         [mock_platform_no_target, mock_platform_no_target_2]
     )
-    group_platform = group_platform_class(None)
+    group_platform = group_platform_class(ProcessContext(), None)
     res1 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])
     assert len(res1) == 0
     res2 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])

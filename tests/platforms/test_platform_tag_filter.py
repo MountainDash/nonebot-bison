@@ -14,8 +14,9 @@ def test_cases():
 @pytest.mark.asyncio
 async def test_filter_user_custom_tag(app: App, test_cases):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    bilibili = platform_manager["bilibili"](AsyncClient())
+    bilibili = platform_manager["bilibili"](ProcessContext(), AsyncClient())
     for case in test_cases:
         res = bilibili.is_banned_post(**case["case"])
         assert res == case["result"]
@@ -25,8 +26,9 @@ async def test_filter_user_custom_tag(app: App, test_cases):
 @pytest.mark.asyncio
 async def test_tag_separator(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    bilibili = platform_manager["bilibili"](AsyncClient())
+    bilibili = platform_manager["bilibili"](ProcessContext(), AsyncClient())
     tags = ["~111", "222", "333", "~444", "555"]
     res = bilibili.tag_separator(tags)
     assert res[0] == ["222", "333", "555"]

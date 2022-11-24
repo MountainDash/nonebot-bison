@@ -4,8 +4,8 @@ from typing import Any, Optional
 from httpx import AsyncClient
 
 from ..post import Post
-from ..types import RawPost, Target
-from ..utils import SchedulerConfig, http_client
+from ..types import ApiError, RawPost, Target
+from ..utils import SchedulerConfig
 from .platform import NewMessage
 
 
@@ -32,15 +32,14 @@ class NcmArtist(NewMessage):
     async def get_target_name(
         cls, client: AsyncClient, target: Target
     ) -> Optional[str]:
-        async with http_client() as client:
-            res = await client.get(
-                "https://music.163.com/api/artist/albums/{}".format(target),
-                headers={"Referer": "https://music.163.com/"},
-            )
-            res_data = res.json()
-            if res_data["code"] != 200:
-                return
-            return res_data["artist"]["name"]
+        res = await client.get(
+            "https://music.163.com/api/artist/albums/{}".format(target),
+            headers={"Referer": "https://music.163.com/"},
+        )
+        res_data = res.json()
+        if res_data["code"] != 200:
+            raise ApiError(res.request.url)
+        return res_data["artist"]["name"]
 
     @classmethod
     async def parse_target(cls, target_text: str) -> Target:
@@ -54,16 +53,15 @@ class NcmArtist(NewMessage):
             raise cls.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with http_client() as client:
-            res = await client.get(
-                "https://music.163.com/api/artist/albums/{}".format(target),
-                headers={"Referer": "https://music.163.com/"},
-            )
-            res_data = res.json()
-            if res_data["code"] != 200:
-                return []
-            else:
-                return res_data["hotAlbums"]
+        res = await self.client.get(
+            "https://music.163.com/api/artist/albums/{}".format(target),
+            headers={"Referer": "https://music.163.com/"},
+        )
+        res_data = res.json()
+        if res_data["code"] != 200:
+            return []
+        else:
+            return res_data["hotAlbums"]
 
     def get_id(self, post: RawPost) -> Any:
         return post["id"]
@@ -97,16 +95,15 @@ class NcmRadio(NewMessage):
     async def get_target_name(
         cls, client: AsyncClient, target: Target
     ) -> Optional[str]:
-        async with http_client() as client:
-            res = await client.post(
-                "http://music.163.com/api/dj/program/byradio",
-                headers={"Referer": "https://music.163.com/"},
-                data={"radioId": target, "limit": 1000, "offset": 0},
-            )
-            res_data = res.json()
-            if res_data["code"] != 200 or res_data["programs"] == 0:
-                return
-            return res_data["programs"][0]["radio"]["name"]
+        res = await client.post(
+            "http://music.163.com/api/dj/program/byradio",
+            headers={"Referer": "https://music.163.com/"},
+            data={"radioId": target, "limit": 1000, "offset": 0},
+        )
+        res_data = res.json()
+        if res_data["code"] != 200 or res_data["programs"] == 0:
+            return
+        return res_data["programs"][0]["radio"]["name"]
 
     @classmethod
     async def parse_target(cls, target_text: str) -> Target:
@@ -120,17 +117,16 @@ class NcmRadio(NewMessage):
             raise cls.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        async with http_client() as client:
-            res = await client.post(
-                "http://music.163.com/api/dj/program/byradio",
-                headers={"Referer": "https://music.163.com/"},
-                data={"radioId": target, "limit": 1000, "offset": 0},
-            )
-            res_data = res.json()
-            if res_data["code"] != 200:
-                return []
-            else:
-                return res_data["programs"]
+        res = await self.client.post(
+            "http://music.163.com/api/dj/program/byradio",
+            headers={"Referer": "https://music.163.com/"},
+            data={"radioId": target, "limit": 1000, "offset": 0},
+        )
+        res_data = res.json()
+        if res_data["code"] != 200:
+            return []
+        else:
+            return res_data["programs"]
 
     def get_id(self, post: RawPost) -> Any:
         return post["id"]

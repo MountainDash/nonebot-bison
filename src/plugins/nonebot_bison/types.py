@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import time
 from typing import Any, Literal, NamedTuple, NewType
 
+from httpx import URL
 from pydantic import BaseModel
 
 RawPost = NewType("RawPost", Any)
@@ -45,3 +46,9 @@ class PlatformWeightConfigResp(BaseModel):
     target_name: str
     platform_name: str
     weight: WeightConfig
+
+
+class ApiError(Exception):
+    def __init__(self, url: URL) -> None:
+        msg = f"api {url} error"
+        super().__init__(msg)

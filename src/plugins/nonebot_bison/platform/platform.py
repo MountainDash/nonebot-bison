@@ -14,7 +14,7 @@ from nonebot.log import logger
 from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Tag, Target, User, UserSubInfo
-from ..utils.scheduler_config import SchedulerConfig
+from ..utils import ProcessContext, SchedulerConfig
 
 
 class CategoryNotSupport(Exception):
@@ -57,6 +57,7 @@ class PlatformABCMeta(PlatformMeta, ABC):
 class Platform(metaclass=PlatformABCMeta, base=True):
 
     scheduler: Type[SchedulerConfig]
+    ctx: ProcessContext
     is_common: bool
     enabled: bool
     name: str
@@ -99,7 +100,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
             return []
         except json.JSONDecodeError as err:
             logger.warning(f"json error, parsing: {err.doc}")
-            return []
+            raise err
 
     @abstractmethod
     async def parse(self, raw_post: RawPost) -> Post:
@@ -109,9 +110,10 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         "actually function called"
         return await self.parse(raw_post)
 
-    def __init__(self, client: AsyncClient):
+    def __init__(self, context: ProcessContext, client: AsyncClient):
         super().__init__()
         self.client = client
+        self.ctx = context
 
     class ParseTargetException(Exception):
         pass
@@ -209,8 +211,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
 class MessageProcess(Platform, abstract=True):
     "General message process fetch, parse, filter progress"
 
-    def __init__(self, client: AsyncClient):
-        super().__init__(client)
+    def __init__(self, ctx: ProcessContext, client: AsyncClient):
+        super().__init__(ctx, client)
         self.parse_cache: dict[Any, Post] = dict()
 
     @abstractmethod
@@ -254,6 +256,9 @@ class MessageProcess(Platform, abstract=True):
             try:
                 self.get_category(raw_post)
             except CategoryNotSupport:
+                msgs = self.ctx.gen_req_records()
+                for m in msgs:
+                    logger.warning(m)
                 continue
             except NotImplementedError:
                 pass
@@ -342,7 +347,7 @@ class StatusChange(Platform, abstract=True):
             new_status = await self.get_status(target)
         except self.FetchError as err:
             logger.warning(f"fetching {self.name}-{target} error: {err}")
-            return []
+            raise
         res = []
         if old_status := self.get_stored_data(target):
             diff = self.compare_status(target, old_status, new_status)
@@ -420,11 +425,11 @@ def make_no_target_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
                 "Platform scheduler for {} not fit".format(platform_name)
             )
 
-    def __init__(self: "NoTargetGroup", client: AsyncClient):
-        Platform.__init__(self, client)
+    def __init__(self: "NoTargetGroup", ctx: ProcessContext, client: AsyncClient):
+        Platform.__init__(self, ctx, client)
         self.platform_obj_list = []
         for platform_class in self.platform_list:
-            self.platform_obj_list.append(platform_class(client))
+            self.platform_obj_list.append(platform_class(ctx, client))
 
     def __str__(self: "NoTargetGroup") -> str:
         return "[" + " ".join(map(lambda x: x.name, self.platform_list)) + "]"

@@ -9,8 +9,9 @@ from .utils import get_file, get_json
 @pytest.fixture
 def mcbbsnews(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["mcbbsnews"](AsyncClient())
+    return platform_manager["mcbbsnews"](ProcessContext(), AsyncClient())
 
 
 @pytest.fixture(scope="module")

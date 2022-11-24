@@ -9,8 +9,9 @@ from .utils import get_json
 @pytest.fixture
 def ff14(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["ff14"](AsyncClient())
+    return platform_manager["ff14"](ProcessContext(), AsyncClient())
 
 
 @pytest.fixture(scope="module")

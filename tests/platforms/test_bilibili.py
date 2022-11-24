@@ -22,8 +22,9 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 def bilibili(app: App):
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["bilibili"](AsyncClient())
+    return platform_manager["bilibili"](ProcessContext(), AsyncClient())
 
 
 @pytest.mark.asyncio

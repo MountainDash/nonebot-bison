@@ -68,7 +68,7 @@ class Weibo(NewMessage):
         )
         res_data = json.loads(res.text)
         if not res_data["ok"]:
-            return []
+            raise ApiError(res.request.url)
         custom_filter: Callable[[RawPost], bool] = lambda d: d["card_type"] == 9
         return list(filter(custom_filter, res_data["data"]["cards"]))
 

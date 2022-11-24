@@ -2,6 +2,10 @@
 
 ## 最近更新
 
+### 新功能
+
+- 添加记录 api 错误发生时 http 请求的方法 [@felinae98](https://github.com/felinae98) ([#152](https://github.com/felinae98/nonebot-bison/pull/152))
+
 ### Bug 修复
 
 - fix(bilibili-live): 修正一些错误的api [@AzideCupric](https://github.com/AzideCupric) ([#151](https://github.com/felinae98/nonebot-bison/pull/151))

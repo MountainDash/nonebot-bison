@@ -33,7 +33,7 @@ export const subscribeApi = createApi({
       { groupNumber: number; target: string; platformName: string }>({
         query: ({ groupNumber, target, platformName }) => ({
           method: 'DELETE',
-          url: `/subs?groupNumber=${groupNumber}&target=${target}&platformName=${platformName}`,
+          url: `/subs?groupNumber=${groupNumber}&target=${encodeURIComponent(target)}&platformName=${platformName}`,
         }),
         invalidatesTags: ['Subscribe'],
       }),

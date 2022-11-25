@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- 修复后台无法删除 RSS 订阅的问题 [@felinae98](https://github.com/felinae98) ([#154](https://github.com/felinae98/nonebot-bison/pull/154))
 - fix(bilibili-live): 修正一些错误的api [@AzideCupric](https://github.com/AzideCupric) ([#151](https://github.com/felinae98/nonebot-bison/pull/151))
 
 ## v0.6.2

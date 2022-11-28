@@ -4,6 +4,7 @@
 
 ### 新功能
 
+- 适配 python3.11 [@felinae98](https://github.com/felinae98) ([#133](https://github.com/felinae98/nonebot-bison/pull/133))
 - 添加记录 api 错误发生时 http 请求的方法 [@felinae98](https://github.com/felinae98) ([#152](https://github.com/felinae98/nonebot-bison/pull/152))
 
 ### Bug 修复

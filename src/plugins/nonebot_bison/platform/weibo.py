@@ -67,7 +67,7 @@ class Weibo(NewMessage):
             "https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0
         )
         res_data = json.loads(res.text)
-        if not res_data["ok"]:
+        if not res_data["ok"] and res_data["msg"] != "这里还没有内容":
             raise ApiError(res.request.url)
         custom_filter: Callable[[RawPost], bool] = lambda d: d["card_type"] == 9
         return list(filter(custom_filter, res_data["data"]["cards"]))

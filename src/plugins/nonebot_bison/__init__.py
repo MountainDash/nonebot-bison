@@ -14,7 +14,7 @@ from . import (
 )
 from .plugin_config import plugin_config
 
-require("nonebot_plugin_localstore")
+require("nonebot_plugin_datastore")
 
 __help__version__ = "0.4.3"
 __help__plugin__name__ = "nonebot_bison"

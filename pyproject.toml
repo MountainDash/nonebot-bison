@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-bison"
-version = "0.6.2"
+version = "0.6.3"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"
@@ -14,10 +14,12 @@ include = [
     "src/plugins/nonebot_bison/admin_page/dist/**/*"
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3.9",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
     "License :: OSI Approved :: MIT License"
 ]

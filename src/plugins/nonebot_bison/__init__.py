@@ -1,5 +1,7 @@
 from nonebot.plugin import require
 
+require("nonebot_plugin_datastore")
+
 from . import (
     admin_page,
     bootstrap,
@@ -13,8 +15,6 @@ from . import (
     utils,
 )
 from .plugin_config import plugin_config
-
-require("nonebot_plugin_localstore")
 
 __help__version__ = "0.4.3"
 __help__plugin__name__ = "nonebot_bison"

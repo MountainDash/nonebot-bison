@@ -3,7 +3,7 @@
 
 [![pypi](https://badgen.net/pypi/v/nonebot-bison)](https://pypi.org/project/nonebot-bison/)
 [![license](https://img.shields.io/github/license/felinae98/nonebot-bison)](https://github.com/felinae98/nonebot-bison/blob/main/LICENSE)
-[![action](https://img.shields.io/github/workflow/status/felinae98/nonebot-bison/test-build)](https://github.com/felinae98/nonebot-bison/actions/workflows/main.yml)
+[![action](https://img.shields.io/github/actions/workflow/status/felinae98/nonebot-bison/main.yml?branch=main)](https://github.com/felinae98/nonebot-bison/actions/workflows/main.yml)
 [![docker](https://img.shields.io/docker/image-size/felinae98/nonebot-bison)](https://hub.docker.com/r/felinae98/nonebot-bison)
 [![codecov](https://codecov.io/gh/felinae98/nonebot-bison/branch/main/graph/badge.svg?token=QCFIODJOOA)](https://codecov.io/gh/felinae98/nonebot-bison)
 [![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange)](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)

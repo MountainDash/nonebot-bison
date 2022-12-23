@@ -1,4 +1,5 @@
 import pytest
+from flaky import flaky
 from nonebot.adapters.onebot.v11.message import Message
 from nonebug import App
 
@@ -28,6 +29,7 @@ async def test_send_no_queue(app: App):
         assert ctx.wait_list.empty()
 
 
+@flaky
 @pytest.mark.asyncio
 async def test_send_queue(app: App):
     import nonebot

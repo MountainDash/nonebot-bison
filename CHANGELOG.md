@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修复“订阅帐号可以被修改”的bug, 实际上不可以修改 [@felinae98](https://github.com/felinae98) ([#169](https://github.com/felinae98/nonebot-bison/pull/169))
+
 ## v0.6.3
 
 ### 新功能

@@ -30,15 +30,15 @@ export const login = createAsyncThunk(
 );
 
 const setLoginReducer: CaseReducer<AuthStatus, PayloadAction<TokenResp>> = (state, action) => {
-  if (action.payload.status === 200) {
-    state.login = true;
-    state.id = action.payload.id;
-    state.userType = action.payload.type;
-    state.token = action.payload.token;
-  } else {
-    state.login = false;
-    state.failed = true;
-  }
+  state.login = true;
+  state.id = action.payload.id;
+  state.userType = action.payload.type;
+  state.token = action.payload.token;
+};
+
+export const setLoginFailedReducer: CaseReducer<AuthStatus> = (state) => {
+  state.login = false;
+  state.failed = true;
 };
 
 export const setLogoutReducer: CaseReducer<AuthStatus> = (state) => {

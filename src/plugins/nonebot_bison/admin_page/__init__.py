@@ -1,9 +1,9 @@
 import os
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 
 import socketio
+from fastapi.applications import FastAPI
 from fastapi.staticfiles import StaticFiles
 from nonebot import get_driver, on_command
 from nonebot.adapters.onebot.v11 import Bot
@@ -14,29 +14,8 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 
 from ..plugin_config import plugin_config
-from ..types import WeightConfig
-from .api import (
-    add_group_sub,
-    auth,
-    del_group_sub,
-    get_global_conf,
-    get_subs_info,
-    get_target_name,
-    get_weight_config,
-    test,
-    update_group_sub,
-    update_weigth_config,
-)
-from .jwt import load_jwt
+from .api import router as api_router
 from .token_manager import token_manager as tm
-
-URL_BASE = "/bison/"
-GLOBAL_CONF_URL = f"{URL_BASE}api/global_conf"
-AUTH_URL = f"{URL_BASE}api/auth"
-SUBSCRIBE_URL = f"{URL_BASE}api/subs"
-GET_TARGET_NAME_URL = f"{URL_BASE}api/target_name"
-WEIGHT_URL = f"{URL_BASE}api/weight"
-TEST_URL = f"{URL_BASE}test"
 
 STATIC_PATH = (Path(__file__).parent / "dist").resolve()
 
@@ -57,90 +36,18 @@ class SinglePageApplication(StaticFiles):
 
 
 def register_router_fastapi(driver: Driver, socketio):
-    from fastapi import HTTPException, status
-    from fastapi.param_functions import Depends
-    from fastapi.security import OAuth2PasswordBearer
-
-    oath_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-    async def get_jwt_obj(token: str = Depends(oath_scheme)):
-        obj = load_jwt(token)
-        if not obj:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-        return obj
-
-    async def check_group_permission(
-        groupNumber: int, token_obj: dict = Depends(get_jwt_obj)
-    ):
-        groups = token_obj["groups"]
-        for group in groups:
-            if int(groupNumber) == group["id"]:
-                return
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-
-    async def check_is_superuser(token_obj: dict = Depends(get_jwt_obj)):
-        if token_obj.get("type") != "admin":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-
-    @dataclass
-    class AddSubscribeReq:
-        platformName: str
-        target: str
-        targetName: str
-        cats: list[int]
-        tags: list[str]
+    static_path = STATIC_PATH
+    nonebot_app = FastAPI(
+        title="nonebot-bison",
+        description="nonebot-bison webui and api",
+    )
+    nonebot_app.include_router(api_router)
+    nonebot_app.mount(
+        "/", SinglePageApplication(directory=static_path), name="bison-frontend"
+    )
 
     app = driver.server_app
-    static_path = STATIC_PATH
-    app.get(TEST_URL)(test)
-    app.get(GLOBAL_CONF_URL)(get_global_conf)
-    app.get(AUTH_URL)(auth)
-
-    @app.get(SUBSCRIBE_URL)
-    async def subs(jwt_obj: dict = Depends(get_jwt_obj)):
-        return await get_subs_info(jwt_obj)
-
-    @app.get(GET_TARGET_NAME_URL)
-    async def _get_target_name(
-        platformName: str, target: str, jwt_obj: dict = Depends(get_jwt_obj)
-    ):
-        return await get_target_name(platformName, target, jwt_obj)
-
-    @app.post(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
-    async def _add_group_subs(groupNumber: int, req: AddSubscribeReq):
-        return await add_group_sub(
-            group_number=groupNumber,
-            platform_name=req.platformName,
-            target=req.target,
-            target_name=req.targetName,
-            cats=req.cats,
-            tags=req.tags,
-        )
-
-    @app.patch(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
-    async def _update_group_subs(groupNumber: int, req: AddSubscribeReq):
-        return await update_group_sub(
-            group_number=groupNumber,
-            platform_name=req.platformName,
-            target=req.target,
-            target_name=req.targetName,
-            cats=req.cats,
-            tags=req.tags,
-        )
-
-    @app.delete(SUBSCRIBE_URL, dependencies=[Depends(check_group_permission)])
-    async def _del_group_subs(groupNumber: int, target: str, platformName: str):
-        return await del_group_sub(groupNumber, platformName, target)
-
-    @app.get(WEIGHT_URL, dependencies=[Depends(check_is_superuser)])
-    async def _get_weight_config():
-        return await get_weight_config()
-
-    @app.put(WEIGHT_URL, dependencies=[Depends(check_is_superuser)])
-    async def _update_weight_config(platform_name: str, target: str, req: WeightConfig):
-        return await update_weigth_config(platform_name, target, req)
-
-    app.mount(URL_BASE, SinglePageApplication(directory=static_path), name="bison")
+    app.mount("/bison", nonebot_app, "nonebot-bison")
 
 
 def init():
@@ -156,7 +63,7 @@ def init():
         host = "localhost"
     logger.opt(colors=True).info(
         f"Nonebot test frontend will be running at: "
-        f"<b><u>http://{host}:{port}{URL_BASE}</u></b>"
+        f"<b><u>http://{host}:{port}/bison</u></b>"
     )
 
 

@@ -1,5 +1,4 @@
 export interface TokenResp {
-  status: number;
   token: string;
   type: string;
   id: number;
@@ -44,7 +43,7 @@ export interface SubscribeResp {
 }
 
 export interface StatusResp {
-  status: number;
+  ok: boolean;
   msg: string;
 }
 

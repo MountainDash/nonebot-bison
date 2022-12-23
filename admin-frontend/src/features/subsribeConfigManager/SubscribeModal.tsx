@@ -196,7 +196,7 @@ function SubscribeModal({
           ]}
         >
           <Input
-            disabled={!hasTarget}
+            disabled={!hasTarget || !!initval}
             suffix={<IconInfoCircle />}
             placeholder={hasTarget ? '获取方式见文档' : '此平台不需要账号'}
           />

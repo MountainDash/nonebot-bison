@@ -102,7 +102,6 @@ sidebar: auto
 
 ::: tip INFO
 
-- 所有可用配置项可参见[源文件](https://github.com/felinae98/nonebot-bison/blob/main/src/plugins/nonebot_bison/plugin_config.py)
 - 如果要在在 nonebot 中配置需要的**Bison 配置项**，请参考[NoneBot 配置方式](https://v2.nonebot.dev/docs/tutorial/configuration#%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F)，在`.env`/`.env.*`文件中写入希望配置的 Bison 配置项
 - 请注意，在`.env`/`.env.*`中添加的配置项 **不** 需要声明变量类型
   :::

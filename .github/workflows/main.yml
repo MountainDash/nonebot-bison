@@ -1,9 +1,13 @@
 name: test-build
 
+env:
+  skip_render: ${{ contains(github.event.labels.*.name, 'test-render') }}
+
 on:
   push:
     branches:
       - main
+      - next
     paths:
       - admin-frontend/**
       - docker/**
@@ -11,6 +15,7 @@ on:
       - tests/**
       - pyproject.toml
       - poetry.lock
+      - .github/**
   pull_request:
     paths:
       - admin-frontend/**
@@ -19,6 +24,7 @@ on:
       - tests/**
       - pyproject.toml
       - poetry.lock
+      - .github/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,10 +49,9 @@ jobs:
   test:
     name: Test Coverage
     runs-on: ${{ matrix.os }}
-    needs: build-frontend
     strategy:
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
     env:
@@ -56,14 +61,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download frontend files
-        uses: actions/download-artifact@v2
-        with:
-          name: frontend
-          path: ./src/plugins/nonebot_bison/admin_page/dist
-
       - name: Setup Python environment
-        uses: ./.github/actions/setup-python
+        uses: he0119/setup-python@79c04f1e1bcbfe45c9d0eca6aa522e9b364d7dfa
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -71,28 +70,33 @@ jobs:
         run: poetry install
 
       - name: Run Pytest
+        if: !env.skip_render
         run: poetry run pytest --cov-report xml --cov=./src/plugins/nonebot_bison -k 'not compare and not render'
 
+      - name: Run Pytest with render mark
+        if: env.skip_render
+        run: poetry run pytest --cov-report xml --cov=./src/plugins/nonebot_bison -k 'not compare'
+
       - name: Upload coverage report
+        if: !env.skip_render
         uses: codecov/codecov-action@v3
         with:
+          flags: smoke-test
           env_vars: OS,PYTHON_VERSION
+      
+      - name: Upload all-test coverage report
+        if: env.skip_render
+        uses: codecov/codecov-action@v3
+        with:
+          flags: all-test
+          env_vars: OS,PYTHON_VERSION
+
   docker-main:
     name: Docker main
     runs-on: ubuntu-latest
     needs: [build-frontend, test]
-<<<<<<< HEAD
-    strategy:
-      matrix:
-        include:
-          - file: ./docker/Dockerfile_with_frontend
-            tags: azide/nonebot-bison:main
-          - file: ./docker/Dockerfile_with_frontend_sentry
-            tags: azide/nonebot-bison:main-sentry
-=======
     steps:
       - uses: actions/checkout@v3
->>>>>>> fcf8be38f04176b2d1876f2d54bfdad8dbce6a33
 
       - name: Download frontend files
         uses: actions/download-artifact@v2
@@ -106,6 +110,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Test Build
+        uses: docker/build-push-action@v2
+        if: github.event_name == 'pull_request'
+        with:
+          context: .
+          file: ./docker/Dockerfile_with_frontend
+          push: false
+          tags: felinae98/nonebot-bison:dummy
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
@@ -113,13 +128,18 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Git Branch Name
+        id: git-branch-name
+        uses: EthanSK/git-branch-name-action@v1
+
       - name: Build and push
         uses: docker/build-push-action@v2
+        if: github.event_name != 'pull_request'
         with:
           context: .
           file: ./docker/Dockerfile_with_frontend
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: felinae98/nonebot-bison:main
+          push: true
+          tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -143,6 +163,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Git Branch Name
+        id: git-branch-name
+        uses: EthanSK/git-branch-name-action@v1
+
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
@@ -156,6 +180,6 @@ jobs:
           context: .
           file: ./docker/Dockerfile_with_frontend_sentry
           push: ${{ github.event_name != 'pull_request' }}
-          tags: felinae98/nonebot-bison:main-sentry
+          tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}-sentry
           cache-from: type=gha
           cache-to: type=gha,mode=max

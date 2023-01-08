@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup Python environment
-        uses: he0119/setup-python@79c04f1e1bcbfe45c9d0eca6aa522e9b364d7dfa
+        uses: ./.github/actions/setup-python
         with:
           python-version: ${{ matrix.python-version }}
 

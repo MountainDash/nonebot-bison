@@ -34,7 +34,7 @@ jobs:
           path: ./src/plugins/nonebot_bison/admin_page/dist
 
       - name: Setup Python environment
-        uses: he0119/setup-python@79c04f1e1bcbfe45c9d0eca6aa522e9b364d7dfa
+        uses: ./.github/actions/setup-python
 
       - run: |
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV

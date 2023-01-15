@@ -1,4 +1,4 @@
-"""empty message
+"""rename tables
 
 Revision ID: 5da28f6facb3
 Revises: 5f3370328e44

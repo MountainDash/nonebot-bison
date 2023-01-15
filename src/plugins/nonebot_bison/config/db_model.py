@@ -28,7 +28,7 @@ class Target(Model, table=True):
     platform_name: str = Field(max_length=20)
     target: str = Field(max_length=1024)
     target_name: str = Field(max_length=1024)
-    default_schedule_weight: int = Field(default=10)
+    default_schedule_weight: Optional[int] = Field(default=10)
 
     subscribes: list["Subscribe"] = Relationship(back_populates="target")
     time_weight: list["ScheduleTimeWeight"] = Relationship(back_populates="target")
@@ -41,7 +41,7 @@ class ScheduleTimeWeight(Model, table=True):
     )
     start_time: Optional[datetime.time]
     end_time: Optional[datetime.time]
-    weight: int
+    weight: Optional[int]
 
     target: Target = Relationship(back_populates="time_weight")
 

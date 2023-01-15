@@ -1,10 +1,12 @@
 import datetime
+from pathlib import Path
 from typing import Any, Optional
 
 from nonebot_plugin_datastore import get_plugin_data
 from sqlmodel import JSON, Column, Field, Relationship, UniqueConstraint
 
 Model = get_plugin_data().Model
+get_plugin_data().set_migration_dir(Path(__file__).parent / "migrate" / "versions")
 
 
 class User(Model, table=True):
@@ -34,7 +36,9 @@ class Target(Model, table=True):
 
 class ScheduleTimeWeight(Model, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    target_id: int = Field(foreign_key="nonebot_bison_target.id")
+    target_id: Optional[int] = Field(
+        default=None, foreign_key="nonebot_bison_target.id"
+    )
     start_time: Optional[datetime.time]
     end_time: Optional[datetime.time]
     weight: int
@@ -51,8 +55,10 @@ class Subscribe(Model, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    target_id: int = Field(default=None, foreign_key="nonebot_bison_target.id")
-    user_id: int = Field(default=None, foreign_key="nonebot_bison_user.id")
+    target_id: Optional[int] = Field(
+        default=None, foreign_key="nonebot_bison_target.id"
+    )
+    user_id: Optional[int] = Field(default=None, foreign_key="nonebot_bison_user.id")
     categories: Any = Field(sa_column=Column(JSON))
     tags: Any = Field(sa_column=Column(JSON))
 

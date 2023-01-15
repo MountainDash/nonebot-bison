@@ -22,6 +22,7 @@ async def app(nonebug_init: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     config.superusers = {"10001"}
     config.log_level = "TRACE"
     config.bison_filter_log = False
+    nonebot.require("nonebot_bison")
     return App(monkeypatch)
 
 
@@ -35,11 +36,10 @@ def dummy_user_subinfo(app: App):
 
 @pytest.fixture
 async def db_migration(app: App):
-    from nonebot_bison.config.db import upgrade_db
     from nonebot_bison.config.db_model import Subscribe, Target, User
-    from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_datastore.db import get_engine, init_db
 
-    await upgrade_db()
+    await init_db()
     async with AsyncSession(get_engine()) as sess:
         await sess.execute(delete(User))
         await sess.execute(delete(Subscribe))

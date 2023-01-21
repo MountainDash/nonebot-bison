@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Type
 
-import nonebot
 from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import logger
 

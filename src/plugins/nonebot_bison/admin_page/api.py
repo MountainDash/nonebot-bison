@@ -4,7 +4,6 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordBearer
-from nonebot.adapters.onebot.v11.bot import Bot
 
 from ..apis import check_sub_target
 from ..config import (
@@ -16,7 +15,8 @@ from ..config import (
 from ..config.db_config import SubscribeDupException
 from ..platform import platform_manager
 from ..types import Target as T_Target
-from ..types import WeightConfig
+from ..types import User, WeightConfig
+from ..utils.get_bot import get_bot, get_groups
 from .jwt import load_jwt, pack_jwt
 from .token_manager import token_manager
 from .types import (
@@ -72,12 +72,13 @@ async def get_global_conf() -> GlobalConf:
 
 
 async def get_admin_groups(qq: int):
-    bot = nonebot.get_bot()
-    groups = await bot.call_api("get_group_list")
     res = []
-    for group in groups:
+    for group in await get_groups():
         group_id = group["group_id"]
-        users = await bot.call_api("get_group_member_list", group_id=group_id)
+        bot = get_bot(User(group_id, "group"))
+        if not bot:
+            continue
+        users = await bot.get_group_member_list(group_id=group_id)
         for user in users:
             if user["user_id"] == qq and user["role"] in ("owner", "admin"):
                 res.append({"id": group_id, "name": group["group_name"]})
@@ -88,9 +89,6 @@ async def get_admin_groups(qq: int):
 async def auth(token: str) -> TokenResp:
     if qq_tuple := token_manager.get_user(token):
         qq, nickname = qq_tuple
-        bot = nonebot.get_bot()
-        assert isinstance(bot, Bot)
-        groups = await bot.call_api("get_group_list")
         if str(qq) in nonebot.get_driver().config.superusers:
             jwt_obj = {
                 "id": qq,
@@ -101,7 +99,7 @@ async def auth(token: str) -> TokenResp:
                             "id": info["group_id"],
                             "name": info["group_name"],
                         },
-                        groups,
+                        await get_groups(),
                     )
                 ),
             }

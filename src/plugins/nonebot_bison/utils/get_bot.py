@@ -16,79 +16,73 @@ from ..types import User
 GROUP: dict[int, list[Bot]] = {}
 USER: dict[int, list[Bot]] = {}
 
+
+def get_bots() -> list[Bot]:
+    """获取所有 OneBot 11 Bot"""
+    bots = []
+    for bot in nonebot.get_bots():
+        if isinstance(bot, Bot):
+            bots.append(bot)
+    return bots
+
+
+async def refresh_bots():
+    """刷新缓存的 Bot 数据"""
+    GROUP.clear()
+    USER.clear()
+    for bot in get_bots():
+        # 获取群列表
+        groups = await bot.get_group_list()
+        for group in groups:
+            group_id = group["group_id"]
+            if group_id not in GROUP:
+                GROUP[group_id] = [bot]
+            else:
+                GROUP[group_id].append(bot)
+
+        # 获取好友列表
+        users = await bot.get_friend_list()
+        for user in users:
+            user_id = user["user_id"]
+            if user_id not in USER:
+                USER[user_id] = [bot]
+            else:
+                USER[user_id].append(bot)
+
+
 driver = get_driver()
 
 
 @driver.on_bot_connect
-async def _on_bot_connect(bot: Bot):
-    # 获取群列表
-    groups = await bot.get_group_list()
-    for group in groups:
-        group_id = group["group_id"]
-        if group_id not in GROUP:
-            GROUP[group_id] = [bot]
-        else:
-            GROUP[group_id].append(bot)
-
-    # 获取好友列表
-    users = await bot.get_friend_list()
-    for user in users:
-        user_id = user["user_id"]
-        if user_id not in USER:
-            USER[user_id] = [bot]
-        else:
-            USER[user_id].append(bot)
+async def _(bot: Bot):
+    await refresh_bots()
 
 
 @driver.on_bot_disconnect
-async def _on_bot_disconnect(bot: Bot):
-    for bots in GROUP.values():
-        if bot in bots:
-            bots.remove(bot)
-
-    for bots in USER.values():
-        if bot in bots:
-            bots.remove(bot)
+async def _(bot: Bot):
+    await refresh_bots()
 
 
 change_notice = on_notice(priority=1)
 
 
 @change_notice.handle()
-async def _friend_add(bot: Bot, event: FriendAddNoticeEvent):
-    user_id = event.user_id
-    if user_id not in USER:
-        USER[user_id] = [bot]
-    else:
-        USER[user_id].append(bot)
+async def _(bot: Bot, event: FriendAddNoticeEvent):
+    await refresh_bots()
 
 
 # 01-06 16:56:51 [SUCCESS] nonebot | OneBot V11 **** | [notice.group_increase.approve]: {'time': 1672995411, 'self_id': ****, 'post_type': 'notice', 'notice_type': 'group_increase', 'sub_type': 'approve', 'user_id': ****, 'group_id': ****, 'operator_id': 0}
 @change_notice.handle()
-async def _group_increase(bot: Bot, event: GroupIncreaseNoticeEvent):
+async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
     if bot.self_id == event.user_id:
-        group_id = event.group_id
-        if group_id not in GROUP:
-            GROUP[group_id] = [bot]
-        else:
-            GROUP[group_id].append(bot)
+        await refresh_bots()
 
 
 # 01-06 16:58:09 [SUCCESS] nonebot | OneBot V11 **** | [notice.group_decrease.kick_me]: {'time': 1672995489, 'self_id': ****, 'post_type': 'notice', 'notice_type': 'group_decrease', 'sub_type': 'kick_me', 'user_id': ****, 'group_id': ****, 'operator_id': ****}
 @change_notice.handle()
-async def _group_decrease(bot: Bot, event: GroupDecreaseNoticeEvent):
+async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
     if bot.self_id == event.user_id:
-        group_id = event.group_id
-        if group_id in GROUP and bot in GROUP[group_id]:
-            GROUP[group_id].remove(bot)
-
-
-async def refresh_bots():
-    """刷新 Bot"""
-    GROUP.clear()
-    USER.clear()
-    for bot in get_bots():
-        await _on_bot_connect(bot)
+        await refresh_bots()
 
 
 def get_bot(user: User) -> Optional[Bot]:
@@ -104,15 +98,6 @@ def get_bot(user: User) -> Optional[Bot]:
         return
 
     return random.choice(bots)
-
-
-def get_bots() -> list[Bot]:
-    """获取所有 OneBot 11 Bot"""
-    bots = []
-    for bot in nonebot.get_bots():
-        if isinstance(bot, Bot):
-            bots.append(bot)
-    return bots
 
 
 async def get_groups() -> list[dict[str, Any]]:

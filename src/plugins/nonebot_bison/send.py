@@ -2,10 +2,12 @@ import time
 from typing import Literal, Union
 
 from nonebot.adapters.onebot.v11.bot import Bot
-from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+from nonebot.adapters.onebot.v11.exception import ActionFailed
+from nonebot.adapters.onebot.v11.message import Message
 from nonebot.log import logger
 
 from .plugin_config import plugin_config
+from .utils.get_bot import refresh_bots
 
 QUEUE: list[
     tuple[
@@ -25,12 +27,16 @@ async def _do_send(
     user_type: Literal["group", "private", "group-forward"],
     msg: Union[str, Message],
 ):
-    if user_type == "group":
-        await bot.send_group_msg(group_id=user, message=msg)
-    elif user_type == "private":
-        await bot.send_private_msg(user_id=user, message=msg)
-    elif user_type == "group-forward":
-        await bot.send_group_forward_msg(group_id=user, messages=msg)
+    try:
+        if user_type == "group":
+            await bot.send_group_msg(group_id=user, message=msg)
+        elif user_type == "private":
+            await bot.send_private_msg(user_id=user, message=msg)
+        elif user_type == "group-forward":
+            await bot.send_group_forward_msg(group_id=user, messages=msg)
+    except ActionFailed:
+        await refresh_bots()
+        logger.warning(f"send msg failed, refresh bots")
 
 
 async def do_send_msgs():

@@ -1,9 +1,11 @@
 import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from nonebot_plugin_datastore import get_plugin_data
 from sqlmodel import JSON, Column, Field, Relationship, UniqueConstraint
+
+from ..types import Category, Tag
 
 Model = get_plugin_data().Model
 get_plugin_data().set_migration_dir(Path(__file__).parent / "migrate" / "versions")
@@ -59,11 +61,8 @@ class Subscribe(Model, table=True):
         default=None, foreign_key="nonebot_bison_target.id"
     )
     user_id: Optional[int] = Field(default=None, foreign_key="nonebot_bison_user.id")
-    categories: Any = Field(sa_column=Column(JSON))
-    tags: Any = Field(sa_column=Column(JSON))
+    categories: list[Category] = Field(sa_column=Column(JSON))
+    tags: list[Tag] = Field(sa_column=Column(JSON))
 
     target: Target = Relationship(back_populates="subscribes")
     user: User = Relationship(back_populates="subscribes")
-
-    class Config:
-        arbitrary_types_allowed = True

@@ -1,16 +1,14 @@
 import pytest
 from nonebug.app import App
-from sqlalchemy.ext.asyncio.session import AsyncSession
-from sqlalchemy.sql.functions import func
-from sqlmodel.sql.expression import select
 
 
 async def test_add_subscribe(app: App, init_scheduler):
-
     from nonebot_bison.config.db_config import config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as TTarget
     from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlmodel.sql.expression import select
 
     await config.add_subscribe(
         user=123,
@@ -74,7 +72,6 @@ async def test_add_subscribe(app: App, init_scheduler):
 
 
 async def test_add_dup_sub(init_scheduler):
-
     from nonebot_bison.config.db_config import SubscribeDupException, config
     from nonebot_bison.types import Target as TTarget
 
@@ -102,9 +99,12 @@ async def test_add_dup_sub(init_scheduler):
 
 async def test_del_subsribe(init_scheduler):
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.config.db_model import Subscribe, Target
     from nonebot_bison.types import Target as TTarget
     from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.functions import func
+    from sqlmodel.sql.expression import select
 
     await config.add_subscribe(
         user=123,

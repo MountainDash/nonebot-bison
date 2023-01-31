@@ -6,6 +6,10 @@
 
 - feat: 适配最新的 DataStore 插件，并切换模型为 SQLModel [@he0119](https://github.com/he0119) ([#178](https://github.com/felinae98/nonebot-bison/pull/178))
 
+### 新功能
+
+- 支持连接多个机器人 [@he0119](https://github.com/he0119) ([#179](https://github.com/felinae98/nonebot-bison/pull/179))
+
 ### Bug 修复
 
 - 修复“订阅帐号可以被修改”的bug, 实际上不可以修改 [@felinae98](https://github.com/felinae98) ([#169](https://github.com/felinae98/nonebot-bison/pull/169))

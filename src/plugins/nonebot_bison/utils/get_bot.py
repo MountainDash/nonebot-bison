@@ -54,10 +54,6 @@ driver = get_driver()
 
 
 @driver.on_bot_connect
-async def _(bot: Bot):
-    await refresh_bots()
-
-
 @driver.on_bot_disconnect
 async def _(bot: Bot):
     await refresh_bots()
@@ -72,15 +68,9 @@ async def _(bot: Bot, event: FriendAddNoticeEvent):
 
 
 # 01-06 16:56:51 [SUCCESS] nonebot | OneBot V11 **** | [notice.group_increase.approve]: {'time': 1672995411, 'self_id': ****, 'post_type': 'notice', 'notice_type': 'group_increase', 'sub_type': 'approve', 'user_id': ****, 'group_id': ****, 'operator_id': 0}
-@change_notice.handle()
-async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
-    if bot.self_id == event.user_id:
-        await refresh_bots()
-
-
 # 01-06 16:58:09 [SUCCESS] nonebot | OneBot V11 **** | [notice.group_decrease.kick_me]: {'time': 1672995489, 'self_id': ****, 'post_type': 'notice', 'notice_type': 'group_decrease', 'sub_type': 'kick_me', 'user_id': ****, 'group_id': ****, 'operator_id': ****}
 @change_notice.handle()
-async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
+async def _(bot: Bot, event: GroupDecreaseNoticeEvent | GroupIncreaseNoticeEvent):
     if bot.self_id == event.user_id:
         await refresh_bots()
 

@@ -20,7 +20,7 @@ USER: dict[int, list[Bot]] = {}
 def get_bots() -> list[Bot]:
     """获取所有 OneBot 11 Bot"""
     bots = []
-    for bot in nonebot.get_bots():
+    for bot in nonebot.get_bots().values():
         if isinstance(bot, Bot):
             bots.append(bot)
     return bots

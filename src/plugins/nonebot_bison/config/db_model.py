@@ -1,61 +1,68 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.sql.sqltypes import JSON, Integer, String, Time
+import datetime
+from pathlib import Path
+from typing import Optional
 
-Base = declarative_base()
+from nonebot_plugin_datastore import get_plugin_data
+from sqlmodel import JSON, Column, Field, Relationship, UniqueConstraint
+
+from ..types import Category, Tag
+
+Model = get_plugin_data().Model
+get_plugin_data().set_migration_dir(Path(__file__).parent / "migrate" / "versions")
 
 
-class User(Base):
-    __tablename__ = "user"
+class User(Model, table=True):
     __table_args__ = (UniqueConstraint("type", "uid", name="unique-user-constraint"),)
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    type = Column(String(20), nullable=False)
-    uid = Column(Integer, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    type: str = Field(max_length=20)
+    uid: int
 
-    subscribes = relationship("Subscribe", back_populates="user")
+    subscribes: list["Subscribe"] = Relationship(back_populates="user")
 
 
-class Target(Base):
-    __tablename__ = "target"
+class Target(Model, table=True):
     __table_args__ = (
         UniqueConstraint("target", "platform_name", name="unique-target-constraint"),
     )
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    platform_name = Column(String(20), nullable=False)
-    target = Column(String(1024), nullable=False)
-    target_name = Column(String(1024), nullable=False)
-    default_schedule_weight = Column(Integer, default=10)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    platform_name: str = Field(max_length=20)
+    target: str = Field(max_length=1024)
+    target_name: str = Field(max_length=1024)
+    default_schedule_weight: Optional[int] = Field(default=10)
 
-    subscribes = relationship("Subscribe", back_populates="target")
-    time_weight = relationship("ScheduleTimeWeight", back_populates="target")
-
-
-class ScheduleTimeWeight(Base):
-    __tablename__ = "schedule_time_weight"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    target_id = Column(Integer, ForeignKey(Target.id))
-    start_time = Column(Time)
-    end_time = Column(Time)
-    weight = Column(Integer)
-
-    target = relationship("Target", back_populates="time_weight")
+    subscribes: list["Subscribe"] = Relationship(back_populates="target")
+    time_weight: list["ScheduleTimeWeight"] = Relationship(back_populates="target")
 
 
-class Subscribe(Base):
-    __tablename__ = "subscribe"
+class ScheduleTimeWeight(Model, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    target_id: Optional[int] = Field(
+        default=None, foreign_key="nonebot_bison_target.id"
+    )
+    start_time: Optional[datetime.time]
+    end_time: Optional[datetime.time]
+    weight: Optional[int]
+
+    target: Target = Relationship(back_populates="time_weight")
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class Subscribe(Model, table=True):
     __table_args__ = (
         UniqueConstraint("target_id", "user_id", name="unique-subscribe-constraint"),
     )
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    target_id = Column(Integer, ForeignKey(Target.id))
-    user_id = Column(Integer, ForeignKey(User.id))
-    categories = Column(JSON)
-    tags = Column(JSON)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    target_id: Optional[int] = Field(
+        default=None, foreign_key="nonebot_bison_target.id"
+    )
+    user_id: Optional[int] = Field(default=None, foreign_key="nonebot_bison_user.id")
+    categories: list[Category] = Field(sa_column=Column(JSON))
+    tags: list[Tag] = Field(sa_column=Column(JSON))
 
-    target = relationship("Target", back_populates="subscribes")
-    user = relationship("User", back_populates="subscribes")
+    target: Target = Relationship(back_populates="subscribes")
+    user: User = Relationship(back_populates="subscribes")

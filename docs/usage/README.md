@@ -82,7 +82,7 @@ sidebar: auto
 2. clone 本项目，在项目中`poetry install`安装依赖
 3. 安装 yarn，配置 yarn 源（推荐）
 4. 在`admin-fronted`中运行`yarn && yarn build`编译前端
-5. 编辑`.env.prod`配置各种环境变量，见[Nonebot2 配置](https://v2.nonebot.dev/guide/basic-configuration.html)
+5. 编辑`.env.prod`配置各种环境变量，见[Nonebot2 配置](https://v2.nonebot.dev/docs/tutorial/configuration)
 6. 运行`poetry run python bot.py`启动机器人
 
 ### 作为插件使用
@@ -102,7 +102,6 @@ sidebar: auto
 
 ::: tip INFO
 
-- 所有可用配置项可参见[源文件](https://github.com/felinae98/nonebot-bison/blob/main/src/plugins/nonebot_bison/plugin_config.py)
 - 如果要在在 nonebot 中配置需要的**Bison 配置项**，请参考[NoneBot 配置方式](https://v2.nonebot.dev/docs/tutorial/configuration#%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F)，在`.env`/`.env.*`文件中写入希望配置的 Bison 配置项
 - 请注意，在`.env`/`.env.*`中添加的配置项 **不** 需要声明变量类型
   :::

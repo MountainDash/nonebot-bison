@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Type
 
-import nonebot
 from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import logger
 
@@ -10,6 +9,7 @@ from ..platform import platform_manager
 from ..send import send_msgs
 from ..types import Target
 from ..utils import ProcessContext, SchedulerConfig
+from ..utils.get_bot import get_bot
 from .aps import aps
 
 
@@ -105,9 +105,9 @@ class Scheduler:
 
         if not to_send:
             return
-        bot = nonebot.get_bot()
-        assert isinstance(bot, Bot)
+
         for user, send_list in to_send:
+            bot = get_bot(user)
             for send_post in send_list:
                 logger.info("send to {}: {}".format(user, send_post))
                 if not bot:

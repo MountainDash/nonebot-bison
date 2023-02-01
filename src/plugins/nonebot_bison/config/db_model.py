@@ -8,7 +8,7 @@ from sqlmodel import JSON, Column, Field, Relationship, UniqueConstraint
 from ..types import Category, Tag
 
 Model = get_plugin_data().Model
-get_plugin_data().set_migration_dir(Path(__file__).parent / "migrate" / "versions")
+get_plugin_data().set_migration_dir(Path(__file__).parent / "migrations")
 
 
 class User(Model, table=True):

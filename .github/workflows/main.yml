@@ -51,8 +51,8 @@ jobs:
           name: frontend
           path: ./admin-frontend/build/
   test:
-    name: Test Coverage
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'test-render') }}
+    name: Smoke-test Coverage
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'all-test') }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -84,8 +84,8 @@ jobs:
           env_vars: OS,PYTHON_VERSION
 
   test-all:
-    name: Test Coverage with render
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test-render') }}
+    name: All-test Coverage
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'all-test') }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

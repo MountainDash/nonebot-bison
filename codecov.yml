@@ -12,3 +12,12 @@ flag_management:
         threshold: 5%
       - type: patch
         target: 60%
+  individual_flags: # exceptions to the default rules above, stated flag by flag
+    - name: all-test
+      carryforward: true
+      statuses:
+        - type: project
+          target: auto
+          threshold: 5%
+        - type: patch
+          target: 80%

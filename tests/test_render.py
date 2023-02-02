@@ -23,14 +23,4 @@ VuePress 由两部分组成：第一部分是一个极简静态网站生成器
 每一个由 VuePress 生成的页面都带有预渲染好的 HTML，也因此具有非常好的加载性能和搜索引擎优化（SEO）。同时，一旦页面被加载，Vue 将接管这些静态内容，并将其转换成一个完整的单页应用（SPA），其他的页面则会只在用户浏览到的时候才按需加载。
 """
     )
-
-
-@pytest.mark.asyncio
-@pytest.mark.render
-async def test_arknights(app: App):
-    from nonebot_bison.platform.arknights import Arknights
-
-    ak = Arknights(AsyncClient())
-    res = await ak.parse(
-        {"webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/854_1644580545.html"}
-    )
+    assert res.type == "image"

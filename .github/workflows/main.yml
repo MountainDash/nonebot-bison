@@ -22,6 +22,13 @@ on:
       - pyproject.toml
       - poetry.lock
       - .github/**
+    types:
+      - opened
+      - synchronize
+      - reopened
+      # 以上为默认情况
+      - labeled
+      - unlabeled
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -44,7 +51,8 @@ jobs:
           name: frontend
           path: ./admin-frontend/build/
   test:
-    name: Test Coverage
+    name: Smoke-test Coverage
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'all-test') }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -73,6 +81,39 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           flags: smoke-test
+          env_vars: OS,PYTHON_VERSION
+
+  test-all:
+    name: All-test Coverage
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'all-test') }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python environment
+        uses: he0119/setup-python@79c04f1e1bcbfe45c9d0eca6aa522e9b364d7dfa
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install prerequisites
+        run: poetry install
+
+      - name: Run Pytest
+        run: poetry run pytest --cov-report xml --cov=./src/plugins/nonebot_bison -k 'not compare'
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          flags: all-test
           env_vars: OS,PYTHON_VERSION
 
   docker-main:

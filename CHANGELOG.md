@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- feat(workflow pytest): 添加打上test-render的标签后进行带render标记测试的功能 [@AzideCupric](https://github.com/AzideCupric) ([#176](https://github.com/felinae98/nonebot-bison/pull/176))
+
 ### 破坏性变更
 
 - feat: 适配最新的 DataStore 插件，并切换模型为 SQLModel [@he0119](https://github.com/he0119) ([#178](https://github.com/felinae98/nonebot-bison/pull/178))

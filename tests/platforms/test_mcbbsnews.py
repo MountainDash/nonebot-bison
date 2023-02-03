@@ -32,6 +32,7 @@ async def test_javanews_parser(mcbbsnews, raw_post_list):
     raw_post = raw_post_list[3]
     post = await mcbbsnews.parse(raw_post)
     assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
+    assert post.target_name == raw_post["category"]
     assert len(post.pics) == 1
 
 
@@ -48,6 +49,7 @@ async def test_bedrocknews_parser(mcbbsnews, raw_post_list):
     raw_post = raw_post_list[4]
     post = await mcbbsnews.parse(raw_post)
     assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
+    assert post.target_name == raw_post["category"]
     assert len(post.pics) == 1
 
 
@@ -63,6 +65,7 @@ async def test_bedrock_express_parser(mcbbsnews, raw_post_list):
     )
     raw_post = raw_post_list[13]
     post = await mcbbsnews.parse(raw_post)
+    assert post.target_name == raw_post["category"]
     assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
 
 
@@ -78,6 +81,7 @@ async def test_java_express_parser(mcbbsnews, raw_post_list):
     )
     raw_post = raw_post_list[0]
     post = await mcbbsnews.parse(raw_post)
+    assert post.target_name == raw_post["category"]
     assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
 
 
@@ -91,6 +95,7 @@ async def test_merch_parser(mcbbsnews, raw_post_list):
     )
     raw_post = raw_post_list[26]
     post = await mcbbsnews.parse(raw_post_list[26])
+    assert post.target_name == raw_post["category"]
     assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
 
 
@@ -125,7 +130,7 @@ async def test_fetch_new(mcbbsnews, dummy_user_subinfo):
     assert post.target_type == "MCBBS幻翼块讯"
     assert post.text == "Minecraft Java版 1.19-pre1 发布\n│\n└由 希铁石z 发表"
     assert post.url == "https://www.mcbbs.net/thread-1340927-1-1.html"
-    assert post.target_name == "Java版本资讯"
+    assert post.target_name == "Java版资讯"
 
 
 @pytest.mark.asyncio

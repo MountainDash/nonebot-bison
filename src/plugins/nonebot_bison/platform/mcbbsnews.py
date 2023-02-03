@@ -11,7 +11,7 @@ from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Target
 from ..utils import SchedulerConfig, http_client
-from .platform import CategoryNotSupport, NewMessage
+from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage
 
 
 class McbbsnewsSchedConf(SchedulerConfig):
@@ -22,11 +22,13 @@ class McbbsnewsSchedConf(SchedulerConfig):
 
 class McbbsNews(NewMessage):
     categories: dict[int, str] = {
-        1: "Java版本资讯",
-        2: "基岩版本资讯",
-        3: "快讯",
-        4: "基岩快讯",
-        5: "周边消息",
+        1: "Java版资讯",
+        2: "基岩版资讯",
+        3: "块讯",
+        4: "基岩块讯",
+        5: "周边",
+        6: "主机",
+        7: "时评",
     }
     enable_tag: bool = False
     platform_name: str = "mcbbsnews"
@@ -35,6 +37,16 @@ class McbbsNews(NewMessage):
     is_common: bool = False
     scheduler = McbbsnewsSchedConf
     has_target: bool = False
+
+    _known_cats: dict[int, str] = {
+        1: "Java版资讯",
+        2: "基岩版资讯",
+        3: "块讯",
+        4: "基岩块讯",
+        5: "周边",
+        6: "主机",
+        7: "时评",
+    }
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str:
@@ -118,19 +130,18 @@ class McbbsNews(NewMessage):
         categoty_name = post["category"]
         category_keys = list(self.categories.keys())
         category_values = list(self.categories.values())
+        known_category_values = list(self._known_cats.values())
 
         if categoty_name in category_values:
             category_id = category_keys[category_values.index(categoty_name)]
+        elif categoty_name in known_category_values:
+            raise CategoryNotSupport("McbbsNews订阅暂不支持 {}".format(categoty_name))
         else:
-            raise CategoryNotSupport("McbbsNews订阅暂不支持: {}".format(categoty_name))
-
+            raise CategoryNotRecognize("Mcbbsnews订阅尚未识别 {}".format(categoty_name))
         return category_id
 
     async def parse(self, post: RawPost) -> Post:
         """获取并分配正式推文交由相应的函数渲染"""
-        if post["category"] not in self.categories.values():
-            raise CategoryNotSupport("McbbsNews订阅暂不支持 `{}".format(post["category"]))
-
         post_url = "https://www.mcbbs.net/{}".format(post["url"])
         async with http_client() as client:
             html = await client.get(post_url)

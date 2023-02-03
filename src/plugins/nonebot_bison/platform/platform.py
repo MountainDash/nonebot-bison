@@ -18,7 +18,11 @@ from ..utils import ProcessContext, SchedulerConfig
 
 
 class CategoryNotSupport(Exception):
-    "raise in get_category, when post category is not supported"
+    "raise in get_category, when you know the category of the post but don't want to support it or don't support its parsing yet"
+
+
+class CategoryNotRecognize(Exception):
+    "raise in get_category, when you don't know the category of post"
 
 
 class RegistryMeta(type):
@@ -181,8 +185,9 @@ class Platform(metaclass=PlatformABCMeta, base=True):
                 if cats and cat not in cats:
                     continue
             if self.enable_tag and tags:
-                if self.is_banned_post(
-                    self.get_tags(raw_post), *self.tag_separator(tags)
+                raw_post_tags = self.get_tags(raw_post)
+                if isinstance(raw_post_tags, Collection) and self.is_banned_post(
+                    raw_post_tags, *self.tag_separator(tags)
                 ):
                     continue
             res.append(raw_post)
@@ -255,7 +260,11 @@ class MessageProcess(Platform, abstract=True):
                 continue
             try:
                 self.get_category(raw_post)
-            except CategoryNotSupport:
+            except CategoryNotSupport as e:
+                logger.info("未支持解析的推文类别：" + repr(e) + "，忽略")
+                continue
+            except CategoryNotRecognize as e:
+                logger.warning("未知推文类别：" + repr(e))
                 msgs = self.ctx.gen_req_records()
                 for m in msgs:
                     logger.warning(m)

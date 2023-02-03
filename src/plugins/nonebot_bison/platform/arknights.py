@@ -8,7 +8,7 @@ from nonebot.plugin import require
 from ..post import Post
 from ..types import Category, RawPost, Target
 from ..utils.scheduler_config import SchedulerConfig
-from .platform import CategoryNotSupport, NewMessage, StatusChange
+from .platform import CategoryNotRecognize, NewMessage, StatusChange
 
 
 class ArknightsSchedConf(SchedulerConfig):
@@ -79,7 +79,7 @@ class Arknights(NewMessage):
         elif pic := soup.find("img", class_="banner-image"):
             pics.append(pic["src"])  # type: ignore
         else:
-            raise CategoryNotSupport()
+            raise CategoryNotRecognize("未找到可渲染部分")
         return Post(
             "arknights",
             text=text,

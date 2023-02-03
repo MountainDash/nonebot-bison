@@ -10,6 +10,7 @@
 
 ### 新功能
 
+- 适配 Nonebot 插件元数据 [@he0119](https://github.com/he0119) ([#184](https://github.com/felinae98/nonebot-bison/pull/184))
 - 支持连接多个机器人 [@he0119](https://github.com/he0119) ([#179](https://github.com/felinae98/nonebot-bison/pull/179))
 
 ### Bug 修复

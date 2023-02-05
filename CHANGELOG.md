@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- 使用更加简约的方法生成mcbbsnews的推送,修改测试用例 [@AzideCupric](https://github.com/AzideCupric) ([#170](https://github.com/felinae98/nonebot-bison/pull/170))
 - feat(workflow pytest): 添加打上test-render的标签后进行带render标记测试的功能 [@AzideCupric](https://github.com/AzideCupric) ([#176](https://github.com/felinae98/nonebot-bison/pull/176))
 
 ### 破坏性变更

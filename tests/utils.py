@@ -1,4 +1,3 @@
-from ast import Str
 from typing import TYPE_CHECKING
 
 from typing_extensions import Literal
@@ -132,7 +131,7 @@ class BotReply:
         return "添加 {} 成功".format(name)
 
     @staticmethod
-    def add_reply_on_id(platform: object) -> Str:
+    def add_reply_on_id(platform: object) -> str:
         base_text = "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         extra_text = (
             ("1." + platform.parse_target_promot + "\n2.")

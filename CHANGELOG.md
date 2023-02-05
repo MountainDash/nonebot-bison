@@ -1,6 +1,6 @@
 # Change Log
 
-## 最近更新
+## v0.7.0
 
 - feat(workflow pytest): 添加打上test-render的标签后进行带render标记测试的功能 [@AzideCupric](https://github.com/AzideCupric) ([#176](https://github.com/felinae98/nonebot-bison/pull/176))
 

@@ -12,7 +12,7 @@ from typing_extensions import Self
 from ..post import Post
 from ..types import ApiError, Category, RawPost, Tag, Target
 from ..utils import SchedulerConfig
-from .platform import CategoryNotSupport, NewMessage, StatusChange
+from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
 
 
 class BilibiliSchedConf(SchedulerConfig):
@@ -121,7 +121,7 @@ class Bilibili(NewMessage):
         elif post_type == 1:
             # 转发
             return Category(5)
-        raise CategoryNotSupport()
+        raise CategoryNotRecognize(post_type)
 
     def get_category(self, post: RawPost) -> Category:
         post_type = post["desc"]["type"]
@@ -153,7 +153,7 @@ class Bilibili(NewMessage):
             text = card["item"]["content"]
             pic = []
         else:
-            raise CategoryNotSupport()
+            raise CategoryNotSupport(post_type)
         return text, pic
 
     async def parse(self, raw_post: RawPost) -> Post:

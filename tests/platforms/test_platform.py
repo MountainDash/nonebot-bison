@@ -199,7 +199,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
         def get_category(self, raw_post: "RawPost") -> "Category":
             if raw_post["category"] == 3:
-                raise CategoryNotSupport()
+                raise CategoryNotSupport(raw_post["category"])
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":

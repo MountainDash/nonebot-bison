@@ -1,7 +1,12 @@
+import asyncio
+import typing
+
 import pytest
 from flaky import flaky
-from nonebot.adapters.onebot.v11.message import Message
 from nonebug import App
+
+if typing.TYPE_CHECKING:
+    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
 
 @pytest.mark.asyncio
@@ -29,46 +34,48 @@ async def test_send_no_queue(app: App):
         assert ctx.wait_list.empty()
 
 
-@flaky
 @pytest.mark.asyncio
+@pytest.mark.parametrize("nonebug_init", [{"bison_use_queue": True}], indirect=True)
 async def test_send_queue(app: App):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
     from nonebot_bison import send
-    from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.send import do_send_msgs, send_msgs
+    from nonebot_bison.send import MESSGE_SEND_INTERVAL, do_send_msgs, send_msgs
 
     async with app.test_api() as ctx:
         new_bot = ctx.create_bot(base=Bot)
         app.monkeypatch.setattr(nonebot, "get_bot", lambda: new_bot, True)
-        app.monkeypatch.setattr(plugin_config, "bison_use_queue", True, True)
         bot = nonebot.get_bot()
         assert isinstance(bot, Bot)
         assert bot == new_bot
-        ctx.should_call_api(
-            "send_group_msg", {"group_id": "1233", "message": "test msg"}, True
-        )
-        await bot.call_api("send_group_msg", group_id="1233", message="test msg")
-        await send_msgs(bot, "1233", "group", [Message("msg")])
         ctx.should_call_api(
             "send_group_msg",
             {"group_id": "1233", "message": [MessageSegment.text("msg")]},
             True,
         )
-        await do_send_msgs()
+        ctx.should_call_api(
+            "send_group_msg",
+            {"group_id": "1233", "message": [MessageSegment.text("msg2")]},
+            True,
+        )
+        await send_msgs(bot, "1233", "group", [Message("msg")])
+        await send_msgs(bot, "1233", "group", [Message("msg2")])
         assert not ctx.wait_list.empty()
-        app.monkeypatch.setattr(send, "LAST_SEND_TIME", 0, True)
-        await do_send_msgs()
+        await asyncio.sleep(2 * MESSGE_SEND_INTERVAL)
         assert ctx.wait_list.empty()
 
 
-def gen_node(id, name, content: Message):
-    return {"type": "node", "data": {"name": name, "uin": id, "content": content}}
+def gen_node(id, name, content: "Message"):
+    from nonebot.adapters.onebot.v11.message import MessageSegment
+
+    return MessageSegment.node_custom(id, name, content)
 
 
 def _merge_messge(nodes):
-    return nodes
+    from nonebot.adapters.onebot.v11.message import Message
+
+    return Message(nodes)
 
 
 @pytest.mark.asyncio

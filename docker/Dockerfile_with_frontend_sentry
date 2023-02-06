@@ -22,7 +22,7 @@ WORKDIR /src
 
 COPY pyproject.toml poetry.lock /src/
 
-RUN poetry add fastapi nonebot-plugin-sentry && \
+RUN poetry add "nonebot2[fastapi]" nonebot-plugin-sentry && \
     poetry export --without-hashes --no-interaction --no-ansi -f requirements.txt -o requirements.txt
 RUN pip install --prefix=/runtime --force-reinstall -r requirements.txt
 

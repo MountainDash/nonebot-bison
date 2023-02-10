@@ -1,6 +1,6 @@
-import pickle
 import random
-from datetime import datetime
+import re
+from datetime import datetime, timedelta, timezone
 from json import JSONEncoder
 from typing import Any, Collection, Literal, Optional, Union
 
@@ -20,6 +20,7 @@ class TwitterSchedConf(SchedulerConfig):
 
 
 class TwitterUtils:
+    # 获取 Twitter 访问 session 需要的字段
     _cookie = None
     _authorization = "Bearer AAAAAAAAAAAAAAAAAAAAAPYXBAAAAAAACLXUNDekMxqa8h%2F40K4moUkGsoc%3DTYfbDKbT3jJPCEVnMYqilB28NHfOPqkca3qaAxGfsyKCs0wRbw"
     _header: dict[str, str] = {
@@ -29,6 +30,7 @@ class TwitterUtils:
         "Referer": "https://twitter.com/",
     }
 
+    # 构建 Twitter GraphQL 请求时需要的变量
     _variables: dict[str, Any] = {
         "count": 20,
         "includePromotedContent": False,
@@ -48,6 +50,7 @@ class TwitterUtils:
 
     @classmethod
     async def get_user(cls, client: AsyncClient, target: Target) -> Response:
+        """通过用户名获取用户数据"""
         return await cls.request(
             client,
             "https://twitter.com/i/api/graphql/hc-pka9A7gyS3xODIafnrQ/UserByScreenName",
@@ -57,6 +60,7 @@ class TwitterUtils:
 
     @classmethod
     async def get_user_id(cls, client: AsyncClient, target: Target) -> int:
+        """通过用户名获取用户 ID"""
         result = (await cls.get_user(client, target)).json()
         user_id = result["data"]["user"]["rest_id"]
         if isinstance(user_id, str):
@@ -66,6 +70,9 @@ class TwitterUtils:
 
     @classmethod
     async def gather_legacy_from_data(cls, entries, filters: str = "tweet-") -> list:
+        """将必要字段加入 legacy 版本，并返回 legacy 数据
+        ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-api.js
+        """
         tweets = list()
         for entry in entries:
             if entry["entryId"] and filters in entry["entryId"]:
@@ -106,7 +113,7 @@ class TwitterUtils:
     async def timeline_tweets_and_replies(
         cls, client: AsyncClient, user_id: int, params: dict[str, Any] = None
     ):
-        """使用全部（含回复）的版本"""
+        """返回用户最新的 count=20 条推文（含回复）"""
         if not params:
             params = {}
         return await cls.pagination_tweets(
@@ -116,11 +123,13 @@ class TwitterUtils:
             params | {"withCommunity": True},
         )
 
-    # ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-api.js
     @classmethod
     async def pagination_tweets(
         cls, client: AsyncClient, endpoint: str, user_id: int, variables: dict[str, Any]
     ):
+        """
+        ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-api.js
+        """
         resp = await cls.request(
             client,
             f"https://twitter.com/i/api{endpoint}",
@@ -135,7 +144,6 @@ class TwitterUtils:
                 assert isinstance(entries, list)
                 return entries
 
-    # ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-got.js
     @classmethod
     async def request(
         cls,
@@ -144,6 +152,9 @@ class TwitterUtils:
         method: str = "GET",
         params: dict[str, str] = None,
     ) -> Response:
+        """包装了异常或初始化时重置 session 的请求函数
+        ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-got.js
+        """
         await cls.reset_session(client)
         resp = await cls.got(client, url, method, params=params)
         if resp.status_code == 403:
@@ -154,6 +165,7 @@ class TwitterUtils:
 
     @classmethod
     async def reset_session(cls, client: AsyncClient, force: bool = False):
+        """重置访问 Twitter 的 session"""
         if cls._cookie and not force:
             return
         csrf_token = hex(random.getrandbits(128))[2:]
@@ -186,6 +198,7 @@ class TwitterUtils:
         params: dict[str, str] = None,
         headers: dict[str, str] = None,
     ) -> Response:
+        """核心请求函数"""
         full_headers = cls._header | (headers if headers else {})
         cookies = cls._cookie
         resp = await client.request(
@@ -199,11 +212,14 @@ class TwitterUtils:
 
     @classmethod
     def make_variables(cls, params: dict[str, Any]) -> dict[str, str]:
+        """构建 GraphQL 请求参数"""
         return {"variables": cls.encode(params)}
 
-    # ref: https://github.com/mikf/gallery-dl/blob/8805bd38ab41dcbb6aba9799008fcb9363f1c0f5/gallery_dl/extractor/twitter.py#L1039
     @classmethod
     def encode(cls, params: dict[str, Any]) -> str:
+        """JSON 格式化函数
+        ref: https://github.com/mikf/gallery-dl/blob/8805bd38ab41dcbb6aba9799008fcb9363f1c0f5/gallery_dl/extractor/twitter.py#L1039
+        """
         return JSONEncoder(separators=(",", ":")).encode(params)
 
     @classmethod
@@ -290,6 +306,17 @@ class Twitter(NewMessage):
         assert isinstance(nickname, str)
         return nickname
 
+    @classmethod
+    async def parse_target(cls, target_string: str) -> Target:
+        if "twitter.com/i/" in target_string:
+            raise cls.ParseTargetException("暂不支持通过 id 获取用户名")
+        if m := re.match(
+            r"(?:https?://)?(?:.*\.)?twitter\.com/([a-zA-Z0-9_]+)(?:/.*)?",
+            target_string,
+        ):
+            return Target(m.group(1))
+        return Target(target_string)
+
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         user_id = await TwitterUtils.get_user_id(self.client, target)
         results = await TwitterUtils.gather_legacy_from_data(
@@ -303,7 +330,9 @@ class Twitter(NewMessage):
     def get_date(self, raw_post: RawPost) -> float:
         # 'Wed Feb 08 13:20:10 +0000 2023'
         created_raw = raw_post["created_at"]
-        created_time = datetime.strptime(created_raw, "%a %b %d %H:%M:%S +0000 %Y")
+        created_time = datetime.strptime(
+            created_raw, "%a %b %d %H:%M:%S +0000 %Y"
+        ).replace(tzinfo=timezone(timedelta(0)))
         return created_time.timestamp()
 
     async def parse(self, raw_post: RawPost) -> Post:
@@ -347,9 +376,8 @@ class Twitter(NewMessage):
                 # TODO: 增加对 Animated GIF 与 Video 的支持
                 if item["type"] != "photo":
                     continue
-                media = await self.client.get(item["media_url_https"])
-                media.raise_for_status()
-                images.append(media.content)
+                media_url = item["media_url_https"]
+                images.append(media_url)
 
         return Post(
             "twitter", text=template, url=url, pics=images, target_name=screen_name

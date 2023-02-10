@@ -145,9 +145,28 @@ async def test_fetch_new(
     result = await twitter.fetch_new_post(target, [dummy_user_subinfo])
     assert len(result) == 0
 
+    # Quote
+    pointer = mock_json["data"]["user"]["result"]["timeline"]["timeline"][
+        "instructions"
+    ][1]["entries"][3]["content"]["itemContent"]["tweet_results"]["result"]["legacy"]
+    pointer["created_at"] = datetime.now(timezone(timedelta(0))).strftime(
+        "%a %b %d %H:%M:%S %z %Y"
+    )
+    pointer["id_str"] = str(int(pointer["id_str"]) + 1)
+
+    # Original
     pointer = mock_json["data"]["user"]["result"]["timeline"]["timeline"][
         "instructions"
     ][1]["entries"][4]["content"]["itemContent"]["tweet_results"]["result"]["legacy"]
+    pointer["created_at"] = datetime.now(timezone(timedelta(0))).strftime(
+        "%a %b %d %H:%M:%S %z %Y"
+    )
+    pointer["id_str"] = str(int(pointer["id_str"]) + 1)
+
+    # Retweet
+    pointer = mock_json["data"]["user"]["result"]["timeline"]["timeline"][
+        "instructions"
+    ][1]["entries"][5]["content"]["itemContent"]["tweet_results"]["result"]["legacy"]
     pointer["created_at"] = datetime.now(timezone(timedelta(0))).strftime(
         "%a %b %d %H:%M:%S %z %Y"
     )
@@ -157,15 +176,54 @@ async def test_fetch_new(
     result = await twitter.fetch_new_post(target, [dummy_user_subinfo])
     assert len(result) == 1
 
-    post = result[0][1][0]
-    assert post.target_type == "twitter"
+    post = result[0][1]
+    for p in post:
+        assert p.target_type == "twitter"
+        assert p.target_name == "コトブキヤきなこ【公式】"
+
+    p = post[0]
     assert (
-        post.text
+        p.text
+        == """【#にじさんじ コトブキヤショップ】『2023年1月デビューライバーWelcome Goods』の発売日が決定！3月4日から販売開始！ランダムチェキ風カードがお1人様20点まで、それ以外の商品は各3点までご購入いただけます #倉持めると #ソフィア・ヴァレンタイン #五十嵐梨花 #鏑木ろこ #獅子堂あかり #小清水透
+RT @にじさんじ公式🌈🕒:
+【#にじさんじ 新規デビューライバーWelcome Goods＆Voice登場！】
+
+#にじストア にて、小清水透、獅子堂あかり、鏑木ろこ、五十嵐梨花、石神のぞみ、ソフィア・ヴァレンタイン、倉持めるとの
+「Welcome Goods＆Voice」が発売決定！
+
+1/19(木)22:00から順次発売開始！
+
+詳細▽
+https://prtimes.jp/main/html/rd/p/000000549.000030865.html"""
+    )
+    assert p.url == "https://twitter.com/i/web/status/1623955176112496643"
+    assert len(p.pics) == 1
+
+    p = post[1]
+    assert (
+        p.text
         == "【#にじさんじ コトブキヤショップ】『にじさんじバレンタイン2023』の描き下ろしイラストを使った等身大パネルが2/14～3/20の期間中各店で展示されます！フチをカットした特別仕様となっております。この機会に是非ご来店ください！#愛園愛美 #海妹四葉 #笹木咲 #西園チグサ #町田ちま"
     )
-    assert post.url == "https://twitter.com/i/web/status/1623954931911913474"
-    assert post.target_name == "コトブキヤきなこ【公式】"
-    assert len(post.pics) == 2
+    assert p.url == "https://twitter.com/i/web/status/1623954931911913474"
+    assert len(p.pics) == 2
+
+    p = post[2]
+    assert (
+        p.text
+        == """RT @コトブキヤくじ:
+【販売終了まであと5日！】
+A賞は、「フラノ―ルの雪ウサギ」をモチーフにしたぬいぐるみ！ 
+ここでしか買えない限定品のため、ぜひ期日までのご購入をお忘れなく！
+
+販売期限：2023/2/12(日)まで
+
+▼ご購入はこちら
+https://kuji.kotobukiya.co.jp/lp/tos20th/?utm_source=twitter&utm_medium=social&utm_campaign=230207
+
+#テイルズ #TOSR #コトブキヤくじ"""
+    )
+    assert p.url == "https://twitter.com/i/web/status/1623895955241332737"
+    assert len(p.pics) == 1
 
 
 @pytest.mark.asyncio

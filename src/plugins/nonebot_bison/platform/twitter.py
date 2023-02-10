@@ -359,6 +359,7 @@ class Twitter(NewMessage):
         if tweet_type == "retweet":
             # 暂时不处理 retweet 为 quote 情况下的多层套娃引用
             retweet = raw_post["retweeted_status"]
+            media_pointers.append(retweet)
             template = get_parsed_text(retweet, need_quote=True)
 
         elif tweet_type == "quote":
@@ -377,7 +378,9 @@ class Twitter(NewMessage):
                 if item["type"] != "photo":
                     continue
                 media_url = item["media_url_https"]
-                images.append(media_url)
+                # Twitter 的 retweet 媒体字段保留机制不明，有时转发时仅根目录字段带图，有时转发条目也带图，故查重判断
+                if media_url not in images:
+                    images.append(media_url)
 
         return Post(
             "twitter", text=template, url=url, pics=images, target_name=screen_name

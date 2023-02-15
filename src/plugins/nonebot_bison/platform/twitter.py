@@ -21,7 +21,9 @@ class TwitterSchedConf(SchedulerConfig):
 
 class TwitterUtils:
     # 获取 Twitter 访问 session 需要的字段
+    # ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-got.js
     _cookie = None
+    # The hard-coded token can be traced back to https://github.com/ytdl-org/youtube-dl/commit/b6b2ccb72fb7da7563078d4bf047d1622ba89553 yet no other explanation
     _authorization = "Bearer AAAAAAAAAAAAAAAAAAAAAPYXBAAAAAAACLXUNDekMxqa8h%2F40K4moUkGsoc%3DTYfbDKbT3jJPCEVnMYqilB28NHfOPqkca3qaAxGfsyKCs0wRbw"
     _header: dict[str, str] = {
         "authorization": _authorization,
@@ -156,10 +158,10 @@ class TwitterUtils:
         ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-got.js
         """
         await cls.reset_session(client)
-        resp = await cls.got(client, url, method, params=params)
+        resp = await cls.raw_request(client, url, method, params=params)
         if resp.status_code == 403:
             await cls.reset_session(client, force=True)
-            resp = await cls.got(client, url, method, params=params)
+            resp = await cls.raw_request(client, url, method, params=params)
         resp.raise_for_status()
         return resp
 
@@ -174,7 +176,7 @@ class TwitterUtils:
         cls._header["x-csrf-token"] = csrf_token
 
         # First request to get guest-token
-        resp = await cls.got(
+        resp = await cls.raw_request(
             client, "https://api.twitter.com/1.1/guest/activate.json", "POST"
         )
         resp.raise_for_status()
@@ -184,13 +186,13 @@ class TwitterUtils:
 
         # Second request to get _twitter_sess
         (
-            await cls.got(
+            await cls.raw_request(
                 client, "https://twitter.com/i/js_inst", "GET", {"c_name": "ui_metrics"}
             )
         ).raise_for_status()
 
     @classmethod
-    async def got(
+    async def raw_request(
         cls,
         client: AsyncClient,
         url: str,

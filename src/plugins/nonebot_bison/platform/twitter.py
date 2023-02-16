@@ -1,15 +1,15 @@
+import functools
 import random
 import re
 from datetime import datetime, timedelta, timezone
 from json import JSONEncoder
 from typing import Any, Collection, Literal, Optional, Union
 
-import httpx
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, Cookies, HTTPStatusError, Response
 
 from ..post import Post
-from ..types import Category, RawPost, Tag, Target
-from ..utils import SchedulerConfig
+from ..types import ApiError, Category, RawPost, Tag, Target
+from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage
 
 
@@ -18,11 +18,8 @@ class TwitterSchedConf(SchedulerConfig):
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
 
-
-class TwitterUtils:
     # 获取 Twitter 访问 session 需要的字段
     # ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-got.js
-    _cookie = None
     # The hard-coded token can be traced back to https://github.com/ytdl-org/youtube-dl/commit/b6b2ccb72fb7da7563078d4bf047d1622ba89553 yet no other explanation
     _authorization = "Bearer AAAAAAAAAAAAAAAAAAAAAPYXBAAAAAAACLXUNDekMxqa8h%2F40K4moUkGsoc%3DTYfbDKbT3jJPCEVnMYqilB28NHfOPqkca3qaAxGfsyKCs0wRbw"
     _header: dict[str, str] = {
@@ -32,6 +29,66 @@ class TwitterUtils:
         "Referer": "https://twitter.com/",
     }
 
+    def __init__(self):
+        super().__init__()
+        self.default_http_client: AsyncClient = functools.partial(
+            http_client, headers=self._header
+        )()
+
+    @classmethod
+    async def refresh_client(cls, client: AsyncClient):
+        """重置访问 Twitter 的 session"""
+        # Avoid cookies conflict
+        client.cookies.clear()
+
+        csrf_token = hex(random.getrandbits(128))[2:]
+        client.cookies.set(name="ct0", value=csrf_token, domain="twitter.com")
+        client.headers["x-csrf-token"] = csrf_token
+
+        # First request to get guest-token
+        resp = await TwitterUtils.raw_request(
+            client, "https://api.twitter.com/1.1/guest/activate.json", "POST"
+        )
+        resp.raise_for_status()
+        guest_token = resp.json()["guest_token"]
+        client.headers["x-guest-token"] = guest_token
+        client.cookies.set(name="gt", value=guest_token, domain="twitter.com")
+
+        # Second request to get _twitter_sess
+        (
+            await TwitterUtils.raw_request(
+                client, "https://twitter.com/i/js_inst", "GET", {"c_name": "ui_metrics"}
+            )
+        ).raise_for_status()
+
+    @staticmethod
+    def session_handler(func):
+        """处理 session 重置问题的装饰器，若 403 则刷新并重试一次"""
+
+        async def request_function(*args, **kwargs):
+            try:
+                return await func(*args, **kwargs)
+            except HTTPStatusError as exc:
+                if exc.response.status_code == 403:
+                    client = args[1] or kwargs["client"]
+                    assert isinstance(client, AsyncClient)
+                    await TwitterSchedConf.refresh_client(client)
+                    return await func(*args, **kwargs)
+                else:
+                    raise exc
+
+        return request_function
+
+    async def get_client(self, target: Target) -> AsyncClient:
+        await self.refresh_client(self.default_http_client)
+        return await super().get_client(target)
+
+    async def get_query_name_client(self) -> AsyncClient:
+        await self.refresh_client(self.default_http_client)
+        return await super().get_query_name_client()
+
+
+class TwitterUtils:
     # 构建 Twitter GraphQL 请求时需要的变量
     _variables: dict[str, Any] = {
         "count": 20,
@@ -139,14 +196,20 @@ class TwitterUtils:
             cls.make_variables(variables | cls._variables | {"userId": user_id}),
         )
         data = resp.json()
-        inst = data["data"]["user"]["result"]["timeline"]["timeline"]["instructions"]
-        for i in inst:
-            if i["type"] == "TimelineAddEntries":
-                entries = i["entries"]
-                assert isinstance(entries, list)
-                return entries
+        try:
+            inst = data["data"]["user"]["result"]["timeline"]["timeline"][
+                "instructions"
+            ]
+            for i in inst:
+                if i["type"] == "TimelineAddEntries":
+                    entries = i["entries"]
+                    assert isinstance(entries, list)
+                    return entries
+        except KeyError:
+            raise ApiError(resp.url)
 
     @classmethod
+    @TwitterSchedConf.session_handler
     async def request(
         cls,
         client: AsyncClient,
@@ -155,41 +218,12 @@ class TwitterUtils:
         params: dict[str, str] = None,
     ) -> Response:
         """包装了异常或初始化时重置 session 的请求函数
+        EAFP, only refresh the client when error occured
         ref: https://github.com/DIYgod/RSSHub/blob/master/lib/v2/twitter/web-api/twitter-got.js
         """
-        await cls.reset_session(client)
         resp = await cls.raw_request(client, url, method, params=params)
-        if resp.status_code == 403:
-            await cls.reset_session(client, force=True)
-            resp = await cls.raw_request(client, url, method, params=params)
         resp.raise_for_status()
         return resp
-
-    @classmethod
-    async def reset_session(cls, client: AsyncClient, force: bool = False):
-        """重置访问 Twitter 的 session"""
-        if cls._cookie and not force:
-            return
-        csrf_token = hex(random.getrandbits(128))[2:]
-        cls._cookie = httpx.Cookies()
-        cls._cookie.set(name="ct0", value=csrf_token, domain="twitter.com")
-        cls._header["x-csrf-token"] = csrf_token
-
-        # First request to get guest-token
-        resp = await cls.raw_request(
-            client, "https://api.twitter.com/1.1/guest/activate.json", "POST"
-        )
-        resp.raise_for_status()
-        guest_token = resp.json()["guest_token"]
-        cls._header["x-guest-token"] = guest_token
-        cls._cookie.set(name="gt", value=guest_token, domain="twitter.com")
-
-        # Second request to get _twitter_sess
-        (
-            await cls.raw_request(
-                client, "https://twitter.com/i/js_inst", "GET", {"c_name": "ui_metrics"}
-            )
-        ).raise_for_status()
 
     @classmethod
     async def raw_request(
@@ -199,17 +233,16 @@ class TwitterUtils:
         method: str,
         params: dict[str, str] = None,
         headers: dict[str, str] = None,
+        cookies: Cookies = None,
     ) -> Response:
         """核心请求函数"""
-        full_headers = cls._header | (headers if headers else {})
-        cookies = cls._cookie
         resp = await client.request(
-            method, url, params=params, headers=full_headers, cookies=cookies
+            method, url, params=params, headers=headers, cookies=cookies
         )
-        cls._cookie.update(resp.cookies)
+
         csrf_token = resp.cookies.get("ct0")
         if csrf_token:
-            cls._header["x-csrf-token"] = csrf_token
+            client.headers["x-csrf-token"] = csrf_token
         return resp
 
     @classmethod
@@ -302,11 +335,15 @@ class Twitter(NewMessage):
     async def get_target_name(
         cls, client: AsyncClient, target: Target
     ) -> Optional[str]:
-        result = (await TwitterUtils.get_user(client, target)).json()
-        user_info = result["data"]["user"]["legacy"]
-        nickname = user_info["name"]
-        assert isinstance(nickname, str)
-        return nickname
+        resp = await TwitterUtils.get_user(client, target)
+        result = resp.json()
+        try:
+            user_info = result["data"]["user"]["legacy"]
+            nickname = user_info["name"]
+            assert isinstance(nickname, str)
+            return nickname
+        except KeyError:
+            raise ApiError(resp.url)
 
     @classmethod
     async def parse_target(cls, target_string: str) -> Target:

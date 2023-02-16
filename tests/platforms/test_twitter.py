@@ -1,22 +1,42 @@
 from typing import TYPE_CHECKING
 
+import httpx
 import pytest
 import respx
 from nonebug import App
 
 if TYPE_CHECKING:
-    from nonebot_bison.platform.twitter import Twitter
+    from nonebot_bison.platform.twitter import Twitter, TwitterSchedConf
     from nonebot_bison.types import Target, UserSubInfo
 
 
 @pytest.fixture
-def twitter(app: App) -> "Twitter":
-    from httpx import AsyncClient
+def target() -> "Target":
+    """获取 Twitter 用户名"""
+    from nonebot_bison.types import Target
+
+    return Target("Test")
+
+
+@pytest.fixture
+def twitter_scheduler() -> "TwitterSchedConf":
+    from nonebot_bison.platform.twitter import TwitterSchedConf
+
+    return TwitterSchedConf()
+
+
+@pytest.mark.asyncio
+@pytest.fixture
+async def twitter(
+    app: App, twitter_scheduler: "TwitterSchedConf", target: "Target"
+) -> "Twitter":
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.twitter import Twitter
     from nonebot_bison.utils import ProcessContext
 
-    _twitter = platform_manager["twitter"](ProcessContext(), AsyncClient())
+    _twitter = platform_manager["twitter"](
+        ProcessContext(), await twitter_scheduler.get_client(target)
+    )
     assert isinstance(_twitter, Twitter)
     return _twitter
 
@@ -81,25 +101,16 @@ def twitter_get_tweet_list():
     post_router.mock(return_value=Response(200, json=mock_json))
 
 
-@pytest.fixture()
-def target() -> "Target":
-    """获取 Twitter 用户名"""
-    from nonebot_bison.types import Target
-
-    return Target("Test")
-
-
 @pytest.mark.asyncio
 @respx.mock
 async def test_session_initial(twitter: "Twitter"):
     """测试能否获取 Twitter 的访问 session"""
-    from nonebot_bison.platform.twitter import TwitterUtils
+    from nonebot_bison.platform.twitter import TwitterSchedConf
 
-    await TwitterUtils.reset_session(twitter.client, force=True)
-    assert TwitterUtils._header["x-csrf-token"] is not None
-    assert TwitterUtils._header["x-guest-token"] is not None
-    assert TwitterUtils._cookie is not None
-    assert TwitterUtils._cookie["_twitter_sess"] is not None
+    await TwitterSchedConf.refresh_client(twitter.client)
+    assert twitter.client.headers["x-csrf-token"] is not None
+    assert twitter.client.headers["x-guest-token"] is not None
+    assert twitter.client.cookies["_twitter_sess"] is not None
 
 
 @pytest.mark.asyncio
@@ -112,12 +123,54 @@ async def test_get_target_name(twitter: "Twitter", target: "Target"):
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_invoke_client_refresh(twitter: "Twitter", target: "Target"):
+    """测试 403 错误能否触发装饰器，保证 session 重置"""
+    from httpx import Response
+
+    from tests.platforms.utils import get_json
+
+    user_by_screen_name_router = respx.get(
+        "https://twitter.com/i/api/graphql/hc-pka9A7gyS3xODIafnrQ/UserByScreenName"
+    )
+
+    # 404，直接报错
+    user_by_screen_name_router.mock(
+        side_effect=[
+            Response(404),
+            Response(200, json=get_json("twitter/twitter_user.json")),
+        ]
+    )
+    with pytest.raises(httpx.HTTPStatusError):
+        await twitter.get_target_name(twitter.client, target)
+
+    # 403，一次不报错
+    user_by_screen_name_router.mock(
+        side_effect=[
+            Response(403),
+            Response(200, json=get_json("twitter/twitter_user.json")),
+        ]
+    )
+    await twitter.get_target_name(twitter.client, target)
+
+    # 403，两次以上报错
+    user_by_screen_name_router.mock(
+        side_effect=[
+            Response(403),
+            Response(403),
+            Response(200, json=get_json("twitter/twitter_user.json")),
+        ]
+    )
+    with pytest.raises(httpx.HTTPStatusError):
+        await twitter.get_target_name(twitter.client, target)
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_get_user_id(twitter: "Twitter", target: "Target"):
     """测试能够请求用户数据得到用户 ID"""
-    from httpx import AsyncClient
     from nonebot_bison.platform.twitter import TwitterUtils
 
-    user_id = await TwitterUtils.get_user_id(AsyncClient(), target)
+    user_id = await TwitterUtils.get_user_id(twitter.client, target)
     assert user_id == 84696166
 
 
@@ -128,13 +181,10 @@ async def test_fetch_new(
 ):
     """测试推文列表的差异比对，修改了其中一则条目"""
     from datetime import datetime, timedelta, timezone
-    from pathlib import Path
 
     from httpx import Response
 
-    from tests.platforms.utils import get_file, get_json
-
-    path = Path(__file__).parent / "static"
+    from tests.platforms.utils import get_json
 
     mock_json = get_json("twitter/twitter_tweet_list.json")
     post_router = respx.get(

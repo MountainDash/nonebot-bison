@@ -182,7 +182,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         if not platform_manager[state["platform"]].enable_tag:
             state["tags"] = []
             return
-        state["_prompt"] = '请输入要订阅/屏蔽的tag(不含#号)\n多个tag请使用空格隔开\n具体规则回复"详情"'
+        state["_prompt"] = '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
 
     async def parser_tags(event: MessageEvent, state: T_State):
         if not isinstance(state["tags"], Message):
@@ -191,9 +191,9 @@ def do_add_sub(add_sub: Type[Matcher]):
             await add_sub.finish("已中止订阅")
         if str(event.get_message()).strip() == "详情":
             await add_sub.reject(
-                '订阅tag直接输入tag内容\n订阅所有tag输入"全部标签"\n屏蔽tag请在tag名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#平台订阅标签-tag'
+                "订阅标签直接输入标签内容\n屏蔽标签请在标签名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#%E5%B9%B3%E5%8F%B0%E8%AE%A2%E9%98%85%E6%A0%87%E7%AD%BE-tag"
             )
-        if str(event.get_message()).strip() == "全部标签":
+        if str(event.get_message()).strip() in ["全部标签", "全部", "全标签"]:
             state["tags"] = []
         else:
             state["tags"] = str(event.get_message()).strip().split()

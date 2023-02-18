@@ -70,7 +70,7 @@ def init():
 if (STATIC_PATH / "index.html").exists():
     init()
 
-    get_token = on_command("后台管理", rule=to_me(), priority=5)
+    get_token = on_command("后台管理", rule=to_me(), priority=5, aliases={"管理后台"})
 
     @get_token.handle()
     async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):

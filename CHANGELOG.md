@@ -4,6 +4,7 @@
 
 ### 新功能
 
+- 调整群内订阅命令回复文本的位置，为`后台管理`命令添加别名`管理后台` [@AzideCupric](https://github.com/AzideCupric) ([#198](https://github.com/felinae98/nonebot-bison/pull/198))
 - 解决使用队列发送时产生大量日志的问题 [@felinae98](https://github.com/felinae98) ([#185](https://github.com/felinae98/nonebot-bison/pull/185))
 
 ## v0.7.0

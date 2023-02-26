@@ -1,5 +1,3 @@
-import asyncio
-import typing
 from pathlib import Path
 
 import nonebot
@@ -10,8 +8,10 @@ from sqlalchemy.sql.expression import delete
 
 
 @pytest.fixture
-async def app(nonebug_init: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    import nonebot
+async def app(nonebug_init: None, tmp_path: Path):
+    import sys
+
+    sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     config = nonebot.get_driver().config
     config.bison_config_path = str(tmp_path / "legacy_config")
@@ -23,7 +23,8 @@ async def app(nonebug_init: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     config.log_level = "TRACE"
     config.bison_filter_log = False
     nonebot.require("nonebot_bison")
-    return App(monkeypatch)
+
+    return App()
 
 
 @pytest.fixture
@@ -40,12 +41,14 @@ async def db_migration(app: App):
     from nonebot_plugin_datastore.db import get_engine, init_db
 
     await init_db()
+
+    yield
+
     async with AsyncSession(get_engine()) as sess:
         await sess.execute(delete(User))
         await sess.execute(delete(Subscribe))
         await sess.execute(delete(Target))
         await sess.commit()
-        await sess.close()
 
 
 @pytest.fixture

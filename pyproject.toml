@@ -50,6 +50,9 @@ flaky = "^3.7.0"
 sqlalchemy-stubs = "^0.4"
 nonebot2 = { extras = ["fastapi"], version = ">=2.0.0-rc.2" }
 
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.10.0"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"

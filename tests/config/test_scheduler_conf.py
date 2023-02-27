@@ -1,9 +1,10 @@
 from datetime import time
 
 from nonebug import App
+from pytest_mock import MockerFixture
 
 
-async def test_create_config(app: App, init_scheduler):
+async def test_create_config(init_scheduler):
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
@@ -52,7 +53,7 @@ async def test_create_config(app: App, init_scheduler):
     assert test_config1.time_config == []
 
 
-async def test_get_current_weight(app: App, init_scheduler):
+async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
     from datetime import time
 
     from nonebot_bison.config import db_config
@@ -99,19 +100,19 @@ async def test_get_current_weight(app: App, init_scheduler):
             ],
         ),
     )
-    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(1, 30))
+    mocker.patch.object(db_config, "_get_time", return_value=time(1, 30))
     weight = await config.get_current_weight_val(["weibo", "bilibili"])
     assert len(weight) == 3
     assert weight["weibo-weibo_id"] == 20
     assert weight["weibo-weibo_id1"] == 10
     assert weight["bilibili-weibo_id1"] == 10
-    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(4, 0))
+    mocker.patch.object(db_config, "_get_time", return_value=time(4, 0))
     weight = await config.get_current_weight_val(["weibo", "bilibili"])
     assert len(weight) == 3
     assert weight["weibo-weibo_id"] == 30
     assert weight["weibo-weibo_id1"] == 10
     assert weight["bilibili-weibo_id1"] == 10
-    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(5, 0))
+    mocker.patch.object(db_config, "_get_time", return_value=time(5, 0))
     weight = await config.get_current_weight_val(["weibo", "bilibili"])
     assert len(weight) == 3
     assert weight["weibo-weibo_id"] == 10

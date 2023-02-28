@@ -4,20 +4,21 @@ import typing
 import pytest
 from flaky import flaky
 from nonebug import App
+from pytest_mock.plugin import MockerFixture
 
 if typing.TYPE_CHECKING:
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
 
 @pytest.mark.asyncio
-async def test_send_no_queue(app: App):
+async def test_send_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 
+    mocker.patch.object(plugin_config, "bison_use_queue", False)
     async with app.test_api() as ctx:
-        app.monkeypatch.setattr(plugin_config, "bison_use_queue", False, True)
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
         ctx.should_call_api(
@@ -35,17 +36,18 @@ async def test_send_no_queue(app: App):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("nonebug_init", [{"bison_use_queue": True}], indirect=True)
-async def test_send_queue(app: App):
+async def test_send_queue(app: App, mocker: MockerFixture):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
     from nonebot_bison import send
+    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import MESSGE_SEND_INTERVAL, do_send_msgs, send_msgs
 
+    mocker.patch.object(plugin_config, "bison_use_queue", True)
     async with app.test_api() as ctx:
         new_bot = ctx.create_bot(base=Bot)
-        app.monkeypatch.setattr(nonebot, "get_bot", lambda: new_bot, True)
+        mocker.patch.object(nonebot, "get_bot", lambda: new_bot)
         bot = nonebot.get_bot()
         assert isinstance(bot, Bot)
         assert bot == new_bot

@@ -905,14 +905,14 @@ tomli = {version = "*", markers = "python_version > \"3.6\" and python_version <
 
 [[package]]
 name = "ipython"
-version = "8.10.0"
+version = "8.11.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipython-8.10.0-py3-none-any.whl", hash = "sha256:b38c31e8fc7eff642fc7c597061fff462537cf2314e3225a19c906b7b0d8a345"},
-    {file = "ipython-8.10.0.tar.gz", hash = "sha256:b13a1d6c1f5818bd388db53b7107d17454129a70de2b87481d555daede5eb49e"},
+    {file = "ipython-8.11.0-py3-none-any.whl", hash = "sha256:5b54478e459155a326bf5f42ee4f29df76258c0279c36f21d71ddb560f88b156"},
+    {file = "ipython-8.11.0.tar.gz", hash = "sha256:735cede4099dbc903ee540307b9171fbfef4aa75cfcacc5a273b2cda2f02be04"},
 ]
 
 [package.dependencies]
@@ -924,7 +924,7 @@ jedi = ">=0.16"
 matplotlib-inline = "*"
 pexpect = {version = ">4.3", markers = "sys_platform != \"win32\""}
 pickleshare = "*"
-prompt-toolkit = ">=3.0.30,<3.1.0"
+prompt-toolkit = ">=3.0.30,<3.0.37 || >3.0.37,<3.1.0"
 pygments = ">=2.4.0"
 stack-data = "*"
 traitlets = ">=5"
@@ -1476,18 +1476,22 @@ version = "0.3.1"
 description = "nonebot2 test framework"
 category = "dev"
 optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "nonebug-0.3.1-py3-none-any.whl", hash = "sha256:b33e93d486e3f187e890a516ad8d9432ea736e50b0270341ddc78fecfe080d5f"},
-    {file = "nonebug-0.3.1.tar.gz", hash = "sha256:96637bbdc406e7673e625492fbe928a9db467cd630d6fd04cfde0999f58f9a7a"},
-]
+python-versions = "^3.8"
+files = []
+develop = false
 
 [package.dependencies]
-asgiref = ">=3.4.0,<4.0.0"
-async-asgi-testclient = ">=1.4.8,<2.0.0"
-nonebot2 = ">=2.0.0-rc.2,<3.0.0"
-pytest = ">=7.0.0,<8.0.0"
-typing-extensions = ">=4.0.0,<5.0.0"
+asgiref = "^3.4.0"
+async-asgi-testclient = "^1.4.8"
+nonebot2 = "^2.0.0-rc.2"
+pytest = "^7.0.0"
+typing-extensions = "^4.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/nonebot/nonebug.git"
+reference = "master"
+resolved_reference = "026d0765124958739c0abf915db82cc75f0fb55c"
 
 [[package]]
 name = "packaging"
@@ -1721,14 +1725,14 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.37"
+version = "3.0.38"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "prompt_toolkit-3.0.37-py3-none-any.whl", hash = "sha256:6a2948ec427dfcc7c983027b1044b355db6aaa8be374f54ad2015471f7d81c5b"},
-    {file = "prompt_toolkit-3.0.37.tar.gz", hash = "sha256:d5d73d4b5eb1a92ba884a88962b157f49b71e06c4348b417dd622b25cdd3800b"},
+    {file = "prompt_toolkit-3.0.38-py3-none-any.whl", hash = "sha256:45ea77a2f7c60418850331366c81cf6b5b9cf4c7fd34616f733c5427e6abbb1f"},
+    {file = "prompt_toolkit-3.0.38.tar.gz", hash = "sha256:23ac5d50538a9a38c8bde05fecb47d0b403ecd0662857a86f886f798563d5b9b"},
 ]
 
 [package.dependencies]
@@ -2284,7 +2288,7 @@ files = [
 ]
 
 [package.dependencies]
-greenlet = {version = "!=0.4.17", markers = "python_version >= \"3\" and platform_machine == \"aarch64\" or python_version >= \"3\" and platform_machine == \"ppc64le\" or python_version >= \"3\" and platform_machine == \"x86_64\" or python_version >= \"3\" and platform_machine == \"amd64\" or python_version >= \"3\" and platform_machine == \"AMD64\" or python_version >= \"3\" and platform_machine == \"win32\" or python_version >= \"3\" and platform_machine == \"WIN32\""}
+greenlet = {version = "!=0.4.17", markers = "python_version >= \"3\" and (platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\")"}
 
 [package.extras]
 aiomysql = ["aiomysql", "greenlet (!=0.4.17)"]
@@ -2826,4 +2830,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "f4d7d3bfcb481d22ada2c377e36d096c339a03de66aab532c616e9fefcd1890f"
+content-hash = "87f3039671d6ad85c108dff8780598c5d7544cf29e70beefe2bdca6b525d1e3b"

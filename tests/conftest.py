@@ -4,17 +4,23 @@ from pathlib import Path
 import nonebot
 import pytest
 from nonebug import NONEBOT_INIT_KWARGS, App
+from pytest_mock.plugin import MockerFixture
 from sqlalchemy import delete
+
+from .utils import AppReq
 
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
         "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+        "superusers": {"10001"},
+        "command_start": {""},
+        "log_level": "TRACE",
     }
 
 
 @pytest.fixture
-async def app(tmp_path: Path):
+async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
@@ -23,11 +29,6 @@ async def app(tmp_path: Path):
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db
 
-    config = nonebot.get_driver().config
-    config.command_start = {""}
-    config.superusers = {"10001"}
-    config.log_level = "TRACE"
-
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
 
@@ -35,7 +36,14 @@ async def app(tmp_path: Path):
     datastore_config.datastore_cache_dir = tmp_path / "cache"
     datastore_config.datastore_data_dir = tmp_path / "data"
 
-    await init_db()
+    param: AppReq = getattr(request, "param", AppReq())
+
+    if not param.get("no_init_db"):
+        await init_db()
+    if not param.get("refresh_bot"):
+        import nonebot_bison.utils.get_bot
+
+        mocker.patch.object(nonebot_bison.utils.get_bot, "refresh_bots")
 
     yield App()
 

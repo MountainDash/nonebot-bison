@@ -52,6 +52,7 @@ nonebot2 = { extras = ["fastapi"], version = ">=2.0.0-rc.2" }
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.10.0"
+nonebug = {git = "https://github.com/nonebot/nonebug.git", rev = "master"}
 
 [build-system]
 requires = ["poetry>=0.12"]

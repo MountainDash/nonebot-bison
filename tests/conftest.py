@@ -33,6 +33,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     )
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db
+    from nonebot_plugin_htmlrender.browser import shutdown_browser
 
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
@@ -52,11 +53,15 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
     yield App()
 
+    # cleanup
     async with create_session() as session, session.begin():
         await session.execute(delete(User))
         await session.execute(delete(Subscribe))
         await session.execute(delete(Target))
         await session.execute(delete(ScheduleTimeWeight))
+
+    # 关闭渲染图片时打开的浏览器
+    await shutdown_browser()
 
 
 @pytest.fixture

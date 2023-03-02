@@ -3,6 +3,7 @@ from typing import Optional, Type
 
 from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import logger
+from nonebot_plugin_apscheduler import scheduler
 
 from ..config import config
 from ..platform import platform_manager
@@ -10,7 +11,6 @@ from ..send import send_msgs
 from ..types import Target
 from ..utils import ProcessContext, SchedulerConfig
 from ..utils.get_bot import get_bot
-from .aps import aps
 
 
 @dataclass
@@ -48,7 +48,7 @@ class Scheduler:
         logger.info(
             f"register scheduler for {self.name} with {self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"
         )
-        aps.add_job(
+        scheduler.add_job(
             self.exec_fetch,
             self.scheduler_config.schedule_type,
             **self.scheduler_config.schedule_setting,

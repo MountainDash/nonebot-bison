@@ -7,12 +7,8 @@ license = "MIT"
 homepage = "https://github.com/felinae98/nonebot-bison"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"
-packages = [
-    { include = "nonebot_bison", from = "./src/plugins/" }
-]
-include = [
-    "src/plugins/nonebot_bison/admin_page/dist/**/*"
-]
+packages = [{ include = "nonebot_bison", from = "./src/plugins/" }]
+include = ["src/plugins/nonebot_bison/admin_page/dist/**/*"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Operating System :: POSIX :: Linux",
@@ -21,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
-    "License :: OSI Approved :: MIT License"
+    "License :: OSI Approved :: MIT License",
 ]
 
 [tool.poetry.dependencies]
@@ -32,13 +28,13 @@ bs4 = "^0.0.1"
 tinydb = "^4.3.0"
 feedparser = "^6.0.2"
 pillow = ">=8.1,<10.0"
-apscheduler = "^3.7.0"
 expiringdict = "^1.2.1"
 pyjwt = "^2.1.0"
 python-socketio = "^5.4.0"
 nonebot-adapter-onebot = "^2.0.0-beta.1"
 nonebot-plugin-htmlrender = ">=0.2.0"
 nonebot-plugin-datastore = ">=0.5.8"
+nonebot-plugin-apscheduler = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.4"
@@ -52,7 +48,7 @@ isort = "^5.10.1"
 pre-commit = "^2.17.0"
 flaky = "^3.7.0"
 sqlalchemy-stubs = "^0.4"
-nonebot2 = {extras = ["fastapi"], version = ">=2.0.0-rc.2"}
+nonebot2 = { extras = ["fastapi"], version = ">=2.0.0-rc.2" }
 
 [build-system]
 requires = ["poetry>=0.12"]
@@ -62,7 +58,7 @@ build-backend = "poetry.masonry.api"
 markers = [
     "compare: compare fetching result with rsshub",
     "render: render img by chrome",
-    "external: use external resources"
+    "external: use external resources",
 ]
 asyncio_mode = "auto"
 

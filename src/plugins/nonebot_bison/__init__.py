@@ -1,5 +1,6 @@
 from nonebot.plugin import PluginMetadata, require
 
+require("nonebot_plugin_apscheduler")
 require("nonebot_plugin_datastore")
 
 from . import (

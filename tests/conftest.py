@@ -25,7 +25,12 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
     nonebot.require("nonebot_bison")
     from nonebot_bison import plugin_config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.config.db_model import (
+        ScheduleTimeWeight,
+        Subscribe,
+        Target,
+        User,
+    )
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db
 
@@ -51,6 +56,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
         await session.execute(delete(User))
         await session.execute(delete(Subscribe))
         await session.execute(delete(Target))
+        await session.execute(delete(ScheduleTimeWeight))
 
 
 @pytest.fixture

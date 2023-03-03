@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- change: 又切换回 sqlalchemy，但是 2.0 [@felinae98](https://github.com/felinae98) ([#206](https://github.com/felinae98/nonebot-bison/pull/206))
+
 ### 新功能
 
 - 调整群内订阅命令回复文本的位置，为`后台管理`命令添加别名`管理后台` [@AzideCupric](https://github.com/AzideCupric) ([#198](https://github.com/felinae98/nonebot-bison/pull/198))

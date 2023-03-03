@@ -65,7 +65,6 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert not detail_router.called
     mock_data = get_json("weibo_ak_list_1.json")
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    # import ipdb; ipdb.set_trace()
     res2 = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert len(res2) == 0
     mock_data["data"]["cards"][1]["mblog"]["created_at"] = datetime.now(

@@ -2,6 +2,7 @@ import pytest
 import respx
 from httpx import Response
 from nonebug.app import App
+from pytest_mock import MockerFixture
 
 from .platforms.utils import get_json
 from .utils import BotReply, fake_admin_user, fake_group_message_event
@@ -289,7 +290,7 @@ async def test_add_no_target(app: App, init_scheduler):
 
 
 @pytest.mark.asyncio
-async def test_platform_name_err(app: App, db_migration):
+async def test_platform_name_err(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -324,7 +325,7 @@ async def test_platform_name_err(app: App, db_migration):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_add_with_get_id(app: App, db_migration):
+async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
     from nonebot_bison.config import config

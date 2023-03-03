@@ -1,9 +1,14 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
+
+
+class AppReq(TypedDict, total=False):
+    refresh_bot: bool
+    no_init_db: bool
 
 
 def fake_group_message_event(**field) -> "GroupMessageEvent":

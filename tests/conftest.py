@@ -1,29 +1,67 @@
-import asyncio
-import typing
+import sys
 from pathlib import Path
 
 import nonebot
 import pytest
-from nonebug.app import App
-from sqlalchemy.ext.asyncio.session import AsyncSession
-from sqlalchemy.sql.expression import delete
+from nonebug import NONEBOT_INIT_KWARGS, App
+from pytest_mock.plugin import MockerFixture
+from sqlalchemy import delete
+
+from .utils import AppReq
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.stash[NONEBOT_INIT_KWARGS] = {
+        "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+        "superusers": {"10001"},
+        "command_start": {""},
+        "log_level": "TRACE",
+    }
 
 
 @pytest.fixture
-async def app(nonebug_init: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    import nonebot
+async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
+    sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
-    config = nonebot.get_driver().config
-    config.bison_config_path = str(tmp_path / "legacy_config")
-    config.datastore_config_dir = str(tmp_path / "config")
-    config.datastore_cache_dir = str(tmp_path / "cache")
-    config.datastore_data_dir = str(tmp_path / "data")
-    config.command_start = {""}
-    config.superusers = {"10001"}
-    config.log_level = "TRACE"
-    config.bison_filter_log = False
     nonebot.require("nonebot_bison")
-    return App(monkeypatch)
+    from nonebot_bison import plugin_config
+    from nonebot_bison.config.db_model import (
+        ScheduleTimeWeight,
+        Subscribe,
+        Target,
+        User,
+    )
+    from nonebot_plugin_datastore.config import plugin_config as datastore_config
+    from nonebot_plugin_datastore.db import create_session, init_db
+    from nonebot_plugin_htmlrender.browser import shutdown_browser
+
+    plugin_config.bison_config_path = str(tmp_path / "legacy_config")
+    plugin_config.bison_filter_log = False
+
+    datastore_config.datastore_config_dir = tmp_path / "config"
+    datastore_config.datastore_cache_dir = tmp_path / "cache"
+    datastore_config.datastore_data_dir = tmp_path / "data"
+
+    param: AppReq = getattr(request, "param", AppReq())
+
+    if not param.get("no_init_db"):
+        await init_db()
+    if not param.get("refresh_bot"):
+        import nonebot_bison.utils.get_bot
+
+        mocker.patch.object(nonebot_bison.utils.get_bot, "refresh_bots")
+
+    yield App()
+
+    # cleanup
+    async with create_session() as session, session.begin():
+        await session.execute(delete(User))
+        await session.execute(delete(Subscribe))
+        await session.execute(delete(Target))
+        await session.execute(delete(ScheduleTimeWeight))
+
+    # 关闭渲染图片时打开的浏览器
+    await shutdown_browser()
 
 
 @pytest.fixture
@@ -35,21 +73,7 @@ def dummy_user_subinfo(app: App):
 
 
 @pytest.fixture
-async def db_migration(app: App):
-    from nonebot_bison.config.db_model import Subscribe, Target, User
-    from nonebot_plugin_datastore.db import get_engine, init_db
-
-    await init_db()
-    async with AsyncSession(get_engine()) as sess:
-        await sess.execute(delete(User))
-        await sess.execute(delete(Subscribe))
-        await sess.execute(delete(Target))
-        await sess.commit()
-        await sess.close()
-
-
-@pytest.fixture
-async def init_scheduler(db_migration):
+async def init_scheduler(app: App):
     from nonebot_bison.scheduler.manager import init_scheduler
 
     await init_scheduler()

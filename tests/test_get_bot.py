@@ -1,8 +1,11 @@
 import pytest
 from nonebug import App
 
+from .utils import AppReq
+
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("app", [{"refresh_bot": True}], indirect=True)
 async def test_get_bots(app: App) -> None:
     from nonebot import get_driver
     from nonebot.adapters.onebot.v11 import Bot as BotV11
@@ -23,6 +26,7 @@ async def test_get_bots(app: App) -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("app", [{"refresh_bot": True}], indirect=True)
 async def test_refresh_bots(app: App) -> None:
     from nonebot import get_driver
     from nonebot.adapters.onebot.v11 import Bot as BotV11
@@ -57,6 +61,7 @@ async def test_refresh_bots(app: App) -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("app", [{"refresh_bot": True}], indirect=True)
 async def test_get_bot_two_bots(app: App) -> None:
     from nonebot import get_driver
     from nonebot.adapters.onebot.v11 import Bot as BotV11

@@ -3,6 +3,7 @@ from datetime import time
 from typing import Type
 
 from nonebug import App
+from pytest_mock import MockerFixture
 
 if typing.TYPE_CHECKING:
     from nonebot_bison.utils.scheduler_config import SchedulerConfig
@@ -60,7 +61,7 @@ async def test_scheduler_without_time(init_scheduler):
     assert static_res["bilibili-live-t2"] == 3
 
 
-async def test_scheduler_with_time(app: App, init_scheduler):
+async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixture):
     from nonebot_bison.config import config, db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig
     from nonebot_bison.platform.bilibili import BilibiliSchedConf
@@ -93,18 +94,19 @@ async def test_scheduler_with_time(app: App, init_scheduler):
 
     await init_scheduler()
 
-    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(1, 30))
-    static_res = await get_schedule_times(BilibiliSchedConf, 6)
-    assert static_res["bilibili-t1"] == 1
-    assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-live-t2"] == 3
+    mocker.patch.object(db_config, "_get_time", return_value=time(1, 30))
 
     static_res = await get_schedule_times(BilibiliSchedConf, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
     assert static_res["bilibili-live-t2"] == 3
 
-    app.monkeypatch.setattr(db_config, "_get_time", lambda: time(10, 30))
+    static_res = await get_schedule_times(BilibiliSchedConf, 6)
+    assert static_res["bilibili-t1"] == 1
+    assert static_res["bilibili-t2"] == 2
+    assert static_res["bilibili-live-t2"] == 3
+
+    mocker.patch.object(db_config, "_get_time", return_value=time(10, 30))
 
     static_res = await get_schedule_times(BilibiliSchedConf, 6)
     assert static_res["bilibili-t2"] == 6

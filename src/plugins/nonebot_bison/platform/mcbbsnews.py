@@ -1,13 +1,12 @@
 import re
 import time
 import traceback
-from typing import Literal
 
 from bs4 import BeautifulSoup, Tag
 from httpx import AsyncClient
+from nonebot.log import logger
 from nonebot.plugin import require
 
-from ..plugin_config import plugin_config
 from ..post import Post
 from ..types import Category, RawPost, Target
 from ..utils import SchedulerConfig, http_client
@@ -183,8 +182,11 @@ class McbbsNews(NewMessage):
             )
             assert pic_data
         except:
+            err_info = traceback.format_exc()
+            logger.warning(f"渲染错误：{err_info}")
+
             err_pic0 = await text_to_pic("错误发生！")
-            err_pic1 = await text_to_pic(traceback.format_exc())
+            err_pic1 = await text_to_pic(err_info)
             return [err_pic0, err_pic1]
         else:
             return [pic_data]

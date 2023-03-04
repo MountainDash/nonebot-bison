@@ -81,7 +81,8 @@ async def subscribes_export():
 
     # 将数据库查询记录转换为python数据类型，并排除主键和外键
     raw_subs = to_primitive(
-        db_config.list_subs_with_all_info(), ignores=["id", "target_id", "user_id"]
+        await db_config.list_subs_with_all_info(),
+        ignores=["id", "target_id", "user_id"],
     )
     assert isinstance(raw_subs, list)
 
@@ -114,6 +115,11 @@ async def subscribes_export():
 
             formatted_subs.append({"user": user, "subs": subs})
 
+    return formatted_subs
+
+
+async def subscribes_dump(subs_obj: list):
+    """将subscribe_export生成的dict真正导出为json文件"""
     export_path = Path.cwd() / "data"
     try:
         assert export_path.exists()
@@ -121,8 +127,8 @@ async def subscribes_export():
         export_path.mkdir(666)
     finally:
         with open(
-            export_path / f"subscribes_export_{int(time.time())}.json",
+            export_path / f"bison_subscribes_export_{int(time.time())}.json",
             "w",
             encoding="utf-8",
         ) as f:
-            json.dump(formatted_subs, f, ensure_ascii=False, indent=4)
+            json.dump(subs_obj, f, ensure_ascii=False, indent=4)

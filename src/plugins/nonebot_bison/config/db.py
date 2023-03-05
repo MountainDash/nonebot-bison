@@ -7,16 +7,21 @@ from nonebot_plugin_datastore.db import get_engine
 from objtyping import to_primitive
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from .config_legacy import ConfigContent, config, drop
+from .config_legacy import ConfigContent
+from .config_legacy import config as db_config_legacy
+from .config_legacy import drop
 from .db_config import config as db_config
 from .db_model import Subscribe, Target, User
 
 
 async def data_migrate():
-    if config.available:
+    if db_config_legacy.available:
         logger.warning("You are still using legacy db, migrating to sqlite")
         all_subs: list[ConfigContent] = list(
-            map(lambda item: ConfigContent(**item), config.get_all_subscribe().all())
+            map(
+                lambda item: ConfigContent(**item),
+                db_config_legacy.get_all_subscribe().all(),
+            )
         )
         async with AsyncSession(get_engine()) as sess:
             user_to_create = []
@@ -76,8 +81,20 @@ async def data_migrate():
             logger.info("migrate success")
 
 
-async def subscribes_export():
-    """bison订阅信息导出函数，生成可以导入另一个bison的订阅记录文件"""
+async def subscribes_export(export_path: Path = Path.cwd() / "data"):
+    """
+    bison订阅信息导出函数，生成可以导入另一个bison的订阅记录文件
+
+    导出文件名:
+        bison_subscribes_export_<导出时的时间戳>.json
+
+    subs_obj:
+        需要导出的订阅记录
+
+    export_path:
+        文件的导出位置，默认为工作路径下的data文件夹
+
+    """
 
     # 将数据库查询记录转换为python数据类型，并排除主键和外键
     raw_subs = to_primitive(
@@ -86,6 +103,7 @@ async def subscribes_export():
     )
     assert isinstance(raw_subs, list)
 
+    # 将相同user的订阅合并
     formatted_subs = []
     users = set()
 
@@ -115,20 +133,15 @@ async def subscribes_export():
 
             formatted_subs.append({"user": user, "subs": subs})
 
-    return formatted_subs
-
-
-async def subscribes_dump(subs_obj: list):
-    """将subscribe_export生成的dict真正导出为json文件"""
-    export_path = Path.cwd() / "data"
+    # 写入文件
     try:
         assert export_path.exists()
     except AssertionError:
-        export_path.mkdir(666)
+        export_path.mkdir()
     finally:
         with open(
             export_path / f"bison_subscribes_export_{int(time.time())}.json",
             "w",
             encoding="utf-8",
         ) as f:
-            json.dump(subs_obj, f, ensure_ascii=False, indent=4)
+            json.dump(formatted_subs, f, ensure_ascii=False, indent=4)

@@ -3,14 +3,17 @@ from pathlib import Path
 
 from nonebot_plugin_datastore import get_plugin_data
 from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 from ..types import Category, Tag
 
 Model = get_plugin_data().Model
 get_plugin_data().set_migration_dir(Path(__file__).parent / "migrations")
 
+reg = registry()
 
+
+@reg.mapped_as_dataclass
 class User(Model):
     __table_args__ = (UniqueConstraint("type", "uid", name="unique-user-constraint"),)
 
@@ -21,6 +24,7 @@ class User(Model):
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="user")
 
 
+@reg.mapped_as_dataclass
 class Target(Model):
     __table_args__ = (
         UniqueConstraint("target", "platform_name", name="unique-target-constraint"),
@@ -38,6 +42,7 @@ class Target(Model):
     )
 
 
+@reg.mapped_as_dataclass
 class ScheduleTimeWeight(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     target_id: Mapped[int | None] = mapped_column(ForeignKey("nonebot_bison_target.id"))
@@ -51,6 +56,7 @@ class ScheduleTimeWeight(Model):
         arbitrary_types_allowed = True
 
 
+@reg.mapped_as_dataclass
 class Subscribe(Model):
     __table_args__ = (
         UniqueConstraint("target_id", "user_id", name="unique-subscribe-constraint"),

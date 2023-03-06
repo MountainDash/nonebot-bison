@@ -1,8 +1,11 @@
 import json
 import time
+from dataclasses import asdict, dataclass
+from functools import partial
 from pathlib import Path
 
 from nonebot.log import logger
+from nonebot_bison.types import Category, Tag
 from nonebot_plugin_datastore.db import get_engine
 from objtyping import to_primitive
 from sqlalchemy.ext.asyncio.session import AsyncSession
@@ -10,6 +13,7 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from .config_legacy import ConfigContent
 from .config_legacy import config as db_config_legacy
 from .config_legacy import drop
+from .db_config import SubscribeDupException
 from .db_config import config as db_config
 from .db_model import Subscribe, Target, User
 
@@ -88,11 +92,8 @@ async def subscribes_export(export_path: Path = Path.cwd() / "data"):
     导出文件名:
         bison_subscribes_export_<导出时的时间戳>.json
 
-    subs_obj:
-        需要导出的订阅记录
-
-    export_path:
-        文件的导出位置，默认为工作路径下的data文件夹
+    参数:
+        export_path (Path, Optional): 文件的导出位置，默认为工作路径下的data文件夹
 
     """
 
@@ -145,3 +146,104 @@ async def subscribes_export(export_path: Path = Path.cwd() / "data"):
             encoding="utf-8",
         ) as f:
             json.dump(formatted_subs, f, ensure_ascii=False, indent=4)
+
+
+async def subscribes_import(import_file_path: Path):
+    """
+    bison订阅信息导入函数，将bison订阅导出文件导入bison中
+
+    参数:
+        import_file_path (Path, optional): 需要导入的订阅文件的位置。
+    """
+
+    @dataclass
+    class ItemModel:
+        user: int
+        user_type: str
+        target: str
+        target_name: str
+        platform_name: str
+        categories: list[Category]
+        tags: list[Tag]
+        # default_schedule_weight: int
+
+    # 合法性检查与订阅包生成
+    assert import_file_path.is_file()
+
+    with import_file_path.open(encoding="utf-8") as f:
+        import_items: list[
+            dict[
+                str,
+                dict[str, str | int]
+                | list[dict[str, list[Category] | list[Tag] | dict[str, str | int]]],
+            ]
+        ] = json.load(f)
+
+    assert isinstance(import_items, list)
+
+    try:
+        sub_packs: list[ItemModel] = list()
+        for item in import_items:
+
+            assert isinstance(item, dict)
+            assert set(item.keys()) == {"user", "subs"}
+            assert isinstance(item["user"], dict)
+            assert set(item["user"].keys()) == {"type", "uid"}
+            assert isinstance(item["subs"], list)
+
+            user = item["user"]
+            subs_payload = partial(ItemModel, user=user["uid"], user_type=user["type"])
+
+            for sub in item["subs"]:
+
+                assert isinstance(sub, dict)
+                assert set(sub.keys()) == {"categois", "tags", "target"}
+                assert isinstance(sub["target"], dict)
+                assert set(sub["target"].keys()) == {
+                    "target_name",
+                    "target",
+                    "platform_name",
+                    "default_schedule_weight",
+                }
+
+                target = sub["target"]
+
+                sub_pack = subs_payload(
+                    categories=sub["categories"],
+                    tags=sub["tags"],
+                    target=target["target"],
+                    target_name=target["target_name"],
+                    platfrom_name=target["platform_name"],
+                )
+                sub_packs.append(sub_pack)
+
+    except AssertionError as e:
+        logger.error(f"！订阅该订阅记录格式非法：{repr(e)}, 终止！")
+        is_check_pass = False
+    except Exception as e:
+        logger.error(f"！订阅文件检查异常：{repr(e)}")
+        is_check_pass = False
+    else:
+        logger.success("订阅文件检查通过！")
+        is_check_pass = True
+
+    # 逐个添加订阅
+    logger.info("检查结束，开始添加订阅流程")
+
+    if is_check_pass:
+
+        for sub_pack in sub_packs:
+
+            try:
+                await db_config.add_subscribe(**asdict(sub_pack))
+            except SubscribeDupException:
+                logger.warning(f"添加订阅条目 {repr(sub_pack)} 失败: 相同的订阅已存在")
+            except Exception as e:
+                logger.error(f"添加订阅条目 {repr(sub_pack)} 失败: {repr(e)}")
+            else:
+                logger.success(f"添加订阅条目 {repr(sub_pack)} 成功！")
+
+        logger.info("订阅流程结束，请检查所有订阅记录是否全部添加成功")
+
+    else:
+        logger.error("订阅记录检查未通过，该订阅文件不会被导入")

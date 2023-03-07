@@ -5,18 +5,10 @@ from unittest.mock import patch
 import pytest
 from nonebug.app import App
 
-
-@pytest.fixture(scope="module")
-def expected_json():
-    static_path = Path(__file__).parent / "static"
-
-    with open(static_path / "subs_export.json", "r", encoding="utf-8") as f:
-        expected_json = json.load(f)
-
-    return expected_json
+from .utils import get_file, get_json
 
 
-async def test_export(app: App, init_scheduler, tmp_path: Path, expected_json):
+async def test_subs_export(app: App, init_scheduler, tmp_path: Path):
     import time
 
     from nonebot_bison.config.db_config import config
@@ -69,4 +61,48 @@ async def test_export(app: App, init_scheduler, tmp_path: Path, expected_json):
         with export_file.open() as f:
             export_json = json.load(f)
 
-        assert export_json == expected_json
+        assert export_json == get_json("subs_export.json")
+
+
+async def test_subs_import(app: App, init_scheduler, tmp_path):
+    from nonebot_bison.config.db_config import config
+    from nonebot_bison.subs_io import subscribes_import
+
+    mock_file: Path = tmp_path / "1.json"
+    mock_file.write_text(get_file("subs_export.json"))
+
+    await subscribes_import(mock_file)
+
+    data = await config.list_subs_with_all_info()
+
+    assert len(data) == 3
+
+
+async def test_subs_import_partical_err(app: App, init_scheduler, tmp_path):
+
+    from nonebot_bison.config.db_config import config
+    from nonebot_bison.subs_io import subscribes_import
+
+    mock_file: Path = tmp_path / "2.json"
+    mock_file.write_text(get_file("subs_export_has_subdup_err.json"))
+
+    await subscribes_import(mock_file)
+
+    data = await config.list_subs_with_all_info()
+
+    assert len(data) == 4
+
+
+async def test_subs_import_all_fail(app: App, init_scheduler, tmp_path):
+    """只要文件格式有任何一个错误， 都不会进行订阅"""
+    from nonebot_bison.config.db_config import config
+    from nonebot_bison.subs_io import subscribes_import
+
+    mock_file: Path = tmp_path / "3.json"
+    mock_file.write_text(get_file("subs_export_all_illegal.json"))
+
+    await subscribes_import(mock_file)
+
+    data = await config.list_subs_with_all_info()
+
+    assert len(data) == 0

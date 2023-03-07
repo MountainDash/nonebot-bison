@@ -85,6 +85,7 @@ async def subscribes_import(import_file_path: Path):
     """
     # 合法性检查与订阅包生成
     assert import_file_path.is_file()
+    logger.success(f"文件 {import_file_path} 存在，继续流程")
 
     with import_file_path.open(encoding="utf-8") as f:
         import_items: list[
@@ -95,49 +96,66 @@ async def subscribes_import(import_file_path: Path):
             ]
         ] = json.load(f)
 
-    assert isinstance(import_items, list)
+    logger.info("文件内容结构合法性检测开始...")
+    assert isinstance(import_items, list), "读取的结构不是list类型！"
 
     sub_packs: list[ItemModel] = list()
     try:
         for item in import_items:
 
             assert isinstance(item, dict)
-            assert set(item.keys()) == {"user", "subs"}
-            assert isinstance(item["user"], dict)
-            assert set(item["user"].keys()) == {"type", "uid"}
-            assert isinstance(item["subs"], list)
+            assert set(item.keys()) == {"user", "subs"}, (
+                "第一层键名与 user, subs 不匹配！",
+                item,
+            )
+            assert isinstance(item["user"], dict), ("user字段不是dict类型！", item["user"])
+            assert set(item["user"].keys()) == {"type", "uid"}, (
+                "user字段键名与 type, uid 不匹配！",
+                item["user"],
+            )
+            assert isinstance(item["subs"], list), ("subs字段不是list类型！", item["user"])
 
             user = item["user"]
             subs_payload = partial(ItemModel, user=user["uid"], user_type=user["type"])
 
             for sub in item["subs"]:
 
-                assert isinstance(sub, dict)
-                assert set(sub.keys()) == {"categois", "tags", "target"}
-                assert isinstance(sub["target"], dict)
+                assert isinstance(sub, dict), ("subs list中存在非dict类型！", sub)
+                assert set(sub.keys()) == {"categories", "tags", "target"}, (
+                    "subs list元素含有的键名与 categories, tags, target 不匹配！",
+                    sub,
+                )
+                assert isinstance(sub["target"], dict), (
+                    "target字段不是dict类型",
+                    sub["target"],
+                )
                 assert set(sub["target"].keys()) == {
                     "target_name",
                     "target",
                     "platform_name",
                     "default_schedule_weight",
-                }
+                }, (
+                    "target字段键名与 target_name, target, platform_name, default_schedule_weight 不匹配！",
+                    sub["target"],
+                )
 
                 target = sub["target"]
 
                 sub_pack = subs_payload(
-                    categories=sub["categories"],
+                    cats=sub["categories"],
                     tags=sub["tags"],
                     target=target["target"],
                     target_name=target["target_name"],
-                    platfrom_name=target["platform_name"],
+                    platform_name=target["platform_name"],
                 )
                 sub_packs.append(sub_pack)
 
     except AssertionError as e:
-        logger.error(f"！订阅该订阅记录格式非法：{repr(e)}, 终止！")
+        logger.error(f"！订阅该订阅记录格式非法：{e.args[0][0]}, 终止！")
+        logger.error(f"错误订阅数据:{e.args[0][1]}")
         is_check_pass = False
     except Exception as e:
-        logger.error(f"！订阅文件检查异常：{repr(e)}")
+        logger.error(f"！订阅文件检查异常：{e}")
         is_check_pass = False
     else:
         logger.success("订阅文件检查通过！")

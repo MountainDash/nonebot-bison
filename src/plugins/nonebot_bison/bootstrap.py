@@ -3,7 +3,7 @@ from nonebot_plugin_datastore.db import get_engine, post_db_init, pre_db_init
 from sqlalchemy import inspect, text
 
 from .config.config_legacy import start_up as legacy_db_startup
-from .config.db import data_migrate
+from .config.db_migration import data_migrate
 from .scheduler.manager import init_scheduler
 
 

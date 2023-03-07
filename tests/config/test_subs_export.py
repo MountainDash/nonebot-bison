@@ -19,8 +19,8 @@ def expected_json():
 async def test_export(app: App, init_scheduler, tmp_path: Path, expected_json):
     import time
 
-    from nonebot_bison.config.db import subscribes_export
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.subs_io import subscribes_export
     from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(

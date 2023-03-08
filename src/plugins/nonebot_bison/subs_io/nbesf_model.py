@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from ..types import Category, Tag
 
 
-# use for export(pending)
+# ===== nbesf 定义格式 ====== #
 class UserHead(BaseModel):
     type: str
     uid: int
@@ -36,9 +36,13 @@ class SubGroup(BaseModel):
     __root__: List[SubPack]
 
 
-# use for import
+# ======================= #
+
+
 @dataclass
 class ItemModel:
+    """use for import"""
+
     user: int
     user_type: str
     target: str

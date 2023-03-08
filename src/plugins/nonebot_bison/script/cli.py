@@ -1,3 +1,5 @@
+import importlib
+import time
 from functools import partial, wraps
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Optional, TypeVar
@@ -34,6 +36,15 @@ def run_async(func: Callable[P, Coroutine[Any, Any, R]]) -> Callable[P, R]:
     return wrapper
 
 
+def import_yaml_module():
+    try:
+        pyyaml = importlib.import_module("yaml")
+    except ImportError as e:
+        raise ImportError("请使用 `pip install nonebot-bison[yaml]` 安装所需依赖") from e
+
+    return pyyaml
+
+
 @click.group()
 def cli():
     """Nonebot Bison CLI"""
@@ -44,20 +55,60 @@ def cli():
 @click.option("--path", "-p", default=None, help="导出路径")
 @click.option("--yaml", is_flag=True, help="使用yaml格式")
 @run_async
-async def export(path: Optional[str], yaml: bool):
-    export_path = Path(path)
+async def subs_export(path: Optional[str], yaml: bool):
+    if yaml:
+        logger.info("正在导出为yaml...")
+        pyyaml = import_yaml_module()
 
-    await subscribes_export(export_path=export_path)
+        export_path = Path(path) if path else Path.cwd() / "data"
+        try:
+            assert export_path.exists()
+        except AssertionError:
+            export_path.mkdir()
+        finally:
+            export_file = (
+                export_path / f"bison_subscribes_export_{int(time.time())}.yaml"
+            )
+
+            nbesf_data = await subscribes_export.build(echo=True)
+
+            with export_file.open("w", encoding="utf-8") as f:
+                pyyaml.safe_dump(nbesf_data, f)
+
+        logger.success(f"导出完毕！已导出到{str(export_path)}")
+    else:
+        logger.info("正在导出json...")
+        await subscribes_export.build()
+        if path:
+            logger.info(f"检测到指定导出路径: {path}")
+            export_path = Path(path)
+            await subscribes_export.export_to(export_path=export_path)
+        else:
+            logger.info("未指定导出路径，默认导出到{}".format(str(Path.cwd() / "data")))
+            await subscribes_export.export_to()
+            logger.success("导出完毕！")
 
 
 @cli.command(help="从Nonebot Biosn Exchangable Subscribes File导入订阅")
-@click.option("--path", "-p", help="导入文件名")
+@click.option("--path", "-p", required=True, help="导入文件名")
 @click.option("--yaml", is_flag=True, help="从yaml文件读入")
 @run_async
-async def import_(path: str, yaml: bool):
+async def subs_import(path: str, yaml: bool):
     import_file_path = Path(path)
+    assert import_file_path.is_file(), "该路径不是文件！"
 
-    await subscribes_import(import_file_path=import_file_path)
+    if yaml:
+        logger.info("正在从yaml导入...")
+        pyyaml = import_yaml_module()
+        with import_file_path.open("r", encoding="utf-8") as f:
+            import_items = pyyaml.safe_load(f)
+
+            subscribes_import.load_from(import_items=import_items)
+            await subscribes_import.dump_in()
+    else:
+        logger.info("正在从json导入...")
+        subscribes_import.import_from(import_file_path=import_file_path)
+        await subscribes_import.dump_in()
 
 
 def main():

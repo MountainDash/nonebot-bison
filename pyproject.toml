@@ -58,7 +58,7 @@ yaml = ["pyyaml"]
 all = ["anyio", "click", "typing-extensions", "pyyaml"]
 
 [tool.poetry.plugins.nb]
-bison = "nonebot-bison.script.cli:main"
+bison = "nonebot_bison.script.cli:main"
 
 [build-system]
 requires = ["poetry>=0.12"]

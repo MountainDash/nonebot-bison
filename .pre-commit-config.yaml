@@ -1,9 +1,9 @@
 ci:
-  autofix_commit_msg: "auto fix by pre-commit hooks"
+  autofix_commit_msg: ":lipstick: auto fix by pre-commit hooks"
   autofix_prs: true
   autoupdate_branch: dev
   autoupdate_schedule: weekly
-  autoupdate_commit_msg: "auto update by pre-commit hooks"
+  autoupdate_commit_msg: ":arrow_up: auto update by pre-commit hooks"
 repos:
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0

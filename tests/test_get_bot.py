@@ -10,6 +10,7 @@ async def test_get_bots(app: App) -> None:
     from nonebot import get_driver
     from nonebot.adapters.onebot.v11 import Bot as BotV11
     from nonebot.adapters.onebot.v12 import Bot as BotV12
+
     from nonebot_bison.utils.get_bot import get_bots
 
     async with app.test_api() as ctx:
@@ -31,6 +32,7 @@ async def test_refresh_bots(app: App) -> None:
     from nonebot import get_driver
     from nonebot.adapters.onebot.v11 import Bot as BotV11
     from nonebot.adapters.onebot.v12 import Bot as BotV12
+
     from nonebot_bison.types import User
     from nonebot_bison.utils.get_bot import get_bot, get_groups, refresh_bots
 
@@ -66,6 +68,7 @@ async def test_get_bot_two_bots(app: App) -> None:
     from nonebot import get_driver
     from nonebot.adapters.onebot.v11 import Bot as BotV11
     from nonebot.adapters.onebot.v12 import Bot as BotV12
+
     from nonebot_bison.types import User
     from nonebot_bison.utils.get_bot import get_bot, get_groups, refresh_bots
 

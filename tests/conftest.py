@@ -24,6 +24,10 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
+    from nonebot_plugin_datastore.config import plugin_config as datastore_config
+    from nonebot_plugin_datastore.db import create_session, init_db
+    from nonebot_plugin_htmlrender.browser import shutdown_browser
+
     from nonebot_bison import plugin_config
     from nonebot_bison.config.db_model import (
         ScheduleTimeWeight,
@@ -31,9 +35,6 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
         Target,
         User,
     )
-    from nonebot_plugin_datastore.config import plugin_config as datastore_config
-    from nonebot_plugin_datastore.db import create_session, init_db
-    from nonebot_plugin_htmlrender.browser import shutdown_browser
 
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
@@ -82,6 +83,7 @@ async def init_scheduler(app: App):
 @pytest.fixture
 async def use_legacy_config(app: App):
     import aiofiles
+
     from nonebot_bison.config.config_legacy import config, get_config_path
 
     async with aiofiles.open(get_config_path()[0], "w") as f:

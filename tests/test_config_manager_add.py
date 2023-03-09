@@ -12,6 +12,7 @@ from .utils import BotReply, fake_admin_user, fake_group_message_event
 async def test_configurable_at_me_true_failed(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher
     from nonebot_bison.plugin_config import plugin_config
 
@@ -37,6 +38,7 @@ async def test_configurable_at_me_true_failed(app: App):
 async def test_configurable_at_me_false(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.plugin_config import plugin_config
@@ -62,6 +64,7 @@ async def test_configurable_at_me_false(app: App):
 async def test_add_with_target(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
@@ -185,6 +188,7 @@ async def test_add_with_target(app: App, init_scheduler):
 async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
@@ -244,6 +248,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
 async def test_add_no_target(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
@@ -293,6 +298,7 @@ async def test_add_no_target(app: App, init_scheduler):
 async def test_platform_name_err(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
@@ -328,6 +334,7 @@ async def test_platform_name_err(app: App):
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
@@ -409,6 +416,7 @@ async def test_add_with_get_id(app: App):
 async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager

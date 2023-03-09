@@ -8,6 +8,7 @@ from .utils import fake_group_message_event, fake_private_message_event, fake_su
 async def test_query_with_superuser_private(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import group_manage_matcher
 
     async with app.test_matcher(group_manage_matcher) as ctx:
@@ -70,6 +71,7 @@ async def test_query_with_superuser_private(app: App):
 async def test_query_with_abort_on_idx(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import group_manage_matcher
 
     async with app.test_matcher(group_manage_matcher) as ctx:
@@ -105,6 +107,7 @@ async def test_query_with_abort_on_idx(app: App):
 async def test_query_with_abort_on_command(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import group_manage_matcher
 
     async with app.test_matcher(group_manage_matcher) as ctx:
@@ -149,6 +152,7 @@ async def test_query_with_abort_on_command(app: App):
 async def test_query_with_superuser_group_tome(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import group_manage_matcher
 
     async with app.test_matcher(group_manage_matcher) as ctx:

@@ -91,7 +91,7 @@ class DBConfig:
                 select(Subscribe)
                 .where(User.type == user_type, User.uid == user)
                 .join(User)
-                .options(selectinload(Subscribe.target))  # type:ignore
+                .options(selectinload(Subscribe.target))
             )
             subs = (await session.scalars(query_stmt)).all()
             return subs

@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- 修改 nonebot_bison 项目结构 [@he0119](https://github.com/he0119) ([#211](https://github.com/felinae98/nonebot-bison/pull/211))
 - change: 又切换回 sqlalchemy，但是 2.0 [@felinae98](https://github.com/felinae98) ([#206](https://github.com/felinae98/nonebot-bison/pull/206))
 
 ### 新功能

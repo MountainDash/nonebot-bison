@@ -13,6 +13,7 @@ from .utils import BotReply, fake_admin_user, fake_group_message_event
 async def test_abort_add_on_platform(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
 
@@ -60,6 +61,7 @@ async def test_abort_add_on_platform(app: App, init_scheduler):
 async def test_abort_add_on_id(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
@@ -117,6 +119,7 @@ async def test_abort_add_on_id(app: App, init_scheduler):
 async def test_abort_add_on_cats(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
@@ -194,6 +197,7 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
 async def test_abort_add_on_tag(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
@@ -275,6 +279,7 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
 async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager

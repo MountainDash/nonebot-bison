@@ -2,19 +2,18 @@ from nonebot.log import logger
 from nonebot_plugin_datastore.db import get_engine
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from .config_legacy import ConfigContent
-from .config_legacy import config as db_config_legacy
-from .config_legacy import drop
+from .config_legacy import Config, ConfigContent, drop
 from .db_model import Subscribe, Target, User
 
 
 async def data_migrate():
-    if db_config_legacy.available:
+    config = Config()
+    if config.available:
         logger.warning("You are still using legacy db, migrating to sqlite")
         all_subs: list[ConfigContent] = list(
             map(
                 lambda item: ConfigContent(**item),
-                db_config_legacy.get_all_subscribe().all(),
+                config.get_all_subscribe().all(),
             )
         )
         async with AsyncSession(get_engine()) as sess:

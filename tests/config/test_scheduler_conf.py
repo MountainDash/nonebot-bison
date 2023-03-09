@@ -5,10 +5,11 @@ from pytest_mock import MockerFixture
 
 
 async def test_create_config(init_scheduler):
+    from nonebot_plugin_datastore.db import get_engine
+
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
-    from nonebot_plugin_datastore.db import get_engine
 
     await config.add_subscribe(
         user=123,
@@ -56,11 +57,12 @@ async def test_create_config(init_scheduler):
 async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
     from datetime import time
 
+    from nonebot_plugin_datastore.db import get_engine
+
     from nonebot_bison.config import db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
-    from nonebot_plugin_datastore.db import get_engine
 
     await config.add_subscribe(
         user=123,
@@ -121,13 +123,14 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
 
 
 async def test_get_platform_target(app: App, init_scheduler):
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.expression import select
+
     from nonebot_bison.config import db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
-    from nonebot_plugin_datastore.db import get_engine
-    from sqlalchemy.ext.asyncio.session import AsyncSession
-    from sqlalchemy.sql.expression import select
 
     await config.add_subscribe(
         user=123,
@@ -171,15 +174,16 @@ async def test_get_platform_target(app: App, init_scheduler):
 
 
 async def test_get_platform_target_subscribers(app: App, init_scheduler):
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.expression import select
+
     from nonebot_bison.config import db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.types import User as T_User
     from nonebot_bison.types import UserSubInfo
-    from nonebot_plugin_datastore.db import get_engine
-    from sqlalchemy.ext.asyncio.session import AsyncSession
-    from sqlalchemy.sql.expression import select
 
     await config.add_subscribe(
         user=123,

@@ -7,8 +7,7 @@ license = "MIT"
 homepage = "https://github.com/felinae98/nonebot-bison"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"
-packages = [{ include = "nonebot_bison", from = "./src/plugins/" }]
-include = ["src/plugins/nonebot_bison/admin_page/dist/**/*"]
+include = ["nonebot_bison/admin_page/dist/**/*"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Operating System :: POSIX :: Linux",
@@ -85,15 +84,8 @@ line_length = 88
 skip_gitignore = true
 
 [tool.nonebot]
-plugins = ["src.plugins.nonebot_bison"]
+plugins = ["nonebot_bison"]
 
 [tool.pyright]
 pythonVersion = "3.10"
 pythonPlatform = "All"
-executionEnvironments = [
-  { root = "./tests", extraPaths = [
-    "./",
-    "./src/plugins/",
-  ] },
-  { root = "./" },
-]

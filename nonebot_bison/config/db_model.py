@@ -30,7 +30,7 @@ class Target(Model):
     platform_name: Mapped[str] = mapped_column(String(20))
     target: Mapped[str] = mapped_column(String(1024))
     target_name: Mapped[str] = mapped_column(String(1024))
-    default_schedule_weight: Mapped[int | None] = mapped_column(default=10)
+    default_schedule_weight: Mapped[int] = mapped_column(default=10)
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="target")
     time_weight: Mapped[list["ScheduleTimeWeight"]] = relationship(
@@ -40,10 +40,10 @@ class Target(Model):
 
 class ScheduleTimeWeight(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    target_id: Mapped[int | None] = mapped_column(ForeignKey("nonebot_bison_target.id"))
-    start_time: Mapped[datetime.time | None]
-    end_time: Mapped[datetime.time | None]
-    weight: Mapped[int | None]
+    target_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_target.id"))
+    start_time: Mapped[datetime.time]
+    end_time: Mapped[datetime.time]
+    weight: Mapped[int]
 
     target: Mapped[Target] = relationship(back_populates="time_weight")
 
@@ -57,8 +57,8 @@ class Subscribe(Model):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    target_id: Mapped[int | None] = mapped_column(ForeignKey("nonebot_bison_target.id"))
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("nonebot_bison_user.id"))
+    target_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_target.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_user.id"))
     categories: Mapped[list[Category]] = mapped_column(JSON)
     tags: Mapped[list[Tag]] = mapped_column(JSON)
 

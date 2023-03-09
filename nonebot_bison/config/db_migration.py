@@ -11,7 +11,10 @@ async def data_migrate():
     if config.available:
         logger.warning("You are still using legacy db, migrating to sqlite")
         all_subs: list[ConfigContent] = list(
-            map(lambda item: ConfigContent(**item), config.get_all_subscribe().all())
+            map(
+                lambda item: ConfigContent(**item),
+                config.get_all_subscribe().all(),
+            )
         )
         async with AsyncSession(get_engine()) as sess:
             user_to_create = []

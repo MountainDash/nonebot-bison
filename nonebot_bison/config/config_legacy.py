@@ -25,8 +25,6 @@ def get_config_path() -> tuple[str, str]:
     else:
         working_dir = os.getcwd()
         data_dir = path.join(working_dir, "data")
-    if not path.isdir(data_dir):
-        os.makedirs(data_dir)
     old_path = path.join(data_dir, "hk_reporter.json")
     new_path = path.join(data_dir, "bison.json")
     deprecated_maker_path = path.join(data_dir, "bison.json.deprecated")
@@ -36,6 +34,7 @@ def get_config_path() -> tuple[str, str]:
 
 
 def drop():
+    config = Config()
     if plugin_config.bison_config_path:
         data_dir = plugin_config.bison_config_path
     else:
@@ -252,7 +251,7 @@ def start_up():
         return
     if not (search_res := config.kv_config.search(Query().name == "version")):
         config.kv_config.insert({"name": "version", "value": config.migrate_version})
-    elif search_res[0].get("value") < config.migrate_version:
+    elif search_res[0].get("value") < config.migrate_version:  # type: ignore
         query = Query()
         version_query = query.name == "version"
         cur_version = search_res[0].get("value")
@@ -268,6 +267,3 @@ def start_up():
         config.kv_config.update({"value": config.migrate_version}, version_query)
         # do migration
     config.update_send_cache()
-
-
-config = Config()

@@ -17,11 +17,10 @@ def config_legacy(app: App, use_legacy_config):
     from nonebot_bison.config import config_legacy as config
 
     config.start_up()
+
     yield config.Config()
 
     config.Config().db.close()
-    legacy_config = Path(config.get_config_path()[0])
-    legacy_config.unlink(missing_ok=True)
 
 
 def test_create_and_get(config_legacy: "Config", app: App):

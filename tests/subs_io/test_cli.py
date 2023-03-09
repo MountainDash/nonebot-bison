@@ -16,15 +16,18 @@ def test_cli_help(app: App):
     assert result.exit_code == 0
 
     for arg in ["subs-export", "subs-import"]:
+        assert arg not in result.output
+
+    for arg in ["export", "import"]:
         assert arg in result.output
 
-    result = runner.invoke(cli, ["subs-export", "--help"])
+    result = runner.invoke(cli, ["export", "--help"])
     assert result.exit_code == 0
 
     for opt in ["--path", "-p", "导出路径", "--yaml", "使用yaml格式"]:
         assert opt in result.output
 
-    result = runner.invoke(cli, ["subs-import", "--help"])
+    result = runner.invoke(cli, ["import", "--help"])
     assert result.exit_code == 0
 
     for opt in ["--path", "-p", "导入文件名", "--yaml", "从yaml文件读入"]:
@@ -71,22 +74,20 @@ async def test_subs_export(app: App, init_scheduler, tmp_path: Path):
         mock_now.time.return_value = 1
 
         runner = CliRunner()
-        result = await run_sync(runner.invoke)(cli, ["subs-export"])
+        result = await run_sync(runner.invoke)(cli, ["export"])
         assert result.exit_code == 0
         file_path = Path.cwd() / "data" / "bison_subscribes_export_1.json"
         assert file_path.exists()
         assert file_path.stat().st_size
 
-        result = await run_sync(runner.invoke)(
-            cli, ["subs-export", "-p", str(tmp_path)]
-        )
+        result = await run_sync(runner.invoke)(cli, ["export", "-p", str(tmp_path)])
         assert result.exit_code == 0
         file_path2 = tmp_path / "bison_subscribes_export_1.json"
         assert file_path2.exists()
         assert file_path.stat().st_size
 
         result = await run_sync(runner.invoke)(
-            cli, ["subs-export", "-p", str(tmp_path), "--yaml"]
+            cli, ["export", "-p", str(tmp_path), "--yaml"]
         )
         assert result.exit_code == 0
         file_path3 = tmp_path / "bison_subscribes_export_1.yaml"
@@ -105,13 +106,13 @@ async def test_subs_import(app: App, init_scheduler, tmp_path):
 
     runner = CliRunner()
 
-    result = await run_sync(runner.invoke)(cli, ["subs-import"])
+    result = await run_sync(runner.invoke)(cli, ["import"])
     assert result.exit_code == 2
 
-    result = await run_sync(runner.invoke)(cli, ["subs-import", "-p"])
+    result = await run_sync(runner.invoke)(cli, ["import", "-p"])
     assert result.exit_code == 2
 
-    result = await run_sync(runner.invoke)(cli, ["subs-import", "-p", str(mock_file)])
+    result = await run_sync(runner.invoke)(cli, ["import", "-p", str(mock_file)])
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 3
 
@@ -119,7 +120,7 @@ async def test_subs_import(app: App, init_scheduler, tmp_path):
     mock_file.write_text(get_file("subs_export.yaml"))
 
     result = await run_sync(runner.invoke)(
-        cli, ["subs-import", "-p", str(mock_file), "--yaml"]
+        cli, ["import", "-p", str(mock_file), "--yaml"]
     )
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 6

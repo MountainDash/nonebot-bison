@@ -51,7 +51,7 @@ def cli():
     pass
 
 
-@cli.command(help="导出Nonebot Bison Exchangable Subcribes File")
+@cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
 @click.option("--path", "-p", default=None, help="导出路径")
 @click.option("--yaml", is_flag=True, help="使用yaml格式")
 @run_async
@@ -89,7 +89,7 @@ async def subs_export(path: Optional[str], yaml: bool):
             logger.success("导出完毕！")
 
 
-@cli.command(help="从Nonebot Biosn Exchangable Subscribes File导入订阅")
+@cli.command(help="从Nonebot Biosn Exchangable Subscribes File导入订阅", name="import")
 @click.option("--path", "-p", required=True, help="导入文件名")
 @click.option("--yaml", is_flag=True, help="从yaml文件读入")
 @run_async

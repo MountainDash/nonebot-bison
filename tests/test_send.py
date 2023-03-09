@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
 async def test_send_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 
@@ -40,6 +41,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+
     from nonebot_bison import send
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import MESSGE_SEND_INTERVAL, do_send_msgs, send_msgs
@@ -84,6 +86,7 @@ def _merge_messge(nodes):
 async def test_send_merge_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 
@@ -187,6 +190,7 @@ async def test_send_merge_no_queue(app: App):
 async def test_send_merge2_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 

@@ -5,7 +5,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from ..types import Category, Tag
+from ...types import Category, Tag
 
 
 # ===== nbesf 定义格式 ====== #

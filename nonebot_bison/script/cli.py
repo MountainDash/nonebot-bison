@@ -14,7 +14,7 @@ except ImportError as e:  # pragma: no cover
     raise ImportError("请使用 `pip install nonebot-bison[cli]` 安装所需依赖") from e
 
 
-from ..subs_io import subscribes_export, subscribes_import
+from ..config.subs_io import subscribes_export, subscribes_import
 
 P = ParamSpec("P")
 R = TypeVar("R")

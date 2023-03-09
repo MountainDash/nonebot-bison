@@ -11,7 +11,7 @@ async def test_subs_export(app: App, init_scheduler, tmp_path: Path):
     import time
 
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.subs_io import subscribes_export
+    from nonebot_bison.config.subs_io import subscribes_export
     from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
@@ -66,7 +66,7 @@ async def test_subs_export(app: App, init_scheduler, tmp_path: Path):
 
 async def test_subs_import(app: App, init_scheduler, tmp_path):
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.subs_io import subscribes_import
+    from nonebot_bison.config.subs_io import subscribes_import
 
     mock_file: Path = tmp_path / "1.json"
     mock_file.write_text(get_file("subs_export.json"))
@@ -82,7 +82,7 @@ async def test_subs_import(app: App, init_scheduler, tmp_path):
 async def test_subs_import_partical_err(app: App, init_scheduler, tmp_path):
 
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.subs_io import subscribes_import
+    from nonebot_bison.config.subs_io import subscribes_import
 
     mock_file: Path = tmp_path / "2.json"
     mock_file.write_text(get_file("subs_export_has_subdup_err.json"))
@@ -98,7 +98,7 @@ async def test_subs_import_partical_err(app: App, init_scheduler, tmp_path):
 async def test_subs_import_all_fail(app: App, init_scheduler, tmp_path):
     """只要文件格式有任何一个错误， 都不会进行订阅"""
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.subs_io import subscribes_import
+    from nonebot_bison.config.subs_io import subscribes_import
 
     mock_file: Path = tmp_path / "3.json"
     mock_file.write_text(get_file("subs_export_all_illegal.json"))

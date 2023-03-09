@@ -8,16 +8,16 @@ from typing import Any, Callable, Coroutine
 from nonebot.log import logger
 from objtyping import to_primitive
 
-from ..config.db_config import SubscribeDupException
-from ..config.db_config import config as db_config
-from ..types import Category, Tag, Target
+from ...config.db_config import SubscribeDupException
+from ...config.db_config import config as db_config
+from ...types import Category, Tag, Target
 from .nbesf_model import ItemModel
 
 
 class SubsExport:
     nbesf_data: list[dict]
 
-    def __init__(self, func: Callable[[], Coroutine[Any, Any, Any]]):
+    def __init__(self, func: Callable[..., Coroutine[Any, Any, Any]]):
         """
         func:
             可以获取订阅记录的数据库查询函数
@@ -108,7 +108,7 @@ class SubsImport:
     def __init__(
         self,
         func: Callable[
-            [int, str, Target, str, str, list[Category], list[Tag]],
+            ...,
             Coroutine[Any, Any, Any],
         ],
     ):

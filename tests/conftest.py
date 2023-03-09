@@ -84,9 +84,20 @@ async def init_scheduler(app: App):
 async def use_legacy_config(app: App):
     import aiofiles
 
-    from nonebot_bison.config.config_legacy import config, get_config_path
+    from nonebot_bison.config.config_legacy import Config, get_config_path
+    from nonebot_bison.utils import Singleton
 
-    async with aiofiles.open(get_config_path()[0], "w") as f:
+    # 默认不创建配置所在的文件夹
+    # 如果需要测试需要手动创建相关文件夹
+    path = Path(get_config_path()[0])
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    async with aiofiles.open(path, "w") as f:
         await f.write("{}")
 
-    config._do_init()
+    Config()._do_init()
+
+    yield
+
+    # 清除单例的缓存
+    Singleton._instances.clear()

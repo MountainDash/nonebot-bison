@@ -88,20 +88,17 @@ class SubsExport:
         if export_path.is_file():
             raise FileExistsError("导出路径不能是文件")
 
-        try:
-            assert export_path.exists()
-        except AssertionError:
-            export_path.mkdir()
-        finally:
-            writable_data = (
-                self.nbesf_data if self.nbesf_data else await self.build(echo=True)
-            )
-            with open(
-                export_path / f"bison_subscribes_export_{int(time.time())}.json",
-                "w",
-                encoding="utf-8",
-            ) as f:
-                json.dump(writable_data, f, ensure_ascii=False, indent=4)
+        export_path.mkdir(exist_ok=True)
+
+        writable_data = (
+            self.nbesf_data if self.nbesf_data else await self.build(echo=True)
+        )
+        with open(
+            export_path / f"bison_subscribes_export_{int(time.time())}.json",
+            "w",
+            encoding="utf-8",
+        ) as f:
+            json.dump(writable_data, f, ensure_ascii=False, indent=4)
 
 
 class SubsImport:

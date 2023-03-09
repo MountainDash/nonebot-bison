@@ -29,7 +29,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && cp -r -f build/* ../src/plugins/nonebot_bison/admin_page/dist",
+    "build": "react-scripts build && cp -r -f build/* ../nonebot_bison/admin_page/dist",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --fix src/**/*.ts src/**/*.tsx"

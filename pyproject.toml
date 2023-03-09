@@ -57,7 +57,7 @@ cli = ["anyio", "click", "typing-extensions"]
 yaml = ["pyyaml"]
 all = ["anyio", "click", "typing-extensions", "pyyaml"]
 
-[tool.poetry.plugins.nb]
+[tool.poetry.plugins.nb_scripts]
 bison = "nonebot_bison.script.cli:main"
 
 [build-system]

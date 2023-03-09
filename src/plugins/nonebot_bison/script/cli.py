@@ -73,7 +73,7 @@ async def subs_export(path: Optional[str], yaml: bool):
             nbesf_data = await subscribes_export.build(echo=True)
 
             with export_file.open("w", encoding="utf-8") as f:
-                pyyaml.safe_dump(nbesf_data, f)
+                pyyaml.safe_dump(nbesf_data, f, sort_keys=False)
 
         logger.success(f"导出完毕！已导出到{str(export_path)}")
     else:

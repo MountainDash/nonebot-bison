@@ -8,7 +8,7 @@ on:
     paths:
       - admin-frontend/**
       - docker/**
-      - src/**
+      - nonebot_bison/**
       - tests/**
       - pyproject.toml
       - poetry.lock

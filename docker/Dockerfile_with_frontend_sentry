@@ -41,8 +41,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
 
 COPY --from=builder /runtime /usr/local
 RUN playwright install chromium
-ADD src /app/src
-ADD bot.py /app/
+ADD . /app/
 RUN echo 'DATASTORE_DATA_DIR=/data' > .env && sed '/nonebot.load_builtin_plugins("echo")/a nonebot.load_plugin("nonebot_plugin_sentry")' -i bot.py
 ENV HOST=0.0.0.0
 CMD ["python", "bot.py"]

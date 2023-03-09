@@ -137,8 +137,8 @@ async def get_subs_info(jwt_obj: dict = Depends(get_jwt_obj)) -> SubscribeResp:
                 lambda sub: SubscribeConfig(
                     platformName=sub.target.platform_name,
                     targetName=sub.target.target_name,
-                    cats=sub.categories,  # type: ignore
-                    tags=sub.tags,  # type: ignore
+                    cats=sub.categories,
+                    tags=sub.tags,
                     target=sub.target.target,
                 ),
                 raw_subs,

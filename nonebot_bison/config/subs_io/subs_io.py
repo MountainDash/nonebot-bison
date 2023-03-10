@@ -3,102 +3,48 @@ import time
 from dataclasses import asdict
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Coroutine
+from typing import Any, Callable, Coroutine, ParamSpecArgs, ParamSpecKwargs, Sequence
 
 from nonebot.log import logger
 from objtyping import to_primitive
 
+from nonebot_bison.config.db_model import Subscribe
+
 from ...config.db_config import SubscribeDupException
 from ...config.db_config import config as db_config
-from ...types import Category, Tag, Target
-from .nbesf_model import ItemModel
+from ...types import Category, Tag
+from ...types import Target as T_Target
+from .nbesf_model import ItemModel, PackAsNBESF, SubGroup, SubPack, SubPayload, UserHead
 
 
-class SubsExport:
-    nbesf_data: list[dict]
+async def subscribes_export(
+    fetcher_func: Callable[..., Coroutine[Any, Any, Sequence[Subscribe]]]
+) -> SubGroup:
 
-    def __init__(self, func: Callable[..., Coroutine[Any, Any, Any]]):
-        """
-        func:
-            可以获取订阅记录的数据库查询函数
-        """
-        self.fetch_db_data_hook = func
+    db_data_seq = await fetcher_func()
 
-    async def build(self, echo=False):
-        """构建Nonebot Bison Exchangable Subscribes File所需数据结构
+    user_set: set[UserHead] = set()
+    groups: list[SubPack] = []
+    for item in db_data_seq:
 
-        构建好的数据将存入self.nbesf_data
-        """
-        assert self.fetch_db_data_hook
-        raw_data = await self.fetch_db_data_hook()
-        # 将数据库查询记录转换为python数据类型，并排除主键和外键
-        raw_subs = to_primitive(
-            raw_data,
-            ignores=["id", "target_id", "user_id"],
-        )
-        assert isinstance(raw_subs, list)
+        checking_user = UserHead.from_orm(item.user)
+        new_sub_payload = SubPayload.from_orm(item)
 
-        # 将相同user的订阅合并
-        formatted_subs = []
-        users = set()
-
-        for sub in raw_subs:
-            assert isinstance(sub, dict)
-            user = sub["user"]
-
-            if user["uid"] in users:
-                # 已有该user，追加记录到该user下的subs
-                for item in formatted_subs:
-
-                    if item["user"] == user:
-                        new_sub = sub.copy()
-                        new_sub.pop("user")
-                        item["subs"].append(new_sub)
-
-                        break
-
-            else:
-                # 新的user，新建该user的订阅信息
-                users.add(user["uid"])
-                subs = []
-
-                new_sub = sub.copy()
-                new_sub.pop("user")
-                subs.append(new_sub)
-
-                formatted_subs.append({"user": user, "subs": subs})
-
-        self.nbesf_data = formatted_subs
-        if echo:
-            return self.nbesf_data
+        if checking_user in user_set:
+            # 已有收货信息？向包裹追加货物！
+            for existing_sub_pack in groups:
+                if checking_user == existing_sub_pack.user:
+                    existing_sub_pack.subs.append(new_sub_payload)
+                    break
         else:
-            return
+            # 新的收货信息？创建新的包裹！
+            user_set.add(checking_user)
+            new_sub_pack = SubPack(user=checking_user, subs=[new_sub_payload])
+            groups.append(new_sub_pack)
 
-    async def export_to(self, export_path: Path = Path.cwd() / "data"):
-        """
-        bison订阅信息导出函数，生成可以导入另一个bison的订阅记录文件
+    sub_group = PackAsNBESF(groups=groups)
 
-        导出文件名:
-            bison_subscribes_export_<导出时的时间戳>.json
-
-        参数:
-            export_path (Path, Optional): 文件的导出位置，默认为工作路径下的data文件夹
-
-        """
-        if export_path.is_file():
-            raise FileExistsError("导出路径不能是文件")
-
-        export_path.mkdir(exist_ok=True)
-
-        writable_data = (
-            self.nbesf_data if self.nbesf_data else await self.build(echo=True)
-        )
-        with open(
-            export_path / f"bison_subscribes_export_{int(time.time())}.json",
-            "w",
-            encoding="utf-8",
-        ) as f:
-            json.dump(writable_data, f, ensure_ascii=False, indent=4)
+    return sub_group
 
 
 class SubsImport:
@@ -253,5 +199,4 @@ class SubsImport:
         return self.check_and_build()
 
 
-subscribes_export = SubsExport(db_config.list_subs_with_all_info)
 subscribes_import = SubsImport(db_config.add_subscribe)

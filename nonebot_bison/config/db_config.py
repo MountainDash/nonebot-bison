@@ -102,9 +102,7 @@ class DBConfig:
             query_stmt = (
                 select(Subscribe)
                 .join(User)
-                .options(
-                    selectinload(Subscribe.target), selectinload(Subscribe.user)
-                )  # type:ignore
+                .options(selectinload(Subscribe.target).selectinload(Subscribe.user))
             )
             subs = (await session.scalars(query_stmt)).all()
 

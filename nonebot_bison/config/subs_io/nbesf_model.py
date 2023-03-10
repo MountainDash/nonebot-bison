@@ -1,6 +1,5 @@
 """ nbexf is Nonebot Bison Enchangable Subscribes File! """
 
-from dataclasses import dataclass
 from functools import partial
 
 from pydantic import BaseModel
@@ -46,7 +45,11 @@ class SubPack(BaseModel):
 
 
 class SubGroup(BaseModel):
-    """Bison的全部订单(按用户分组)"""
+    """
+    Bison的全部订单(按用户分组)
+
+    结构参见`nbesf_model.py`
+    """
 
     version: int  # 表示nbesf格式版本，从1开始
     groups: list[SubPack]
@@ -56,9 +59,8 @@ PackAsNBESF = partial(SubGroup, version=nbesf_version)
 # ======================= #
 
 
-@dataclass
-class ItemModel:
-    """use for import"""
+class SubReceipt(BaseModel):
+    """快递包中每件货物的收据"""
 
     user: int
     user_type: str
@@ -68,3 +70,18 @@ class ItemModel:
     cats: list[Category]
     tags: list[Tag]
     # default_schedule_weight: int
+
+
+class NBESFVerMatchErr(Exception):
+    ...
+
+
+class NBESFParseErr(Exception):
+    ...
+
+
+def nbesf_version_checker(ver: int):
+    if ver == nbesf_version:
+        return True
+    else:
+        raise NBESFVerMatchErr

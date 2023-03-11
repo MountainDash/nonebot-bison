@@ -21,7 +21,7 @@ async def data_migrate():
             subscribe_to_create = []
             platform_target_map: dict[str, tuple[Target, str, int]] = {}
             for user in all_subs:
-                db_user = User(uid=user["user"], type=user["user_type"])  # type: ignore
+                db_user = User(uid=user["user"], type=user["user_type"])
                 user_to_create.append(db_user)
                 user_sub_set = set()
                 for sub in user["subs"]:
@@ -51,7 +51,7 @@ async def data_migrate():
                             platform_name=platform_name,
                             target_name=target_name,
                             target=target,
-                        )  # type: ignore
+                        )
                         platform_target_map[key] = (
                             target_obj,
                             user["user_type"],
@@ -62,7 +62,7 @@ async def data_migrate():
                         target=target_obj,
                         categories=sub["cats"],
                         tags=sub["tags"],
-                    )  # type: ignore
+                    )
                     subscribe_to_create.append(subscribe_obj)
             sess.add_all(
                 user_to_create

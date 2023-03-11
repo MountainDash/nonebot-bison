@@ -72,7 +72,7 @@ async def subs_export(path: Optional[str], yaml: bool):
     export_path.mkdir(exist_ok=True)
     export_file = (
         export_path
-        / f"bison_subscribe_group_{int(time.time())}.{'yaml' if yaml else 'json'}"
+        / f"bison_subscribes_export_{int(time.time())}.{'yaml' if yaml else 'json'}"
     )
 
     logger.info("正在获取订阅信息...")
@@ -87,7 +87,7 @@ async def subs_export(path: Optional[str], yaml: bool):
         else:
             logger.info("正在导出为json...")
 
-            json.dump(export_data.dict(), f)
+            json.dump(export_data.dict(), f, indent=4, ensure_ascii=False)
 
         logger.success(f"导出完毕！已导出到 {str(export_path)} ")
 
@@ -97,6 +97,9 @@ async def subs_export(path: Optional[str], yaml: bool):
 @click.option("--yaml", is_flag=True, help="从yaml文件读入")
 @run_async
 async def subs_import(path: str, yaml: bool):
+
+    await init_scheduler()
+
     import_file_path = Path(path)
     assert import_file_path.is_file(), "该路径不是文件！"
 

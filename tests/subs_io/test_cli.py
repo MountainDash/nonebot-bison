@@ -34,7 +34,7 @@ def test_cli_help(app: App):
         assert opt in result.output
 
 
-async def test_subs_export(app: App, init_scheduler, tmp_path: Path):
+async def test_subs_export(app: App, tmp_path: Path):
     from nonebot_bison.config.db_config import config
     from nonebot_bison.script.cli import cli, run_sync
     from nonebot_bison.types import Target as TTarget
@@ -95,7 +95,7 @@ async def test_subs_export(app: App, init_scheduler, tmp_path: Path):
         assert file_path.stat().st_size
 
 
-async def test_subs_import(app: App, init_scheduler, tmp_path):
+async def test_subs_import(app: App, tmp_path):
     from nonebot_bison.config.db_config import config
     from nonebot_bison.script.cli import cli, run_sync
 

@@ -60,7 +60,11 @@ PackAsNBESF = partial(SubGroup, version=nbesf_version)
 
 
 class SubReceipt(BaseModel):
-    """快递包中每件货物的收据"""
+    """
+    快递包中每件货物的收据
+
+    导入订阅时的Model
+    """
 
     user: int
     user_type: str

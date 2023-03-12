@@ -1,10 +1,15 @@
+from collections import defaultdict
 from functools import partial
-from typing import Any, Callable, Coroutine, Sequence
+from typing import Any, Callable, Coroutine, Sequence, TypeVar
 
 from nonebot.log import logger
+from nonebot_plugin_datastore.db import create_session
+from sqlalchemy import select
+from sqlalchemy.orm.strategy_options import selectinload
+from sqlalchemy.sql.selectable import Select
 
 from ..db_config import SubscribeDupException
-from ..db_model import Subscribe
+from ..db_model import Subscribe, User
 from .nbesf_model import (
     NBESFParseErr,
     SubGroup,
@@ -15,36 +20,36 @@ from .nbesf_model import (
     nbesf_version_checker,
 )
 
+T = TypeVar("T", bound=Select)
 
-async def subscribes_export(
-    fetcher_func: Callable[..., Coroutine[Any, Any, Sequence[Subscribe]]]
-) -> SubGroup:
+
+async def subscribes_export(selector: Callable[[T], T]) -> SubGroup:
     """
     将Bison订阅导出为 Nonebot Bison Exchangable Subscribes File 标准格式的 SubGroup 类型数据
-    fetcher_func:
-        获取数据库中订阅信息的函数，应返回 db_model 中 Subscribe 类型的list
+
+    selector:
+        对 sqlalchemy Select 对象的操作函数，用于限定查询范围 e.g. lambda stmt: stmt.where(User.uid=2233, User.type="group")
     """
+    async with create_session() as sess:
+        sub_stmt = select(Subscribe).join(User)
+        sub_stmt = selector(sub_stmt).options(selectinload(Subscribe.target))
+        sub_data = await sess.scalars(sub_stmt)
 
-    db_data_seq = await fetcher_func()
+        user_stmt = select(User).join(Subscribe)
+        user_stmt = selector(user_stmt).distinct()
+        user_data = await sess.scalars(user_stmt)
 
-    user_set: set[UserHead] = set()
     groups: list[SubPack] = []
-    for item in db_data_seq:
+    user_id_sub_dict: dict[int, list[SubPayload]] = defaultdict(list)
 
-        checking_user = UserHead.from_orm(item.user)
-        new_sub_payload = SubPayload.from_orm(item)
+    for sub in sub_data:
+        sub_paylaod = SubPayload.from_orm(sub)
+        user_id_sub_dict[sub.user_id].append(sub_paylaod)
 
-        if checking_user in user_set:
-            # 已有收货信息？向包裹追加货物！
-            for existing_sub_pack in groups:
-                if checking_user == existing_sub_pack.user:
-                    existing_sub_pack.subs.append(new_sub_payload)
-                    break
-        else:
-            # 新的收货信息？创建新的包裹！
-            user_set.add(checking_user)
-            new_sub_pack = SubPack(user=checking_user, subs=[new_sub_payload])
-            groups.append(new_sub_pack)
+    for user in user_data:
+        user_head = UserHead.from_orm(user)
+        sub_pack = SubPack(user=user_head, subs=user_id_sub_dict[user.id])
+        groups.append(sub_pack)
 
     sub_group = SubGroup(groups=groups)
 

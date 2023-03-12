@@ -10,6 +10,7 @@ async def test_subs_export(app: App, init_scheduler):
     import time
 
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.config.db_model import User
     from nonebot_bison.config.subs_io import subscribes_export
     from nonebot_bison.types import Target as TTarget
 
@@ -44,9 +45,15 @@ async def test_subs_export(app: App, init_scheduler):
     data = await config.list_subs_with_all_info()
     assert len(data) == 3
 
-    nbesf_data = await subscribes_export(config.list_subs_with_all_info)
-
+    nbesf_data = await subscribes_export(lambda x: x)
     assert nbesf_data.dict() == get_json("subs_export.json")
+
+    nbesf_data_user_234 = await subscribes_export(
+        lambda stmt: stmt.where(User.uid == 234, User.type == "group")
+    )
+    assert len(nbesf_data_user_234.groups) == 1
+    assert len(nbesf_data_user_234.groups[0].subs) == 2
+    assert nbesf_data_user_234.groups[0].user.dict() == {"uid": 234, "type": "group"}
 
 
 async def test_subs_import(app: App, init_scheduler):

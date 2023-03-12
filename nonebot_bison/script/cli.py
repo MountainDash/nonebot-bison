@@ -60,43 +60,64 @@ def cli():
     pass
 
 
+def path_init(ctx, param, value):
+    if not value:
+        export_path = Path.cwd() / "data"
+    else:
+        export_path = Path(value)
+
+    export_path.mkdir(exist_ok=True)
+
+    return (param, value)
+
+
 @cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
-@click.option("--path", "-p", default=None, help="导出路径")
-@click.option("--yaml", is_flag=True, help="使用yaml格式")
+@click.option("--path", "-p", default=None, callback=path_init, help="导出路径")
+@click.option(
+    "--format",
+    default="json",
+    type=click.Choice(["json", "yaml", "yml"]),
+    help="指定导出格式[json, yaml]，默认为 json",
+)
 @run_async
-async def subs_export(path: Optional[str], yaml: bool):
+async def subs_export(path: Path, format: str):
 
     await init_scheduler()
 
-    export_path = Path(path) if path else (Path.cwd() / "data")
-    export_path.mkdir(exist_ok=True)
-    export_file = (
-        export_path
-        / f"bison_subscribes_export_{int(time.time())}.{'yaml' if yaml else 'json'}"
-    )
+    export_file = path / f"bison_subscribes_export_{int(time.time())}.{format}"
 
     logger.info("正在获取订阅信息...")
     export_data: SubGroup = await subscribes_export(config.list_subs_with_all_info)
 
     with export_file.open("w", encoding="utf-8") as f:
-        if yaml:
-            logger.info("正在导出为yaml...")
+        match format:
+            case "yaml" | "yml":
+                logger.info("正在导出为yaml...")
 
-            pyyaml = import_yaml_module()
-            pyyaml.safe_dump(export_data.dict(), f, sort_keys=False)
-        else:
-            logger.info("正在导出为json...")
+                pyyaml = import_yaml_module()
+                pyyaml.safe_dump(export_data.dict(), f, sort_keys=False)
 
-            json.dump(export_data.dict(), f, indent=4, ensure_ascii=False)
+            case "json":
+                logger.info("正在导出为json...")
 
-        logger.success(f"导出完毕！已导出到 {str(export_path)} ")
+                json.dump(export_data.dict(), f, indent=4, ensure_ascii=False)
+
+            case _:
+                raise click.BadParameter(message=f"不支持的导出格式: {format}")
+
+        logger.success(f"导出完毕！已导出到 {path} ")
 
 
 @cli.command(help="从Nonebot Biosn Exchangable Subscribes File导入订阅", name="import")
 @click.option("--path", "-p", required=True, help="导入文件名")
-@click.option("--yaml", is_flag=True, help="从yaml文件读入")
+@click.option(
+    "--format",
+    default="json",
+    type=click.Choice(["json", "yaml"]),
+    help="指定导入格式，默认为 json",
+)
 @run_async
-async def subs_import(path: str, yaml: bool):
+async def subs_import(path: str, format: str):
 
     await init_scheduler()
 
@@ -104,16 +125,17 @@ async def subs_import(path: str, yaml: bool):
     assert import_file_path.is_file(), "该路径不是文件！"
 
     with import_file_path.open("r", encoding="utf-8") as f:
-        if yaml:
-            logger.info("正在从yaml导入...")
+        match format:
+            case "yaml":
+                logger.info("正在从yaml导入...")
 
-            pyyaml = import_yaml_module()
-            import_items = pyyaml.safe_load(f)
+                pyyaml = import_yaml_module()
+                import_items = pyyaml.safe_load(f)
 
-        else:
-            logger.info("正在从json导入...")
+            case _:
+                logger.info("正在从json导入...")
 
-            import_items = json.load(f)
+                import_items = json.load(f)
 
         nbesf_data = nbesf_parser(import_items)
         await subscribes_import(nbesf_data, config.add_subscribe)

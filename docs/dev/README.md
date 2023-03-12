@@ -74,7 +74,7 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 ## 实现方法
 
-现在你需要在`src/plugins/nonebot_bison/platform`下新建一个 py 文件，
+现在你需要在`nonebot_bison/platform`下新建一个 py 文件，
 在里面新建一个类，继承推送类型的基类，重载一些关键的函数，然后……就完成了，不需要修改别的东西了。
 
 ### 不同类型 Platform 的实现适配以及逻辑

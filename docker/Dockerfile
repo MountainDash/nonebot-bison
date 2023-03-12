@@ -10,6 +10,6 @@ COPY ./pyproject.toml ./poetry.lock* /app/
 RUN poetry install --no-root --no-dev
 ADD src /app/src
 ADD bot.py /app/
-COPY --from=frontend /app/src/plugins/nonebot_bison/admin_page/dist /app/src/plugins/nonebot_bison/admin_page/dist
+COPY --from=frontend /app/nonebot_bison/admin_page/dist /app/nonebot_bison/admin_page/dist
 ENV HOST=0.0.0.0
 CMD ["python", "bot.py"]

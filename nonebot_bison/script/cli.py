@@ -72,7 +72,9 @@ def path_init(ctx, param, value):
 
 
 @cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
-@click.option("--path", "-p", default=None, callback=path_init, help="导出路径")
+@click.option(
+    "--path", "-p", default=None, callback=path_init, help="导出路径, 默认为工作目录下的data目录"
+)
 @click.option(
     "--format",
     default="json",
@@ -132,10 +134,13 @@ async def subs_import(path: str, format: str):
                 pyyaml = import_yaml_module()
                 import_items = pyyaml.safe_load(f)
 
-            case _:
+            case "json":
                 logger.info("正在从json导入...")
 
                 import_items = json.load(f)
+
+            case _:
+                raise click.BadParameter(message=f"不支持的导入格式: {format}")
 
         nbesf_data = nbesf_parser(import_items)
         await subscribes_import(nbesf_data, config.add_subscribe)

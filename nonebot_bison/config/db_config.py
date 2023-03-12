@@ -1,3 +1,4 @@
+import asyncio
 from collections import defaultdict
 from datetime import datetime, time
 from typing import Awaitable, Callable, Optional, Sequence
@@ -28,14 +29,14 @@ class SubscribeDupException(Exception):
 
 class DBConfig:
     def __init__(self):
-        self.add_target_hook: Optional[Callable[[str, T_Target], Awaitable]] = None
-        self.delete_target_hook: Optional[Callable[[str, T_Target], Awaitable]] = None
+        self.add_target_hook: list[Callable[[str, T_Target], Awaitable]] = []
+        self.delete_target_hook: list[Callable[[str, T_Target], Awaitable]] = []
 
     def register_add_target_hook(self, fun: Callable[[str, T_Target], Awaitable]):
-        self.add_target_hook = fun
+        self.add_target_hook.append(fun)
 
     def register_delete_target_hook(self, fun: Callable[[str, T_Target], Awaitable]):
-        self.delete_target_hook = fun
+        self.delete_target_hook.append(fun)
 
     async def add_subscribe(
         self,
@@ -65,8 +66,9 @@ class DBConfig:
                 db_target = Target(
                     target=target, platform_name=platform_name, target_name=target_name
                 )
-                if self.add_target_hook:
-                    await self.add_target_hook(platform_name, target)
+                await asyncio.gather(
+                    *[hook(platform_name, target) for hook in self.add_target_hook]
+                )
             else:
                 db_target.target_name = target_name
             subscribe = Subscribe(
@@ -118,9 +120,12 @@ class DBConfig:
             )
             if target_count == 0:
                 # delete empty target
-                # await session.delete(target_obj)
-                if self.delete_target_hook:
-                    await self.delete_target_hook(platform_name, T_Target(target))
+                await asyncio.gather(
+                    *[
+                        hook(platform_name, T_Target(target))
+                        for hook in self.delete_target_hook
+                    ]
+                )
             await session.commit()
 
     async def update_subscribe(

@@ -21,7 +21,7 @@ async def init_scheduler():
         platform_name = platform.platform_name
         targets = await config.get_platform_target(platform_name)
         if scheduler_config not in _schedule_class_dict:
-            _schedule_class_dict[scheduler_config] = targets
+            _schedule_class_dict[scheduler_config] = list(targets)
         else:
             _schedule_class_dict[scheduler_config].extend(targets)
         if scheduler_config not in _schedule_class_platform_dict:
@@ -36,6 +36,8 @@ async def init_scheduler():
         scheduler_dict[scheduler_config] = Scheduler(
             scheduler_config, schedulable_args, platform_name_list
         )
+    config.register_add_target_hook(handle_insert_new_target)
+    config.register_delete_target_hook(handle_delete_target)
 
 
 async def handle_insert_new_target(platform_name: str, target: T_Target):
@@ -48,7 +50,3 @@ async def handle_delete_target(platform_name: str, target: T_Target):
     platform = platform_manager[platform_name]
     scheduler_obj = scheduler_dict[platform.scheduler]
     scheduler_obj.delete_schedulable(platform_name, target)
-
-
-config.register_add_target_hook(handle_insert_new_target)
-config.register_delete_target_hook(handle_delete_target)

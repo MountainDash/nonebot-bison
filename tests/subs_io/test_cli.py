@@ -24,13 +24,13 @@ def test_cli_help(app: App):
     result = runner.invoke(cli, ["export", "--help"])
     assert result.exit_code == 0
 
-    for opt in ["--path", "-p", "导出路径", "--yaml", "使用yaml格式"]:
+    for opt in ["--path", "-p", "导出路径", "--format", "指定导出格式[json, yaml]，默认为 json"]:
         assert opt in result.output
 
     result = runner.invoke(cli, ["import", "--help"])
     assert result.exit_code == 0
 
-    for opt in ["--path", "-p", "导入文件名", "--yaml", "从yaml文件读入"]:
+    for opt in ["--path", "-p", "导入文件名", "--format", "指定导入格式[json, yaml]，默认为 json"]:
         assert opt in result.output
 
 
@@ -87,12 +87,17 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert file_path.stat().st_size
 
         result = await run_sync(runner.invoke)(
-            cli, ["export", "-p", str(tmp_path), "--yaml"]
+            cli, ["export", "-p", str(tmp_path), "--format", "yaml"]
         )
         assert result.exit_code == 0
         file_path3 = tmp_path / "bison_subscribes_export_1.yaml"
         assert file_path3.exists()
         assert file_path.stat().st_size
+
+        result = await run_sync(runner.invoke)(
+            cli, ["export", "-p", str(tmp_path), "--format", "toml"]
+        )
+        assert result.exit_code == 2
 
 
 async def test_subs_import(app: App, tmp_path):
@@ -120,7 +125,7 @@ async def test_subs_import(app: App, tmp_path):
     mock_file.write_text(get_file("subs_export.yaml"))
 
     result = await run_sync(runner.invoke)(
-        cli, ["import", "-p", str(mock_file), "--yaml"]
+        cli, ["import", "-p", str(mock_file), "--format=yml"]
     )
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 6

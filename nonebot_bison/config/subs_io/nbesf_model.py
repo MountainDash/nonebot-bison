@@ -1,13 +1,11 @@
 """ nbexf is Nonebot Bison Enchangable Subscribes File! """
 
-from functools import partial
-
 from pydantic import BaseModel
 
 from ...types import Category, Tag
 
 # ===== nbesf 定义格式 ====== #
-nbesf_version = 1
+NBESF_VERSION = 1
 
 
 class UserHead(BaseModel, orm_mode=True):
@@ -51,11 +49,10 @@ class SubGroup(BaseModel):
     结构参见`nbesf_model.py`
     """
 
-    version: int  # 表示nbesf格式版本，从1开始
+    version: int = NBESF_VERSION  # 表示nbesf格式版本，从1开始
     groups: list[SubPack]
 
 
-PackAsNBESF = partial(SubGroup, version=nbesf_version)
 # ======================= #
 
 
@@ -85,7 +82,7 @@ class NBESFParseErr(Exception):
 
 
 def nbesf_version_checker(ver: int):
-    if ver == nbesf_version:
+    if ver == NBESF_VERSION:
         return True
     else:
         raise NBESFVerMatchErr

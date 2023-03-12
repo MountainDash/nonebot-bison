@@ -3,12 +3,10 @@ from typing import Any, Callable, Coroutine, Sequence
 
 from nonebot.log import logger
 
-from nonebot_bison.config.db_model import Subscribe
-
-from ...config.db_config import SubscribeDupException
+from ..db_config import SubscribeDupException
+from ..db_model import Subscribe
 from .nbesf_model import (
     NBESFParseErr,
-    PackAsNBESF,
     SubGroup,
     SubPack,
     SubPayload,
@@ -23,7 +21,6 @@ async def subscribes_export(
 ) -> SubGroup:
     """
     将Bison订阅导出为 Nonebot Bison Exchangable Subscribes File 标准格式的 SubGroup 类型数据
-
     fetcher_func:
         获取数据库中订阅信息的函数，应返回 db_model 中 Subscribe 类型的list
     """
@@ -49,7 +46,7 @@ async def subscribes_export(
             new_sub_pack = SubPack(user=checking_user, subs=[new_sub_payload])
             groups.append(new_sub_pack)
 
-    sub_group = PackAsNBESF(groups=groups)
+    sub_group = SubGroup(groups=groups)
 
     return sub_group
 

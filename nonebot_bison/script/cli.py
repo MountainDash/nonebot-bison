@@ -4,7 +4,7 @@ import time
 from functools import partial, wraps
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Coroutine, Optional, TypeVar
+from typing import Any, Callable, Coroutine, TypeVar
 
 from nonebot.log import logger
 
@@ -68,7 +68,7 @@ def path_init(ctx, param, value):
 
     export_path.mkdir(exist_ok=True)
 
-    return (param, value)
+    return export_path
 
 
 @cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
@@ -113,8 +113,8 @@ async def subs_export(path: Path, format: str):
 @click.option(
     "--format",
     default="json",
-    type=click.Choice(["json", "yaml"]),
-    help="指定导入格式，默认为 json",
+    type=click.Choice(["json", "yaml", "yml"]),
+    help="指定导入格式[json, yaml]，默认为 json",
 )
 @run_async
 async def subs_import(path: str, format: str):
@@ -126,7 +126,7 @@ async def subs_import(path: str, format: str):
 
     with import_file_path.open("r", encoding="utf-8") as f:
         match format:
-            case "yaml":
+            case "yaml" | "yml":
                 logger.info("正在从yaml导入...")
 
                 pyyaml = import_yaml_module()

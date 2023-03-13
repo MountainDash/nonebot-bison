@@ -8,16 +8,16 @@ from sqlalchemy import select
 from sqlalchemy.orm.strategy_options import selectinload
 from sqlalchemy.sql.selectable import Select
 
-from ..db_config import SubscribeDupException, config
 from ..db_model import Subscribe, User
 from .nbesf_model import (
+    NBESFParseErr,
+    NBESFVerMatchErr,
     SubGroup,
     SubPack,
     SubPayload,
-    SubReceipt,
     UserHead,
-    nbesf_version_checker,
 )
+from .utils import subs_receipt_gen_ver_1
 
 T = TypeVar("T", bound=Select)
 
@@ -68,29 +68,12 @@ async def subscribes_import(
         向数据库中添加订阅信息的函数
     """
 
-    nbesf_version_checker(nbesf_data.version)
-
     logger.info("开始添加订阅流程")
-    for item in nbesf_data.groups:
-        sub_receipt = partial(SubReceipt, user=item.user.uid, user_type=item.user.type)
-
-        for sub in item.subs:
-            receipt = sub_receipt(
-                target=sub.target.target,
-                target_name=sub.target.target_name,
-                platform_name=sub.target.platform_name,
-                cats=sub.categories,
-                tags=sub.tags,
-            )
-            try:
-                await config.add_subscribe(**receipt.dict())
-            except SubscribeDupException:
-                logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
-            except Exception as e:
-                logger.error(f"！添加订阅条目 {repr(receipt)} 失败: {repr(e)}")
-            else:
-                logger.success(f"添加订阅条目 {repr(receipt)} 成功！")
-
+    match nbesf_data.version:
+        case 1:
+            await subs_receipt_gen_ver_1(nbesf_data)
+        case _:
+            raise NBESFVerMatchErr(f"不支持的NBESF版本：{nbesf_data.version}")
     logger.info("订阅流程结束，请检查所有订阅记录是否全部添加成功")
 
 
@@ -101,8 +84,8 @@ def nbesf_parser(raw_data: Any) -> SubGroup:
         else:
             nbesf_data = SubGroup.parse_obj(raw_data)
 
-    except Exception:
+    except Exception as e:
         logger.error("数据解析失败，该数据格式可能不满足NBESF格式标准！")
-        raise Exception
+        raise NBESFParseErr("数据解析失败") from e
     else:
         return nbesf_data

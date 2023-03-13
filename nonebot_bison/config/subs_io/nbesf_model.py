@@ -79,10 +79,3 @@ class NBESFVerMatchErr(Exception):
 
 class NBESFParseErr(Exception):
     ...
-
-
-def nbesf_version_checker(ver: int):
-    if ver == NBESF_VERSION:
-        return True
-    else:
-        raise NBESFVerMatchErr

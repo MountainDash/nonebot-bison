@@ -8,14 +8,9 @@ from typing import Any, Callable, Coroutine, TypeVar
 
 from nonebot.log import logger
 
-from nonebot_bison.config.db_config import config
-from nonebot_bison.config.subs_io import (
-    nbesf_parser,
-    subscribes_export,
-    subscribes_import,
-)
-from nonebot_bison.config.subs_io.nbesf_model import SubGroup
-from nonebot_bison.scheduler.manager import init_scheduler
+from ..config.subs_io import nbesf_parser, subscribes_export, subscribes_import
+from ..config.subs_io.nbesf_model import SubGroup
+from ..scheduler.manager import init_scheduler
 
 try:
     import anyio
@@ -143,7 +138,7 @@ async def subs_import(path: str, format: str):
                 raise click.BadParameter(message=f"不支持的导入格式: {format}")
 
         nbesf_data = nbesf_parser(import_items)
-        await subscribes_import(nbesf_data, config.add_subscribe)
+        await subscribes_import(nbesf_data)
 
 
 def main():

@@ -62,7 +62,7 @@ async def test_subs_import(app: App, init_scheduler):
 
     nbesf_data = nbesf_parser(get_json("subs_export.json"))
 
-    await subscribes_import(nbesf_data, config.add_subscribe)
+    await subscribes_import(nbesf_data)
 
     data = await config.list_subs_with_all_info()
     assert len(data) == 3
@@ -75,7 +75,7 @@ async def test_subs_import_dup_err(app: App, init_scheduler):
 
     nbesf_data = nbesf_parser(get_json("subs_export_has_subdup_err.json"))
 
-    await subscribes_import(nbesf_data, config.add_subscribe)
+    await subscribes_import(nbesf_data)
 
     data = await config.list_subs_with_all_info()
 

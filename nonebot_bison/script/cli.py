@@ -65,7 +65,9 @@ def path_init(ctx, param, value):
 
 
 @cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
-@click.option("--path", "-p", default=None, callback=path_init, help="导出路径, 默认为工作目录")
+@click.option(
+    "--path", "-p", default=None, callback=path_init, help="导出路径,  如果不指定，则默认为工作目录"
+)
 @click.option(
     "--format",
     default="json",

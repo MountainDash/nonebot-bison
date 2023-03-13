@@ -63,9 +63,6 @@ async def subscribes_import(
 
     nbesf_data:
         符合nbesf_model标准的 SubGroup 类型数据
-
-    dumpee_func:
-        向数据库中添加订阅信息的函数
     """
 
     logger.info("开始添加订阅流程")

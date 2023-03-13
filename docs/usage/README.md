@@ -197,6 +197,31 @@ sidebar: auto
 与普通的[`添加订阅`/`删除订阅`](#在本群中进行配置)命令一样，在`群管理`命令中使用的`添加订阅`/`删除订阅`命令也可以使用`取消`来中止订阅过程
 :::
 
+### 命令行命令(CLI)
+
+```CLI
+Nonebot Bison CLI, 目前用于实现Bison订阅的导入导出功能
+
+用法:
+  nb bison COMMAND [OPTIONS] [ARGS]
+
+Command(命令):
+
+  export:
+  导出Nonebot Bison Exchangable Subcribes File
+      Options(选项):
+        -p, --path TEXT           导出路径, 如果不指定，则默认为工作目录
+        --format [json|yaml|yml]  指定导出格式[json, yaml]，默认为 json
+        --help                    显示帮助
+
+  import:
+  从Nonebot Biosn Exchangable Subscribes File导入订阅
+      Options(选项):
+        -p, --path TEXT           导入文件名  [必须]
+        --format [json|yaml|yml]  指定导入格式[json, yaml]，默认为 json
+        --help                    显示帮助
+```
+
 ### 所支持平台的 uid
 
 #### Weibo

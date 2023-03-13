@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import partial
-from typing import Any, Callable, Coroutine, Sequence, TypeVar
+from typing import Any, Callable, TypeVar
 
 from nonebot.log import logger
 from nonebot_plugin_datastore.db import create_session
@@ -8,10 +8,9 @@ from sqlalchemy import select
 from sqlalchemy.orm.strategy_options import selectinload
 from sqlalchemy.sql.selectable import Select
 
-from ..db_config import SubscribeDupException
+from ..db_config import SubscribeDupException, config
 from ..db_model import Subscribe, User
 from .nbesf_model import (
-    NBESFParseErr,
     SubGroup,
     SubPack,
     SubPayload,
@@ -57,7 +56,7 @@ async def subscribes_export(selector: Callable[[T], T]) -> SubGroup:
 
 
 async def subscribes_import(
-    nbesf_data: SubGroup, dumpee_func: Callable[..., Coroutine[Any, Any, Any]]
+    nbesf_data: SubGroup,
 ):
     """
     从 Nonebot Bison Exchangable Subscribes File 标准格式的数据中导入订阅
@@ -84,7 +83,7 @@ async def subscribes_import(
                 tags=sub.tags,
             )
             try:
-                await dumpee_func(**receipt.dict())
+                await config.add_subscribe(**receipt.dict())
             except SubscribeDupException:
                 logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
             except Exception as e:
@@ -97,9 +96,13 @@ async def subscribes_import(
 
 def nbesf_parser(raw_data: Any) -> SubGroup:
     try:
-        nbesf_data = SubGroup.parse_obj(raw_data)
-    except:
-        logger.error("该数据格式不满足NBESF格式标准！")
-        raise NBESFParseErr
+        if isinstance(raw_data, str):
+            nbesf_data = SubGroup.parse_raw(raw_data)
+        else:
+            nbesf_data = SubGroup.parse_obj(raw_data)
+
+    except Exception:
+        logger.error("数据解析失败，该数据格式可能不满足NBESF格式标准！")
+        raise Exception
     else:
         return nbesf_data

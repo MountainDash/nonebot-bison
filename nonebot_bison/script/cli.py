@@ -57,19 +57,15 @@ def cli():
 
 def path_init(ctx, param, value):
     if not value:
-        export_path = Path.cwd() / "data"
+        export_path = Path.cwd()
     else:
         export_path = Path(value)
-
-    export_path.mkdir(exist_ok=True)
 
     return export_path
 
 
 @cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
-@click.option(
-    "--path", "-p", default=None, callback=path_init, help="导出路径, 默认为工作目录下的data目录"
-)
+@click.option("--path", "-p", default=None, callback=path_init, help="导出路径, 默认为工作目录")
 @click.option(
     "--format",
     default="json",

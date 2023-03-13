@@ -74,11 +74,13 @@ async def test_subs_export(app: App, tmp_path: Path):
         mock_now.time.return_value = 1
 
         runner = CliRunner()
-        result = await run_sync(runner.invoke)(cli, ["export"])
-        assert result.exit_code == 0
-        file_path = Path.cwd() / "data" / "bison_subscribes_export_1.json"
-        assert file_path.exists()
-        assert file_path.stat().st_size
+
+        with runner.isolated_filesystem(temp_dir=tmp_path) as td:
+            result = await run_sync(runner.invoke)(cli, ["export"])
+            assert result.exit_code == 0
+            file_path = Path.cwd() / "bison_subscribes_export_1.json"
+            assert file_path.exists()
+            assert file_path.stat().st_size
 
         result = await run_sync(runner.invoke)(cli, ["export", "-p", str(tmp_path)])
         assert result.exit_code == 0
@@ -93,6 +95,11 @@ async def test_subs_export(app: App, tmp_path: Path):
         file_path3 = tmp_path / "bison_subscribes_export_1.yaml"
         assert file_path3.exists()
         assert file_path.stat().st_size
+
+        result = await run_sync(runner.invoke)(
+            cli, ["export", "-p", str(tmp_path / "data")]
+        )
+        assert result.exit_code == 1
 
         result = await run_sync(runner.invoke)(
             cli, ["export", "-p", str(tmp_path), "--format", "toml"]

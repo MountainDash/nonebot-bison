@@ -74,7 +74,7 @@ async def test_subs_export(app: App, tmp_path: Path):
         mock_now.time.return_value = 1
 
         runner = CliRunner()
-
+        # 是否默认导出到工作目录
         with runner.isolated_filesystem(temp_dir=tmp_path) as td:
             result = await run_sync(runner.invoke)(cli, ["export"])
             assert result.exit_code == 0
@@ -82,25 +82,31 @@ async def test_subs_export(app: App, tmp_path: Path):
             assert file_path.exists()
             assert file_path.stat().st_size
 
-        result = await run_sync(runner.invoke)(cli, ["export", "-p", str(tmp_path)])
+        # 是否导出到指定已存在文件夹
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        result = await run_sync(runner.invoke)(cli, ["export", "-p", str(data_dir)])
         assert result.exit_code == 0
-        file_path2 = tmp_path / "bison_subscribes_export_1.json"
+        file_path2 = data_dir / "bison_subscribes_export_1.json"
         assert file_path2.exists()
-        assert file_path.stat().st_size
+        assert file_path2.stat().st_size
 
+        # 是否拒绝导出到不存在的文件夹
+        result = await run_sync(runner.invoke)(
+            cli, ["export", "-p", str(tmp_path / "data2")]
+        )
+        assert result.exit_code == 1
+
+        # 是否可以以yaml格式导出
         result = await run_sync(runner.invoke)(
             cli, ["export", "-p", str(tmp_path), "--format", "yaml"]
         )
         assert result.exit_code == 0
         file_path3 = tmp_path / "bison_subscribes_export_1.yaml"
         assert file_path3.exists()
-        assert file_path.stat().st_size
+        assert file_path3.stat().st_size
 
-        result = await run_sync(runner.invoke)(
-            cli, ["export", "-p", str(tmp_path / "data")]
-        )
-        assert result.exit_code == 1
-
+        # 是否允许以未支持的格式导出
         result = await run_sync(runner.invoke)(
             cli, ["export", "-p", str(tmp_path), "--format", "toml"]
         )

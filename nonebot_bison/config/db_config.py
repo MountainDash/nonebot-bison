@@ -96,6 +96,18 @@ class DBConfig:
             subs = (await session.scalars(query_stmt)).all()
             return subs
 
+    async def list_subs_with_all_info(self) -> Sequence[Subscribe]:
+        """获取数据库中带有user、target信息的subscribe数据"""
+        async with create_session() as session:
+            query_stmt = (
+                select(Subscribe)
+                .join(User)
+                .options(selectinload(Subscribe.target), selectinload(Subscribe.user))
+            )
+            subs = (await session.scalars(query_stmt)).all()
+
+        return subs
+
     async def del_subscribe(
         self, user: int, user_type: str, target: str, platform_name: str
     ):

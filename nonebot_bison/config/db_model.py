@@ -1,7 +1,9 @@
 import datetime
 from pathlib import Path
+from typing import Optional
 
 from nonebot_plugin_datastore import get_plugin_data
+from nonebot_plugin_saa.utils import PlatformTarget
 from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,6 +19,7 @@ class User(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str] = mapped_column(String(20))
     uid: Mapped[int]
+    user_target: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="user")
 

@@ -2,12 +2,12 @@
 
 ## 最近更新
 
-- 通过 nb-cli 实现数据库一键导入导出 [@AzideCupric](https://github.com/AzideCupric) ([#210](https://github.com/felinae98/nonebot-bison/pull/210))
 - 修改 nonebot_bison 项目结构 [@he0119](https://github.com/he0119) ([#211](https://github.com/felinae98/nonebot-bison/pull/211))
 - change: 又切换回 sqlalchemy，但是 2.0 [@felinae98](https://github.com/felinae98) ([#206](https://github.com/felinae98/nonebot-bison/pull/206))
 
 ### 新功能
 
+- 通过 nb-cli 实现数据库一键导入导出 [@AzideCupric](https://github.com/AzideCupric) ([#210](https://github.com/felinae98/nonebot-bison/pull/210))
 - 调整群内订阅命令回复文本的位置，为`后台管理`命令添加别名`管理后台` [@AzideCupric](https://github.com/AzideCupric) ([#198](https://github.com/felinae98/nonebot-bison/pull/198))
 - 解决使用队列发送时产生大量日志的问题 [@felinae98](https://github.com/felinae98) ([#185](https://github.com/felinae98/nonebot-bison/pull/185))
 

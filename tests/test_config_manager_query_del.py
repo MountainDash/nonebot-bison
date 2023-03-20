@@ -10,6 +10,7 @@ from .utils import fake_admin_user, fake_group_message_event
 @pytest.mark.asyncio
 async def test_query_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import query_sub_matcher
@@ -17,8 +18,7 @@ async def test_query_sub(app: App, init_scheduler):
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
-        10000,
-        "group",
+        TargetQQGroup(group_id=10000),
         Target("6279793937"),
         "明日方舟Arknights",
         "weibo",
@@ -40,6 +40,7 @@ async def test_query_sub(app: App, init_scheduler):
 async def test_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
@@ -47,8 +48,7 @@ async def test_del_sub(app: App, init_scheduler):
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
-        10000,
-        "group",
+        TargetQQGroup(group_id=10000),
         Target("6279793937"),
         "明日方舟Arknights",
         "weibo",
@@ -83,7 +83,7 @@ async def test_del_sub(app: App, init_scheduler):
         ctx.receive_event(bot, event_1_ok)
         ctx.should_call_send(event_1_ok, "删除成功", True)
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 0
 
 

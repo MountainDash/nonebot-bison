@@ -4,6 +4,7 @@ from nonebug.app import App
 
 async def test_add_subscribe(app: App, init_scheduler):
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
 
@@ -12,8 +13,7 @@ async def test_add_subscribe(app: App, init_scheduler):
     from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -21,15 +21,14 @@ async def test_add_subscribe(app: App, init_scheduler):
         tags=[],
     )
     await config.add_subscribe(
-        user=234,
-        user_type="group",
+        TargetQQGroup(group_id=234),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
         cats=[],
         tags=[],
     )
-    confs = await config.list_subscribe(123, "group")
+    confs = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(confs) == 1
     conf: Subscribe = confs[0]
     async with AsyncSession(get_engine()) as sess:
@@ -39,22 +38,23 @@ async def test_add_subscribe(app: App, init_scheduler):
         related_target_obj = await sess.scalar(
             select(Target).where(Target.id == conf.target_id)
         )
-    assert related_user_obj.uid == 123
+    assert related_user_obj
+    assert related_target_obj
+    assert related_user_obj.user_target["group_id"] == 123
     assert related_target_obj.target_name == "weibo_name"
     assert related_target_obj.target == "weibo_id"
     assert conf.target.target == "weibo_id"
     assert conf.categories == []
 
     await config.update_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         platform_name="weibo",
         target_name="weibo_name2",
         cats=[1],
         tags=["tag"],
     )
-    confs = await config.list_subscribe(123, "group")
+    confs = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(confs) == 1
     conf: Subscribe = confs[0]
     async with AsyncSession(get_engine()) as sess:
@@ -64,7 +64,9 @@ async def test_add_subscribe(app: App, init_scheduler):
         related_target_obj = await sess.scalar(
             select(Target).where(Target.id == conf.target_id)
         )
-    assert related_user_obj.uid == 123
+    assert related_user_obj
+    assert related_target_obj
+    assert related_user_obj.user_target["group_id"] == 123
     assert related_target_obj.target_name == "weibo_name2"
     assert related_target_obj.target == "weibo_id"
     assert conf.target.target == "weibo_id"
@@ -73,12 +75,13 @@ async def test_add_subscribe(app: App, init_scheduler):
 
 
 async def test_add_dup_sub(init_scheduler):
+    from nonebot_plugin_saa import TargetQQGroup
+
     from nonebot_bison.config.db_config import SubscribeDupException, config
     from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -88,8 +91,7 @@ async def test_add_dup_sub(init_scheduler):
 
     with pytest.raises(SubscribeDupException):
         await config.add_subscribe(
-            user=123,
-            user_type="group",
+            TargetQQGroup(group_id=123),
             target=TTarget("weibo_id"),
             target_name="weibo_name",
             platform_name="weibo",
@@ -100,6 +102,7 @@ async def test_add_dup_sub(init_scheduler):
 
 async def test_del_subsribe(init_scheduler):
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
     from sqlalchemy.sql.functions import func
@@ -109,8 +112,7 @@ async def test_del_subsribe(init_scheduler):
     from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -118,8 +120,7 @@ async def test_del_subsribe(init_scheduler):
         tags=[],
     )
     await config.del_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         platform_name="weibo",
     )
@@ -128,8 +129,7 @@ async def test_del_subsribe(init_scheduler):
         assert (await sess.scalar(select(func.count()).select_from(Target))) == 1
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -138,8 +138,7 @@ async def test_del_subsribe(init_scheduler):
     )
 
     await config.add_subscribe(
-        user=124,
-        user_type="group",
+        TargetQQGroup(group_id=124),
         target=TTarget("weibo_id"),
         target_name="weibo_name_new",
         platform_name="weibo",
@@ -148,8 +147,7 @@ async def test_del_subsribe(init_scheduler):
     )
 
     await config.del_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         platform_name="weibo",
     )
@@ -157,5 +155,6 @@ async def test_del_subsribe(init_scheduler):
     async with AsyncSession(get_engine()) as sess:
         assert (await sess.scalar(select(func.count()).select_from(Subscribe))) == 1
         assert (await sess.scalar(select(func.count()).select_from(Target))) == 1
-        target: Target = await sess.scalar(select(Target))
+        target = await sess.scalar(select(Target))
+        assert target
         assert target.target_name == "weibo_name_new"

@@ -6,14 +6,14 @@ from pytest_mock import MockerFixture
 
 async def test_create_config(init_scheduler):
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -21,8 +21,7 @@ async def test_create_config(init_scheduler):
         tags=[],
     )
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id1"),
         target_name="weibo_name1",
         platform_name="weibo",
@@ -58,6 +57,7 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
     from datetime import time
 
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import db_config
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
@@ -65,8 +65,7 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -74,8 +73,7 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
         tags=[],
     )
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id1"),
         target_name="weibo_name1",
         platform_name="weibo",
@@ -83,8 +81,7 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
         tags=[],
     )
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id1"),
         target_name="weibo_name2",
         platform_name="bilibili",
@@ -124,6 +121,7 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
 
 async def test_get_platform_target(app: App, init_scheduler):
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
 
@@ -133,8 +131,7 @@ async def test_get_platform_target(app: App, init_scheduler):
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -142,8 +139,7 @@ async def test_get_platform_target(app: App, init_scheduler):
         tags=[],
     )
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id1"),
         target_name="weibo_name1",
         platform_name="weibo",
@@ -151,8 +147,7 @@ async def test_get_platform_target(app: App, init_scheduler):
         tags=[],
     )
     await config.add_subscribe(
-        user=245,
-        user_type="group",
+        TargetQQGroup(group_id=245),
         target=T_Target("weibo_id1"),
         target_name="weibo_name1",
         platform_name="weibo",
@@ -161,10 +156,14 @@ async def test_get_platform_target(app: App, init_scheduler):
     )
     res = await config.get_platform_target("weibo")
     assert len(res) == 2
-    await config.del_subscribe(123, "group", T_Target("weibo_id1"), "weibo")
+    await config.del_subscribe(
+        TargetQQGroup(group_id=123), T_Target("weibo_id1"), "weibo"
+    )
     res = await config.get_platform_target("weibo")
     assert len(res) == 2
-    await config.del_subscribe(123, "group", T_Target("weibo_id"), "weibo")
+    await config.del_subscribe(
+        TargetQQGroup(group_id=123), T_Target("weibo_id"), "weibo"
+    )
     res = await config.get_platform_target("weibo")
     assert len(res) == 1
 
@@ -175,6 +174,7 @@ async def test_get_platform_target(app: App, init_scheduler):
 
 async def test_get_platform_target_subscribers(app: App, init_scheduler):
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
 
@@ -182,12 +182,10 @@ async def test_get_platform_target_subscribers(app: App, init_scheduler):
     from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
     from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
-    from nonebot_bison.types import User as T_User
     from nonebot_bison.types import UserSubInfo
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -195,8 +193,7 @@ async def test_get_platform_target_subscribers(app: App, init_scheduler):
         tags=["tag1"],
     )
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=T_Target("weibo_id1"),
         target_name="weibo_name1",
         platform_name="weibo",
@@ -204,8 +201,7 @@ async def test_get_platform_target_subscribers(app: App, init_scheduler):
         tags=["tag2"],
     )
     await config.add_subscribe(
-        user=245,
-        user_type="group",
+        TargetQQGroup(group_id=245),
         target=T_Target("weibo_id1"),
         target_name="weibo_name1",
         platform_name="weibo",
@@ -215,9 +211,9 @@ async def test_get_platform_target_subscribers(app: App, init_scheduler):
 
     res = await config.get_platform_target_subscribers("weibo", T_Target("weibo_id"))
     assert len(res) == 1
-    assert res[0] == UserSubInfo(T_User(123, "group"), [1], ["tag1"])
+    assert res[0] == UserSubInfo(TargetQQGroup(group_id=123), [1], ["tag1"])
 
     res = await config.get_platform_target_subscribers("weibo", T_Target("weibo_id1"))
     assert len(res) == 2
-    assert UserSubInfo(T_User(123, "group"), [2], ["tag2"]) in res
-    assert UserSubInfo(T_User(245, "group"), [3], ["tag3"]) in res
+    assert UserSubInfo(TargetQQGroup(group_id=123), [2], ["tag2"]) in res
+    assert UserSubInfo(TargetQQGroup(group_id=245), [3], ["tag3"]) in res

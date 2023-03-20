@@ -4,6 +4,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordBearer
+from nonebot_plugin_saa import TargetQQGroup
 
 from ..apis import check_sub_target
 from ..config import (
@@ -15,7 +16,7 @@ from ..config import (
 from ..config.db_config import SubscribeDupException
 from ..platform import platform_manager
 from ..types import Target as T_Target
-from ..types import User, WeightConfig
+from ..types import WeightConfig
 from ..utils.get_bot import get_bot, get_groups
 from .jwt import load_jwt, pack_jwt
 from .token_manager import token_manager
@@ -75,7 +76,7 @@ async def get_admin_groups(qq: int):
     res = []
     for group in await get_groups():
         group_id = group["group_id"]
-        bot = get_bot(User(group_id, "group"))
+        bot = get_bot(TargetQQGroup(group_id=group_id))
         if not bot:
             continue
         users = await bot.get_group_member_list(group_id=group_id)
@@ -131,7 +132,7 @@ async def get_subs_info(jwt_obj: dict = Depends(get_jwt_obj)) -> SubscribeResp:
     res: SubscribeResp = {}
     for group in groups:
         group_id = group["id"]
-        raw_subs = await config.list_subscribe(group_id, "group")
+        raw_subs = await config.list_subscribe(TargetQQGroup(group_id=group_id))
         subs = list(
             map(
                 lambda sub: SubscribeConfig(
@@ -157,8 +158,7 @@ async def get_target_name(platformName: str, target: str):
 async def add_group_sub(groupNumber: int, req: AddSubscribeReq) -> StatusResp:
     try:
         await config.add_subscribe(
-            int(groupNumber),
-            "group",
+            TargetQQGroup(group_id=groupNumber),
             T_Target(req.target),
             req.targetName,
             req.platformName,
@@ -173,7 +173,9 @@ async def add_group_sub(groupNumber: int, req: AddSubscribeReq) -> StatusResp:
 @router.delete("/subs", dependencies=[Depends(check_group_permission)])
 async def del_group_sub(groupNumber: int, platformName: str, target: str):
     try:
-        await config.del_subscribe(int(groupNumber), "group", target, platformName)
+        await config.del_subscribe(
+            TargetQQGroup(group_id=groupNumber), target, platformName
+        )
     except (NoSuchUserException, NoSuchSubscribeException):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "no such user or subscribe")
     return StatusResp(ok=True, msg="")

@@ -1470,16 +1470,20 @@ name = "nonebot-plugin-send-anything-anywhere"
 version = "0.2.4"
 description = "An adaptor for nonebot2 adaptors"
 optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "nonebot_plugin_send_anything_anywhere-0.2.4-py3-none-any.whl", hash = "sha256:97c1c1565479c1750c21ce471545ea293a1f26d606cbe5ae071dab0047200408"},
-    {file = "nonebot_plugin_send_anything_anywhere-0.2.4.tar.gz", hash = "sha256:71217c6bd7f84d6f3d266914562c60dadf9b28e66801c3996d6d7c36bafa7fca"},
-]
+python-versions = "^3.8"
+files = []
+develop = false
 
 [package.dependencies]
-nonebot2 = ">=2.0.0rc1,<3.0.0"
-pydantic = ">=1.10.5,<2.0.0"
-strenum = ">=0.4.8,<0.5.0"
+nonebot2 = "^2.0.0rc1"
+pydantic = "^1.10.5"
+strenum = "^0.4.8"
+
+[package.source]
+type = "git"
+url = "https://github.com/felinae98/nonebot-plugin-send-anything-anywhere.git"
+reference = "main"
+resolved_reference = "7f8a57afc72b5b6a7f909935f1a87411bf597173"
 
 [[package]]
 name = "nonebot2"
@@ -2869,4 +2873,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "a8af95b0b5285f14d48ba11d7237cf636ca2102e7374d07d6b808eb5fdba8a76"
+content-hash = "efba4feca911691e91af2b93cb810268f6e35a6e985811587e6b00999c2bd263"

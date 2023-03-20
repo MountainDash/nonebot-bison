@@ -16,9 +16,11 @@ def bili_live(app: App):
 
 @pytest.fixture
 def dummy_only_open_user_subinfo(app: App):
-    from nonebot_bison.types import User, UserSubInfo
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    from nonebot_bison.types import UserSubInfo
+
+    user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[1], tags=[])
 
 
@@ -68,9 +70,11 @@ async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_sub
 
 @pytest.fixture
 def dummy_only_title_user_subinfo(app: App):
-    from nonebot_bison.types import User, UserSubInfo
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    from nonebot_bison.types import UserSubInfo
+
+    user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[2], tags=[])
 
 
@@ -128,9 +132,11 @@ async def test_fetch_bililive_only_title_change(
 
 @pytest.fixture
 def dummy_only_close_user_subinfo(app: App):
-    from nonebot_bison.types import User, UserSubInfo
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    from nonebot_bison.types import UserSubInfo
+
+    user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[3], tags=[])
 
 
@@ -187,9 +193,11 @@ async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinf
 
 @pytest.fixture
 def dummy_bililive_user_subinfo(app: App):
-    from nonebot_bison.types import User, UserSubInfo
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    from nonebot_bison.types import UserSubInfo
+
+    user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[1, 2, 3], tags=[])
 
 

@@ -67,9 +67,11 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
 @pytest.fixture
 def dummy_user_subinfo(app: App):
-    from nonebot_bison.types import User, UserSubInfo
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    from nonebot_bison.types import UserSubInfo
+
+    user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[], tags=[])
 
 

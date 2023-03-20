@@ -64,6 +64,7 @@ async def test_configurable_at_me_false(app: App):
 async def test_add_with_target(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -171,7 +172,7 @@ async def test_add_with_target(app: App, init_scheduler):
             event_6_ok, BotReply.add_reply_subscribe_success("明日方舟Arknights"), True
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 1
     sub = subs[0]
     assert sub.target.target == "6279793937"
@@ -188,6 +189,7 @@ async def test_add_with_target(app: App, init_scheduler):
 async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -233,7 +235,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
             event_4_ok, BotReply.add_reply_subscribe_success("塞壬唱片-MSR"), True
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 1
     sub = subs[0]
     assert sub.target.target == "32540734"
@@ -248,6 +250,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
 async def test_add_no_target(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -284,7 +287,7 @@ async def test_add_no_target(app: App, init_scheduler):
             event_4, BotReply.add_reply_subscribe_success("明日方舟游戏信息"), True
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 1
     sub = subs[0]
     assert sub.target.target == "default"
@@ -334,6 +337,7 @@ async def test_platform_name_err(app: App):
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -407,7 +411,7 @@ async def test_add_with_get_id(app: App):
             True,
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 0
 
 
@@ -416,6 +420,7 @@ async def test_add_with_get_id(app: App):
 async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -524,7 +529,7 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
             event_6, BotReply.add_reply_subscribe_success("明日方舟"), True
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 1
     sub = subs[0]
     assert sub.target.target == "161775300"

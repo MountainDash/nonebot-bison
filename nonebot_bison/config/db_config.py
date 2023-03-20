@@ -4,15 +4,14 @@ from datetime import datetime, time
 from typing import Awaitable, Callable, Optional, Sequence
 
 from nonebot_plugin_datastore import create_session
+from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from ..types import Category, PlatformWeightConfigResp, Tag
 from ..types import Target as T_Target
-from ..types import TimeWeightConfig
-from ..types import User as T_User
-from ..types import UserSubInfo, WeightConfig
+from ..types import TimeWeightConfig, UserSubInfo, WeightConfig
 from .db_model import ScheduleTimeWeight, Subscribe, Target, User
 from .utils import NoSuchTargetException
 
@@ -40,8 +39,7 @@ class DBConfig:
 
     async def add_subscribe(
         self,
-        user: int,
-        user_type: str,
+        user: PlatformTarget,
         target: T_Target,
         target_name: str,
         platform_name: str,
@@ -49,12 +47,10 @@ class DBConfig:
         tags: list[Tag],
     ):
         async with create_session() as session:
-            db_user_stmt = (
-                select(User).where(User.uid == user).where(User.type == user_type)
-            )
+            db_user_stmt = select(User).where(User.user_target == user.dict())
             db_user: Optional[User] = await session.scalar(db_user_stmt)
             if not db_user:
-                db_user = User(uid=user, type=user_type)
+                db_user = User(user_target=user.dict())
                 session.add(db_user)
             db_target_stmt = (
                 select(Target)
@@ -85,11 +81,11 @@ class DBConfig:
                     raise SubscribeDupException()
                 raise e
 
-    async def list_subscribe(self, user: int, user_type: str) -> Sequence[Subscribe]:
+    async def list_subscribe(self, user: PlatformTarget) -> Sequence[Subscribe]:
         async with create_session() as session:
             query_stmt = (
                 select(Subscribe)
-                .where(User.type == user_type, User.uid == user)
+                .where(User.user_target == user.dict())
                 .join(User)
                 .options(selectinload(Subscribe.target))
             )
@@ -109,11 +105,11 @@ class DBConfig:
         return subs
 
     async def del_subscribe(
-        self, user: int, user_type: str, target: str, platform_name: str
+        self, user: PlatformTarget, target: str, platform_name: str
     ):
         async with create_session() as session:
             user_obj = await session.scalar(
-                select(User).where(User.uid == user, User.type == user_type)
+                select(User).where(User.user_target == user.dict())
             )
             target_obj = await session.scalar(
                 select(Target).where(
@@ -142,8 +138,7 @@ class DBConfig:
 
     async def update_subscribe(
         self,
-        user: int,
-        user_type: str,
+        user: PlatformTarget,
         target: str,
         target_name: str,
         platform_name: str,
@@ -154,8 +149,7 @@ class DBConfig:
             subscribe_obj: Subscribe = await sess.scalar(
                 select(Subscribe)
                 .where(
-                    User.uid == user,
-                    User.type == user_type,
+                    User.user_target == user.dict(),
                     Target.target == target,
                     Target.platform_name == platform_name,
                 )
@@ -272,7 +266,7 @@ class DBConfig:
             return list(
                 map(
                     lambda subscribe: UserSubInfo(
-                        T_User(subscribe.user.uid, subscribe.user.type),
+                        PlatformTarget.deserialize(subscribe.user.user_target),
                         subscribe.categories,
                         subscribe.tags,
                     ),

@@ -9,7 +9,7 @@ from sqlalchemy.orm.strategy_options import selectinload
 from sqlalchemy.sql.selectable import Select
 
 from ..db_model import Subscribe, User
-from .nbesf_model import (
+from .nbesf_model.v1 import (
     NBESFParseErr,
     NBESFVerMatchErr,
     SubGroup,

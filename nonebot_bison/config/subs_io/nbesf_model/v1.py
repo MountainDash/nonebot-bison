@@ -1,8 +1,8 @@
-""" nbexf is Nonebot Bison Enchangable Subscribes File! """
+""" nbexf is Nonebot Bison Enchangable Subscribes File! ver.1"""
 
 from pydantic import BaseModel
 
-from ...types import Category, Tag
+from ....types import Category, Tag
 
 # ===== nbesf 定义格式 ====== #
 NBESF_VERSION = 1
@@ -13,9 +13,6 @@ class UserHead(BaseModel, orm_mode=True):
 
     type: str
     uid: int
-
-    def __hash__(self):
-        return hash((self.type, self.uid))
 
 
 class Target(BaseModel, orm_mode=True):
@@ -46,7 +43,7 @@ class SubGroup(BaseModel):
     """
     Bison的全部订单(按用户分组)
 
-    结构参见`nbesf_model.py`
+    结构参见`nbesf_model`下的对应版本
     """
 
     version: int = NBESF_VERSION  # 表示nbesf格式版本，从1开始

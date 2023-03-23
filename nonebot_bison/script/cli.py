@@ -9,7 +9,7 @@ from typing import Any, Callable, Coroutine, TypeVar
 from nonebot.log import logger
 
 from ..config.subs_io import nbesf_parser, subscribes_export, subscribes_import
-from ..config.subs_io.nbesf_model import SubGroup
+from ..config.subs_io.nbesf_model.v1 import SubGroup
 from ..scheduler.manager import init_scheduler
 
 try:

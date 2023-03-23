@@ -85,7 +85,7 @@ async def test_subs_import_dup_err(app: App, init_scheduler):
 async def test_subs_import_all_fail(app: App, init_scheduler):
     """只要文件格式有任何一个错误， 都不会进行订阅"""
     from nonebot_bison.config.subs_io import nbesf_parser
-    from nonebot_bison.config.subs_io.nbesf_model import NBESFParseErr
+    from nonebot_bison.config.subs_io.nbesf_model.v1 import NBESFParseErr
 
     with pytest.raises(NBESFParseErr):
         nbesf_data = nbesf_parser(get_json("subs_export_all_illegal.json"))

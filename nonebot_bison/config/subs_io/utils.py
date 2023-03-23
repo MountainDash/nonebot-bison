@@ -3,7 +3,7 @@ from functools import partial
 from nonebot.log import logger
 
 from ..db_config import SubscribeDupException, config
-from .nbesf_model import NBESF_VERSION, SubGroup, SubReceipt
+from .nbesf_model.v1 import NBESF_VERSION, SubGroup, SubReceipt
 
 
 async def subs_receipt_gen_ver_1(nbesf_data: SubGroup):

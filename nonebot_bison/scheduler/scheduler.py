@@ -81,7 +81,7 @@ class Scheduler:
         context = ProcessContext()
         if not (schedulable := await self.get_next_schedulable()):
             return
-        logger.debug(
+        logger.trace(
             f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}"
         )
         send_userinfo_list = await config.get_platform_target_subscribers(

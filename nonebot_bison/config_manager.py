@@ -15,7 +15,12 @@ from nonebot.params import Depends, EventPlainText, EventToMe
 from nonebot.permission import SUPERUSER
 from nonebot.rule import to_me
 from nonebot.typing import T_State
-from nonebot_plugin_saa import PlatformTarget, TargetQQGroup, extract_target
+from nonebot_plugin_saa import (
+    MessageFactory,
+    PlatformTarget,
+    TargetQQGroup,
+    extract_target,
+)
 
 from .apis import check_sub_target
 from .config import config
@@ -220,7 +225,7 @@ def do_query_sub(query_sub: Type[Matcher]):
     query_sub.handle()(ensure_user_info(query_sub))
 
     @query_sub.handle()
-    async def _(state: T_State):
+    async def _(bot: Bot, state: T_State):
         user_info = state["target_user_info"]
         assert isinstance(user_info, PlatformTarget)
         sub_list = await config.list_subscribe(user_info)
@@ -242,7 +247,8 @@ def do_query_sub(query_sub: Type[Matcher]):
             if platform.enable_tag:
                 res += " {}".format(", ".join(sub.tags))
             res += "\n"
-        await query_sub.finish(Message(await parse_text(res)))
+        await MessageFactory(await parse_text(res)).send()
+        await query_sub.finish()
 
 
 def do_del_sub(del_sub: Type[Matcher]):
@@ -285,7 +291,7 @@ def do_del_sub(del_sub: Type[Matcher]):
                     res += " {}".format(", ".join(sub.tags))
                 res += "\n"
             res += "请输入要删除的订阅的序号\n输入'取消'中止"
-            await bot.send(event=event, message=Message(await parse_text(res)))
+            await MessageFactory(await parse_text(res)).send()
 
     @del_sub.receive()
     async def do_del(event: Event, state: T_State):

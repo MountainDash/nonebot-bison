@@ -1,6 +1,7 @@
 import pytest
 import respx
 from httpx import Response
+from nonebot_plugin_saa.nonebug import should_send_saa
 from nonebug.app import App
 
 from .platforms.utils import get_json
@@ -279,7 +280,7 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
 async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
@@ -303,12 +304,13 @@ async def test_abort_del_sub(app: App, init_scheduler):
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_send(
-            event,
-            Message(
+        should_send_saa(
+            ctx,
+            MessageFactory(
                 "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n请输入要删除的订阅的序号\n输入'取消'中止"
             ),
-            True,
+            bot,
+            event=event,
         )
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=fake_admin_user

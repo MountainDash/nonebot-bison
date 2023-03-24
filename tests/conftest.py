@@ -3,6 +3,7 @@ from pathlib import Path
 
 import nonebot
 import pytest
+from nonebot.adapters.onebot.v11 import Adapter as OnebotV11Adapter
 from nonebug import NONEBOT_INIT_KWARGS, App
 from pytest_mock.plugin import MockerFixture
 from sqlalchemy import delete
@@ -17,6 +18,12 @@ def pytest_configure(config: pytest.Config) -> None:
         "command_start": {""},
         "log_level": "TRACE",
     }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_adapters(nonebug_init: None):
+    driver = nonebot.get_driver()
+    driver.register_adapter(OnebotV11Adapter)
 
 
 @pytest.fixture

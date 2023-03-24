@@ -276,13 +276,13 @@ beautifulsoup4 = "*"
 
 [[package]]
 name = "cashews"
-version = "6.1.0"
+version = "6.2.0"
 description = "cache tools with async power"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "cashews-6.1.0-py3-none-any.whl", hash = "sha256:bd620e5fdb947949aca0f107f0275a48d46026c747695186d2507f89a48d1af9"},
-    {file = "cashews-6.1.0.tar.gz", hash = "sha256:6ef7822500b8bc5ceadeaa284021ec7843d066e2f208612ec28a93064eef7d4a"},
+    {file = "cashews-6.2.0-py3-none-any.whl", hash = "sha256:8a005fdb429efad8a99e2d8c3024a0a59bed35d49fe67da35a2cd9cb1d56cd89"},
+    {file = "cashews-6.2.0.tar.gz", hash = "sha256:c197202336d1bfde732bf43c30c8fd3fdb5836700e8a81bdd25abcc5ea1df9c8"},
 ]
 
 [package.extras]
@@ -1467,23 +1467,20 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "nonebot-plugin-send-anything-anywhere"
-version = "0.2.4"
+version = "0.2.5"
 description = "An adaptor for nonebot2 adaptors"
 optional = false
-python-versions = "^3.8"
-files = []
-develop = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "nonebot_plugin_send_anything_anywhere-0.2.5-py3-none-any.whl", hash = "sha256:58db714745f71693292533433e8881b00954e8ee6438ab3cd173048b5c5ce77f"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.2.5.tar.gz", hash = "sha256:2385e95ee22407faf59703074ad95070bedbdcf492c261ed380f26eccd202039"},
+]
 
 [package.dependencies]
-nonebot2 = "^2.0.0rc1"
-pydantic = "^1.10.5"
-strenum = "^0.4.8"
-
-[package.source]
-type = "git"
-url = "https://github.com/felinae98/nonebot-plugin-send-anything-anywhere.git"
-reference = "main"
-resolved_reference = "7f8a57afc72b5b6a7f909935f1a87411bf597173"
+anyio = ">=3.6.2,<4.0.0"
+nonebot2 = ">=2.0.0,<3.0.0"
+pydantic = ">=1.10.5,<2.0.0"
+strenum = ">=0.4.8,<0.5.0"
 
 [[package]]
 name = "nonebot2"
@@ -1536,6 +1533,22 @@ type = "git"
 url = "https://github.com/nonebot/nonebug.git"
 reference = "master"
 resolved_reference = "bc82dbe078a1d42c515a3a783269011fb7e7bc9d"
+
+[[package]]
+name = "nonebug-saa"
+version = "0.1.0"
+description = "A nonebug helper for nonebot-plugin-send-anything-anything"
+optional = false
+python-versions = ">=3.10,<4.0"
+files = [
+    {file = "nonebug_saa-0.1.0-py3-none-any.whl", hash = "sha256:f2e79867f81d53ca08752382e6800ebc8c6242fbee94fa346ef48e887121b9d6"},
+    {file = "nonebug_saa-0.1.0.tar.gz", hash = "sha256:bfe805d3a9d67e9e2585638b0f37185f69934d2bf433276c007850a9cb9ba52c"},
+]
+
+[package.dependencies]
+nonebot-plugin-send-anything-anywhere = ">=0.2.2,<0.3.0"
+nonebug = ">=0.3.1,<0.4.0"
+pytest-mock = ">=3.10.0,<4.0.0"
 
 [[package]]
 name = "noneprompt"
@@ -2873,4 +2886,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "efba4feca911691e91af2b93cb810268f6e35a6e985811587e6b00999c2bd263"
+content-hash = "109ee12685b1c143006df6969f7b1b3b0d3613a8a47fca3a7a8b005b64605902"

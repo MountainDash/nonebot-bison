@@ -2,6 +2,10 @@
 
 ## 最近更新
 
+### 新功能
+
+- 调整 scheduler log level [@felinae98](https://github.com/felinae98) ([#222](https://github.com/felinae98/nonebot-bison/pull/222))
+
 ### Bug 修复
 
 - 在未安装 fastapi 时不加载 webui [@felinae98](https://github.com/felinae98) ([#221](https://github.com/felinae98/nonebot-bison/pull/221))

@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 在未安装 fastapi 时不加载 webui [@felinae98](https://github.com/felinae98) ([#221](https://github.com/felinae98/nonebot-bison/pull/221))
+
 ## v0.7.1
 
 - 修改 nonebot_bison 项目结构 [@he0119](https://github.com/he0119) ([#211](https://github.com/felinae98/nonebot-bison/pull/211))

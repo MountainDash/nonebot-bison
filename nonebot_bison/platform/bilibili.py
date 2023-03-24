@@ -76,7 +76,8 @@ class Bilibili(NewMessage):
         res = await client.get(
             "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
         )
-        res_data = json.loads(res.text)
+        res.raise_for_status()
+        res_data = res.json()
         if res_data["code"]:
             return None
         return res_data["data"]["name"]
@@ -97,7 +98,8 @@ class Bilibili(NewMessage):
             params=params,
             timeout=4.0,
         )
-        res_dict = json.loads(res.text)
+        res.raise_for_status()
+        res_dict = res.json()
         if res_dict["code"] == 0:
             return res_dict["data"].get("cards")
         else:

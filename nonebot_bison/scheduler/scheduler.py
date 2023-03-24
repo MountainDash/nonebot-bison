@@ -115,8 +115,7 @@ class Scheduler:
                 else:
                     await send_msgs(
                         bot,
-                        user.user,
-                        user.user_type,
+                        user,
                         await send_post.generate_messages(),
                     )
 

@@ -1,6 +1,7 @@
 import pytest
 import respx
 from httpx import Response
+from nonebot_plugin_saa.nonebug import should_send_saa
 from nonebug.app import App
 
 from .platforms.utils import get_json
@@ -9,8 +10,9 @@ from .utils import fake_admin_user, fake_group_message_event
 
 @pytest.mark.asyncio
 async def test_query_sub(app: App, init_scheduler):
-    from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup
+    from nonebot import get_driver
+    from nonebot.adapters.onebot.v11 import Bot, Message
+    from nonebot_plugin_saa import MessageFactory, SupportedAdapters, TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import query_sub_matcher
@@ -26,13 +28,18 @@ async def test_query_sub(app: App, init_scheduler):
         ["明日方舟"],
     )
     async with app.test_matcher(query_sub_matcher) as ctx:
-        bot = ctx.create_bot()
+        adapter = get_driver()._adapters[str(SupportedAdapters.onebot_v11)]
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+
         event = fake_group_message_event(message=Message("查询订阅"), to_me=True)
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_send(
-            event, Message("订阅的帐号为：\nweibo 明日方舟Arknights 6279793937 [图文] 明日方舟\n"), True
+        should_send_saa(
+            ctx,
+            MessageFactory("订阅的帐号为：\nweibo 明日方舟Arknights 6279793937 [图文] 明日方舟\n"),
+            bot,
+            event=event,
         )
 
 
@@ -40,7 +47,7 @@ async def test_query_sub(app: App, init_scheduler):
 async def test_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
@@ -64,12 +71,13 @@ async def test_del_sub(app: App, init_scheduler):
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_send(
-            event,
-            Message(
+        should_send_saa(
+            ctx,
+            MessageFactory(
                 "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n请输入要删除的订阅的序号\n输入'取消'中止"
             ),
-            True,
+            bot,
+            event=event,
         )
         event_1_err = fake_group_message_event(
             message=Message("2"), sender=fake_admin_user

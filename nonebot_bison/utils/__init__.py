@@ -4,9 +4,9 @@ from typing import Union
 
 import nonebot
 from bs4 import BeautifulSoup as bs
-from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebot.log import default_format, logger
 from nonebot.plugin import require
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 
 from ..plugin_config import plugin_config
 from .context import ProcessContext
@@ -33,15 +33,15 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-async def parse_text(text: str) -> MessageSegment:
+async def parse_text(text: str) -> MessageSegmentFactory:
     "return raw text if don't use pic, otherwise return rendered opcode"
     if plugin_config.bison_use_pic:
         require("nonebot_plugin_htmlrender")
         from nonebot_plugin_htmlrender import text_to_pic as _text_to_pic
 
-        return MessageSegment.image(await _text_to_pic(text))
+        return Image(await _text_to_pic(text))
     else:
-        return MessageSegment.text(text)
+        return Text(text)
 
 
 if not plugin_config.bison_skip_browser_check:

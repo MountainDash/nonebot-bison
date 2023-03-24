@@ -4,6 +4,7 @@
 
 ### 新功能
 
+- 调整 bilibili 网络报错 [@felinae98](https://github.com/felinae98) ([#223](https://github.com/felinae98/nonebot-bison/pull/223))
 - 调整 scheduler log level [@felinae98](https://github.com/felinae98) ([#222](https://github.com/felinae98/nonebot-bison/pull/222))
 
 ### Bug 修复

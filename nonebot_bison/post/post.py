@@ -3,8 +3,9 @@ from functools import reduce
 from io import BytesIO
 from typing import Optional, Union
 
-from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+import nonebot_plugin_saa as saa
 from nonebot.log import logger
+from nonebot_plugin_saa.utils import MessageFactory, MessageSegmentFactory
 from PIL import Image
 
 from ..utils import http_client, parse_text
@@ -20,8 +21,8 @@ class _Post(BasePost):
     target_name: Optional[str] = None
     pics: list[Union[str, bytes]] = field(default_factory=list)
 
-    _message: Optional[list[MessageSegment]] = None
-    _pic_message: Optional[list[MessageSegment]] = None
+    _message: Optional[list[MessageSegmentFactory]] = None
+    _pic_message: Optional[list[MessageSegmentFactory]] = None
 
     async def _pic_url_to_image(self, data: Union[str, bytes]) -> Image.Image:
         pic_buffer = BytesIO()
@@ -99,11 +100,11 @@ class _Post(BasePost):
         self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
 
-    async def generate_text_messages(self) -> list[MessageSegment]:
+    async def generate_text_messages(self) -> list[MessageSegmentFactory]:
 
         if self._message is None:
             await self._pic_merge()
-            msg_segments: list[MessageSegment] = []
+            msg_segments: list[MessageSegmentFactory] = []
             text = ""
             if self.text:
                 text += "{}".format(
@@ -116,17 +117,17 @@ class _Post(BasePost):
                 text += " {}".format(self.target_name)
             if self.url:
                 text += " \n详情: {}".format(self.url)
-            msg_segments.append(MessageSegment.text(text))
+            msg_segments.append(saa.Text(text))
             for pic in self.pics:
-                msg_segments.append(MessageSegment.image(pic))
+                msg_segments.append(saa.Image(pic))
             self._message = msg_segments
         return self._message
 
-    async def generate_pic_messages(self) -> list[MessageSegment]:
+    async def generate_pic_messages(self) -> list[MessageSegmentFactory]:
 
         if self._pic_message is None:
             await self._pic_merge()
-            msg_segments: list[MessageSegment] = []
+            msg_segments: list[MessageSegmentFactory] = []
             text = ""
             if self.text:
                 text += "{}".format(self.text)
@@ -136,9 +137,9 @@ class _Post(BasePost):
                 text += " {}".format(self.target_name)
             msg_segments.append(await parse_text(text))
             if not self.target_type == "rss" and self.url:
-                msg_segments.append(MessageSegment.text(self.url))
+                msg_segments.append(saa.Text(self.url))
             for pic in self.pics:
-                msg_segments.append(MessageSegment.image(pic))
+                msg_segments.append(saa.Image(pic))
             self._pic_message = msg_segments
         return self._pic_message
 

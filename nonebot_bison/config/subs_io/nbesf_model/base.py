@@ -1,36 +1,31 @@
 from abc import ABC
-from typing import Any
 
-from nonebot.log import logger
+from nonebot_plugin_saa import PlatformTarget as UserInfo
 from pydantic import BaseModel
-from typing_extensions import Self
 
-from ..utils import NBESFParseErr
+from ....types import Category, Tag
 
 
 class NBESFBase(BaseModel, ABC):
 
-    version: int = 0  # 表示nbesf格式版本，有效版本从1开始
+    version: int  # 表示nbesf格式版本，有效版本从1开始
     groups: list = list()
 
     class Config:
         orm_mode = True
 
-    def __init_subclass__(cls, ver: int) -> None:
-        cls.version = ver
 
-    @classmethod
-    def parse_nbesf(cls, raw_data: Any) -> Self:
-        try:
-            assert cls.version
+class SubReceipt(BaseModel):
+    """
+    快递包中每件货物的收据
 
-            if isinstance(raw_data, str):
-                nbesf_data = cls.parse_raw(raw_data)
-            else:
-                nbesf_data = cls.parse_obj(raw_data)
+    导入订阅时的Model
+    """
 
-        except Exception as e:
-            logger.error("数据解析失败，该数据格式可能不满足NBESF格式标准！")
-            raise NBESFParseErr("数据解析失败") from e
-        else:
-            return nbesf_data
+    user: UserInfo
+    target: str
+    target_name: str
+    platform_name: str
+    cats: list[Category]
+    tags: list[Tag]
+    # default_schedule_weight: int

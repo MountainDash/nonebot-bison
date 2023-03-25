@@ -35,13 +35,14 @@ def test_cli_help(app: App):
 
 
 async def test_subs_export(app: App, tmp_path: Path):
+    from nonebot_plugin_saa import TargetQQGroup
+
     from nonebot_bison.config.db_config import config
     from nonebot_bison.script.cli import cli, run_sync
     from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
-        user=123,
-        user_type="group",
+        TargetQQGroup(group_id=123),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -49,8 +50,7 @@ async def test_subs_export(app: App, tmp_path: Path):
         tags=[],
     )
     await config.add_subscribe(
-        user=234,
-        user_type="group",
+        TargetQQGroup(group_id=234),
         target=TTarget("weibo_id"),
         target_name="weibo_name",
         platform_name="weibo",
@@ -58,8 +58,7 @@ async def test_subs_export(app: App, tmp_path: Path):
         tags=["kaltsit", "amiya"],
     )
     await config.add_subscribe(
-        user=234,
-        user_type="group",
+        TargetQQGroup(group_id=234),
         target=TTarget("bilibili_id"),
         target_name="bilibili_name",
         platform_name="bilibili",
@@ -80,7 +79,8 @@ async def test_subs_export(app: App, tmp_path: Path):
             assert result.exit_code == 0
             file_path = Path.cwd() / "bison_subscribes_export_1.json"
             assert file_path.exists()
-            assert file_path.stat().st_size
+            assert '"version": 2' in file_path.read_text()
+            assert '"group_id": 123' in file_path.read_text()
 
         # 是否导出到指定已存在文件夹
         data_dir = tmp_path / "data"
@@ -89,7 +89,8 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert result.exit_code == 0
         file_path2 = data_dir / "bison_subscribes_export_1.json"
         assert file_path2.exists()
-        assert file_path2.stat().st_size
+        assert '"version": 2' in file_path2.read_text()
+        assert '"group_id": 123' in file_path2.read_text()
 
         # 是否拒绝导出到不存在的文件夹
         result = await run_sync(runner.invoke)(
@@ -104,7 +105,8 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert result.exit_code == 0
         file_path3 = tmp_path / "bison_subscribes_export_1.yaml"
         assert file_path3.exists()
-        assert file_path3.stat().st_size
+        assert "version: 2" in file_path3.read_text()
+        assert "group_id: 123" in file_path3.read_text()
 
         # 是否允许以未支持的格式导出
         result = await run_sync(runner.invoke)(
@@ -113,14 +115,14 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert result.exit_code == 2
 
 
-async def test_subs_import(app: App, tmp_path):
+async def test_subs_import_v1(app: App, tmp_path):
     from nonebot_bison.config.db_config import config
     from nonebot_bison.script.cli import cli, run_sync
 
     assert len(await config.list_subs_with_all_info()) == 0
 
     mock_file: Path = tmp_path / "1.json"
-    mock_file.write_text(get_file("subs_export.json"))
+    mock_file.write_text(get_file("v1/subs_export.json"))
 
     runner = CliRunner()
 
@@ -135,7 +137,38 @@ async def test_subs_import(app: App, tmp_path):
     assert len(await config.list_subs_with_all_info()) == 3
 
     mock_file: Path = tmp_path / "2.yaml"
-    mock_file.write_text(get_file("subs_export.yaml"))
+    mock_file.write_text(get_file("v1/subs_export.yaml"))
+
+    result = await run_sync(runner.invoke)(
+        cli, ["import", "-p", str(mock_file), "--format=yml"]
+    )
+    assert result.exit_code == 0
+    assert len(await config.list_subs_with_all_info()) == 6
+
+
+async def test_sub_import_v2(app: App, tmp_path):
+    from nonebot_bison.config.db_config import config
+    from nonebot_bison.script.cli import cli, run_sync
+
+    assert len(await config.list_subs_with_all_info()) == 0
+
+    mock_file: Path = tmp_path / "1.json"
+    mock_file.write_text(get_file("v2/subs_export.json"))
+
+    runner = CliRunner()
+
+    result = await run_sync(runner.invoke)(cli, ["import"])
+    assert result.exit_code == 2
+
+    result = await run_sync(runner.invoke)(cli, ["import", "-p"])
+    assert result.exit_code == 2
+
+    result = await run_sync(runner.invoke)(cli, ["import", "-p", str(mock_file)])
+    assert result.exit_code == 0
+    assert len(await config.list_subs_with_all_info()) == 3
+
+    mock_file: Path = tmp_path / "2.yaml"
+    mock_file.write_text(get_file("v2/subs_export.yaml"))
 
     result = await run_sync(runner.invoke)(
         cli, ["import", "-p", str(mock_file), "--format=yml"]

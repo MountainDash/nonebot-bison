@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from ....types import Category, Tag
 from ...db_config import SubscribeDupException, config
 from ..utils import NBESFParseErr
-from .base import NBESFBase
+from .base import NBESFBase, SubReceipt
 
 # ===== nbesf 定义格式 ====== #
 NBESF_VERSION = 1
@@ -47,45 +47,32 @@ class SubPack(BaseModel):
     subs: list[SubPayload]
 
 
-class SubGroup(NBESFBase, ver=NBESF_VERSION):
+class SubGroup(
+    NBESFBase,
+):
     """
     Bison的全部订单(按用户分组)
 
     结构参见`nbesf_model`下的对应版本
     """
 
+    version = NBESF_VERSION
     groups: list[SubPack]
 
 
 # ======================= #
 
 
-class SubReceipt(BaseModel):
-    """
-    快递包中每件货物的收据
-
-    导入订阅时的Model
-    """
-
-    user: int
-    user_type: str
-    target: str
-    target_name: str
-    platform_name: str
-    cats: list[Category]
-    tags: list[Tag]
-    # default_schedule_weight: int
-
-
 async def subs_receipt_gen(nbesf_data: SubGroup):
     for item in nbesf_data.groups:
+
         match item.user.type:
             case "group":
                 user = TargetQQGroup(group_id=item.user.uid)
             case "private":
                 user = TargetQQPrivate(user_id=item.user.uid)
             case _:
-                raise NotImplementedError
+                raise NotImplementedError(f"未知用户类型：{item.user.type}")
 
         sub_receipt = partial(SubReceipt, user=user)
 
@@ -98,7 +85,9 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
                 tags=sub.tags,
             )
             try:
-                await config.add_subscribe(**receipt.dict())
+                await config.add_subscribe(
+                    receipt.user, **receipt.dict(exclude={"user"})
+                )
             except SubscribeDupException:
                 logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
             except Exception as e:
@@ -118,4 +107,5 @@ def nbesf_parser(raw_data: Any) -> SubGroup:
         logger.error("数据解析失败，该数据格式可能不满足NBESF格式标准！")
         raise NBESFParseErr("数据解析失败") from e
     else:
+        logger.success("NBESF文件解析成功.")
         return nbesf_data

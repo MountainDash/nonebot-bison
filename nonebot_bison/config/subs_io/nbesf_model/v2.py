@@ -4,25 +4,16 @@ from functools import partial
 from typing import Any
 
 from nonebot.log import logger
-from nonebot_plugin_saa import PlatformTarget as UserInfo
+from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
 from pydantic import BaseModel
 
 from ....types import Category, Tag
 from ...db_config import SubscribeDupException, config
 from ..utils import NBESFParseErr
-from .base import NBESFBase
+from .base import NBESFBase, SubReceipt
 
 # ===== nbesf 定义格式 ====== #
 NBESF_VERSION = 2
-
-
-class UserHead(BaseModel, orm_mode=True):
-    """Bison快递包收货信息"""
-
-    user_target: UserInfo
-    # 使用类似saa的PlatformTarget的格式
-    # platform_type: str\
-    # *_id: int
 
 
 class Target(BaseModel, orm_mode=True):
@@ -45,42 +36,39 @@ class SubPayload(BaseModel, orm_mode=True):
 class SubPack(BaseModel):
     """Bison给指定用户派送的快递包"""
 
-    user: UserHead
+    # user_target: Bison快递包收货信息
+    user_target: dict[str, int | str]
     subs: list[SubPayload]
 
 
-class SubGroup(NBESFBase, ver=2):
+class SubGroup(NBESFBase):
     """
     Bison的全部订单(按用户分组)
 
     结构参见`nbesf_model`下的对应版本
     """
 
+    version: int = NBESF_VERSION
     groups: list[SubPack]
 
 
 # ======================= #
 
 
-class SubReceipt(BaseModel):
-    """
-    快递包中每件货物的收据
-
-    导入订阅时的Model
-    """
-
-    user: UserInfo
-    target: str
-    target_name: str
-    platform_name: str
-    cats: list[Category]
-    tags: list[Tag]
-    # default_schedule_weight: int
-
-
 async def subs_receipt_gen(nbesf_data: SubGroup):
     for item in nbesf_data.groups:
-        sub_receipt = partial(SubReceipt, user=item.user)
+
+        user_target = item.user_target
+
+        match user_target:
+            case {"group_id": gid, **rest}:
+                user = TargetQQGroup(group_id=int(gid))
+            case {"user_id": uid, **rest}:
+                user = TargetQQPrivate(user_id=int(uid))
+            case _:
+                raise NotImplementedError(f"未知用户类型：{user_target}")
+
+        sub_receipt = partial(SubReceipt, user=user)
 
         for sub in item.subs:
             receipt = sub_receipt(
@@ -91,7 +79,9 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
                 tags=sub.tags,
             )
             try:
-                await config.add_subscribe(**receipt.dict())
+                await config.add_subscribe(
+                    receipt.user, **receipt.dict(exclude={"user"})
+                )
             except SubscribeDupException:
                 logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
             except Exception as e:

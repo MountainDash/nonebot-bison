@@ -41,7 +41,7 @@ async def subscribes_export(selector: Callable[[T], T]) -> v2.SubGroup:
     for user in user_data:
         assert isinstance(user, User)
         user_head = user.user_target
-        sub_pack = v2.SubPack(user=user_head, subs=user_id_sub_dict[user.id])
+        sub_pack = v2.SubPack(user_target=user_head, subs=user_id_sub_dict[user.id])
         groups.append(sub_pack)
 
     sub_group = v2.SubGroup(groups=groups)

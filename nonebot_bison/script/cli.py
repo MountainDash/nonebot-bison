@@ -137,6 +137,7 @@ async def subs_import(path: str, format: str):
 
         assert isinstance(import_items, dict)
         ver = int(import_items.get("version", 0))
+        logger.info(f"NBESF版本: {ver}")
         match ver:
             case 1:
                 nbesf_data = v1.nbesf_parser(import_items)

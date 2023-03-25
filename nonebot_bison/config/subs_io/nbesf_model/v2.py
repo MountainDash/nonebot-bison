@@ -1,10 +1,10 @@
-""" nbesf is Nonebot Bison Enchangable Subscribes File! ver.1"""
+""" nbesf is Nonebot Bison Enchangable Subscribes File! ver.2"""
 
 from functools import partial
 from typing import Any
 
 from nonebot.log import logger
-from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
+from nonebot_plugin_saa import PlatformTarget as UserInfo
 from pydantic import BaseModel
 
 from ....types import Category, Tag
@@ -13,14 +13,16 @@ from ..utils import NBESFParseErr
 from .base import NBESFBase
 
 # ===== nbesf 定义格式 ====== #
-NBESF_VERSION = 1
+NBESF_VERSION = 2
 
 
 class UserHead(BaseModel, orm_mode=True):
     """Bison快递包收货信息"""
 
-    type: str
-    uid: int
+    user_target: UserInfo
+    # 使用类似saa的PlatformTarget的格式
+    # platform_type: str\
+    # *_id: int
 
 
 class Target(BaseModel, orm_mode=True):
@@ -47,7 +49,7 @@ class SubPack(BaseModel):
     subs: list[SubPayload]
 
 
-class SubGroup(NBESFBase, ver=NBESF_VERSION):
+class SubGroup(NBESFBase, ver=2):
     """
     Bison的全部订单(按用户分组)
 
@@ -67,8 +69,7 @@ class SubReceipt(BaseModel):
     导入订阅时的Model
     """
 
-    user: int
-    user_type: str
+    user: UserInfo
     target: str
     target_name: str
     platform_name: str
@@ -79,15 +80,7 @@ class SubReceipt(BaseModel):
 
 async def subs_receipt_gen(nbesf_data: SubGroup):
     for item in nbesf_data.groups:
-        match item.user.type:
-            case "group":
-                user = TargetQQGroup(group_id=item.user.uid)
-            case "private":
-                user = TargetQQPrivate(user_id=item.user.uid)
-            case _:
-                raise NotImplementedError
-
-        sub_receipt = partial(SubReceipt, user=user)
+        sub_receipt = partial(SubReceipt, user=item.user)
 
         for sub in item.subs:
             receipt = sub_receipt(

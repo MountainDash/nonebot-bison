@@ -93,14 +93,16 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         try:
             return await self.fetch_new_post(target, users)
         except httpx.RequestError as err:
-            logger.warning(
-                "network connection error: {}, url: {}".format(
-                    type(err), err.request.url
+            if plugin_config.bison_show_network_warning:
+                logger.warning(
+                    "network connection error: {}, url: {}".format(
+                        type(err), err.request.url
+                    )
                 )
-            )
             return []
         except ssl.SSLError as err:
-            logger.warning(f"ssl error: {err}")
+            if plugin_config.bison_show_network_warning:
+                logger.warning(f"ssl error: {err}")
             return []
         except json.JSONDecodeError as err:
             logger.warning(f"json error, parsing: {err.doc}")

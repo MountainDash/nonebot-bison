@@ -148,6 +148,7 @@ sidebar: auto
 
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
 - `BISON_UA`: 使用的 User-Agent，默认为 Chrome
+- `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认开启
 
 ## 使用
 

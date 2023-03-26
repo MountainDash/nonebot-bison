@@ -4,6 +4,7 @@
 
 ### 新功能
 
+- 可以关闭日志中的网络报错 [@felinae98](https://github.com/felinae98) ([#227](https://github.com/felinae98/nonebot-bison/pull/227))
 - 调整 bilibili 网络报错 [@felinae98](https://github.com/felinae98) ([#223](https://github.com/felinae98/nonebot-bison/pull/223))
 - 调整 scheduler log level [@felinae98](https://github.com/felinae98) ([#222](https://github.com/felinae98/nonebot-bison/pull/222))
 

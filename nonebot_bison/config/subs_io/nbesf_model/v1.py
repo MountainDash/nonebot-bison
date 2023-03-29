@@ -72,7 +72,7 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
             case "private":
                 user = TargetQQPrivate(user_id=item.user.uid)
             case _:
-                raise NotImplementedError(f"未知用户类型：{item.user.type}")
+                raise NotImplementedError(f"nbesf v1 不支持的用户类型：{item.user.type}")
 
         sub_receipt = partial(SubReceipt, user=user)
 

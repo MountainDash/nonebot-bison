@@ -4,7 +4,7 @@ from functools import partial
 from typing import Any
 
 from nonebot.log import logger
-from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
+from nonebot_plugin_saa.utils import AllSupportedPlatformTarget
 from pydantic import BaseModel
 
 from ....types import Category, Tag
@@ -37,7 +37,7 @@ class SubPack(BaseModel):
     """Bison给指定用户派送的快递包"""
 
     # user_target: Bison快递包收货信息
-    user_target: dict[str, int | str]
+    user_target: AllSupportedPlatformTarget
     subs: list[SubPayload]
 
 
@@ -58,17 +58,7 @@ class SubGroup(NBESFBase):
 async def subs_receipt_gen(nbesf_data: SubGroup):
     for item in nbesf_data.groups:
 
-        user_target = item.user_target
-
-        match user_target:
-            case {"group_id": gid, **rest}:
-                user = TargetQQGroup(group_id=int(gid))
-            case {"user_id": uid, **rest}:
-                user = TargetQQPrivate(user_id=int(uid))
-            case _:
-                raise NotImplementedError(f"未知用户类型：{user_target}")
-
-        sub_receipt = partial(SubReceipt, user=user)
+        sub_receipt = partial(SubReceipt, user=item.user_target)
 
         for sub in item.subs:
             receipt = sub_receipt(

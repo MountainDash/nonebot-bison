@@ -1,6 +1,6 @@
 from abc import ABC
 
-from nonebot_plugin_saa import PlatformTarget as UserInfo
+from nonebot_plugin_saa.utils import AllSupportedPlatformTarget as UserInfo
 from pydantic import BaseModel
 
 from ....types import Category, Tag

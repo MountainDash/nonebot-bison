@@ -90,7 +90,15 @@ async def subs_export(path: Path, format: str):
                 logger.info("正在导出为yaml...")
 
                 pyyaml = import_yaml_module()
-                pyyaml.safe_dump(export_data.dict(), f, sort_keys=False)
+                # 由于 nbesf v2 中的user_target使用了AllSupportedPlatformTarget, 因此不能使用safe_dump
+                # 下文引自 https://pyyaml.org/wiki/PyYAMLDocumentation
+                # safe_dump(data, stream=None) serializes the given Python object into the stream.
+                # If stream is None, it returns the produced stream.
+                # safe_dump produces only standard YAML tags and cannot represent an arbitrary Python object.
+                # 进行以下曲线救国方案
+                json_data = json.dumps(export_data.dict(), ensure_ascii=False)
+                yaml_data = pyyaml.safe_load(json_data)
+                pyyaml.safe_dump(yaml_data, f, sort_keys=False)
 
             case "json":
                 logger.info("正在导出为json...")

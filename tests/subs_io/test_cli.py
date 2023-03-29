@@ -107,6 +107,7 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert file_path3.exists()
         assert "version: 2" in file_path3.read_text()
         assert "group_id: 123" in file_path3.read_text()
+        assert "platform_type: QQ Group" in file_path3.read_text()
 
         # 是否允许以未支持的格式导出
         result = await run_sync(runner.invoke)(

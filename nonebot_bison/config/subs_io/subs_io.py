@@ -1,6 +1,5 @@
 from collections import defaultdict
-from functools import partial
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, cast
 
 from nonebot.log import logger
 from nonebot_plugin_datastore.db import create_session
@@ -19,10 +18,8 @@ from .nbesf_model import (
 )
 from .utils import subs_receipt_gen_ver_1
 
-T = TypeVar("T", bound=Select)
 
-
-async def subscribes_export(selector: Callable[[T], T]) -> SubGroup:
+async def subscribes_export(selector: Callable[[Select], Select]) -> SubGroup:
     """
     将Bison订阅导出为 Nonebot Bison Exchangable Subscribes File 标准格式的 SubGroup 类型数据
 
@@ -32,10 +29,12 @@ async def subscribes_export(selector: Callable[[T], T]) -> SubGroup:
     async with create_session() as sess:
         sub_stmt = select(Subscribe).join(User)
         sub_stmt = selector(sub_stmt).options(selectinload(Subscribe.target))
+        sub_stmt = cast(Select[tuple[Subscribe]], sub_stmt)
         sub_data = await sess.scalars(sub_stmt)
 
         user_stmt = select(User).join(Subscribe)
         user_stmt = selector(user_stmt).distinct()
+        user_stmt = cast(Select[tuple[User]], user_stmt)
         user_data = await sess.scalars(user_stmt)
 
     groups: list[SubPack] = []

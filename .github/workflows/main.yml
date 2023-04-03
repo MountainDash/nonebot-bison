@@ -149,6 +149,7 @@ jobs:
 
       - name: Test image
         uses: ./.github/actions/test-docker
+        if: github.event_name == 'pull_request'
         with:
           docker-image-name: felinae98/nonebot-bison:dummy
           wait-time: 10

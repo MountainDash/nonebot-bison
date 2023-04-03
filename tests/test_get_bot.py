@@ -1,8 +1,6 @@
 import pytest
 from nonebug import App
 
-from .utils import AppReq
-
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("app", [{"refresh_bot": True}], indirect=True)
@@ -15,7 +13,7 @@ async def test_get_bots(app: App) -> None:
 
     async with app.test_api() as ctx:
         botv11 = ctx.create_bot(base=BotV11, self_id="v11")
-        botv12 = ctx.create_bot(base=BotV12, self_id="v12", platform="qq")
+        botv12 = ctx.create_bot(base=BotV12, self_id="v12", platform="qq", impl="walle")
 
         driver = get_driver()
         driver._bots = {botv11.self_id: botv11, botv12.self_id: botv12}
@@ -38,7 +36,7 @@ async def test_refresh_bots(app: App) -> None:
 
     async with app.test_api() as ctx:
         botv11 = ctx.create_bot(base=BotV11, self_id="v11")
-        botv12 = ctx.create_bot(base=BotV12, self_id="v12", platform="qq")
+        botv12 = ctx.create_bot(base=BotV12, self_id="v12", platform="qq", impl="walle")
 
         driver = get_driver()
         driver._bots = {botv11.self_id: botv11, botv12.self_id: botv12}
@@ -75,7 +73,7 @@ async def test_get_bot_two_bots(app: App) -> None:
     async with app.test_api() as ctx:
         bot1 = ctx.create_bot(base=BotV11, self_id="1")
         bot2 = ctx.create_bot(base=BotV11, self_id="2")
-        botv12 = ctx.create_bot(base=BotV12, self_id="v12", platform="qq")
+        botv12 = ctx.create_bot(base=BotV12, self_id="v12", platform="qq", impl="walle")
 
         driver = get_driver()
         driver._bots = {bot1.self_id: bot1, bot2.self_id: bot2, botv12.self_id: botv12}

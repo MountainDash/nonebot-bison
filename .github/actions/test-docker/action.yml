@@ -1,0 +1,19 @@
+name: Test Docker Image
+description: Test the given docker image can run
+
+inputs:
+  docker-image-name:
+    description: which docker image to test
+    required: true
+  wait-time:
+    description: how many seconds to wait for
+    required: true
+    default: '5'
+
+runs:
+  using: composite
+  steps:
+    - name: run test
+      run: |
+        ${{ github.action_path }}/test_docker.sh ${{ inputs.docker-image-name}} ${{ inputs.wait-time }}
+      shell: bash

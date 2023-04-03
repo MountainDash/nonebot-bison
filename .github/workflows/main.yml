@@ -142,9 +142,16 @@ jobs:
           context: .
           file: ./docker/Dockerfile_with_frontend
           push: false
+          load: true
           tags: felinae98/nonebot-bison:dummy
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Test image
+        uses: ./.github/actions/test-docker
+        with:
+          docker-image-name: felinae98/nonebot-bison:dummy
+          wait-time: 10
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'

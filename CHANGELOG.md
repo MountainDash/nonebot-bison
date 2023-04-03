@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- 修复文档中指向的nonebot2文档url [@SherkeyXD](https://github.com/SherkeyXD) ([#231](https://github.com/felinae98/nonebot-bison/pull/231))
+
 ### 新功能
 
 - 可以关闭日志中的网络报错 [@felinae98](https://github.com/felinae98) ([#227](https://github.com/felinae98/nonebot-bison/pull/227))

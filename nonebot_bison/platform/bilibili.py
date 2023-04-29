@@ -250,7 +250,7 @@ class Bilibililive(StatusChange):
         cls, client: AsyncClient, target: Target
     ) -> Optional[str]:
         res = await client.get(
-            "https://api.bilibili.com/x/space/acc/info", params={"mid": target}
+            "https://api.bilibili.com/x/space/wbi/acc/info", params={"mid": target}
         )
         res_data = json.loads(res.text)
         if res_data["code"]:

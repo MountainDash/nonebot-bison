@@ -1,12 +1,12 @@
 import json
 import re
 from copy import deepcopy
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from httpx import AsyncClient
 from nonebot.log import logger
+from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 from ..post import Post
@@ -16,7 +16,6 @@ from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, Stat
 
 
 class BilibiliSchedConf(SchedulerConfig):
-
     name = "bilibili.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 10}
@@ -51,7 +50,6 @@ class BilibiliSchedConf(SchedulerConfig):
 
 
 class Bilibili(NewMessage):
-
     categories = {
         1: "一般动态",
         2: "专栏文章",
@@ -201,11 +199,7 @@ class Bilibili(NewMessage):
 
 
 class Bilibililive(StatusChange):
-    # Author : Sichongzou
-    # Date : 2022-5-18 8:54
-    # Description : bilibili开播提醒
-    # E-mail : 1557157806@qq.com
-    categories = {1: "开播提醒", 2: "标题更新提醒"}
+    categories = {1: "开播提醒", 2: "标题更新提醒", 3: "下播提醒"}
     platform_name = "bilibili-live"
     enable_tag = False
     enabled = True
@@ -214,36 +208,42 @@ class Bilibililive(StatusChange):
     name = "Bilibili直播"
     has_target = True
 
-    @dataclass
-    class Info:
-        uname: str
-        live_status: int
-        room_id: str
+    class Info(BaseModel):
         title: str
-        cover_from_user: str
-        keyframe: str
-        category: Category = field(default=Category(0))
+        room_id: int  # 直播间号
+        uid: int  # 主播uid
+        live_time: int
+        # 0: 未开播, 1: 正在直播, 2: 轮播中
+        live_status: Literal[0, 1, 2]
+        area_name: str = Field(alias="area_v2_name")  # 新版分区名
+        uname: str  # 主播名
+        face: str  # 头像url
+        cover: str = Field(alias="cover_from_user")  # 封面url
+        keyframe: str  # 关键帧url，可能会有延迟
+        category: Category = Field(default=Category(0))
 
-        def __init__(self, raw_info: dict):
-            self.__dict__.update(raw_info)
-
-        def is_live_turn_on(self, old_info: Self) -> bool:
-            # 使用 & 判断直播开始
+        def judge_live_action(
+            self, old_info: Self
+        ) -> Literal["turn_on", "turn_off", "on", "off", "title_update"]:
+            # 判断直播状态
             # live_status:
-            # 0:关播
-            # 1:直播中
-            # 2:轮播中
-            if self.live_status == 1 and old_info.live_status != self.live_status:
-                return True
-
-            return False
-
-        def is_title_update(self, old_info: Self) -> bool:
-            # 使用 ^ 判断直播时标题改变
-            if self.live_status == 1 and old_info.title != self.title:
-                return True
-
-            return False
+            # on: 正在直播
+            # off: 未开播
+            # turn_on: 状态变更为正在直播
+            # turn_off: 状态变更为未开播
+            # title_update: 标题更新
+            if old_info.live_status in [0, 2] and self.live_status == 1:
+                return "turn_on"
+            elif old_info.live_status == 1 and self.live_status in [0, 2]:
+                return "turn_off"
+            elif old_info.live_status == 1 and self.live_status == 1:
+                if old_info.title != self.title:
+                    # 开播时通常会改标题，避免短时间推送两次
+                    return "title_update"
+                else:
+                    return "on"
+            else:
+                return "off"
 
     @classmethod
     async def get_target_name(
@@ -259,47 +259,54 @@ class Bilibililive(StatusChange):
 
     async def get_status(self, target: Target) -> Info:
         params = {"uids[]": target}
-        # from https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/live/info.md#%E6%89%B9%E9%87%8F%E6%9F%A5%E8%AF%A2%E7%9B%B4%E6%92%AD%E9%97%B4%E7%8A%B6%E6%80%81
+        # https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/live/info.md#批量查询直播间状态
         res = await self.client.get(
             "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
             params=params,
             timeout=4.0,
         )
-        res_dict = json.loads(res.text)
+        res_dict = res.json()
+
         if res_dict["code"] == 0:
             data = res_dict["data"][target]
-
-            info = self.Info(data)
+            info = self.Info.parse_obj(data)
 
             return info
         else:
             raise self.FetchError()
 
     def compare_status(
-        self, target: Target, old_status: Info, new_status: Info
+        self, _: Target, old_status: Info, new_status: Info
     ) -> list[RawPost]:
-        if new_status.is_live_turn_on(old_status):
-            # 判断开播 运算符左右有顺序要求
-            current_status = deepcopy(new_status)
-            current_status.category = Category(1)
-            return [current_status]
-        elif new_status.is_title_update(old_status):
-            # 判断直播时直播间标题变更 运算符左右有顺序要求
-            current_status = deepcopy(new_status)
-            current_status.category = Category(2)
-            return [current_status]
-        else:
-            return []
+        match new_status.judge_live_action(old_status):
+            case "turn_on":
+                current_status = deepcopy(new_status)
+                current_status.category = Category(1)
+                return [current_status]
+            case "title_update":
+                current_status = deepcopy(new_status)
+                current_status.category = Category(2)
+                return [current_status]
+            case "turn_off":
+                current_status = deepcopy(new_status)
+                current_status.category = Category(3)
+                return [current_status]
+            case _:
+                return []
 
     def get_category(self, status: Info) -> Category:
         assert status.category != Category(0)
         return status.category
 
-    async def parse(self, raw_info: Info) -> Post:
-        url = "https://live.bilibili.com/{}".format(raw_info.room_id)
-        pic = [raw_info.keyframe]
-        target_name = raw_info.uname
-        title = raw_info.title
+    async def parse(self, raw_post: Info) -> Post:
+        url = "https://live.bilibili.com/{}".format(raw_post.room_id)
+        pic = (
+            [raw_post.cover]
+            if raw_post.category == Category(1)
+            else [raw_post.keyframe]
+        )
+        title = f"[{self.categories[raw_post.category][:-2]}] {raw_post.title}"
+        target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
             self.name,
             text=title,
@@ -311,7 +318,6 @@ class Bilibililive(StatusChange):
 
 
 class BilibiliBangumi(StatusChange):
-
     categories = {}
     platform_name = "bilibili-bangumi"
     enable_tag = False

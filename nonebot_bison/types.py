@@ -5,7 +5,8 @@ from typing import Any, Literal, NamedTuple, NewType
 from httpx import URL
 from pydantic import BaseModel
 
-RawPost = NewType("RawPost", Any)
+# RawPost = NewType("RawPost", Any)
+RawPost = Any
 Target = NewType("Target", str)
 Category = int
 Tag = str

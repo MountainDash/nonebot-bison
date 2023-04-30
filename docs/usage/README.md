@@ -2,105 +2,10 @@
 sidebar: auto
 ---
 
-# 部署和使用
+# 全方位了解 Bison 的自行车
 
-本节将教你快速部署和使用一个 nonebot-bison，如果你不知道要选择哪种部署方式，推荐使用[docker-compose](#docker-compose-部署-推荐)
-
-## 部署
-
-本项目可以作为单独的 Bot 使用，可以作为 nonebot2 的插件使用
-
-### 作为 Bot 使用
-
-额外提供自动同意超级用户的好友申请和同意超级用户的加群邀请的功能
-
-#### docker-compose 部署 \[推荐\]
-
-1. 在一个新的目录中下载[docker-compose.yml](https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml)  
-   将其中的`<your QQ>`改成自己的 QQ 号
-
-   ```bash
-   wget https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml
-   ```
-
-2. 运行配置 go-cqhttp
-
-   ```bash
-   docker-compose run go-cqhttp
-   ```
-
-   通信方式选择：`3: 反向 Websocket 通信`  
-   编辑`bot-data/config.yml`，更改下面字段：
-
-   ```yml
-   account: # 账号相关
-     uin: <QQ号> # QQ账号
-     password: "<QQ密码>" # 密码为空时使用扫码登录
-
-   message:
-     post-format: array
-
-   ............
-
-   servers:
-     - ws-reverse:
-         universal: ws://nonebot:8080/onebot/v11/ws/ # 将这个字段写为这个值
-   ```
-
-3. 登录 go-cqhttp
-   再次
-
-   ```bash
-   docker-compose run go-cqhttp
-   ```
-
-   参考[go-cqhttp 文档](https://docs.go-cqhttp.org/faq/slider.html#%E6%96%B9%E6%A1%88a-%E8%87%AA%E8%A1%8C%E6%8A%93%E5%8C%85)
-   完成登录
-
-4. 确定完成登录后，启动 bot：
-
-   ```bash
-   docker-compose up -d
-   ```
-
-#### docker 部署
-
-本项目的 docker 镜像为`felinae98/nonebot-bison`，可以直接 pull 后 run 进行使用，
-相关配置参数可以使用`-e`作为环境变量传入
-
-#### 直接运行（不推荐）
-
-可以参考[nonebot 的运行方法](https://docs.nonebot.dev/guide/getting-started.html)
-::: danger
-直接克隆源代码需要自行编译前端，否则会出现无法使用管理后台等情况。
-:::
-::: danger
-本项目中使用了 Python 3.10 的语法，如果出现问题，请检查 Python 版本
-:::
-
-1. 首先安装 poetry：[安装方法](https://python-poetry.org/docs/#installation)
-2. clone 本项目，在项目中`poetry install`安装依赖
-3. 安装 yarn，配置 yarn 源（推荐）
-4. 在`admin-fronted`中运行`yarn && yarn build`编译前端
-5. 编辑`.env.prod`配置各种环境变量，见[Nonebot2 配置](https://v2.nonebot.dev/docs/appendices/config)
-6. 运行`poetry run python bot.py`启动机器人
-
-### 作为插件使用
-
-本部分假设大家会部署 nonebot2
-::: tip
-参考教程 [nonebot2 部署](https://v2.nonebot.dev/docs/quick-start)  
-参考视频教程 [保姆级新手教学 - Well404](https://www.bilibili.com/video/BV1984y1b7JY)
-:::
-
-#### 手动安装
-
-1. 安装 pip 包`nonebot-bison`
-2. 在`bot.py`中导入插件`nonebot_bison`
-
-#### 使用 nb-cli 安装
-
-使用`nb-cli`执行：`nb plugin install nonebot_bison`
+本节将详细列出 Bison 的使用方法，包括如何配置 Bison，如何使用 Bison 的后台管理网页，如何使用 Bison 的 API 等等  
+如果你想要快速上手 Bison，可以前往[简单使用](/usage/easy-use.md)
 
 ## 配置
 
@@ -110,6 +15,7 @@ sidebar: auto
 - 请注意，在`.env`/`.env.*`中添加的配置项 **不** 需要声明变量类型
   :::
 
+- `BISON_TO_ME`: 是否需要@Bot 或使用 Bot 的 Nickname 来触发 Bison，默认为`True`
 - `BISON_CONFIG_PATH`: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录
 - `BISON_USE_PIC`: 将文字渲染成图片后进行发送，多用于规避风控
 - `BISON_BROWSER`: 本插件使用 Chrome 来渲染图片
@@ -155,7 +61,7 @@ sidebar: auto
 
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
 - `BISON_UA`: 使用的 User-Agent，默认为 Chrome
-- `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认开启
+- `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认为`True`
 
 ## 使用
 

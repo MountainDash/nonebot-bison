@@ -1,10 +1,14 @@
 ---
 home: true
 heroText: Nonebot Bison
-tagline: 本bot励志做全泰拉骑车最快的信使
+tagline: 励志做全泰拉骑车最快的信使
 actions:
   - text: 快速部署
-    link: /usage/
+    link: /usage/install.md
+  - text: 快速上手
+    link: /usage/easy-use.md
+  - text: 详细了解
+    link: /usage
 features:
   - title: 拓展性强
     details: 没有自己想要的网站？只要简单的爬虫知识就可以给它适配一个新的网站

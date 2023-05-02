@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- 解决添加Blibili订阅时，获取用户名时的报错 [@UKMeng](https://github.com/UKMeng) ([#248](https://github.com/felinae98/nonebot-bison/pull/248))
 - :memo: 在文档和log中强调bison启动时和配置里的网站不能直接访问，并优化部分文档的表达 [@AzideCupric](https://github.com/AzideCupric) ([#235](https://github.com/felinae98/nonebot-bison/pull/235))
 - 修复文档中指向的nonebot2文档url [@SherkeyXD](https://github.com/SherkeyXD) ([#231](https://github.com/felinae98/nonebot-bison/pull/231))
 

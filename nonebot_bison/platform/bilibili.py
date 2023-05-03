@@ -2,6 +2,7 @@ import json
 import re
 from copy import deepcopy
 from datetime import datetime, timedelta
+from enum import Enum, unique
 from typing import Any, Literal, Optional
 
 from httpx import AsyncClient
@@ -208,13 +209,27 @@ class Bilibililive(StatusChange):
     name = "Bilibili直播"
     has_target = True
 
+    @unique
+    class LiveStatus(Enum):
+        # 0: 未开播, 1: 正在直播, 2: 轮播中
+        OFF = 0
+        ON = 1
+        CYCLE = 2
+
+    @unique
+    class LiveAction(Enum):
+        TURN_ON = "turn_on"
+        TURN_OFF = "turn_off"
+        ON = "on"
+        OFF = "off"
+        TITLE_UPDATE = "title_update"
+
     class Info(BaseModel):
         title: str
         room_id: int  # 直播间号
         uid: int  # 主播uid
-        live_time: int
-        # 0: 未开播, 1: 正在直播, 2: 轮播中
-        live_status: Literal[0, 1, 2]
+        live_time: int  # 开播时间
+        live_status: "Bilibililive.LiveStatus"
         area_name: str = Field(alias="area_v2_name")  # 新版分区名
         uname: str  # 主播名
         face: str  # 头像url
@@ -222,9 +237,7 @@ class Bilibililive(StatusChange):
         keyframe: str  # 关键帧url，可能会有延迟
         category: Category = Field(default=Category(0))
 
-        def judge_live_action(
-            self, old_info: Self
-        ) -> Literal["turn_on", "turn_off", "on", "off", "title_update"]:
+        def get_live_action(self, old_info: Self) -> "Bilibililive.LiveAction":
             # 判断直播状态
             # live_status:
             # on: 正在直播
@@ -232,18 +245,26 @@ class Bilibililive(StatusChange):
             # turn_on: 状态变更为正在直播
             # turn_off: 状态变更为未开播
             # title_update: 标题更新
-            if old_info.live_status in [0, 2] and self.live_status == 1:
-                return "turn_on"
-            elif old_info.live_status == 1 and self.live_status in [0, 2]:
-                return "turn_off"
-            elif old_info.live_status == 1 and self.live_status == 1:
+            status = Bilibililive.LiveStatus
+            action = Bilibililive.LiveAction
+            if (
+                old_info.live_status in [status.OFF, status.CYCLE]
+                and self.live_status == status.ON
+            ):
+                return action.TURN_ON
+            elif old_info.live_status == status.ON and self.live_status in [
+                status.OFF,
+                status.CYCLE,
+            ]:
+                return action.TURN_OFF
+            elif old_info.live_status == status.ON and self.live_status == status.ON:
                 if old_info.title != self.title:
                     # 开播时通常会改标题，避免短时间推送两次
-                    return "title_update"
+                    return action.TITLE_UPDATE
                 else:
-                    return "on"
+                    return action.ON
             else:
-                return "off"
+                return action.OFF
 
     @classmethod
     async def get_target_name(
@@ -269,6 +290,7 @@ class Bilibililive(StatusChange):
 
         if res_dict["code"] == 0:
             data = res_dict["data"][target]
+            self.Info.update_forward_refs()
             info = self.Info.parse_obj(data)
 
             return info
@@ -278,16 +300,17 @@ class Bilibililive(StatusChange):
     def compare_status(
         self, _: Target, old_status: Info, new_status: Info
     ) -> list[RawPost]:
-        match new_status.judge_live_action(old_status):
-            case "turn_on":
+        action = Bilibililive.LiveAction
+        match new_status.get_live_action(old_status):
+            case action.TURN_ON:
                 current_status = deepcopy(new_status)
                 current_status.category = Category(1)
                 return [current_status]
-            case "title_update":
+            case action.TITLE_UPDATE:
                 current_status = deepcopy(new_status)
                 current_status.category = Category(2)
                 return [current_status]
-            case "turn_off":
+            case action.TURN_OFF:
                 current_status = deepcopy(new_status)
                 current_status.category = Category(3)
                 return [current_status]

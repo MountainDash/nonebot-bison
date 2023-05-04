@@ -1,5 +1,7 @@
 ---
 sidebar: auto
+prev: /usage
+next: /usage/easy-use
 ---
 
 # 让拜松骑上自行车

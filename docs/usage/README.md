@@ -1,5 +1,7 @@
 ---
 sidebar: auto
+prev: /usage/install
+next: /usage/easy-use
 ---
 
 # 全方位了解 Bison 的自行车

@@ -136,6 +136,17 @@ class Bilibili(NewMessage):
             )
         ]
 
+    @staticmethod
+    def _is_jaccard_similar(str1: str, str2: str, threshold: float = 0.8) -> bool:
+        """
+        计算两个字符串(按单个字)的
+        [Jaccard相似系数](https://zh.wikipedia.org/wiki/雅卡尔指数)
+        是否达到阈值
+        """
+        set1 = set(str1)
+        set2 = set(str2)
+        return len(set1 & set2) / len(set1 | set2) >= threshold
+
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
         if post_type == 1:
             # 一般动态
@@ -147,7 +158,25 @@ class Bilibili(NewMessage):
             pic = card["image_urls"]
         elif post_type == 3:
             # 视频
-            text = card["dynamic"]
+            dynamic = card.get("dynamic", "")
+            title = card["title"]
+            desc = card.get("desc", "")
+
+            if self._is_jaccard_similar(desc, dynamic):
+                # 如果视频简介和动态内容相似，就只保留长的那个
+                if len(dynamic) > len(desc):
+                    text = f"{dynamic}\n=================\n{title}"
+                else:
+                    text = f"{title}\n\n{desc}"
+            else:
+                # 否则就把两个拼起来
+                text = f"""
+                {dynamic}
+                \n=================\n
+                {title}\n\n
+                {desc}
+                """
+
             pic = [card["pic"]]
         elif post_type == 4:
             # 纯文字
@@ -190,10 +219,9 @@ class Bilibili(NewMessage):
             text = card_content["item"]["content"]
             orig_type = card_content["item"]["orig_type"]
             orig = json.loads(card_content["origin"])
-            orig_text, _ = self._get_info(self._do_get_category(orig_type), orig)
+            orig_text, pic = self._get_info(self._do_get_category(orig_type), orig)
             text += "\n--------------\n"
             text += orig_text
-            pic = []
         else:
             raise CategoryNotSupport(post_type)
         return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)

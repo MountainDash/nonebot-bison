@@ -14,6 +14,7 @@
 
 ### Bug 修复
 
+- 修复订阅 RSS 时，输入链接被转义的问题 [@LambdaYH](https://github.com/LambdaYH) ([#238](https://github.com/felinae98/nonebot-bison/pull/238))
 - 在未安装 fastapi 时不加载 webui [@felinae98](https://github.com/felinae98) ([#221](https://github.com/felinae98/nonebot-bison/pull/221))
 
 ## v0.7.1

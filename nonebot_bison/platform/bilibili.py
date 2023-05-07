@@ -12,7 +12,7 @@ from typing_extensions import Self
 
 from ..post import Post
 from ..types import ApiError, Category, RawPost, Tag, Target
-from ..utils import SchedulerConfig
+from ..utils import SchedulerConfig, jaccard_text_similarity
 from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
 
 
@@ -136,17 +136,6 @@ class Bilibili(NewMessage):
             )
         ]
 
-    @staticmethod
-    def _is_jaccard_similar(str1: str, str2: str, threshold: float = 0.8) -> bool:
-        """
-        计算两个字符串(按单个字)的
-        [Jaccard相似系数](https://zh.wikipedia.org/wiki/雅卡尔指数)
-        是否达到阈值
-        """
-        set1 = set(str1)
-        set2 = set(str2)
-        return len(set1 & set2) / len(set1 | set2) >= threshold
-
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
         if post_type == 1:
             # 一般动态
@@ -162,7 +151,7 @@ class Bilibili(NewMessage):
             title = card["title"]
             desc = card.get("desc", "")
 
-            if self._is_jaccard_similar(desc, dynamic):
+            if jaccard_text_similarity(desc, dynamic) > 0.8:
                 # 如果视频简介和动态内容相似，就只保留长的那个
                 if len(dynamic) > len(desc):
                     text = f"{dynamic}\n=================\n{title}"
@@ -239,13 +228,22 @@ class Bilibililive(StatusChange):
 
     @unique
     class LiveStatus(Enum):
-        # 0: 未开播, 1: 正在直播, 2: 轮播中
+        # 直播状态
+        # 0: 未开播
+        # 1: 正在直播
+        # 2: 轮播中
         OFF = 0
         ON = 1
         CYCLE = 2
 
     @unique
     class LiveAction(Enum):
+        # 当前直播行为，由新旧直播状态对比决定
+        # on: 正在直播
+        # off: 未开播
+        # turn_on: 状态变更为正在直播
+        # turn_off: 状态变更为未开播
+        # title_update: 标题更新
         TURN_ON = "turn_on"
         TURN_OFF = "turn_off"
         ON = "on"
@@ -266,13 +264,6 @@ class Bilibililive(StatusChange):
         category: Category = Field(default=Category(0))
 
         def get_live_action(self, old_info: Self) -> "Bilibililive.LiveAction":
-            # 判断直播状态
-            # live_status:
-            # on: 正在直播
-            # off: 未开播
-            # turn_on: 状态变更为正在直播
-            # turn_off: 状态变更为未开播
-            # title_update: 标题更新
             status = Bilibililive.LiveStatus
             action = Bilibililive.LiveAction
             if (

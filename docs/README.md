@@ -2,11 +2,12 @@
 home: true
 heroText: Nonebot Bison
 tagline: 励志做全泰拉骑自行车最快的信使
+
 actions:
   - text: 快速部署
     link: /usage/install.md
     type: secondary
-  - text: 快速上手
+  - text: 快速上车
     link: /usage/easy-use.md
     type: primary
   - text: 详细了解
@@ -21,3 +22,18 @@ features:
     details: 私聊、群组亦或是网页，Bison提供全方位下单服务，只需简单指令，就能精准送达！
 footer: MIT Licensed
 ---
+
+<center>
+
+<font size=5px>为什么是 Bison?</font>
+
+作为 Nonebot 的一个插件，它的名字来自于明日方舟的角色 Bison，是通用的平台消息推送工具
+
+<div style="background: rgba(128, 128, 128, 0.07); border-radius: 10px; background-clip: padding-box;">
+
+<font size=4px>目前支持</font>
+
+• 微博 • 哔哩哔哩 • 哔哩哔哩直播 • 哔哩哔哩番剧 • 网易云歌手 • 网易云电台 • 明日方舟 • FF14 • MCBBS 幻翼块讯 • RSS •
+
+</div>
+</center>

@@ -8,7 +8,7 @@ export default defineUserConfig({
     navbar: [
       { text: "主页", link: "/" },
       {
-        text: "上车",
+        text: "使用",
         children: [
           {
             text: "安装",
@@ -16,12 +16,12 @@ export default defineUserConfig({
             activeMatch: "^/usage/install",
           },
           {
-            text: "简单使用",
+            text: "入门",
             link: "/usage/easy-use.md",
             activeMatch: "^/usage/easy-use",
           },
           {
-            text: "详细配置",
+            text: "详述",
             link: "/usage",
             activeMatch: "^/usage$",
           },

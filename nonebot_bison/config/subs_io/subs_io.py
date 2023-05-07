@@ -3,6 +3,7 @@ from typing import Callable, TypeVar
 
 from nonebot.log import logger
 from nonebot_plugin_datastore.db import create_session
+from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy import select
 from sqlalchemy.orm.strategy_options import selectinload
 from sqlalchemy.sql.selectable import Select
@@ -39,8 +40,9 @@ async def subscribes_export(selector: Callable[[T], T]) -> v2.SubGroup:
 
     for user in user_data:
         assert isinstance(user, User)
-        sub_pack = v2.SubPack.parse_obj(
-            {"user_target": user.user_target, "subs": user_id_sub_dict[user.id]}
+        sub_pack = v2.SubPack(
+            user_target=PlatformTarget.deserialize(user.user_target),
+            subs=user_id_sub_dict[user.id],
         )
         groups.append(sub_pack)
 

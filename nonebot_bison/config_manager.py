@@ -7,6 +7,7 @@ from nonebot.adapters.onebot.v11 import Bot, Event, MessageEvent
 from nonebot.adapters.onebot.v11.event import GroupMessageEvent, PrivateMessageEvent
 from nonebot.adapters.onebot.v11.message import Message
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
+from nonebot.adapters.onebot.v11.utils import unescape
 from nonebot.internal.params import ArgStr
 from nonebot.internal.rule import Rule
 from nonebot.matcher import Matcher
@@ -130,7 +131,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             if target == "取消":
                 raise KeyboardInterrupt
             platform = platform_manager[state["platform"]]
-            target = await platform.parse_target(target)
+            target = await platform.parse_target(unescape(target))
             name = await check_sub_target(state["platform"], target)
             if not name:
                 raise ValueError

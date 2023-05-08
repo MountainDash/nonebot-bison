@@ -5,6 +5,7 @@ from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 from nonebot_plugin_saa import TargetQQGroup
+from nonebot_plugin_saa.utils.auto_select_bot import get_bot
 
 from ..apis import check_sub_target
 from ..config import (
@@ -17,7 +18,7 @@ from ..config.db_config import SubscribeDupException
 from ..platform import platform_manager
 from ..types import Target as T_Target
 from ..types import WeightConfig
-from ..utils.get_bot import get_bot, get_groups
+from ..utils.get_bot import get_groups
 from .jwt import load_jwt, pack_jwt
 from .token_manager import token_manager
 from .types import (
@@ -185,8 +186,7 @@ async def del_group_sub(groupNumber: int, platformName: str, target: str):
 async def update_group_sub(groupNumber: int, req: AddSubscribeReq):
     try:
         await config.update_subscribe(
-            int(groupNumber),
-            "group",
+            TargetQQGroup(group_id=groupNumber),
             req.target,
             req.targetName,
             req.platformName,

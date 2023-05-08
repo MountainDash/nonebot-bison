@@ -30,6 +30,7 @@ def load_adapters(nonebug_init: None):
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
+    nonebot.require("nonebot_plugin_saa")
     nonebot.require("nonebot_bison")
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db

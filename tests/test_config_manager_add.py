@@ -544,6 +544,7 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
 async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -621,7 +622,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
             event_5_ok, BotReply.add_reply_subscribe_success("明日方舟"), True
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 1
     sub = subs[0]
     assert sub.target.target == "161775300"
@@ -638,6 +639,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
 async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -708,7 +710,7 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
             event_4_ok, BotReply.add_reply_subscribe_success("汉化日记 第三季"), True
         )
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 1
     sub = subs[0]
     assert sub.target.target == "28235413"

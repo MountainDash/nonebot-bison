@@ -1,8 +1,8 @@
 import pytest
 import respx
 from httpx import Response
-from nonebot_plugin_saa.nonebug import should_send_saa
 from nonebug.app import App
+from nonebug_saa import should_send_saa
 
 from .platforms.utils import get_json
 from .utils import fake_admin_user, fake_group_message_event
@@ -28,8 +28,7 @@ async def test_query_sub(app: App, init_scheduler):
         ["明日方舟"],
     )
     async with app.test_matcher(query_sub_matcher) as ctx:
-        adapter = get_driver()._adapters[str(SupportedAdapters.onebot_v11)]
-        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        bot = ctx.create_bot(base=Bot)
 
         event = fake_group_message_event(message=Message("查询订阅"), to_me=True)
         ctx.receive_event(bot, event)

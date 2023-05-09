@@ -1467,13 +1467,13 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "nonebot-plugin-send-anything-anywhere"
-version = "0.2.5"
+version = "0.2.6"
 description = "An adaptor for nonebot2 adaptors"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "nonebot_plugin_send_anything_anywhere-0.2.5-py3-none-any.whl", hash = "sha256:58db714745f71693292533433e8881b00954e8ee6438ab3cd173048b5c5ce77f"},
-    {file = "nonebot_plugin_send_anything_anywhere-0.2.5.tar.gz", hash = "sha256:2385e95ee22407faf59703074ad95070bedbdcf492c261ed380f26eccd202039"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.2.6-py3-none-any.whl", hash = "sha256:42c7145e1c1735f159e1c16c5bd96ae2409897beb627a64039f6a90e9f09bcae"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.2.6.tar.gz", hash = "sha256:1774f4ef8f7800239f0b0b3cf73ce5f801fcfeac8da9f38fabf77d6829e4322e"},
 ]
 
 [package.dependencies]
@@ -1536,17 +1536,17 @@ resolved_reference = "bc82dbe078a1d42c515a3a783269011fb7e7bc9d"
 
 [[package]]
 name = "nonebug-saa"
-version = "0.1.0"
+version = "0.2.1"
 description = "A nonebug helper for nonebot-plugin-send-anything-anything"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "nonebug_saa-0.1.0-py3-none-any.whl", hash = "sha256:f2e79867f81d53ca08752382e6800ebc8c6242fbee94fa346ef48e887121b9d6"},
-    {file = "nonebug_saa-0.1.0.tar.gz", hash = "sha256:bfe805d3a9d67e9e2585638b0f37185f69934d2bf433276c007850a9cb9ba52c"},
+    {file = "nonebug_saa-0.2.1-py3-none-any.whl", hash = "sha256:cf41786a029f7a6085c352fd6298523b078f6310bf0f48451508bc8f8d86a6a1"},
+    {file = "nonebug_saa-0.2.1.tar.gz", hash = "sha256:fee91fe86030ceaf55535a2f48e74670e3763d0397f37ce9473c0c2d72148fe3"},
 ]
 
 [package.dependencies]
-nonebot-plugin-send-anything-anywhere = ">=0.2.2,<0.3.0"
+nonebot-plugin-send-anything-anywhere = ">=0.2.4,<0.3.0"
 nonebug = ">=0.3.1,<0.4.0"
 pytest-mock = ">=3.10.0,<4.0.0"
 
@@ -2886,4 +2886,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "109ee12685b1c143006df6969f7b1b3b0d3613a8a47fca3a7a8b005b64605902"
+content-hash = "c6474ad7ba525cdfa874d5fdfaec0a8ce7f8224f68a0deb4d0e4ae470a795977"

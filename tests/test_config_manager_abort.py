@@ -1,8 +1,8 @@
 import pytest
 import respx
 from httpx import Response
-from nonebot_plugin_saa.nonebug import should_send_saa
 from nonebug.app import App
+from nonebug_saa import should_send_saa
 
 from .platforms.utils import get_json
 from .utils import BotReply, fake_admin_user, fake_group_message_event

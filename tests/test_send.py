@@ -3,8 +3,8 @@ import typing
 
 import pytest
 from flaky import flaky
-from nonebot_plugin_saa.nonebug import should_send_saa
 from nonebug import App
+from nonebug_saa import should_send_saa
 from pytest_mock.plugin import MockerFixture
 
 
@@ -12,6 +12,7 @@ from pytest_mock.plugin import MockerFixture
 async def test_send_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot_plugin_saa import MessageFactory, TargetQQGroup, TargetQQPrivate
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
@@ -27,10 +28,8 @@ async def test_send_no_queue(app: App, mocker: MockerFixture):
         should_send_saa(ctx, MessageFactory("msg1"), bot, target=group_target)
         should_send_saa(ctx, MessageFactory("msg2"), bot, target=group_target)
         should_send_saa(ctx, MessageFactory("priv"), bot, target=private_target)
-        await send_msgs(
-            bot, group_target, [MessageFactory("msg1"), MessageFactory("msg2")]
-        )
-        await send_msgs(bot, private_target, [MessageFactory("priv")])
+        await send_msgs(group_target, [MessageFactory("msg1"), MessageFactory("msg2")])
+        await send_msgs(private_target, [MessageFactory("priv")])
         assert ctx.wait_list.empty()
 
 
@@ -39,6 +38,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot_plugin_saa import MessageFactory, TargetQQGroup
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import MESSGE_SEND_INTERVAL, send_msgs
@@ -46,6 +46,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
     mocker.patch.object(plugin_config, "bison_use_queue", True)
     async with app.test_api() as ctx:
         new_bot = ctx.create_bot(base=Bot)
+        await refresh_bots()
         mocker.patch.object(nonebot, "get_bot", lambda: new_bot)
         bot = nonebot.get_bot()
         assert isinstance(bot, Bot)
@@ -55,8 +56,8 @@ async def test_send_queue(app: App, mocker: MockerFixture):
         should_send_saa(ctx, MessageFactory("msg"), bot, target=target)
         should_send_saa(ctx, MessageFactory("msg2"), bot, target=target)
 
-        await send_msgs(bot, target, [MessageFactory("msg")])
-        await send_msgs(bot, target, [MessageFactory("msg2")])
+        await send_msgs(target, [MessageFactory("msg")])
+        await send_msgs(target, [MessageFactory("msg2")])
         assert not ctx.wait_list.empty()
         await asyncio.sleep(2 * MESSGE_SEND_INTERVAL)
         assert ctx.wait_list.empty()
@@ -72,6 +73,7 @@ async def test_send_merge_no_queue(app: App):
         TargetQQGroup,
         Text,
     )
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
@@ -81,6 +83,7 @@ async def test_send_merge_no_queue(app: App):
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, self_id="8888")
+        await refresh_bots()
         assert isinstance(bot, Bot)
         target = TargetQQGroup(group_id=633)
 
@@ -90,7 +93,7 @@ async def test_send_merge_no_queue(app: App):
         ]
         should_send_saa(ctx, message[0], bot, target=target)
         should_send_saa(ctx, message[1], bot, target=target)
-        await send_msgs(bot, target, message)
+        await send_msgs(target, message)
 
         message = [
             MessageFactory(Text("test msg")),
@@ -99,8 +102,7 @@ async def test_send_merge_no_queue(app: App):
         ]
         should_send_saa(ctx, message[0], bot, target=target)
         should_send_saa(ctx, AggregatedMessageFactory(message[1:]), bot, target=target)
-        # import ipdb; ipdb.set_trace()
-        await send_msgs(bot, target, message)
+        await send_msgs(target, message)
 
         message = [
             MessageFactory(Text("test msg")),
@@ -110,7 +112,7 @@ async def test_send_merge_no_queue(app: App):
         ]
         should_send_saa(ctx, message[0], bot, target=target)
         should_send_saa(ctx, AggregatedMessageFactory(message[1:]), bot, target=target)
-        await send_msgs(bot, target, message)
+        await send_msgs(target, message)
 
 
 async def test_send_merge2_no_queue(app: App):
@@ -122,6 +124,7 @@ async def test_send_merge2_no_queue(app: App):
         TargetQQGroup,
         Text,
     )
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
@@ -132,6 +135,7 @@ async def test_send_merge2_no_queue(app: App):
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, self_id="8888")
         assert isinstance(bot, Bot)
+        await refresh_bots()
         target = TargetQQGroup(group_id=633)
 
         message = [
@@ -140,4 +144,4 @@ async def test_send_merge2_no_queue(app: App):
             MessageFactory(Image("https://picsum.photos/200/300")),
         ]
         should_send_saa(ctx, AggregatedMessageFactory(message), bot, target=target)
-        await send_msgs(bot, target, message)
+        await send_msgs(target, message)

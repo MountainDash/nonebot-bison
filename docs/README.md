@@ -1,7 +1,7 @@
 ---
 home: true
 heroText: Nonebot Bison
-tagline: 励志做全泰拉骑自行车最快的信使
+tagline: 通用的平台消息推送工具，励志做全泰拉骑自行车最快的信使
 
 actions:
   - text: 快速部署
@@ -24,10 +24,6 @@ footer: MIT Licensed
 ---
 
 <center>
-
-<font size=5px>为什么是 Bison?</font>
-
-作为 Nonebot 的一个插件，它的名字来自于明日方舟的角色 Bison，是通用的平台消息推送工具
 
 <div style="background: rgba(128, 128, 128, 0.07); border-radius: 10px; background-clip: padding-box;">
 

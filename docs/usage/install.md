@@ -37,9 +37,9 @@ next: /usage/easy-use
 
 2. 使用`nb-cli`执行在**项目根目录**执行
 
-```bash
-nb plugin install nonebot-bison
-```
+   ```bash
+   nb plugin install nonebot-bison
+   ```
 
 ### 手动安装
 

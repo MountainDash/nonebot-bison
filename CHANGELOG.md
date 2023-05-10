@@ -17,6 +17,10 @@
 - 修复订阅 RSS 时，输入链接被转义的问题 [@LambdaYH](https://github.com/LambdaYH) ([#238](https://github.com/felinae98/nonebot-bison/pull/238))
 - 在未安装 fastapi 时不加载 webui [@felinae98](https://github.com/felinae98) ([#221](https://github.com/felinae98/nonebot-bison/pull/221))
 
+### 文档
+
+- :memo: 拆分部署与使用，添加简单使用章节 [@AzideCupric](https://github.com/AzideCupric) ([#252](https://github.com/felinae98/nonebot-bison/pull/252))
+
 ## v0.7.1
 
 - 修改 nonebot_bison 项目结构 [@he0119](https://github.com/he0119) ([#211](https://github.com/felinae98/nonebot-bison/pull/211))

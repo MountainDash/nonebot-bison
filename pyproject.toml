@@ -7,7 +7,8 @@ license = "MIT"
 homepage = "https://github.com/LambdaYH/nonebot-bison-migang"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"
-include = ["nonebot_bison"]
+packages = [{include = "nonebot_bison"}]
+include = ["nonebot_bison/admin_page/dist/**/*"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Operating System :: POSIX :: Linux",

@@ -62,5 +62,5 @@ async def test_log(app: App, tmp_path: Path):
 
     with log_path.open("r", encoding="utf-8") as f:
         log = f.read()
-        assert "Nonebot Bison frontend will be running at" in log
+        assert "Nonebot Bison Migang frontend will be running at" in log
         assert "该页面不能被直接访问，请私聊bot 后台管理 以获取可访问地址" in log

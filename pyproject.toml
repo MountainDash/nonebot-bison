@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "nonebot-bison"
-version = "0.7.1"
+name = "nonebot-bison-migang"
+version = "0.0.1"
 description = "Subscribe message from social medias"
-authors = ["felinae98 <felinae225@qq.com>"]
+authors = ["mobai <mobai@mobai.one>"]
 license = "MIT"
-homepage = "https://github.com/felinae98/nonebot-bison"
+homepage = "https://github.com/LambdaYH/nonebot-bison-migang"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"
 include = ["nonebot_bison/admin_page/dist/**/*"]

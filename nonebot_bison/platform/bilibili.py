@@ -347,7 +347,7 @@ class Bilibililive(StatusChange):
             if raw_post.category == Category(1)
             else [raw_post.keyframe]
         )
-        title = f"[{self.categories[raw_post.category][:-2]}] {raw_post.title}"
+        title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
             self.name,

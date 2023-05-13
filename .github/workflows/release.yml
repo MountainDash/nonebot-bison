@@ -39,14 +39,6 @@ jobs:
       - run: |
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - uses: release-drafter/release-drafter@v5
-        with:
-          name: Release ${{ env.TAG_NAME }}
-          tag: ${{ env.TAG_NAME }}
-          publish: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Publish PyPI and Github
         run: |
           poetry publish --build -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} || echo "Already pushed to pypi"

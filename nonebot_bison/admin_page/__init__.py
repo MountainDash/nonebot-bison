@@ -63,7 +63,7 @@ def init_fastapi():
     if host in ["0.0.0.0", "127.0.0.1"]:
         host = "localhost"
     logger.opt(colors=True).info(
-        f"Nonebot Bison frontend will be running at: "
+        f"Nonebot Bison Migang frontend will be running at: "
         f"<b><u>http://{host}:{port}/bison</u></b>"
     )
     logger.opt(colors=True).info(f"该页面不能被直接访问，请私聊bot <b><u>后台管理</u></b> 以获取可访问地址")

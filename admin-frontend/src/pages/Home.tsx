@@ -85,7 +85,7 @@ export default function Home() {
     <Layout className="layout-collapse-demo">
       <Layout.Header>
         <span>
-          Nonebot Bison
+          Nonebot Bison Migang
         </span>
       </Layout.Header>
       <Layout className="layout-collapse-demo">

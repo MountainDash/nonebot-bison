@@ -8,6 +8,7 @@
 
 ### 新功能
 
+- 开播提醒推送的图片改为使用直播间封面 [@AzideCupric](https://github.com/AzideCupric) ([#249](https://github.com/felinae98/nonebot-bison/pull/249))
 - 可以关闭日志中的网络报错 [@felinae98](https://github.com/felinae98) ([#227](https://github.com/felinae98/nonebot-bison/pull/227))
 - 调整 bilibili 网络报错 [@felinae98](https://github.com/felinae98) ([#223](https://github.com/felinae98/nonebot-bison/pull/223))
 - 调整 scheduler log level [@felinae98](https://github.com/felinae98) ([#222](https://github.com/felinae98/nonebot-bison/pull/222))

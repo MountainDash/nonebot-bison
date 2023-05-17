@@ -135,7 +135,7 @@ class _Post(BasePost):
             if self.target_name:
                 text += " {}".format(self.target_name)
             msg_segments.append(await parse_text(text))
-            if not self.target_type == "rss" and self.url:
+            if self.url:
                 msg_segments.append(MessageSegment.text(self.url))
             for pic in self.pics:
                 msg_segments.append(MessageSegment.image(pic))

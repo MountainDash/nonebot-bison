@@ -4,7 +4,7 @@ from pathlib import Path
 from pkgutil import iter_modules
 from typing import DefaultDict, Type
 
-from .platform import Platform, make_no_target_group
+from .platform import Platform, make_has_target_mutex_group, make_no_target_group
 
 _package_dir = str(Path(__file__).resolve().parent)
 for (_, module_name, _) in iter_modules([_package_dir]):
@@ -21,5 +21,7 @@ platform_manager: dict[str, Type[Platform]] = dict()
 for name, platform_list in _platform_list.items():
     if len(platform_list) == 1:
         platform_manager[name] = platform_list[0]
+    elif platform_list[0].has_target:
+        platform_manager[name] = make_has_target_mutex_group(platform_list)
     else:
         platform_manager[name] = make_no_target_group(platform_list)

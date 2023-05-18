@@ -463,7 +463,7 @@ async def test_status_change(mock_status_change, user_info_factory):
 
 
 @pytest.mark.asyncio
-async def test_group(
+async def test_no_target_group(
     app: App,
     mock_platform_no_target,
     mock_platform_no_target_2,
@@ -489,3 +489,157 @@ async def test_group(
     assert "p2" in id_set_2 and "p6" in id_set_2
     res3 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 4], [])])
     assert len(res3) == 0
+
+
+@pytest.fixture
+def mock_platform_has_target_mutex(app: App, mock_scheduler_conf):
+    from nonebot_bison.platform.platform import CategoryNotSupport, NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
+
+    class MockPlatform(NewMessage):
+
+        platform_name = "mock_platform"
+        name = "Mock Platform"
+        enabled = True
+        is_common = True
+        scheduler = mock_scheduler_conf
+        enable_tag = True
+        has_target = True
+        categories = {Category(1): "转发"}
+
+        sub_index = 0
+
+        @staticmethod
+        async def get_target_name(_: "Target"):
+            return "MockPlatform"
+
+        def get_id(self, post: "RawPost") -> Any:
+            return post["id"]
+
+        def get_date(self, raw_post: "RawPost") -> float:
+            return raw_post["date"]
+
+        def get_tags(self, raw_post: "RawPost") -> list["Tag"]:
+            return raw_post["tags"]
+
+        def get_category(self, raw_post: "RawPost") -> "Category":
+            return Category(1)
+
+        async def parse(self, raw_post: "RawPost") -> "Post":
+            return Post(
+                "mock_platform",
+                raw_post["text"],
+                "http://t.tt/" + str(self.get_id(raw_post)),
+                target_name="Mock",
+            )
+
+        @classmethod
+        async def get_sub_list(cls, _: "Target"):
+            if cls.sub_index == 0:
+                cls.sub_index += 1
+                return raw_post_list_1
+            else:
+                return raw_post_list_2
+
+    return MockPlatform
+
+
+@pytest.fixture
+def mock_platform_has_target_mutex_2(app: App, mock_scheduler_conf):
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import SchedulerConfig
+
+    class MockPlatform(NewMessage):
+
+        platform_name = "mock_platform"
+        name = "Mock Platform"
+        enabled = True
+        scheduler = mock_scheduler_conf
+        is_common = True
+        enable_tag = True
+        has_target = True
+        categories = {
+            Category(2): "test2",
+        }
+
+        sub_index = 0
+
+        @classmethod
+        async def get_target_name(cls, client, _: "Target"):
+            return "MockPlatform"
+
+        def get_id(self, post: "RawPost") -> Any:
+            return post["id"]
+
+        def get_date(self, raw_post: "RawPost") -> float:
+            return raw_post["date"]
+
+        def get_tags(self, raw_post: "RawPost") -> list["Tag"]:
+            return raw_post["tags"]
+
+        def get_category(self, raw_post: "RawPost") -> "Category":
+            return Category(2)
+
+        async def parse(self, raw_post: "RawPost") -> "Post":
+            return Post(
+                "mock_platform_2",
+                raw_post["text"],
+                "http://t.tt/" + str(self.get_id(raw_post)),
+                target_name="Mock",
+            )
+
+        @classmethod
+        async def get_sub_list(cls, _: "Target"):
+            list_1 = [{"id": 5, "text": "p5", "date": now, "tags": ["tag1"]}]
+
+            list_2 = list_1 + [
+                {"id": 6, "text": "p6", "date": now, "tags": ["tag1"]},
+                {"id": 7, "text": "p7", "date": now, "tags": ["tag2"]},
+            ]
+            if cls.sub_index == 0:
+                cls.sub_index += 1
+                return list_1
+            else:
+                return list_2
+
+    return MockPlatform
+
+
+@pytest.mark.asyncio
+async def test_has_target_mutex_group(
+    app: App,
+    mock_platform_has_target_mutex,
+    mock_platform_has_target_mutex_2,
+    user_info_factory,
+):
+
+    from nonebot_bison.platform.platform import make_has_target_mutex_group
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import ProcessContext
+
+    group_platform_class = make_has_target_mutex_group(
+        [mock_platform_has_target_mutex, mock_platform_has_target_mutex_2]
+    )
+    group_platform = group_platform_class(ProcessContext(), None)
+    res1 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 2], [])])
+    assert len(res1) == 0
+    res2 = await group_platform.fetch_new_post("dummy", [user_info_factory([1, 2], [])])
+    assert len(res2) == 1
+    posts1 = res2[0][1]
+    assert len(posts1) == 3
+    id_set_1 = set(map(lambda x: x.text, posts1))
+    assert "p2" in id_set_1 and "p4" in id_set_1
+    res3 = await group_platform.fetch_new_post("dummy", [user_info_factory([2, 1], [])])
+    assert len(res3) == 0
+    res4 = await group_platform.fetch_new_post("dummy", [user_info_factory([2], [])])
+    assert len(res4) == 0
+    res5 = await group_platform.fetch_new_post("dummy", [user_info_factory([2], [])])
+    assert len(res5) == 1
+    posts2 = res5[0][1]
+    assert len(posts2) == 2
+    id_set_2 = set(map(lambda x: x.text, posts2))
+    assert "p6" in id_set_2 and "p7" in id_set_2

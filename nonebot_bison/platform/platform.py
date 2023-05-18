@@ -478,3 +478,93 @@ def make_no_target_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
         },
         abstract=True,
     )
+
+
+def make_has_target_mutex_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
+    """创建一个有target的互斥组，多个类别中只能选中一个进行推送
+
+    默认越小的号码优先级越高，以解决目前能够多选类别导致的误选
+
+    互斥类要求一个class仅有一个category
+    """
+    if typing.TYPE_CHECKING:
+
+        class HasTargetMutexGroup(Platform, abstract=True):
+            platform_list: list[Type[Platform]]
+            platform_obj_list: list[Platform]
+
+    DUMMY_STR = "_DUMMY"
+
+    platform_name = platform_list[0].platform_name
+    name = DUMMY_STR
+    categories_keys = set()
+    categories = {}
+    scheduler = platform_list[0].scheduler
+
+    for platform in platform_list:
+        if not platform.has_target:
+            raise RuntimeError("Platform {} should have a target".format(platform.name))
+        if name == DUMMY_STR:
+            name = platform.name
+        elif name != platform.name:
+            raise RuntimeError("Platform name for {} not fit".format(platform_name))
+        platform_category_key_set = set(platform.categories.keys())
+        if platform_category_key_set & categories_keys:
+            raise RuntimeError(
+                "Platform categories for {} duplicate".format(platform_name)
+            )
+        categories_keys |= platform_category_key_set
+        categories.update(platform.categories)
+        if platform.scheduler != scheduler:
+            raise RuntimeError(
+                "Platform scheduler for {} not fit".format(platform_name)
+            )
+
+    def __init__(self: "HasTargetMutexGroup", ctx: ProcessContext, client: AsyncClient):
+        Platform.__init__(self, ctx, client)
+        self.platform_obj_list = []
+        for platform_class in self.platform_list:
+            self.platform_obj_list.append(platform_class(ctx, client))
+
+    def __str__(self: "HasTargetMutexGroup") -> str:
+        return "[" + " ".join(map(lambda x: x.name, self.platform_list)) + "]"
+
+    @classmethod
+    async def get_target_name(cls, client: AsyncClient, target: Target):
+        return await platform_list[0].get_target_name(client, target)
+
+    async def fetch_new_post(
+        self: "HasTargetMutexGroup", target: Target, users: list[UserSubInfo]
+    ):
+        # 已知问题：在init成功的类从别的类切回来重新开始fetch的时候，由于互斥类已发推文的数据是不共享的
+        # 所以并没有发送旧推文的记录（其他互斥类已经发过了），从而导致重复推送旧推文的问题
+        cats = users[0].categories
+        cats.sort()
+        res = defaultdict(list)
+        for platform in self.platform_obj_list:
+            if cats[0] == list(platform.categories.keys())[0]:
+                platform_res = await platform.fetch_new_post(target=target, users=users)
+                for user, posts in platform_res:
+                    res[user].extend(posts)
+                break
+        return [[key, val] for key, val in res.items()]
+
+    return type(
+        "HasTargetMutexGroup",
+        (Platform,),
+        {
+            "platform_list": platform_list,
+            "platform_name": platform_list[0].platform_name,
+            "name": name,
+            "categories": categories,
+            "scheduler": scheduler,
+            "is_common": platform_list[0].is_common,
+            "enabled": True,
+            "has_target": True,
+            "enable_tag": False,
+            "__init__": __init__,
+            "get_target_name": get_target_name,
+            "fetch_new_post": fetch_new_post,
+        },
+        abstract=True,
+    )

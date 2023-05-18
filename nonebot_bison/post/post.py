@@ -9,6 +9,8 @@ from PIL import Image
 
 from ..utils import http_client, parse_text
 from .abstract_post import AbstractPost, BasePost, OptionalMixin
+from .types import Card
+from .utils import card_render
 
 
 @dataclass
@@ -18,6 +20,7 @@ class _Post(BasePost):
     text: str
     url: Optional[str] = None
     target_name: Optional[str] = None
+    card: Optional[Card] = None
     pics: list[Union[str, bytes]] = field(default_factory=list)
 
     _message: Optional[list[MessageSegment]] = None
@@ -99,6 +102,24 @@ class _Post(BasePost):
         self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
 
+    async def _generate_plain_post_pic(self) -> MessageSegment:
+        """基础的文本转图片发送"""
+        text = ""
+        if self.text:
+            text += "{}".format(self.text)
+            text += "\n"
+        text += "来源: {}".format(self.target_type)
+
+        if self.target_name:
+            text += " {}".format(self.target_name)
+
+        return await parse_text(text)
+
+    async def _genetate_card_post_pic(self) -> MessageSegment:
+        """生成卡片图片"""
+        assert self.card
+        return await card_render(self.card)
+
     async def generate_text_messages(self) -> list[MessageSegment]:
 
         if self._message is None:
@@ -124,22 +145,22 @@ class _Post(BasePost):
 
     async def generate_pic_messages(self) -> list[MessageSegment]:
 
-        if self._pic_message is None:
-            await self._pic_merge()
-            msg_segments: list[MessageSegment] = []
-            text = ""
-            if self.text:
-                text += "{}".format(self.text)
-                text += "\n"
-            text += "来源: {}".format(self.target_type)
-            if self.target_name:
-                text += " {}".format(self.target_name)
-            msg_segments.append(await parse_text(text))
-            if not self.target_type == "rss" and self.url:
-                msg_segments.append(MessageSegment.text(self.url))
-            for pic in self.pics:
-                msg_segments.append(MessageSegment.image(pic))
-            self._pic_message = msg_segments
+        if self._pic_message:
+            return self._pic_message
+
+        await self._pic_merge()
+        msg_segments: list[MessageSegment] = []
+
+        if self.card:
+            msg_segments.append(await self._genetate_card_post_pic())
+        else:
+            msg_segments.append(await self._generate_plain_post_pic())
+
+        if not self.target_type == "rss" and self.url:
+            msg_segments.append(MessageSegment.text(self.url))
+        for pic in self.pics:
+            msg_segments.append(MessageSegment.image(pic))
+        self._pic_message = msg_segments
         return self._pic_message
 
     def __str__(self):

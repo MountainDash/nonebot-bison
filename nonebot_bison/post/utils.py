@@ -27,7 +27,7 @@ async def card_template_to_pic(template_name: str, card: Card) -> bytes:
         await page.goto(card_dir.as_uri())
         await page.set_content(html)
         await page.wait_for_timeout(1)
-        img_raw = await page.locator("#show").screenshot(
+        img_raw = await page.locator("#display").screenshot(
             type="png",
         )
     return img_raw
@@ -35,7 +35,7 @@ async def card_template_to_pic(template_name: str, card: Card) -> bytes:
 
 async def card_render(card: Card) -> MessageSegment:
     """将Card类提供的数据导入jinja模板渲染, 并返回图片消息段"""
-    template_name = f"{card.type}.html"
+    template_name = f"{card.type}.html.jinja"
 
     card_pic = await card_template_to_pic(template_name, card)
 

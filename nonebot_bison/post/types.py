@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Union
 
 from pydantic import BaseModel, validator
 
@@ -8,7 +8,8 @@ from pydantic import BaseModel, validator
 # repost: 转发卡片 在common的基础上增加了转发的原内容显示
 # 具体可以参考B站的卡片样式
 # 可选类型应与需要使用的模板文件名一致
-SupportCard = Literal["common", "video", "repost"]
+SupportedCard = Literal["common", "video", "repost"]
+SupportedContent = Union["CommonContent", "VideoContent", "RepostContent"]
 
 
 class CardHeader(BaseModel):
@@ -43,13 +44,17 @@ class RepostContent(BaseModel):
 
 
 class Card(BaseModel):
-    type: SupportCard
+    type: SupportedCard
     header: CardHeader
-    content: CommonContent | VideoContent | RepostContent
+    content: SupportedContent
+
+    class Config:
+        # https://docs.pydantic.dev/latest/usage/model_config/#smart-union
+        smart_union = True
 
     # 确保内容与类型匹配，且不能为嵌套转发
     @validator("content")
-    def check_content(cls, v: CommonContent | VideoContent | RepostContent, values):
+    def check_content(cls, v: SupportedContent, values):
         if values["type"] == "common" and not isinstance(v, CommonContent):
             raise TypeError("content type is not match")
         if values["type"] == "video" and not isinstance(v, VideoContent):
@@ -59,3 +64,7 @@ class Card(BaseModel):
         if isinstance(v, RepostContent) and v.repost.type == "repost":
             raise TypeError("nested repost is not allowed")
         return v
+
+
+# https://docs.pydantic.dev/latest/usage/postponed_annotations/
+RepostContent.update_forward_refs()

@@ -1,14 +1,35 @@
+import base64
+import io
 from typing import TYPE_CHECKING, TypedDict
 
+from PIL import Image
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
 
+    from nonebot_bison.platform.platform import Platform
+
+base64Str = str
+
 
 class AppReq(TypedDict, total=False):
     refresh_bot: bool
     no_init_db: bool
+
+
+def show_pic(pic_data: bytes | base64Str):
+    """
+    查看render的图片数据
+
+    `base64Str`: base64编码的字符串，应以base64://开头
+    """
+
+    img_bytes = (
+        base64.b64decode(pic_data[9:]) if isinstance(pic_data, base64Str) else pic_data
+    )
+    img = Image.open(io.BytesIO(img_bytes))
+    img.show()
 
 
 def fake_group_message_event(**field) -> "GroupMessageEvent":
@@ -136,7 +157,7 @@ class BotReply:
         return "添加 {} 成功".format(name)
 
     @staticmethod
-    def add_reply_on_id(platform: object) -> str:
+    def add_reply_on_id(platform: "Platform") -> str:
         base_text = "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         extra_text = (
             ("1." + platform.parse_target_promot + "\n2.")

@@ -2,10 +2,6 @@
 
 ## 最近更新
 
-- 解决添加Blibili订阅时，获取用户名时的报错 [@UKMeng](https://github.com/UKMeng) ([#248](https://github.com/felinae98/nonebot-bison/pull/248))
-- :memo: 在文档和log中强调bison启动时和配置里的网站不能直接访问，并优化部分文档的表达 [@AzideCupric](https://github.com/AzideCupric) ([#235](https://github.com/felinae98/nonebot-bison/pull/235))
-- 修复文档中指向的nonebot2文档url [@SherkeyXD](https://github.com/SherkeyXD) ([#231](https://github.com/felinae98/nonebot-bison/pull/231))
-
 ### 新功能
 
 - 开播提醒推送的图片改为使用直播间封面 [@AzideCupric](https://github.com/AzideCupric) ([#249](https://github.com/felinae98/nonebot-bison/pull/249))
@@ -16,11 +12,14 @@
 ### Bug 修复
 
 - 修复订阅 RSS 时，输入链接被转义的问题 [@LambdaYH](https://github.com/LambdaYH) ([#238](https://github.com/felinae98/nonebot-bison/pull/238))
+- 解决添加Blibili订阅时，获取用户名时的报错 [@UKMeng](https://github.com/UKMeng) ([#248](https://github.com/felinae98/nonebot-bison/pull/248))
 - 在未安装 fastapi 时不加载 webui [@felinae98](https://github.com/felinae98) ([#221](https://github.com/felinae98/nonebot-bison/pull/221))
 
 ### 文档
 
 - :memo: 拆分部署与使用，添加简单使用章节 [@AzideCupric](https://github.com/AzideCupric) ([#252](https://github.com/felinae98/nonebot-bison/pull/252))
+- 在文档和log中强调bison启动时和配置里的网站不能直接访问，并优化部分文档的表达 [@AzideCupric](https://github.com/AzideCupric) ([#235](https://github.com/felinae98/nonebot-bison/pull/235))
+- 修复文档中指向的nonebot2文档url [@SherkeyXD](https://github.com/SherkeyXD) ([#231](https://github.com/felinae98/nonebot-bison/pull/231))
 
 ## v0.7.1
 

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <title>repost卡片</title>
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="video.css">
+    <link rel="stylesheet" href="repost.css">
+</head>
+
+<body>
+    <div id="show">
+        <div class="decorate">
+            <img src="quote.png" alt="bison" class="logo">
+        </div>
+        <div class="card">
+            <img class="face" src="{{card.header.face}}" alt="头像">
+            <div class="info">
+                <span class="name">{{card.header.name}}</span>
+                <span class="details">
+                    <span class="time">
+                        {{card.header.time}}
+                    </span>
+                    <span class="from">
+                        来自 {{card.header.platform}}
+                    </span>
+                </span>
+            </div>
+            <div class="content">
+                {{card.content.text}}
+                <div class="repost">
+                    <img class="face" src="{{card.content.repost.header.face}}" alt="头像">
+                    <div class="info">
+                        <span class="name">{{card.content.repost.header.name}}</span>
+                        <!--span class="time">not show time</span-->
+                    </div>
+                    <div class="content">
+                        {{card.content.repost.content.text}}
+                    {% if card.type == "video" %}
+                        <div class="video">
+                            <img src="card.content.repost.content.cover" alt="封面" class="cover">
+                            <div class="desc">
+                                <div class="title">
+                                    {{card.content.repost.content.title}}
+                                </div>
+                                <div class="brief">
+                                    {{card.content.repost.content.brief}}
+                                </div>
+                                <div class="category">
+                                    {{card.content.repost.content.category}}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

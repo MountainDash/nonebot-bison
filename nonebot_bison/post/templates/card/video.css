@@ -1,0 +1,36 @@
+.video {
+    display: flex;
+    margin-top: 10px;
+    background: #eee;
+}
+
+.video .cover {
+    width: 200px;
+    height: 125px;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.video .desc {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 7px;
+}
+
+.video .desc .title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #c52f01;
+}
+
+.video .desc .brief {
+    font-size: 15px;
+    color: #666;
+    text-overflow: ellipsis;
+}
+
+.video .desc .category {
+    font-size: 14px;
+    color: #999;
+}

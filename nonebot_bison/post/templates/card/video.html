@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <title>video卡片</title>
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="video.css">
+</head>
+
+<body>
+    <div id="show">
+        <div class="decorate">
+            <img src="quote.png" alt="bison" class="logo">
+        </div>
+        <div class="card">
+            <img class="face" src="{{card.header.face}}" alt="头像">
+            <div class="info">
+                <span class="name">{{card.header.name}}</span>
+                <span class="details">
+                    <span class="time">
+                        {{card.header.time}}
+                    </span>
+                    <span class="from">
+                        来自 {{card.header.platform}}
+                    </span>
+                </span>
+            </div>
+            <div class="content">
+                {{card.content.text}}
+                <div class="video">
+                    <img src="{{card.content.cover}}" alt="封面" class="cover">
+                    <div class="desc">
+                        <div class="title">
+                            {{card.content.title}}
+                        </div>
+                        <div class="brief">
+                            {{card.content.brief}}
+                        </div>
+                        <div class="category">
+                            {{card.content.category}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

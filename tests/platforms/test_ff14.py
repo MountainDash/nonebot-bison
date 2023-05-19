@@ -30,7 +30,7 @@ async def test_fetch_new(
     ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_newdata_json_1
 ):
     newdata = respx.get(
-        "https://ff.web.sdo.com/inc/newdata.ashx?url=List?gameCode=ff&category=5309,5310,5311,5312,5313&pageIndex=0&pageSize=5"
+        "https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5309,5310,5311,5312,5313&pageIndex=0&pageSize=5"
     )
     newdata.mock(return_value=Response(200, json=ff14_newdata_json_0))
     target = ""

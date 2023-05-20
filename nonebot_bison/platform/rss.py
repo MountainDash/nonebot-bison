@@ -55,10 +55,8 @@ class Rss(NewMessage):
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()
-        if title == "":
-            text = desc
-        elif desc == "":
-            text = title
+        if not title or not desc:
+            text = title or desc
         else:
             if len(desc) > len(title):
                 desc2 = desc[: len(title)]

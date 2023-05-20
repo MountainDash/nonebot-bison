@@ -109,7 +109,4 @@ async def test_live_card_render(app: App):
     card = Card(type="live", header=header, content=content)
 
     res = await card_render(card)
-    from .utils import show_pic
-
-    show_pic(res.data["file"])
     assert res.type == "image"

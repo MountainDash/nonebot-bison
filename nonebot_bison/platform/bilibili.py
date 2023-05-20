@@ -1,7 +1,7 @@
 import json
 import re
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum, unique
 from typing import Any, Literal, Optional
 
@@ -11,6 +11,16 @@ from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 from ..post import Post
+from ..post.types import (
+    Card,
+    CardHeader,
+    CommonContent,
+    LiveContent,
+    RepostContent,
+    SupportedCard,
+    SupportedContent,
+    VideoContent,
+)
 from ..types import ApiError, Category, RawPost, Tag, Target
 from ..utils import SchedulerConfig, jaccard_text_similarity
 from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
@@ -67,6 +77,11 @@ class Bilibili(NewMessage):
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
+    card_cats_map: dict[SupportedCard, list[Category]] = {
+        "common": [Category(1), Category(2), Category(4)],
+        "video": [Category(3)],
+        "repost": [Category(5)],
+    }
 
     @classmethod
     async def get_target_name(
@@ -175,6 +190,85 @@ class Bilibili(NewMessage):
             raise CategoryNotSupport(post_type)
         return text, pic
 
+    def card_builder(self, raw_post: RawPost, cat: Category) -> Card:
+
+        cat_str = self.categories[cat]
+        timestamp = raw_post["desc"]["timestamp"]
+        time_str = datetime.fromtimestamp(
+            timestamp, tz=timezone(timedelta(hours=8))
+        ).strftime("%Y-%m-%d %H:%M:%S")
+        desc = f"{time_str} <b>{cat_str}</b>"
+
+        raw_card = json.loads(raw_post["card"])
+        assert isinstance(raw_card, dict)
+        card_header = CardHeader(
+            face=raw_post["desc"]["user_profile"]["info"]["face"],
+            name=raw_post["desc"]["user_profile"]["info"]["uname"],
+            desc=desc,
+            platform=self.name,
+        )
+
+        if cat in self.card_cats_map["common"]:
+            card_content = self._common_card_builder(raw_card, cat)
+            card_type = "common"
+        elif cat in self.card_cats_map["video"]:
+            card_content = self._video_card_builder(raw_card, cat)
+            card_type = "video"
+        elif cat in self.card_cats_map["repost"]:
+            card_content = self._repost_card_builder(raw_card, cat)
+            card_type = "repost"
+        else:
+            raise CategoryNotSupport(f"{cat} not in card_cats_map")
+
+        return Card(type=card_type, header=card_header, content=card_content)
+
+    def _common_card_builder(self, raw_card: dict, cat: Category) -> CommonContent:
+        text, _ = self._get_info(cat, raw_card)
+        return CommonContent(text=text)
+
+    def _video_card_builder(self, raw_card: dict, cat: Category) -> VideoContent:
+
+        return VideoContent(
+            text=raw_card.get("dynamic", ""),
+            cover=raw_card.get("pic", ""),
+            title=raw_card.get("title", ""),
+            brief=raw_card.get("desc", ""),
+            category=self.categories[cat],
+        )
+
+    def _repost_card_builder(self, raw_card: dict, cat: Category) -> RepostContent:
+        text = raw_card["item"]["content"]
+        orig_type = raw_card["item"]["orig_type"]
+        orig_post = json.loads(raw_card["origin"])
+        orig_cat = self._do_get_category(orig_type)
+
+        orig_header = CardHeader(
+            face=raw_card["origin_user"]["info"]["face"],
+            name=raw_card["origin_user"]["info"]["uname"],
+            desc=f"{self.categories[orig_cat]}",
+            platform=self.name,
+        )
+
+        if orig_cat in self.card_cats_map["common"]:
+            orig_content = self._common_card_builder(orig_post, orig_cat)
+            card_type = "common"
+        elif orig_cat in self.card_cats_map["video"]:
+            orig_content = self._video_card_builder(orig_post, orig_cat)
+            card_type = "video"
+        elif orig_cat in self.card_cats_map["repost"]:
+            raise CategoryNotSupport(f"nested repost not supported: {orig_cat}")
+        else:
+            raise CategoryNotSupport(f"{orig_cat} not in card_cats_map")
+
+        return RepostContent(
+            text=text,
+            repost=Card(
+                type=card_type,
+                header=orig_header,
+                content=orig_content,
+            ),
+        )
+
     async def parse(self, raw_post: RawPost) -> Post:
         card_content = json.loads(raw_post["card"])
         post_type = self.get_category(raw_post)
@@ -213,7 +307,14 @@ class Bilibili(NewMessage):
             text += orig_text
         else:
             raise CategoryNotSupport(post_type)
-        return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
+        return Post(
+            "bilibili",
+            text=text,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            card=self.card_builder(raw_post, post_type),
+        )
 
 
 class Bilibililive(StatusChange):

@@ -2,6 +2,7 @@
 
 {% block link %}
 <link rel="stylesheet" href="video.css">
+<link rel="stylesheet" href="live.css">
 <link rel="stylesheet" href="repost.css">
 {% endblock %}
 
@@ -28,6 +29,10 @@
                     {{card.content.repost.content.category}}
                 </div>
             </div>
+        </div>
+    {% elif card.content.repost.type == "live" %}
+        <div class="live">
+            <img src="{{card.content.repost.content.cover}}" alt="大图">
         </div>
     {% endif %}
     </div>

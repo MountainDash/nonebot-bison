@@ -89,3 +89,27 @@ async def test_repost_card_render(app: App):
 
     res = await card_render(card)
     assert res.type == "image"
+
+
+@pytest.mark.asyncio
+@pytest.mark.render
+async def test_live_card_render(app: App):
+    from nonebot_bison.post.types import Card, CardHeader, LiveContent
+    from nonebot_bison.post.utils import card_render
+
+    content = LiveContent(
+        text="特里蒙晚间电波秀",
+        cover="quote.png",
+    )
+
+    header = CardHeader(
+        face="quote.png", name="缪尔赛思", desc="泰拉历 xxxx-yy-zz hh:mm:ss", platform="TBS"
+    )
+
+    card = Card(type="live", header=header, content=content)
+
+    res = await card_render(card)
+    from .utils import show_pic
+
+    show_pic(res.data["file"])
+    assert res.type == "image"

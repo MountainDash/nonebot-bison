@@ -8,8 +8,10 @@ from pydantic import BaseModel, validator
 # repost: 转发卡片 在common的基础上增加了转发的原内容显示
 # 具体可以参考B站的卡片样式
 # 可选类型应与需要使用的模板文件名一致
-SupportedCard = Literal["common", "video", "repost"]
-SupportedContent = Union["CommonContent", "VideoContent", "RepostContent"]
+SupportedCard = Literal["common", "video", "live", "repost"]
+SupportedContent = Union[
+    "CommonContent", "VideoContent", "LiveContent", "RepostContent"
+]
 
 
 class CardHeader(BaseModel):
@@ -29,6 +31,11 @@ class VideoContent(BaseModel):
     title: str  # 视频标题
     brief: str  # 视频简介
     category: str  # 视频分类/分区/标签
+
+
+class LiveContent(BaseModel):
+    text: str  # 文字内容
+    cover: str  # 大图链接
 
 
 class RepostContent(BaseModel):
@@ -58,6 +65,8 @@ class Card(BaseModel):
         if values["type"] == "common" and not isinstance(v, CommonContent):
             raise TypeError("content type is not match")
         if values["type"] == "video" and not isinstance(v, VideoContent):
+            raise TypeError("content type is not match")
+        if values["type"] == "live" and not isinstance(v, LiveContent):
             raise TypeError("content type is not match")
         if values["type"] == "repost" and not isinstance(v, RepostContent):
             raise TypeError("content type is not match")

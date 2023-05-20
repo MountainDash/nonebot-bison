@@ -11,6 +11,7 @@ async def test_card_type_no_match(app: App):
         Card,
         CardHeader,
         CommonContent,
+        LiveContent,
         RepostContent,
         VideoContent,
     )
@@ -29,6 +30,11 @@ async def test_card_type_no_match(app: App):
         category="miumiu",
     )
 
+    live = LiveContent(
+        text="miumiu",
+        cover="quote.png",
+    )
+
     card_gen = partial(Card, header=header)
     repost = RepostContent(
         text="miumiu", repost=card_gen(type="common", content=common)
@@ -45,6 +51,9 @@ async def test_card_type_no_match(app: App):
 
     with pytest.raises(pydantic.ValidationError):
         card_gen(type="video", content=repost)
+
+    with pytest.raises(pydantic.ValidationError):
+        card_gen(type="live", content=repost)
 
 
 @pytest.mark.asyncio

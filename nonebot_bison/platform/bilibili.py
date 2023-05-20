@@ -150,8 +150,21 @@ class Bilibili(NewMessage):
             dynamic = card.get("dynamic", "")
             title = card["title"]
             desc = card.get("desc", "")
+            if len(desc) > len(dynamic):
+                desc2 = desc[: len(dynamic)]
+                dynamic2 = dynamic
+                desc3 = desc[-len(dynamic) :]
+                dynamic3 = dynamic
+            else:
+                desc2 = desc
+                dynamic2 = dynamic[: len(desc)]
+                desc3 = desc
+                dynamic3 = dynamic[-len(desc) :]
 
-            if jaccard_text_similarity(desc, dynamic) > 0.8:
+            if (
+                jaccard_text_similarity(desc2, dynamic2) > 0.8
+                or jaccard_text_similarity(desc3, dynamic3) > 0.8
+            ):
                 # 如果视频简介和动态内容相似，就只保留长的那个
                 if len(dynamic) > len(desc):
                     text = f"{dynamic}\n=================\n{title}"

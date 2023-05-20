@@ -7,8 +7,15 @@ from httpx import AsyncClient
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import scheduler
+from ..utils import SchedulerConfig, jaccard_text_similarity
 from .platform import NewMessage
+
+
+class RssSchedConf(SchedulerConfig):
+
+    name = "rss"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 30}
 
 
 class Rss(NewMessage):
@@ -19,7 +26,7 @@ class Rss(NewMessage):
     name = "Rss"
     enabled = True
     is_common = True
-    scheduler = scheduler("interval", {"seconds": 30})
+    scheduler = RssSchedConf
     has_target = True
 
     @classmethod
@@ -45,9 +52,26 @@ class Rss(NewMessage):
         return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
-        text = raw_post.get("title", "") + "\n" if raw_post.get("title") else ""
+        title = raw_post.get("title", "") if raw_post.get("title") else ""
         soup = bs(raw_post.description, "html.parser")
-        text += soup.text.strip()
+        desc = soup.text.strip()
+        if title == "":
+            text = desc
+        elif desc == "":
+            text = title
+        else:
+            if len(desc) > len(title):
+                desc2 = desc[: len(title)]
+                title2 = title
+            else:
+                desc2 = desc
+                title2 = title[: len(desc)]
+
+            if jaccard_text_similarity(desc2, title2) > 0.8:
+                text = desc if len(desc) > len(title) else title
+            else:
+                text = f"{title}\n\n{desc}"
+
         pics = list(map(lambda x: x.attrs["src"], soup("img")))
         if raw_post.get("media_content"):
             for media in raw_post["media_content"]:

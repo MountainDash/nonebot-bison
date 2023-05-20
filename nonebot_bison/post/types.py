@@ -61,8 +61,6 @@ class Card(BaseModel):
             raise TypeError("content type is not match")
         if values["type"] == "repost" and not isinstance(v, RepostContent):
             raise TypeError("content type is not match")
-        if isinstance(v, RepostContent) and v.repost.type == "repost":
-            raise TypeError("nested repost is not allowed")
         return v
 
 

@@ -30,20 +30,49 @@ async def test_card_type_no_match(app: App):
     )
 
     card_gen = partial(Card, header=header)
-
-    repost_card_gen = partial(card_gen, type="repost")
-
-    with pytest.raises(pydantic.ValidationError):
-        err_card1 = card_gen(type="common", content=video)
+    repost = RepostContent(
+        text="miumiu", repost=card_gen(type="common", content=common)
+    )
 
     with pytest.raises(pydantic.ValidationError):
-        err_card2 = card_gen(type="video", content=common)
+        card_gen(type="common", content=video)
 
     with pytest.raises(pydantic.ValidationError):
-        err_card3 = card_gen(type="repost", content=common)
+        card_gen(type="video", content=common)
 
     with pytest.raises(pydantic.ValidationError):
-        err_card4 = repost_card_gen(content=repost_card_gen(content=video))
+        card_gen(type="repost", content=common)
 
     with pytest.raises(pydantic.ValidationError):
-        err_repost = RepostContent(text="miumiu", repost=repost_card_gen(content=video))
+        card_gen(type="video", content=repost)
+
+
+@pytest.mark.asyncio
+async def test_card_nested_repost(app: App):
+    from nonebot_bison.post.types import Card, CardHeader, RepostContent, VideoContent
+
+    header = CardHeader(
+        face="quote.png", name="缪尔赛思", time="泰拉历 xxxx-yy-zz hh:mm:ss", platform="TBS"
+    )
+
+    video = VideoContent(
+        text="miumiu",
+        cover="quote.png",
+        title="miumiu",
+        brief="miumiu",
+        category="miumiu",
+    )
+
+    card_gen = partial(Card, header=header)
+    video_card = card_gen(type="video", content=video)
+    repost = RepostContent(text="miumiu", repost=video_card)
+
+    repost_card = card_gen(type="repost", content=repost)
+
+    # nested repost card
+    with pytest.raises(pydantic.ValidationError):
+        card_gen(type="repost", content=repost_card)
+
+    # nested repost content
+    with pytest.raises(pydantic.ValidationError):
+        RepostContent(text="miumiumiu", repost=repost_card)

@@ -61,11 +61,18 @@ class Rss(NewMessage):
             if len(desc) > len(title):
                 desc2 = desc[: len(title)]
                 title2 = title
+                desc3 = desc[-len(title) :]
+                title3 = title
             else:
                 desc2 = desc
                 title2 = title[: len(desc)]
+                desc3 = desc
+                title3 = title[-len(desc) :]
 
-            if jaccard_text_similarity(desc2, title2) > 0.8:
+            if (
+                jaccard_text_similarity(desc2, title2) > 0.8
+                or jaccard_text_similarity(desc3, title3) > 0.8
+            ):
                 text = desc if len(desc) > len(title) else title
             else:
                 text = f"{title}\n\n{desc}"

@@ -15,7 +15,7 @@ SupportedContent = Union["CommonContent", "VideoContent", "RepostContent"]
 class CardHeader(BaseModel):
     face: str  # 头像链接
     name: str  # 名称
-    time: str  # 发布时间
+    desc: str  # 发布时间/推送类型等
     platform: str  # 平台名称
 
 

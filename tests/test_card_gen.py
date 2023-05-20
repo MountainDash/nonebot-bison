@@ -16,7 +16,7 @@ async def test_card_type_no_match(app: App):
     )
 
     header = CardHeader(
-        face="quote.png", name="缪尔赛思", time="泰拉历 xxxx-yy-zz hh:mm:ss", platform="TBS"
+        face="quote.png", name="缪尔赛思", desc="泰拉历 xxxx-yy-zz hh:mm:ss", platform="TBS"
     )
 
     common = CommonContent(text="miumiu")
@@ -52,7 +52,7 @@ async def test_card_nested_repost(app: App):
     from nonebot_bison.post.types import Card, CardHeader, RepostContent, VideoContent
 
     header = CardHeader(
-        face="quote.png", name="缪尔赛思", time="泰拉历 xxxx-yy-zz hh:mm:ss", platform="TBS"
+        face="quote.png", name="缪尔赛思", desc="泰拉历 xxxx-yy-zz hh:mm:ss", platform="TBS"
     )
 
     video = VideoContent(

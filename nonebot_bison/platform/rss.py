@@ -52,7 +52,7 @@ class Rss(NewMessage):
         return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
-        title = raw_post.get("title", "") if raw_post.get("title") else ""
+        title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()
         if title == "":

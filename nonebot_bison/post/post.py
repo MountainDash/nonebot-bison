@@ -7,6 +7,7 @@ from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.log import logger
 from PIL import Image
 
+from ..plugin_config import plugin_config
 from ..utils import http_client, parse_text
 from .abstract_post import AbstractPost, BasePost, OptionalMixin
 from .types import Card
@@ -151,7 +152,7 @@ class _Post(BasePost):
         await self._pic_merge()
         msg_segments: list[MessageSegment] = []
 
-        if self.card:
+        if not plugin_config.bison_plain_pic_post and self.card:
             msg_segments.append(await self._genetate_card_post_pic())
         else:
             msg_segments.append(await self._generate_plain_post_pic())

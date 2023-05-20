@@ -326,6 +326,9 @@ class Bilibililive(StatusChange):
     scheduler = BilibiliSchedConf
     name = "Bilibili直播"
     has_target = True
+    card_cats_map = {
+        "live": [Category(1), Category(2), Category(3)],
+    }
 
     @unique
     class LiveStatus(Enum):
@@ -441,6 +444,30 @@ class Bilibililive(StatusChange):
         assert status.category != Category(0)
         return status.category
 
+    def card_builder(self, raw_post: Info) -> Card:
+        name = f"{raw_post.uname}  [{self.categories[raw_post.category].rstrip('提醒')}]"
+        desc = f"{raw_post.title}    分区:{raw_post.area_name}"
+        card_header = CardHeader(
+            face=raw_post.face,
+            name=name,
+            desc=desc,
+            platform=self.name,
+        )
+
+        cover = (
+            raw_post.cover if raw_post.category == Category(1) else raw_post.keyframe
+        )
+        card_content = LiveContent(
+            text="",
+            cover=cover,
+        )
+
+        return Card(
+            type="live",
+            header=card_header,
+            content=card_content,
+        )
+
     async def parse(self, raw_post: Info) -> Post:
         url = "https://live.bilibili.com/{}".format(raw_post.room_id)
         pic = (
@@ -456,6 +483,7 @@ class Bilibililive(StatusChange):
             url=url,
             pics=list(pic),
             target_name=target_name,
+            card=self.card_builder(raw_post),
             compress=True,
         )
 

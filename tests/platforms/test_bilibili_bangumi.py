@@ -24,6 +24,8 @@ def bili_bangumi(app: App):
 async def test_fetch_bilibili_bangumi_status(
     bili_bangumi: "BilibiliBangumi", dummy_user_subinfo
 ):
+    from nonebot_bison.post import Post
+    from nonebot_bison.post.types import Card, LiveContent
     from nonebot_bison.types import Target
 
     bili_bangumi_router = respx.get(
@@ -55,6 +57,7 @@ async def test_fetch_bilibili_bangumi_status(
     res2 = await bili_bangumi.fetch_new_post(target, [dummy_user_subinfo])
 
     post = res2[0][1][0]
+    assert isinstance(post, Post)
     assert post.target_type == "Bilibili剧集"
     assert post.text == "《汉化日记 第三季》第2话 什么是战区导弹防御系统工作日"
     assert post.url == "https://www.bilibili.com/bangumi/play/ep519207"
@@ -63,3 +66,23 @@ async def test_fetch_bilibili_bangumi_status(
         "http://i0.hdslb.com/bfs/archive/ea0a302c954f9dbc3d593e676486396c551529c9.jpg"
     ]
     assert post.compress == True
+
+    standard_content = LiveContent(
+        text="《汉化日记 第三季》第2话 什么是战区导弹防御系统工作日",
+        cover="http://i0.hdslb.com/bfs/archive/ea0a302c954f9dbc3d593e676486396c551529c9.jpg",
+    )
+
+    standard_card = Card.parse_obj(
+        {
+            "type": "live",
+            "header": {
+                "face": "http://i0.hdslb.com/bfs/bangumi/image/72b2a4d9e09d26571eaaad94e1dd13109f76adb0.jpg",
+                "name": "汉化日记 第三季",
+                "desc": "爆笑日常再次开启",
+                "platform": "Bilibili剧集",
+            },
+            "content": standard_content,
+        }
+    )
+
+    assert post.card == standard_card

@@ -326,9 +326,6 @@ class Bilibililive(StatusChange):
     scheduler = BilibiliSchedConf
     name = "Bilibili直播"
     has_target = True
-    card_cats_map = {
-        "live": [Category(1), Category(2), Category(3)],
-    }
 
     @unique
     class LiveStatus(Enum):
@@ -565,6 +562,19 @@ class BilibiliBangumi(StatusChange):
         pic: list[str] = [lastest_episode["cover"]]
         target_name = detail_dict["result"]["season_title"]
         text = lastest_episode["share_copy"]
+
+        header = CardHeader(
+            face=detail_dict["result"]["square_cover"],
+            name=detail_dict["result"]["title"],
+            desc=detail_dict["result"]["share_sub_title"],
+            platform=self.name,
+        )
+
+        content = LiveContent(
+            text=text,
+            cover=pic[0],
+        )
+
         return Post(
             self.name,
             text=text,
@@ -572,4 +582,9 @@ class BilibiliBangumi(StatusChange):
             pics=list(pic),
             target_name=target_name,
             compress=True,
+            card=Card(
+                type="live",
+                header=header,
+                content=content,
+            ),
         )

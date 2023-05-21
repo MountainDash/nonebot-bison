@@ -1,6 +1,6 @@
 import base64
 import io
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from PIL import Image
 from typing_extensions import Literal
@@ -10,24 +10,35 @@ if TYPE_CHECKING:
 
     from nonebot_bison.platform.platform import Platform
 
-base64Str = str
-
 
 class AppReq(TypedDict, total=False):
     refresh_bot: bool
     no_init_db: bool
 
 
-def show_pic(pic_data: bytes | base64Str):
+async def show_pic(pic_data: Any):
     """
     查看render的图片数据
 
+    允许的数据类型：
     `base64Str`: base64编码的字符串，应以base64://开头
+    `bytes`: 图片的二进制数据
+    `Card`: Post的Card类型对象
     """
 
-    img_bytes = (
-        base64.b64decode(pic_data[9:]) if isinstance(pic_data, base64Str) else pic_data
-    )
+    from nonebot_bison.post.types import Card
+    from nonebot_bison.post.utils import card_render
+
+    if isinstance(pic_data, str) and pic_data.startswith("base64://"):
+        img_bytes = base64.b64decode(pic_data[9:])
+    elif isinstance(pic_data, bytes):
+        img_bytes = pic_data
+    elif isinstance(pic_data, Card):
+        img_base64 = (await card_render(pic_data)).data["file"]
+        img_bytes = base64.b64decode(img_base64[9:])
+    else:
+        raise ValueError("不支持的数据类型")
+
     img = Image.open(io.BytesIO(img_bytes))
     img.show()
 

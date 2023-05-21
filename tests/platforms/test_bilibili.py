@@ -29,11 +29,44 @@ def bilibili(app: App):
 
 @pytest.mark.asyncio
 async def test_video_forward(bilibili, bing_dy_list):
+    from nonebot_bison.post import Post
+    from nonebot_bison.post.types import Card
+
     post = await bilibili.parse(bing_dy_list[1])
+    assert isinstance(post, Post)
     assert (
         post.text
         == "答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786\n--------------\n#可露希尔的秘密档案# \n11：来宿舍休息一下吧 \n档案来源：lambda:\\罗德岛内务\\秘密档案 \n发布时间：9/12 1:00 P.M. \n档案类型：可见 \n档案描述：今天请了病假在宿舍休息。很舒适。 \n提供者：赫默\n=================\n《可露希尔的秘密档案》11话：来宿舍休息一下吧"
     )
+    assert isinstance(post.card, Card)
+    assert post.card.dict() == {
+        "type": "repost",
+        "header": {
+            "face": "https://i0.hdslb.com/bfs/face/00776b6ddde4874af87b8bc2870da86ed39c2c80.jpg",
+            "name": "罗德岛蜜饼工坊",
+            "desc": "2021-09-12 13:10:27 <b>转发</b>",
+            "platform": "B站",
+        },
+        "content": {
+            "text": "答案揭晓：宿舍！来看看投票结果<br>https://t.bilibili.com/568093580488553786",
+            "repost": {
+                "type": "video",
+                "header": {
+                    "face": "https://i1.hdslb.com/bfs/face/89154378c06a5ed332c40c2ca56f50cd641c0c90.jpg",
+                    "name": "明日方舟",
+                    "desc": "视频",
+                    "platform": "B站",
+                },
+                "content": {
+                    "text": "#可露希尔的秘密档案# <br>11：来宿舍休息一下吧 <br>档案来源：lambda:\\罗德岛内务\\秘密档案 <br>发布时间：9/12 1:00 P.M. <br>档案类型：可见 <br>档案描述：今天请了病假在宿舍休息。很舒适。 <br>提供者：赫默",
+                    "cover": "https://i2.hdslb.com/bfs/archive/21a6c7ce0baf767d99e81a450590f4ddfdc585ea.jpg",
+                    "title": "《可露希尔的秘密档案》11话：来宿舍休...",
+                    "brief": "《可露希尔的秘密档案》<br>11：来宿舍休息一下吧 <br>档案来源：lambda:\\罗德岛内务\\秘...",
+                    "category": "综合",
+                },
+            },
+        },
+    }
 
 
 @pytest.mark.asyncio
@@ -138,7 +171,6 @@ def post_list():
 # 测试新tag机制的平台推送情况
 @pytest.mark.asyncio
 async def test_filter_user_custom(bilibili, post_list):
-
     only_banned_tags = ["~可露希尔的秘密档案"]
     res0 = await bilibili.filter_user_custom(post_list, [], only_banned_tags)
     assert len(res0) == 8

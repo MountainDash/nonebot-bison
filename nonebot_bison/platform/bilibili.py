@@ -233,7 +233,7 @@ class Bilibili(NewMessage):
             cover=raw_card.get("pic", ""),
             title=raw_card.get("title", ""),
             brief=raw_card.get("desc", ""),
-            category=self.categories[cat],
+            category=raw_card.get("tname", ""),
         )
 
     def _repost_card_builder(self, raw_card: dict, cat: Category) -> RepostContent:

@@ -47,7 +47,7 @@ async def test_card_type_no_match(app: App):
         card_gen(type="video", content=common)
 
     with pytest.raises(pydantic.ValidationError):
-        card_gen(type="repost", content=common)
+        card_gen(type="repost", content=live)
 
     with pytest.raises(pydantic.ValidationError):
         card_gen(type="video", content=repost)

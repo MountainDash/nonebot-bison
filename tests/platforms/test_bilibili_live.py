@@ -25,6 +25,9 @@ def dummy_only_open_user_subinfo(app: App):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_subinfo):
+    from nonebot_bison.post import Post
+    from nonebot_bison.post.types import Card, LiveContent
+
     mock_bili_live_status = get_json("bili_live_status.json")
 
     bili_live_router = respx.get(
@@ -44,6 +47,7 @@ async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_sub
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res2 = await bili_live.fetch_new_post(target, [dummy_only_open_user_subinfo])
     post = res2[0][1][0]
+    assert isinstance(post, Post)
     assert post.target_type == "Bilibili直播"
     assert post.text == "[开播] 【Zc】从0挑战到15肉鸽！目前10难度"
     assert post.url == "https://live.bilibili.com/3044248"
@@ -52,6 +56,25 @@ async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_sub
         "https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"
     ]
     assert post.compress == True
+
+    standard_content = LiveContent(
+        text="【Zc】从0挑战到15肉鸽！目前10难度",
+        cover="https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg",
+    )
+    standard_card = Card.parse_obj(
+        {
+            "type": "live",
+            "header": {
+                "face": "https://i0.hdslb.com/bfs/face/a84fa10f90f7060d0336384954ee1cde7a8e9bc6.jpg",
+                "name": "魔法Zc目录  [开播]",
+                "desc": "分区: 其他单机",
+                "platform": "Bilibili直播",
+            },
+            "content": standard_content,
+        }
+    )
+    assert post.card == standard_card
+
     # 标题变更
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前11难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))

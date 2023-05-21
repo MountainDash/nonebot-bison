@@ -1,5 +1,5 @@
 import typing
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 import respx
@@ -61,6 +61,9 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(bilibili, dummy_user_subinfo):
+    from nonebot_bison.post.post import Post
+    from nonebot_bison.post.types import Card
+
     post_router = respx.get(
         "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
     )
@@ -75,15 +78,39 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     assert len(res) == 0
 
     mock_data = get_json("bilibili_strange_post.json")
-    mock_data["data"]["cards"][0]["desc"]["timestamp"] = int(datetime.now().timestamp())
+    mock_timestamp = int(datetime.now().timestamp())
+    mock_time_str = datetime.fromtimestamp(
+        mock_timestamp,
+        tz=timezone("Asia/Shanghai"),
+    ).strftime("%Y-%m-%d %H:%M:%S")
+    mock_data["data"]["cards"][0]["desc"]["timestamp"] = mock_timestamp
+
     post_router.mock(return_value=Response(200, json=mock_data))
     res2 = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
     assert len(res2[0][1]) == 1
     post = res2[0][1][0]
+    assert isinstance(post, Post)
     assert (
         post.text
         == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
     )
+
+    standard_card = Card.parse_obj(
+        {
+            "type": "common",
+            "header": {
+                "face": "https://i0.hdslb.com/bfs/face/89154378c06a5ed332c40c2ca56f50cd641c0c90.jpg",
+                "name": "明日方舟",
+                "desc": f"{mock_time_str} <b>一般动态</b>",
+                "platform": "B站",
+            },
+            "content": {
+                "text": "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
+            },
+        }
+    )
+
+    assert post.card == standard_card
 
 
 async def test_parse_target(bilibili: "Bilibili"):

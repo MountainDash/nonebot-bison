@@ -389,6 +389,9 @@ class Bilibililive(StatusChange):
             else:
                 return action.OFF
 
+        def __str__(self):
+            return self.json(indent=4, ensure_ascii=False)
+
     @classmethod
     async def get_target_name(
         cls, client: AsyncClient, target: Target
@@ -446,7 +449,7 @@ class Bilibililive(StatusChange):
 
     def card_builder(self, raw_post: Info) -> Card:
         name = f"{raw_post.uname}  [{self.categories[raw_post.category].rstrip('提醒')}]"
-        desc = f"{raw_post.title}    分区:{raw_post.area_name}"
+        desc = f"分区: {raw_post.area_name}"
         card_header = CardHeader(
             face=raw_post.face,
             name=name,
@@ -458,7 +461,7 @@ class Bilibililive(StatusChange):
             raw_post.cover if raw_post.category == Category(1) else raw_post.keyframe
         )
         card_content = LiveContent(
-            text="",
+            text=f"{raw_post.title}",
             cover=cover,
         )
 

@@ -11,7 +11,7 @@ async def test_gen_pic_message(app: App):
 
     plugin_config.bison_use_pic = True
 
-    header = CardHeader(face="1.png", name="11", desc="111", platform="111")
+    header = CardHeader(face="quote.png", name="11", desc="111", platform="111")
 
     common = CommonContent(text="222")
 

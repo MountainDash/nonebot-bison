@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- 更换获取B站用户名的api [@UKMeng](https://github.com/UKMeng) ([#261](https://github.com/felinae98/nonebot-bison/pull/261))
 - 修复ff14公告链接 [@LambdaYH](https://github.com/LambdaYH) ([#257](https://github.com/felinae98/nonebot-bison/pull/257))
 
 ## v0.7.2

@@ -18,9 +18,9 @@ from ..post.types import (
     LiveContent,
     RepostContent,
     SupportedCard,
-    SupportedContent,
     VideoContent,
 )
+from ..post.utils import timestamp_to_str
 from ..types import ApiError, Category, RawPost, Tag, Target
 from ..utils import SchedulerConfig, jaccard_text_similarity
 from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
@@ -194,9 +194,7 @@ class Bilibili(NewMessage):
 
         cat_str = self.categories[cat]
         timestamp = raw_post["desc"]["timestamp"]
-        time_str = datetime.fromtimestamp(
-            timestamp, tz=timezone(timedelta(hours=8))
-        ).strftime("%Y-%m-%d %H:%M:%S")
+        time_str = timestamp_to_str(timestamp)
         desc = f"{time_str} <b>{cat_str}</b>"
 
         raw_card = json.loads(raw_post["card"])

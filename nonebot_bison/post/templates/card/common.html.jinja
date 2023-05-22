@@ -5,10 +5,12 @@
     <meta charset="utf-8" viewport>
     <title>common卡片</title>
     <link rel="stylesheet" href="common.css">
-    {% if card.type == "common" %}
-    <link rel="stylesheet" href="common_pic.css">
-    {% endif %}
     {% block link %}{% endblock %}
+
+    {% if card.extra_head %}
+    {{ card.extra_head }}
+    {% endif %}
+
 </head>
 
 <body>

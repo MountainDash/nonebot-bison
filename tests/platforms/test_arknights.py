@@ -110,12 +110,39 @@ async def test_fetch_new(
     assert post.pics == [
         "https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png"
     ]
+    assert post.card.dict() == {
+        "type": "live",
+        "header": {
+            "face": "https://web.hycdn.cn/comic/site/manifest/icon-128x128.png",
+            "name": "123罗德岛！？",
+            "desc": "你可能不知道的罗德岛小剧场！",
+            "platform": "泰拉记事社漫画",
+        },
+        "content": {
+            "text": "「掠风」篇",
+            "cover": "https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png",
+        },
+        "extra_head": None,
+    }
     monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_1))
     res2 = await arknights.fetch_new_post(target, [dummy_user_subinfo])
     assert monster_siren_details_router.called
     assert len(res2) == 1
     post = res2[0][1][0]
     assert post.target_type == "monster-siren"
+    assert post.card.dict() == {
+        "type": "common",
+        "header": {
+            "face": "https://web.hycdn.cn/siren/site/favicon.ico",
+            "name": "塞壬唱片",
+            "desc": "2021-06-29  #D.D.D.PHOTO",
+            "platform": "塞壬唱片新闻",
+        },
+        "content": {
+            "text": '<p>有趣的新发现。</p><p>经纪人给的青草汁有着无比奇妙的味道O.O</p><p>难……难喝！</p><p></p><p>咳咳，不是。</p><p></p><div class="media-wrap image-wrap"><img id="cb0723afc433bcbabbcdb12a3ea4ff2c" title="6.29-01.jpg" alt="6.29-01.jpg" poster="" src="https://web.hycdn.cn/siren/pic/20210625/cb0723afc433bcbabbcdb12a3ea4ff2c.jpg"/></div><p></p><p>安静的植物口味，毛毛雨一样微涩的口感，</p><p>还有好像在躲猫猫似的香气！</p><p>岂不是和音乐一模一样。</p><p>也许会是一种全新的风格呢，</p><p>我准备好把它们记录下来了XD</p>'
+        },
+        "extra_head": "\n        <style>\n        .content img {\n            width: 100%;\n            height: auto;\n            display: block;\n            margin: 0 auto;\n        }\n        </style>\n        ",
+    }
 
 
 @pytest.mark.render

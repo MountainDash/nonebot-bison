@@ -96,6 +96,7 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
 async def test_fetch_new(bilibili, dummy_user_subinfo):
     from nonebot_bison.post.post import Post
     from nonebot_bison.post.types import Card
+    from nonebot_bison.post.utils import timestamp_to_str
 
     post_router = respx.get(
         "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
@@ -112,10 +113,7 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
 
     mock_data = get_json("bilibili_strange_post.json")
     mock_timestamp = int(datetime.now().timestamp())
-    mock_time_str = datetime.fromtimestamp(
-        mock_timestamp,
-        tz=timezone("Asia/Shanghai"),
-    ).strftime("%Y-%m-%d %H:%M:%S")
+    mock_time_str = timestamp_to_str(mock_timestamp)
     mock_data["data"]["cards"][0]["desc"]["timestamp"] = mock_timestamp
 
     post_router.mock(return_value=Response(200, json=mock_data))

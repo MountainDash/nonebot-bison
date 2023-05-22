@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from nonebot import require
@@ -40,3 +41,12 @@ async def card_render(card: Card) -> MessageSegment:
     card_pic = await card_template_to_pic(template_name, card)
 
     return MessageSegment.image(card_pic)
+
+
+def timestamp_to_str(timestamp: int, offset_hour: int = 8) -> str:
+    """将时间戳转换为字符串"""
+
+    return datetime.fromtimestamp(
+        timestamp,
+        tz=timezone(timedelta(hours=offset_hour)),
+    ).strftime("%Y-%m-%d %H:%M:%S")

@@ -4,6 +4,8 @@ from typing import Any, Optional
 from httpx import AsyncClient
 
 from ..post import Post
+from ..post.types import Card, CardHeader, LiveContent
+from ..post.utils import timestamp_to_str
 from ..types import ApiError, RawPost, Target
 from ..utils import SchedulerConfig
 from .platform import NewMessage
@@ -74,8 +76,26 @@ class NcmArtist(NewMessage):
         target_name = raw_post["artist"]["name"]
         pics = [raw_post["picUrl"]]
         url = "https://music.163.com/#/album?id={}".format(raw_post["id"])
+
+        card_header = CardHeader(
+            face=raw_post["artist"]["picUrl"],
+            name=raw_post["artist"]["name"],
+            desc=timestamp_to_str(raw_post["publishTime"] // 1000),
+            platform=self.name,
+        )
+
+        card_content = LiveContent(
+            text=f'新专辑发布：\n{raw_post["name"]} - {raw_post["type"]}',
+            cover=raw_post["picUrl"],
+        )
+
         return Post(
-            "ncm-artist", text=text, url=url, pics=pics, target_name=target_name
+            "ncm-artist",
+            text=text,
+            url=url,
+            pics=pics,
+            target_name=target_name,
+            card=Card(type="live", header=card_header, content=card_content),
         )
 
 
@@ -139,4 +159,24 @@ class NcmRadio(NewMessage):
         target_name = raw_post["radio"]["name"]
         pics = [raw_post["coverUrl"]]
         url = "https://music.163.com/#/program/{}".format(raw_post["id"])
-        return Post("ncm-radio", text=text, url=url, pics=pics, target_name=target_name)
+
+        card_header = CardHeader(
+            face=raw_post["dj"]["avatarUrl"],
+            name=raw_post["dj"]["nickname"],
+            desc=raw_post["dj"]["signature"],
+            platform=self.name,
+        )
+
+        card_content = LiveContent(
+            text=f'网易云电台更新：\n{raw_post["name"]} - {raw_post["description"]}',
+            cover=raw_post["coverUrl"],
+        )
+
+        return Post(
+            "ncm-radio",
+            text=text,
+            url=url,
+            pics=pics,
+            target_name=target_name,
+            card=Card(type="live", header=card_header, content=card_content),
+        )

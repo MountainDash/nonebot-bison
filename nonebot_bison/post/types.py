@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 from nonebot.log import logger
 from pydantic import BaseModel, validator
@@ -114,6 +114,8 @@ class Card(BaseModel):
     type: SupportedCard
     header: CardHeader
     content: SupportedContent
+    # 可以在html模板文件<head>内自行添加的内容，包括但不限于css和js
+    extra_head: Optional[str] = None
 
     class Config:
         # https://docs.pydantic.dev/latest/usage/model_config/#smart-union

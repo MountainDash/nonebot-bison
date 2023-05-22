@@ -58,6 +58,10 @@ async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo
         "http://p1.music.126.net/H5em5xUNIYXcjJhOmeaSqQ==/109951166647436789.jpg"
     ]
     assert post.target_name == "《明日方舟》游戏原声OST"
+    print(post.card.dict())
+    from ..utils import show_pic
+
+    await show_pic(post.card)
 
 
 async def test_parse_target(ncm_radio: "NcmRadio"):

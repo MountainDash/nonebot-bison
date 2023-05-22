@@ -55,6 +55,10 @@ class CardHeader(BaseModel):
     desc: str  # 发布时间/推送类型等
     platform: str  # 平台名称
 
+    @validator("desc")
+    def shorten_desc(cls, v: str):
+        return v[:28] + "..." if len(v) > 29 else v
+
 
 class CommonContent(BaseModel):
     text: str  # 文字内容

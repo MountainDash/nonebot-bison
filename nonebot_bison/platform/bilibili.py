@@ -73,13 +73,13 @@ class Bilibili(NewMessage):
         cls, client: AsyncClient, target: Target
     ) -> Optional[str]:
         res = await client.get(
-            "https://api.bilibili.com/x/space/wbi/acc/info", params={"mid": target}
+            "https://api.bilibili.com/x/web-interface/card", params={"mid": target}
         )
         res.raise_for_status()
         res_data = res.json()
         if res_data["code"]:
             return None
-        return res_data["data"]["name"]
+        return res_data["data"]["card"]["name"]
 
     @classmethod
     async def parse_target(cls, target_text: str) -> Target:
@@ -290,12 +290,12 @@ class Bilibililive(StatusChange):
         cls, client: AsyncClient, target: Target
     ) -> Optional[str]:
         res = await client.get(
-            "https://api.bilibili.com/x/space/wbi/acc/info", params={"mid": target}
+            "https://api.bilibili.com/x/web-interface/card", params={"mid": target}
         )
         res_data = json.loads(res.text)
         if res_data["code"]:
             return None
-        return res_data["data"]["name"]
+        return res_data["data"]["card"]["name"]
 
     async def get_status(self, target: Target) -> Info:
         params = {"uids[]": target}

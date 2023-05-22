@@ -121,6 +121,10 @@ async def test_parse_long(weibo):
     detail_router.mock(
         return_value=Response(200, text=get_file("weibo_detail_4645748019299849"))
     )
+    face_router = respx.get(
+        "https://tvax4.sinaimg.cn/crop.0.0.756.756.180/006QZngZly8gdj05mufr9j30l00l0dq4.jpg?KID=imgbed,tva&Expires=1651261093&ssig=Kt4QCJvDiS"
+    )
+    face_router.mock(Response(200, content=b""))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)
     assert not "全文" in post.text

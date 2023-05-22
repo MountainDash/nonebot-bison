@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 from bs4 import BeautifulSoup as bs
@@ -6,7 +7,7 @@ from httpx import AsyncClient
 from nonebot.plugin import require
 
 from ..post import Post
-from ..post.types import Card, CardHeader, CommonContent
+from ..post.types import Card, CardHeader, CommonContent, LiveContent
 from ..types import Category, RawPost, Target
 from ..utils.scheduler_config import SchedulerConfig
 from .platform import CategoryNotRecognize, NewMessage, StatusChange
@@ -204,6 +205,17 @@ class MonsterSiren(NewMessage):
             text=raw_data["data"]["content"],
         )
 
+        extra_head = """
+        <style>
+        .content img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        </style>
+        """
+
         return Post(
             "monster-siren",
             text=text,
@@ -212,7 +224,12 @@ class MonsterSiren(NewMessage):
             target_name="塞壬唱片新闻",
             compress=True,
             override_use_pic=False,
-            card=Card(type="common", header=card_header, content=card_content),
+            card=Card(
+                type="common",
+                header=card_header,
+                content=card_content,
+                extra_head=extra_head,
+            ),
         )
 
 
@@ -250,6 +267,18 @@ class TerraHistoricusComic(NewMessage):
 
     async def parse(self, raw_post: RawPost) -> Post:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
+        card_header = CardHeader(
+            face="https://web.hycdn.cn/comic/site/manifest/icon-128x128.png",
+            name=raw_post["title"],
+            desc=raw_post["subtitle"],
+            platform=self.categories[4],
+        )
+
+        card_content = LiveContent(
+            text=raw_post["episodeShortTitle"],
+            cover=raw_post["coverUrl"],
+        )
+
         return Post(
             "terra-historicus",
             text=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
@@ -257,5 +286,9 @@ class TerraHistoricusComic(NewMessage):
             url=url,
             target_name="泰拉记事社漫画",
             compress=True,
-            override_use_pic=False,
+            card=Card(
+                type="live",
+                header=card_header,
+                content=card_content,
+            ),
         )

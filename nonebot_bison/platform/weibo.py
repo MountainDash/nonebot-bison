@@ -1,3 +1,4 @@
+import base64
 import json
 import re
 from collections.abc import Callable
@@ -9,6 +10,15 @@ from httpx import AsyncClient
 from nonebot.log import logger
 
 from ..post import Post
+from ..post.types import (
+    Card,
+    CardHeader,
+    CommonContent,
+    RepostContent,
+    SupportedCard,
+    VideoContent,
+)
+from ..post.utils import timestamp_to_str
 from ..types import *
 from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage
@@ -155,10 +165,10 @@ class Weibo(NewMessage):
                 assert match
                 full_json_text = match.group(1)
                 info = json.loads(full_json_text)
-            except:
+            except Exception as e:
                 logger.info(
-                    "detail message error: https://m.weibo.cn/detail/{}".format(
-                        info["mid"]
+                    "detail message error: https://m.weibo.cn/detail/{}, because {}".format(
+                        info["mid"], repr(e)
                     )
                 )
         parsed_text = self._get_text(info["text"])
@@ -169,17 +179,35 @@ class Weibo(NewMessage):
         )
         pic_urls = [img["large"]["url"] for img in raw_pics_list]
         pics = []
-        for pic_url in pic_urls:
-            async with http_client(headers={"referer": "https://weibo.com"}) as client:
+
+        async with http_client(headers={"referer": "https://weibo.com"}) as client:
+            for pic_url in pic_urls:
                 res = await client.get(pic_url)
                 res.raise_for_status()
                 pics.append(res.content)
+            face_bytes = (await client.get(info["user"]["profile_image_url"])).content
+
+        face_base64 = base64.b64encode(face_bytes).decode("utf-8")
         detail_url = "https://weibo.com/{}/{}".format(info["user"]["id"], info["bid"])
         # return parsed_text, detail_url, pic_urls
+
+        card_header = CardHeader(
+            face=f"data:image/png;base64, {face_base64}",
+            name=info["user"]["screen_name"],
+            desc=datetime.strptime(
+                info["created_at"], "%a %b %d %H:%M:%S %z %Y"
+            ).strftime("%Y-%m-%d %H:%M:%S"),
+            platform=self.name,
+        )
+
+        card_content = CommonContent(
+            text=info["text"],
+        )
         return Post(
             "weibo",
             text=parsed_text,
             url=detail_url,
             pics=pics,
             target_name=info["user"]["screen_name"],
+            card=Card(header=card_header, content=card_content, type="common"),
         )

@@ -1,3 +1,4 @@
+import base64
 import typing
 from datetime import datetime
 
@@ -16,6 +17,12 @@ if typing.TYPE_CHECKING:
 image_cdn_router = respx.route(
     host__regex=r"wx\d.sinaimg.cn", path__startswith="/large/"
 )
+
+
+@pytest.fixture(scope="module")
+def face_bytes():
+    face_base64 = get_file("arkface.base64")
+    return base64.b64decode(face_base64)
 
 
 @pytest.fixture
@@ -46,11 +53,14 @@ async def test_get_name(weibo):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_new(weibo, dummy_user_subinfo):
+async def test_fetch_new(weibo, dummy_user_subinfo, face_bytes):
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937"
     )
     detail_router = respx.get("https://m.weibo.cn/detail/4649031014551911")
+    face_router = respx.get(
+        "https://tvax4.sinaimg.cn/crop.0.0.756.756.180/006QZngZly8gdj05mufr9j30l00l0dq4.jpg?KID=imgbed,tva&Expires=1623930706&ssig=jbkVpwN%2BKp"
+    )
     ak_list_router.mock(
         return_value=Response(200, json=get_json("weibo_ak_list_0.json"))
     )
@@ -58,6 +68,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
         return_value=Response(200, text=get_file("weibo_detail_4649031014551911"))
     )
     image_cdn_router.mock(Response(200, content=b""))
+    face_router.mock(Response(200, content=face_bytes))
     target = "6279793937"
     res = await weibo.fetch_new_post(target, [dummy_user_subinfo])
     assert ak_list_router.called
@@ -80,6 +91,10 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
     assert post.target_name == "明日方舟Arknights"
     assert len(post.pics) == 1
+    print(post.card)
+    from ..utils import show_pic
+
+    await show_pic(post.card)
 
 
 @pytest.mark.asyncio

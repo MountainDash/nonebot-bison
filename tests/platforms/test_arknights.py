@@ -62,6 +62,9 @@ async def test_fetch_new(
         "https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/preannouncement.meta.json"
     )
     monster_siren_router = respx.get("https://monster-siren.hypergryph.com/api/news")
+    monster_siren_details_router = respx.get(
+        "https://monster-siren.hypergryph.com/api/news/241303"
+    )
     terra_list = respx.get("https://terra-historicus.hypergryph.com/api/recentUpdate")
     ak_list_router.mock(return_value=Response(200, json=arknights_list__1))
     detail_router.mock(
@@ -74,6 +77,9 @@ async def test_fetch_new(
         return_value=Response(200, json=get_json("arknights-pre-0.json"))
     )
     monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_0))
+    monster_siren_details_router.mock(
+        return_value=Response(200, json=get_json("monster-siren-details-241303.json"))
+    )
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-0.json")))
     target = ""
     res = await arknights.fetch_new_post(target, [dummy_user_subinfo])
@@ -104,6 +110,12 @@ async def test_fetch_new(
     assert post.pics == [
         "https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png"
     ]
+    monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_1))
+    res2 = await arknights.fetch_new_post(target, [dummy_user_subinfo])
+    assert monster_siren_details_router.called
+    assert len(res2) == 1
+    post = res2[0][1][0]
+    assert post.target_type == "monster-siren"
 
 
 @pytest.mark.render

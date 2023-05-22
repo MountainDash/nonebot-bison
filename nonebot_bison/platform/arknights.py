@@ -6,6 +6,7 @@ from httpx import AsyncClient
 from nonebot.plugin import require
 
 from ..post import Post
+from ..post.types import Card, CardHeader, CommonContent
 from ..types import Category, RawPost, Target
 from ..utils.scheduler_config import SchedulerConfig
 from .platform import CategoryNotRecognize, NewMessage, StatusChange
@@ -191,6 +192,18 @@ class MonsterSiren(NewMessage):
         soup = bs(content, "html.parser")
         imgs = list(map(lambda x: x["src"], soup("img")))
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
+
+        card_header = CardHeader(
+            face="https://web.hycdn.cn/siren/site/favicon.ico",
+            name=raw_data["data"]["author"],
+            desc=f'{raw_data["data"]["date"]}  {raw_data["data"]["title"]}',
+            platform=self.categories[3],
+        )
+
+        card_content = CommonContent(
+            text=raw_data["data"]["content"],
+        )
+
         return Post(
             "monster-siren",
             text=text,
@@ -199,6 +212,7 @@ class MonsterSiren(NewMessage):
             target_name="塞壬唱片新闻",
             compress=True,
             override_use_pic=False,
+            card=Card(type="common", header=card_header, content=card_content),
         )
 
 

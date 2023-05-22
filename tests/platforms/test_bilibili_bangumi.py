@@ -19,6 +19,23 @@ def bili_bangumi(app: App):
     return platform_manager["bilibili-bangumi"](ProcessContext(), AsyncClient())
 
 
+async def test_parse_target(bili_bangumi: "BilibiliBangumi"):
+    from nonebot_bison.platform.platform import Platform
+
+    res1 = await bili_bangumi.parse_target("28339726")
+    assert res1 == "28339726"
+    res2 = await bili_bangumi.parse_target("md28339726")
+    assert res2 == "28339726"
+    res3 = await bili_bangumi.parse_target(
+        "https://www.bilibili.com/bangumi/media/md28339726"
+    )
+    assert res3 == "28339726"
+    with pytest.raises(Platform.ParseTargetException):
+        await bili_bangumi.parse_target(
+            "https://www.bilibili.com/bangumi/play/ep683045"
+        )
+
+
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bilibili_bangumi_status(

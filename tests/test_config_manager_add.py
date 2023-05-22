@@ -532,3 +532,181 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     assert sub.categories == [platform_manager["bilibili"].reverse_category["视频"]]
     assert sub.target.platform_name == "bilibili"
     assert sub.target.target_name == "明日方舟"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
+    from nonebot.adapters.onebot.v11.event import Sender
+    from nonebot.adapters.onebot.v11.message import Message
+
+    from nonebot_bison.config import config
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.bilibili import Bilibililive
+
+    ak_list_router = respx.get(
+        "https://api.bilibili.com/x/web-interface/card?mid=161775300"
+    )
+    ak_list_router.mock(
+        return_value=Response(200, json=get_json("bilibili_arknights_profile.json"))
+    )
+
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
+
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot()
+        event_1 = fake_group_message_event(
+            message=Message("添加订阅"),
+            sender=Sender(card="", nickname="test", role="admin"),
+            to_me=True,
+        )
+        ctx.receive_event(bot, event_1)
+        ctx.should_pass_rule()
+        ctx.should_call_send(
+            event_1,
+            Message(
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
+            ),
+            True,
+        )
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
+        ctx.receive_event(bot, event_2)
+        ctx.should_rejected()
+        ctx.should_call_send(
+            event_2,
+            BotReply.add_reply_on_platform_input_allplatform(platform_manager),
+            True,
+        )
+        event_3 = fake_group_message_event(
+            message=Message("bilibili-live"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_3)
+        ctx.should_call_send(
+            event_3,
+            Message(BotReply.add_reply_on_id(Bilibililive)),
+            True,
+        )
+
+        event_4_ok = fake_group_message_event(
+            message=Message("161775300"),
+            sender=fake_admin_user,
+        )
+        ctx.receive_event(bot, event_4_ok)
+        ctx.should_call_send(
+            event_4_ok,
+            BotReply.add_reply_on_target_confirm("bilibili-live", "明日方舟", "161775300"),
+            True,
+        )
+        ctx.should_call_send(
+            event_4_ok,
+            Message(BotReply.add_reply_on_cats(platform_manager, "bilibili-live")),
+            True,
+        )
+        event_5_ok = fake_group_message_event(
+            message=Message("开播提醒"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_5_ok)
+        ctx.should_call_send(
+            event_5_ok, BotReply.add_reply_subscribe_success("明日方舟"), True
+        )
+        ctx.should_finished()
+    subs = await config.list_subscribe(10000, "group")
+    assert len(subs) == 1
+    sub = subs[0]
+    assert sub.target.target == "161775300"
+    assert sub.tags == []
+    assert sub.categories == [
+        platform_manager["bilibili-live"].reverse_category["开播提醒"]
+    ]
+    assert sub.target.platform_name == "bilibili-live"
+    assert sub.target.target_name == "明日方舟"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler):
+    from nonebot.adapters.onebot.v11.event import Sender
+    from nonebot.adapters.onebot.v11.message import Message
+
+    from nonebot_bison.config import config
+    from nonebot_bison.config_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.bilibili import BilibiliBangumi
+
+    ak_list_router = respx.get(
+        "https://api.bilibili.com/pgc/review/user?media_id=28235413"
+    )
+    ak_list_router.mock(
+        return_value=Response(200, json=get_json("bilibili-gangumi-hanhua1.json"))
+    )
+
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
+
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot()
+        event_1 = fake_group_message_event(
+            message=Message("添加订阅"),
+            sender=Sender(card="", nickname="test", role="admin"),
+            to_me=True,
+        )
+        ctx.receive_event(bot, event_1)
+        ctx.should_pass_rule()
+        ctx.should_call_send(
+            event_1,
+            Message(
+                BotReply.add_reply_on_platform(
+                    platform_manager=platform_manager, common_platform=common_platform
+                )
+            ),
+            True,
+        )
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
+        ctx.receive_event(bot, event_2)
+        ctx.should_rejected()
+        ctx.should_call_send(
+            event_2,
+            BotReply.add_reply_on_platform_input_allplatform(platform_manager),
+            True,
+        )
+        event_3 = fake_group_message_event(
+            message=Message("bilibili-bangumi"), sender=fake_admin_user
+        )
+        ctx.receive_event(bot, event_3)
+        ctx.should_call_send(
+            event_3,
+            Message(BotReply.add_reply_on_id(BilibiliBangumi)),
+            True,
+        )
+
+        event_4_ok = fake_group_message_event(
+            message=Message("md28235413"),
+            sender=fake_admin_user,
+        )
+        ctx.receive_event(bot, event_4_ok)
+        ctx.should_call_send(
+            event_4_ok,
+            BotReply.add_reply_on_target_confirm(
+                "bilibili-bangumi", "汉化日记 第三季", "28235413"
+            ),
+            True,
+        )
+        ctx.should_call_send(
+            event_4_ok, BotReply.add_reply_subscribe_success("汉化日记 第三季"), True
+        )
+        ctx.should_finished()
+    subs = await config.list_subscribe(10000, "group")
+    assert len(subs) == 1
+    sub = subs[0]
+    assert sub.target.target == "28235413"
+    assert sub.tags == []
+    assert sub.target.platform_name == "bilibili-bangumi"
+    assert sub.target.target_name == "汉化日记 第三季"

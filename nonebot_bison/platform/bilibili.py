@@ -389,7 +389,7 @@ class BilibiliBangumi(StatusChange):
         elif m := re.match(r"md(\d+)", target_string):
             return Target(m.group(1))
         elif m := re.match(
-            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)/", target_string
+            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string
         ):
             return Target(m.group(1))
         raise cls.ParseTargetException()

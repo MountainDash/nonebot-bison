@@ -172,12 +172,7 @@ class Bilibili(NewMessage):
                     text = f"{title}\n\n{desc}"
             else:
                 # 否则就把两个拼起来
-                text = f"""
-                {dynamic}
-                \n=================\n
-                {title}\n\n
-                {desc}
-                """
+                text = f"{dynamic}\n=================\n{title}\n\n{desc}"
 
             pic = [card["pic"]]
         elif post_type == 4:

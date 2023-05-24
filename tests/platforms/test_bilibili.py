@@ -64,8 +64,10 @@ async def test_video_forward(bilibili, bing_dy_list):
                     "brief": "《可露希尔的秘密档案》<br>11：来宿舍休息一下吧 <br>档案来源：lambda:\\罗德岛内务\\秘...",
                     "category": "综合",
                 },
+                "extra_head": None,
             },
         },
+        "extra_head": None,
     }
 
 

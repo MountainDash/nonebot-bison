@@ -10,14 +10,7 @@ from httpx import AsyncClient
 from nonebot.log import logger
 
 from ..post import Post
-from ..post.types import (
-    Card,
-    CardHeader,
-    CommonContent,
-    RepostContent,
-    SupportedCard,
-    VideoContent,
-)
+from ..post.types import Card, CardHeader, CommonContent, LiveContent
 from ..post.utils import timestamp_to_str
 from ..types import *
 from ..utils import SchedulerConfig, http_client
@@ -200,14 +193,40 @@ class Weibo(NewMessage):
             platform=self.name,
         )
 
-        card_content = CommonContent(
-            text=info["text"],
-        )
+        extra_head = """
+        <style>
+            a {
+                text-decoration: none;
+                color: #0099e6;
+            }
+        </style>
+        """
+
+        if pic_num == 1:
+            card = Card(
+                content=LiveContent(
+                    text=info["text"],
+                    cover=f"data:image/png;base64, {base64.b64encode(pics[0]).decode('utf-8')}",
+                ),
+                header=card_header,
+                type="live",
+                extra_head=extra_head,
+            )
+        else:
+            card = Card(
+                content=CommonContent(
+                    text=info["text"],
+                ),
+                header=card_header,
+                type="common",
+                extra_head=extra_head,
+            )
+
         return Post(
             "weibo",
             text=parsed_text,
             url=detail_url,
             pics=pics,
             target_name=info["user"]["screen_name"],
-            card=Card(header=card_header, content=card_content, type="common"),
+            card=card,
         )

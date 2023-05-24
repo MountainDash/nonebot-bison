@@ -25,6 +25,12 @@ def face_bytes():
     return base64.b64decode(face_base64)
 
 
+@pytest.fixture(scope="module")
+def cover_bytes():
+    cover_data = get_file("custom_post_pic.jpg", "rb", None)
+    return cover_data
+
+
 @pytest.fixture
 def weibo(app: App):
     from nonebot_bison.platform import platform_manager
@@ -53,7 +59,7 @@ async def test_get_name(weibo):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_new(weibo, dummy_user_subinfo, face_bytes):
+async def test_fetch_new(weibo, dummy_user_subinfo, face_bytes, cover_bytes):
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937"
     )
@@ -67,7 +73,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo, face_bytes):
     detail_router.mock(
         return_value=Response(200, text=get_file("weibo_detail_4649031014551911"))
     )
-    image_cdn_router.mock(Response(200, content=b""))
+    image_cdn_router.mock(Response(200, content=cover_bytes))
     face_router.mock(Response(200, content=face_bytes))
     target = "6279793937"
     res = await weibo.fetch_new_post(target, [dummy_user_subinfo])
@@ -91,10 +97,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo, face_bytes):
     assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
     assert post.target_name == "明日方舟Arknights"
     assert len(post.pics) == 1
-    print(post.card)
-    from ..utils import show_pic
-
-    await show_pic(post.card)
+    print(post.card.json())
 
 
 @pytest.mark.asyncio
@@ -118,6 +121,10 @@ async def test_parse_long(weibo):
     detail_router.mock(
         return_value=Response(200, text=get_file("weibo_detail_4645748019299849"))
     )
+    face_router = respx.get(
+        "https://tvax4.sinaimg.cn/crop.0.0.756.756.180/006QZngZly8gdj05mufr9j30l00l0dq4.jpg?KID=imgbed,tva&Expires=1651261093&ssig=Kt4QCJvDiS"
+    )
+    face_router.mock(Response(200, content=b""))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)
     assert not "全文" in post.text

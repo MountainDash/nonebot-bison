@@ -61,7 +61,7 @@ async def test_video_forward(bilibili, bing_dy_list):
                     "text": "#可露希尔的秘密档案# <br>11：来宿舍休息一下吧 <br>档案来源：lambda:\\罗德岛内务\\秘密档案 <br>发布时间：9/12 1:00 P.M. <br>档案类型：可见 <br>档案描述：今天请了病假在宿舍休息。很舒适。 <br>提供者：赫默",
                     "cover": "https://i2.hdslb.com/bfs/archive/21a6c7ce0baf767d99e81a450590f4ddfdc585ea.jpg",
                     "title": "《可露希尔的秘密档案》11话：来宿舍休...",
-                    "brief": "《可露希尔的秘密档案》<br>11：来宿舍休息一下吧 <br>档案来源：lambda:\\罗德岛内务\\秘...",
+                    "brief": "《可露希尔的秘密档案》<br>11：来宿舍休息一下吧<br>档案来源：lambda:\\罗德岛内务\\秘密档案...",
                     "category": "综合",
                 },
                 "extra_head": None,
@@ -69,10 +69,6 @@ async def test_video_forward(bilibili, bing_dy_list):
         },
         "extra_head": None,
     }
-
-    from ..utils import show_pic
-
-    await show_pic(post.card)
 
 
 @pytest.mark.asyncio

@@ -3,6 +3,8 @@ from typing import Literal, Optional, Union
 from nonebot.log import logger
 from pydantic import BaseModel, validator
 
+from .utils import _check_text_overflow, _cut_text_with_half_width
+
 # colorful card 支持的类型
 # common: 普通的卡片 只有头像，名称，发布时间和纯文字内容
 # video: 视频卡片 在common的基础上增加了视频封面，标题，简介
@@ -14,39 +16,10 @@ SupportedContent = Union[
     "CommonContent", "VideoContent", "LiveContent", "RepostContent"
 ]
 
-
-def _check_text_overflow(text: str) -> str:
-    """
-    检查文字内容是否会超出css盒子
-    """
-    text_lines = text[:54].split("\n")
-    logger.trace(text_lines)
-
-    if len(text_lines) == 1:
-        return (text[:54] + "...") if len(text) > 54 else text
-
-    remain_line = 3
-    show_lines = []
-    for line in text_lines:
-        logger.trace(f"line: {line}")
-        hold_line = len(line) // 20 + 1
-        if remain_line > hold_line:
-            logger.trace(
-                f"remain_line: {remain_line}, hold_line: {hold_line}\nappend: {line}"
-            )
-            show_lines.append(line)
-            remain_line -= hold_line
-        else:
-            show_line = (
-                (line[:20] + "...") if len(line) > 20 or len(text_lines) > 3 else line
-            )
-            logger.trace(
-                f"remain_line: {remain_line}, hold_line: {hold_line}\nappend: {show_line}"
-            )
-            show_lines.append(show_line)
-            break
-
-    return "<br>".join(show_lines)
+# 简介最多3行，每行20全角字符，每个全角字符占2个半角字符
+max_half_width = 3 * 20 * 2
+max_line = 3
+max_half_width_per_line = 20 * 2
 
 
 class CardHeader(BaseModel):
@@ -74,7 +47,9 @@ class VideoContent(BaseModel):
     @validator("brief")
     def shorten_brief(cls, v: str):
         # validator顺序是从上到下的，所以这里先检查是否会超出css盒子
-        return _check_text_overflow(v)
+        return _check_text_overflow(
+            v, max_half_width, max_half_width_per_line, max_line
+        )
 
     @validator("text", "brief")
     def newline_to_br(cls, v: str):
@@ -82,7 +57,7 @@ class VideoContent(BaseModel):
 
     @validator("title")
     def shorten_title(cls, v: str):
-        return v[:19] + "..." if len(v) > 20 else v
+        return _cut_text_with_half_width(v, max_half_width_per_line - 2)
 
 
 class LiveContent(BaseModel):

@@ -1,6 +1,6 @@
 .repost {
-    border: #77777777 2px dashed;
-    background: #cccccccc;
+    border: #f8f8f877 1px dashed;
+    background: #ecedee;
     display: grid;
     grid-template-columns: 30px 1fr;
     align-items: center;

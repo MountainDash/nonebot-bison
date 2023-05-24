@@ -70,6 +70,10 @@ async def test_video_forward(bilibili, bing_dy_list):
         "extra_head": None,
     }
 
+    from ..utils import show_pic
+
+    await show_pic(post.card)
+
 
 @pytest.mark.asyncio
 async def test_article_forward(bilibili, bing_dy_list):

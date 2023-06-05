@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### 破坏性变更
+
+- 使用 saa 代替所有发送 [@felinae98](https://github.com/felinae98) ([#219](https://github.com/felinae98/nonebot-bison/pull/219))
+
 ## v0.7.3
 
 ### Bug 修复

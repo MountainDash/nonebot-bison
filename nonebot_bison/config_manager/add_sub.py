@@ -4,7 +4,7 @@ from nonebot.adapters import Message, MessageTemplate
 from nonebot.adapters.onebot.v11 import Message as OB11Message
 from nonebot.adapters.onebot.v11.utils import unescape
 from nonebot.matcher import Matcher
-from nonebot.params import ArgPlainText
+from nonebot.params import Arg, ArgPlainText
 from nonebot.typing import T_State
 from nonebot_plugin_saa import PlatformTarget
 
@@ -65,16 +65,15 @@ def do_add_sub(add_sub: Type[Matcher]):
                 else ""
             ) + "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         else:
-            matcher.set_arg("raw_id", OB11Message("no id"))
+            matcher.set_arg("raw_id", None)  # type: ignore
             state["id"] = "default"
             state["name"] = await check_sub_target(state["platform"], Target(""))
 
     @add_sub.got("raw_id", MessageTemplate("{_prompt}"), [handle_cancel])
-    async def got_id(state: T_State, raw_id: str = ArgPlainText()):
-        if state.get("id"):
-            return
+    async def got_id(state: T_State, raw_id: Message = Arg()):
+        raw_id_text = raw_id.extract_plain_text()
         try:
-            if raw_id == "查询":
+            if raw_id_text == "查询":
                 url = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
                 title = "Bison所支持的平台UID"
                 content = "查询相关平台的uid格式或获取方式"
@@ -82,11 +81,11 @@ def do_add_sub(add_sub: Type[Matcher]):
                 getId_share = f"[CQ:share,url={url},title={title},content={content},image={image}]"  # 缩短字符串格式长度，以及方便后续修改为消息段格式
                 await add_sub.reject(OB11Message(getId_share))
             platform = platform_manager[state["platform"]]
-            raw_id = await platform.parse_target(unescape(raw_id))
-            name = await check_sub_target(state["platform"], raw_id)
+            raw_id_text = await platform.parse_target(unescape(raw_id_text))
+            name = await check_sub_target(state["platform"], raw_id_text)
             if not name:
                 await add_sub.reject("id输入错误")
-            state["id"] = raw_id
+            state["id"] = raw_id_text
             state["name"] = name
         except (Platform.ParseTargetException):
             await add_sub.reject("不能从你的输入中提取出id，请检查你输入的内容是否符合预期")
@@ -100,7 +99,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.handle()
     async def prepare_get_categories(matcher: Matcher, state: T_State):
         if not platform_manager[state["platform"]].categories:
-            matcher.set_arg("raw_cats", OB11Message(""))
+            matcher.set_arg("raw_cats", None)  # type: ignore
             state["cats"] = []
             return
         state["_prompt"] = "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(
@@ -108,12 +107,11 @@ def do_add_sub(add_sub: Type[Matcher]):
         )
 
     @add_sub.got("raw_cats", MessageTemplate("{_prompt}"), [handle_cancel])
-    async def parser_cats(state: T_State, raw_cats: str = ArgPlainText()):
-        if "cats" in state.keys():
-            return
+    async def parser_cats(state: T_State, raw_cats: Message = Arg()):
+        raw_cats_text = raw_cats.extract_plain_text()
         res = []
         if platform_manager[state["platform"]].categories:
-            for cat in raw_cats.split():
+            for cat in raw_cats_text.split():
                 if cat not in platform_manager[state["platform"]].reverse_category:
                     await add_sub.reject("不支持 {}".format(cat))
                 res.append(platform_manager[state["platform"]].reverse_category[cat])
@@ -122,23 +120,22 @@ def do_add_sub(add_sub: Type[Matcher]):
     @add_sub.handle()
     async def prepare_get_tags(matcher: Matcher, state: T_State):
         if not platform_manager[state["platform"]].enable_tag:
-            matcher.set_arg("raw_tags", OB11Message(""))
+            matcher.set_arg("raw_tags", None)  # type: ignore
             state["tags"] = []
             return
         state["_prompt"] = '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
 
     @add_sub.got("raw_tags", MessageTemplate("{_prompt}"), [handle_cancel])
-    async def parser_tags(state: T_State, raw_tags: str = ArgPlainText()):
-        if "tags" in state.keys():
-            return
-        if raw_tags == "详情":
+    async def parser_tags(state: T_State, raw_tags: Message = Arg()):
+        raw_tags_text = raw_tags.extract_plain_text()
+        if raw_tags_text == "详情":
             await add_sub.reject(
                 "订阅标签直接输入标签内容\n屏蔽标签请在标签名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#%E5%B9%B3%E5%8F%B0%E8%AE%A2%E9%98%85%E6%A0%87%E7%AD%BE-tag"
             )
-        if raw_tags in ["全部标签", "全部", "全标签"]:
+        if raw_tags_text in ["全部标签", "全部", "全标签"]:
             state["tags"] = []
         else:
-            state["tags"] = raw_tags.split()
+            state["tags"] = raw_tags_text.split()
 
     @add_sub.handle()
     async def add_sub_process(state: T_State):

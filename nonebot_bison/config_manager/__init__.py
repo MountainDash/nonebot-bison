@@ -2,10 +2,9 @@ import asyncio
 from datetime import datetime
 
 from nonebot import on_command
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Event, MessageTemplate
 from nonebot.adapters.onebot.v11 import MessageEvent
-from nonebot.adapters.onebot.v11.event import GroupMessageEvent, PrivateMessageEvent
-from nonebot.adapters.onebot.v11.message import Message
+from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText, ArgStr
@@ -58,11 +57,6 @@ group_handle_cancel = gen_handle_cancel(group_manage_matcher, "已取消")
 
 
 @group_manage_matcher.handle()
-async def send_group_list_private(event: GroupMessageEvent, state: T_State):
-    await group_manage_matcher.finish(Message("该功能只支持私聊使用，请私聊Bot"))
-
-
-@group_manage_matcher.handle()
 async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
     groups = await bot.call_api("get_group_list")
     res_text = "请选择需要管理的群：\n"
@@ -77,9 +71,11 @@ async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
 
 
 @group_manage_matcher.got(
-    "group_idx", Message.template("{_prompt}"), [group_handle_cancel]
+    "group_idx", MessageTemplate("{_prompt}"), [group_handle_cancel]
 )
-async def do_choose_group_number(state: T_State, group_idx: str = ArgPlainText()):
+async def do_choose_group_number(
+    state: T_State, event: PrivateMessageEvent, group_idx: str = ArgPlainText()
+):
     group_number_idx: dict[int, int] = state["group_number_idx"]
     assert group_number_idx
     idx = int(group_idx)
@@ -97,7 +93,7 @@ async def do_choose_group_number(state: T_State, group_idx: str = ArgPlainText()
 )
 async def do_dispatch_command(
     bot: Bot,
-    event: MessageEvent,
+    event: PrivateMessageEvent,
     state: T_State,
     matcher: Matcher,
     command: str = ArgStr(),

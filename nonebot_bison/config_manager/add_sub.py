@@ -1,6 +1,6 @@
 from typing import Type, cast
 
-from nonebot.adapters import Message
+from nonebot.adapters import Message, MessageTemplate
 from nonebot.adapters.onebot.v11 import Message as OB11Message
 from nonebot.adapters.onebot.v11.utils import unescape
 from nonebot.matcher import Matcher
@@ -36,7 +36,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
         )
 
-    @add_sub.got("platform", OB11Message.template("{_prompt}"), [handle_cancel])
+    @add_sub.got("platform", MessageTemplate("{_prompt}"), [handle_cancel])
     async def parse_platform(state: T_State, platform: str = ArgPlainText()) -> None:
         if not isinstance(state["platform"], Message):
             return
@@ -69,7 +69,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             state["id"] = "default"
             state["name"] = await check_sub_target(state["platform"], Target(""))
 
-    @add_sub.got("raw_id", OB11Message.template("{_prompt}"), [handle_cancel])
+    @add_sub.got("raw_id", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_id(state: T_State, raw_id: str = ArgPlainText()):
         if state.get("id"):
             return
@@ -107,7 +107,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             " ".join(list(platform_manager[state["platform"]].categories.values()))
         )
 
-    @add_sub.got("raw_cats", OB11Message.template("{_prompt}"), [handle_cancel])
+    @add_sub.got("raw_cats", MessageTemplate("{_prompt}"), [handle_cancel])
     async def parser_cats(state: T_State, raw_cats: str = ArgPlainText()):
         if "cats" in state.keys():
             return
@@ -127,7 +127,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             return
         state["_prompt"] = '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
 
-    @add_sub.got("raw_tags", OB11Message.template("{_prompt}"), [handle_cancel])
+    @add_sub.got("raw_tags", MessageTemplate("{_prompt}"), [handle_cancel])
     async def parser_tags(state: T_State, raw_tags: str = ArgPlainText()):
         if "tags" in state.keys():
             return

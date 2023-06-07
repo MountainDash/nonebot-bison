@@ -52,7 +52,7 @@ async def test_configurable_at_me_false(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         ctx.should_pass_rule()
@@ -95,10 +95,8 @@ async def test_add_with_target(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -118,7 +116,7 @@ async def test_add_with_target(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_4_err = fake_group_message_event(
@@ -140,7 +138,7 @@ async def test_add_with_target(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
+            BotReply.add_reply_on_cats(platform_manager, "weibo"),
             True,
         )
         event_5_err = fake_group_message_event(
@@ -155,7 +153,7 @@ async def test_add_with_target(app: App, init_scheduler):
             message=Message("图文 文字"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_ok)
-        ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
+        ctx.should_call_send(event_5_ok, BotReply.add_reply_on_tags, True)
         event_6_more_info = fake_group_message_event(
             message=Message("详情"), sender=fake_admin_user
         )
@@ -210,7 +208,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_3 = fake_group_message_event(
@@ -219,7 +217,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(NcmArtist)),
+            BotReply.add_reply_on_id(NcmArtist),
             True,
         )
         event_4_ok = fake_group_message_event(
@@ -267,7 +265,7 @@ async def test_add_no_target(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_3 = fake_group_message_event(
@@ -276,7 +274,7 @@ async def test_add_no_target(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager, "arknights")),
+            BotReply.add_reply_on_cats(platform_manager, "arknights"),
             True,
         )
         event_4 = fake_group_message_event(
@@ -316,7 +314,7 @@ async def test_platform_name_err(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_2 = fake_group_message_event(
@@ -368,10 +366,8 @@ async def test_add_with_get_id(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -381,7 +377,7 @@ async def test_add_with_get_id(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_4_query = fake_group_message_event(
@@ -448,10 +444,8 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -472,7 +466,7 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         assert Bilibili.parse_target_promot
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Bilibili)),
+            BotReply.add_reply_on_id(Bilibili),
             True,
         )
         event_4_err1 = fake_group_message_event(
@@ -513,14 +507,14 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager, "bilibili")),
+            BotReply.add_reply_on_cats(platform_manager, "bilibili"),
             True,
         )
         event_5_ok = fake_group_message_event(
             message=Message("视频"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_ok)
-        ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
+        ctx.should_call_send(event_5_ok, BotReply.add_reply_on_tags, True)
         event_6 = fake_group_message_event(
             message=Message("全部标签"), sender=fake_admin_user
         )
@@ -572,10 +566,8 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -595,7 +587,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Bilibililive)),
+            BotReply.add_reply_on_id(Bilibililive),
             True,
         )
 
@@ -611,7 +603,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager, "bilibili-live")),
+            BotReply.add_reply_on_cats(platform_manager, "bilibili-live"),
             True,
         )
         event_5_ok = fake_group_message_event(
@@ -667,10 +659,8 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -690,7 +680,7 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(BilibiliBangumi)),
+            BotReply.add_reply_on_id(BilibiliBangumi),
             True,
         )
 

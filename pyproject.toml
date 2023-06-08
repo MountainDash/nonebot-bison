@@ -34,7 +34,7 @@ nonebot-adapter-onebot = "^2.0.0-beta.1"
 nonebot-plugin-htmlrender = ">=0.2.0"
 nonebot-plugin-datastore = "^0.6.2"
 nonebot-plugin-apscheduler = "^0.2.0"
-nonebot-plugin-send-anything-anywhere = "^0.2.6"
+nonebot-plugin-send-anything-anywhere = "^0.2.7"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.4"

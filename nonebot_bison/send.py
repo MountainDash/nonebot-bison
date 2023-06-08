@@ -70,6 +70,10 @@ async def send_msgs(send_target: PlatformTarget, msgs: list[MessageFactory]):
         for msg in msgs:
             await _send_msgs_dispatch(send_target, msg)
         return
+    if plugin_config.bison_use_pic_merge == 3:
+        # 将文字与图片合成一条消息发送
+        await _send_msgs_dispatch(send_target, MessageFactory(msgs))
+        return
     msgs = msgs.copy()
     if plugin_config.bison_use_pic_merge == 1:
         await _send_msgs_dispatch(send_target, msgs.pop(0))

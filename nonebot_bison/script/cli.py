@@ -8,8 +8,8 @@ from typing import Any, Callable, Coroutine, TypeVar
 
 from nonebot.log import logger
 
-from ..config.subs_io import nbesf_parser, subscribes_export, subscribes_import
-from ..config.subs_io.nbesf_model import SubGroup
+from ..config.subs_io import subscribes_export, subscribes_import
+from ..config.subs_io.nbesf_model import v1, v2
 from ..scheduler.manager import init_scheduler
 
 try:
@@ -82,7 +82,7 @@ async def subs_export(path: Path, format: str):
     export_file = path / f"bison_subscribes_export_{int(time.time())}.{format}"
 
     logger.info("正在获取订阅信息...")
-    export_data: SubGroup = await subscribes_export(lambda x: x)
+    export_data: v2.SubGroup = await subscribes_export(lambda x: x)
 
     with export_file.open("w", encoding="utf-8") as f:
         match format:
@@ -90,7 +90,15 @@ async def subs_export(path: Path, format: str):
                 logger.info("正在导出为yaml...")
 
                 pyyaml = import_yaml_module()
-                pyyaml.safe_dump(export_data.dict(), f, sort_keys=False)
+                # 由于 nbesf v2 中的user_target使用了AllSupportedPlatformTarget, 因此不能使用safe_dump
+                # 下文引自 https://pyyaml.org/wiki/PyYAMLDocumentation
+                # safe_dump(data, stream=None) serializes the given Python object into the stream.
+                # If stream is None, it returns the produced stream.
+                # safe_dump produces only standard YAML tags and cannot represent an arbitrary Python object.
+                # 进行以下曲线救国方案
+                json_data = json.dumps(export_data.dict(), ensure_ascii=False)
+                yaml_data = pyyaml.safe_load(json_data)
+                pyyaml.safe_dump(yaml_data, f, sort_keys=False)
 
             case "json":
                 logger.info("正在导出为json...")
@@ -135,7 +143,17 @@ async def subs_import(path: str, format: str):
             case _:
                 raise click.BadParameter(message=f"不支持的导入格式: {format}")
 
-        nbesf_data = nbesf_parser(import_items)
+        assert isinstance(import_items, dict)
+        ver = int(import_items.get("version", 0))
+        logger.info(f"NBESF版本: {ver}")
+        match ver:
+            case 1:
+                nbesf_data = v1.nbesf_parser(import_items)
+            case 2:
+                nbesf_data = v2.nbesf_parser(import_items)
+            case _:
+                raise NotImplementedError("不支持的NBESF版本")
+
         await subscribes_import(nbesf_data)
 
 

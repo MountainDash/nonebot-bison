@@ -1,5 +1,6 @@
 async def test_migration(use_legacy_config):
     from nonebot_plugin_datastore.db import init_db
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config.config_legacy import Config
     from nonebot_bison.config.db_config import config
@@ -34,7 +35,7 @@ async def test_migration(use_legacy_config):
     )
     # await data_migrate()
     await init_db()
-    user123_config = await config.list_subscribe(123, "group")
+    user123_config = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(user123_config) == 2
     for c in user123_config:
         if c.target.target == "weibo_id":
@@ -47,7 +48,7 @@ async def test_migration(use_legacy_config):
             assert c.target.target_name == "weibo_name2"
             assert c.target.platform_name == "weibo"
             assert c.tags == ["tag"]
-    user234_config = await config.list_subscribe(234, "group")
+    user234_config = await config.list_subscribe(TargetQQGroup(group_id=234))
     assert len(user234_config) == 1
     assert user234_config[0].categories == [1]
     assert user234_config[0].target.target == "weibo_id"
@@ -57,6 +58,7 @@ async def test_migration(use_legacy_config):
 
 async def test_migrate_dup(use_legacy_config):
     from nonebot_plugin_datastore.db import init_db
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config.config_legacy import Config
     from nonebot_bison.config.db_config import config
@@ -82,5 +84,5 @@ async def test_migrate_dup(use_legacy_config):
     )
     # await data_migrate()
     await init_db()
-    user123_config = await config.list_subscribe(123, "group")
+    user123_config = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(user123_config) == 1

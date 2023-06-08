@@ -3,6 +3,7 @@ from datetime import time
 from typing import Any, Literal, NamedTuple, NewType
 
 from httpx import URL
+from nonebot_plugin_saa import PlatformTarget as SendTarget
 from pydantic import BaseModel
 
 RawPost = Any
@@ -25,7 +26,7 @@ class PlatformTarget:
 
 
 class UserSubInfo(NamedTuple):
-    user: User
+    user: SendTarget
     categories: list[Category]
     tags: list[Tag]
 

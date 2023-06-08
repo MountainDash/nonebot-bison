@@ -3,6 +3,7 @@ from pathlib import Path
 
 import nonebot
 import pytest
+from nonebot.adapters.onebot.v11 import Adapter as OnebotV11Adapter
 from nonebug import NONEBOT_INIT_KWARGS, App
 from pytest_mock.plugin import MockerFixture
 from sqlalchemy import delete
@@ -17,6 +18,12 @@ def pytest_configure(config: pytest.Config) -> None:
         "command_start": {""},
         "log_level": "TRACE",
     }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_adapters(nonebug_init: None):
+    driver = nonebot.get_driver()
+    driver.register_adapter(OnebotV11Adapter)
 
 
 @pytest.fixture
@@ -47,10 +54,10 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
     if not param.get("no_init_db"):
         await init_db()
-    if not param.get("refresh_bot"):
-        import nonebot_bison.utils.get_bot
-
-        mocker.patch.object(nonebot_bison.utils.get_bot, "refresh_bots")
+    # if not param.get("refresh_bot"):
+    #     import nonebot_bison.utils.get_bot
+    #
+    #     mocker.patch.object(nonebot_bison.utils.get_bot, "refresh_bots")
 
     yield App()
 
@@ -67,9 +74,11 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
 @pytest.fixture
 def dummy_user_subinfo(app: App):
-    from nonebot_bison.types import User, UserSubInfo
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    from nonebot_bison.types import UserSubInfo
+
+    user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[], tags=[])
 
 

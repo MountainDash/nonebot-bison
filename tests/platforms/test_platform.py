@@ -24,9 +24,9 @@ raw_post_list_2 = raw_post_list_1 + [
 
 @pytest.fixture
 def dummy_user(app: App):
-    from nonebot_bison.types import User
+    from nonebot_plugin_saa import TargetQQGroup
 
-    user = User(123, "group")
+    user = TargetQQGroup(group_id=123)
     return user
 
 

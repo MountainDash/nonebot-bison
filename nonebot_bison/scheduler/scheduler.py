@@ -1,16 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional, Type
 
-from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
+from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
 from ..config import config
 from ..platform import platform_manager
 from ..send import send_msgs
 from ..types import Target
 from ..utils import ProcessContext, SchedulerConfig
-from ..utils.get_bot import get_bot
 
 
 @dataclass
@@ -107,18 +106,15 @@ class Scheduler:
             return
 
         for user, send_list in to_send:
-            bot = get_bot(user)
             for send_post in send_list:
                 logger.info("send to {}: {}".format(user, send_post))
-                if not bot:
-                    logger.warning("no bot connected")
-                else:
+                try:
                     await send_msgs(
-                        bot,
-                        user.user,
-                        user.user_type,
+                        user,
                         await send_post.generate_messages(),
                     )
+                except NoBotFound:
+                    logger.warning("no bot connected")
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

@@ -2,6 +2,7 @@ import pytest
 import respx
 from httpx import Response
 from nonebug.app import App
+from nonebug_saa import should_send_saa
 
 from .platforms.utils import get_json
 from .utils import BotReply, fake_admin_user, fake_group_message_event
@@ -279,6 +280,7 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
 async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import del_sub_matcher
@@ -286,8 +288,7 @@ async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
-        10000,
-        "group",
+        TargetQQGroup(group_id=10000),
         T_Target("6279793937"),
         "明日方舟Arknights",
         "weibo",
@@ -303,12 +304,13 @@ async def test_abort_del_sub(app: App, init_scheduler):
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_send(
-            event,
-            Message(
+        should_send_saa(
+            ctx,
+            MessageFactory(
                 "订阅的帐号为：\n1 weibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n请输入要删除的订阅的序号\n输入'取消'中止"
             ),
-            True,
+            bot,
+            event=event,
         )
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=fake_admin_user
@@ -316,5 +318,5 @@ async def test_abort_del_sub(app: App, init_scheduler):
         ctx.receive_event(bot, event_abort)
         ctx.should_call_send(event_abort, "删除中止", True)
         ctx.should_finished()
-    subs = await config.list_subscribe(10000, "group")
+    subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert subs

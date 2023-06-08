@@ -1,7 +1,9 @@
 import datetime
 from pathlib import Path
+from typing import Optional
 
 from nonebot_plugin_datastore import get_plugin_data
+from nonebot_plugin_saa.utils import PlatformTarget
 from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,13 +14,14 @@ get_plugin_data().set_migration_dir(Path(__file__).parent / "migrations")
 
 
 class User(Model):
-    __table_args__ = (UniqueConstraint("type", "uid", name="unique-user-constraint"),)
-
     id: Mapped[int] = mapped_column(primary_key=True)
-    type: Mapped[str] = mapped_column(String(20))
-    uid: Mapped[int]
+    user_target: Mapped[dict] = mapped_column(JSON)
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="user")
+
+    @property
+    def saa_target(self) -> PlatformTarget:
+        return PlatformTarget.deserialize(self.user_target)
 
 
 class Target(Model):

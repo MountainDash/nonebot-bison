@@ -4,35 +4,32 @@ import typing
 import pytest
 from flaky import flaky
 from nonebug import App
+from nonebug_saa import should_send_saa
 from pytest_mock.plugin import MockerFixture
-
-if typing.TYPE_CHECKING:
-    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
 
 @pytest.mark.asyncio
 async def test_send_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup, TargetQQPrivate
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
 
     mocker.patch.object(plugin_config, "bison_use_queue", False)
+
+    group_target = TargetQQGroup(group_id=1233)
+    private_target = TargetQQPrivate(user_id=666)
+
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
-        ctx.should_call_api(
-            "send_group_msg", {"group_id": "1233", "message": Message("msg1")}, True
-        )
-        ctx.should_call_api(
-            "send_group_msg", {"group_id": "1233", "message": Message("msg2")}, True
-        )
-        ctx.should_call_api(
-            "send_private_msg", {"user_id": "666", "message": Message("priv")}, True
-        )
-        await send_msgs(bot, "1233", "group", [Message("msg1"), Message("msg2")])
-        await send_msgs(bot, "666", "private", [Message("priv")])
+        should_send_saa(ctx, MessageFactory("msg1"), bot, target=group_target)
+        should_send_saa(ctx, MessageFactory("msg2"), bot, target=group_target)
+        should_send_saa(ctx, MessageFactory("priv"), bot, target=private_target)
+        await send_msgs(group_target, [MessageFactory("msg1"), MessageFactory("msg2")])
+        await send_msgs(private_target, [MessageFactory("priv")])
         assert ctx.wait_list.empty()
 
 
@@ -40,52 +37,43 @@ async def test_send_no_queue(app: App, mocker: MockerFixture):
 async def test_send_queue(app: App, mocker: MockerFixture):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
-    from nonebot_bison import send
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.send import MESSGE_SEND_INTERVAL, do_send_msgs, send_msgs
+    from nonebot_bison.send import MESSGE_SEND_INTERVAL, send_msgs
 
     mocker.patch.object(plugin_config, "bison_use_queue", True)
     async with app.test_api() as ctx:
         new_bot = ctx.create_bot(base=Bot)
+        await refresh_bots()
         mocker.patch.object(nonebot, "get_bot", lambda: new_bot)
         bot = nonebot.get_bot()
         assert isinstance(bot, Bot)
         assert bot == new_bot
-        ctx.should_call_api(
-            "send_group_msg",
-            {"group_id": "1233", "message": [MessageSegment.text("msg")]},
-            True,
-        )
-        ctx.should_call_api(
-            "send_group_msg",
-            {"group_id": "1233", "message": [MessageSegment.text("msg2")]},
-            True,
-        )
-        await send_msgs(bot, "1233", "group", [Message("msg")])
-        await send_msgs(bot, "1233", "group", [Message("msg2")])
+
+        target = TargetQQGroup(group_id=1233)
+        should_send_saa(ctx, MessageFactory("msg"), bot, target=target)
+        should_send_saa(ctx, MessageFactory("msg2"), bot, target=target)
+
+        await send_msgs(target, [MessageFactory("msg")])
+        await send_msgs(target, [MessageFactory("msg2")])
         assert not ctx.wait_list.empty()
         await asyncio.sleep(2 * MESSGE_SEND_INTERVAL)
         assert ctx.wait_list.empty()
 
 
-def gen_node(id, name, content: "Message"):
-    from nonebot.adapters.onebot.v11.message import MessageSegment
-
-    return MessageSegment.node_custom(id, name, content)
-
-
-def _merge_messge(nodes):
-    from nonebot.adapters.onebot.v11.message import Message
-
-    return Message(nodes)
-
-
 @pytest.mark.asyncio
 async def test_send_merge_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+    from nonebot_plugin_saa import (
+        AggregatedMessageFactory,
+        Image,
+        MessageFactory,
+        TargetQQGroup,
+        Text,
+    )
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
@@ -95,101 +83,48 @@ async def test_send_merge_no_queue(app: App):
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, self_id="8888")
+        await refresh_bots()
         assert isinstance(bot, Bot)
-        message = [
-            Message(MessageSegment.text("test msg")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
-        ]
-        ctx.should_call_api(
-            "send_group_msg",
-            {"group_id": 633, "message": Message(MessageSegment.text("test msg"))},
-            None,
-        )
-        ctx.should_call_api(
-            "send_group_msg",
-            {"group_id": 633, "message": message[1]},
-            None,
-        )
-        await send_msgs(bot, 633, "group", message)
+        target = TargetQQGroup(group_id=633)
 
         message = [
-            Message(MessageSegment.text("test msg")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            MessageFactory(Text("test msg")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
         ]
-        ctx.should_call_api(
-            "send_group_msg",
-            {"group_id": 633, "message": Message(MessageSegment.text("test msg"))},
-            None,
-        )
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": 633, "user_id": 8888, "no_cache": True},
-            {"user_id": 8888, "card": "admin", "nickname": "adminuser"},
-        )
-        merged_message = _merge_messge(
-            [gen_node(8888, "admin", message[1]), gen_node(8888, "admin", message[2])]
-        )
-        ctx.should_call_api(
-            "send_group_forward_msg",
-            {"group_id": 633, "messages": merged_message},
-            None,
-        )
-        await send_msgs(bot, 633, "group", message)
+        should_send_saa(ctx, message[0], bot, target=target)
+        should_send_saa(ctx, message[1], bot, target=target)
+        await send_msgs(target, message)
 
         message = [
-            Message(MessageSegment.text("test msg")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            MessageFactory(Text("test msg")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
         ]
-        ctx.should_call_api(
-            "send_group_msg",
-            {"group_id": 633, "message": Message(MessageSegment.text("test msg"))},
-            None,
-        )
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": 633, "user_id": 8888, "no_cache": True},
-            {"user_id": 8888, "card": None, "nickname": "adminuser"},
-        )
-        merged_message = _merge_messge(
-            [
-                gen_node(8888, "adminuser", message[1]),
-                gen_node(8888, "adminuser", message[2]),
-                gen_node(8888, "adminuser", message[3]),
-            ]
-        )
-        ctx.should_call_api(
-            "send_group_forward_msg",
-            {"group_id": 633, "messages": merged_message},
-            None,
-        )
-        await send_msgs(bot, 633, "group", message)
+        should_send_saa(ctx, message[0], bot, target=target)
+        should_send_saa(ctx, AggregatedMessageFactory(message[1:]), bot, target=target)
+        await send_msgs(target, message)
 
-        # private user should not send in forward
         message = [
-            Message(MessageSegment.text("test msg")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            MessageFactory(Text("test msg")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
         ]
-        ctx.should_call_api(
-            "send_private_msg",
-            {"user_id": 633, "message": Message(MessageSegment.text("test msg"))},
-            None,
-        )
-        ctx.should_call_api(
-            "send_private_msg", {"user_id": 633, "message": message[1]}, None
-        )
-        ctx.should_call_api(
-            "send_private_msg", {"user_id": 633, "message": message[2]}, None
-        )
-        await send_msgs(bot, 633, "private", message)
+        should_send_saa(ctx, message[0], bot, target=target)
+        should_send_saa(ctx, AggregatedMessageFactory(message[1:]), bot, target=target)
+        await send_msgs(target, message)
 
 
 async def test_send_merge2_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message, MessageSegment
+    from nonebot_plugin_saa import (
+        AggregatedMessageFactory,
+        Image,
+        MessageFactory,
+        TargetQQGroup,
+        Text,
+    )
+    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
@@ -200,26 +135,13 @@ async def test_send_merge2_no_queue(app: App):
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, self_id="8888")
         assert isinstance(bot, Bot)
+        await refresh_bots()
+        target = TargetQQGroup(group_id=633)
+
         message = [
-            Message(MessageSegment.text("test msg")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
-            Message(MessageSegment.image("https://picsum.photos/200/300")),
+            MessageFactory(Text("test msg")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
+            MessageFactory(Image("https://picsum.photos/200/300")),
         ]
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": 633, "user_id": 8888, "no_cache": True},
-            {"user_id": 8888, "card": "admin", "nickname": "adminuser"},
-        )
-        merged_message = _merge_messge(
-            [
-                gen_node(8888, "admin", message[0]),
-                gen_node(8888, "admin", message[1]),
-                gen_node(8888, "admin", message[2]),
-            ]
-        )
-        ctx.should_call_api(
-            "send_group_forward_msg",
-            {"group_id": 633, "messages": merged_message},
-            None,
-        )
-        await send_msgs(bot, 633, "group", message)
+        should_send_saa(ctx, AggregatedMessageFactory(message), bot, target=target)
+        await send_msgs(target, message)

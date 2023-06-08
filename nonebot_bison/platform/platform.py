@@ -10,10 +10,11 @@ from typing import Any, Collection, Optional, Type
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
+from nonebot_plugin_saa import PlatformTarget
 
 from ..plugin_config import plugin_config
 from ..post import Post
-from ..types import Category, RawPost, Tag, Target, User, UserSubInfo
+from ..types import Category, RawPost, Tag, Target, UserSubInfo
 from ..utils import ProcessContext, SchedulerConfig
 
 
@@ -84,12 +85,12 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     @abstractmethod
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[User, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Post]]]:
         ...
 
     async def do_fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[User, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Post]]]:
         try:
             return await self.fetch_new_post(target, users)
         except httpx.RequestError as err:
@@ -197,8 +198,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
 
     async def dispatch_user_post(
         self, target: Target, new_posts: list[RawPost], users: list[UserSubInfo]
-    ) -> list[tuple[User, list[Post]]]:
-        res: list[tuple[User, list[Post]]] = []
+    ) -> list[tuple[PlatformTarget, list[Post]]]:
+        res: list[tuple[PlatformTarget, list[Post]]] = []
         for user, cats, required_tags in users:
             user_raw_post = await self.filter_user_custom(
                 new_posts, cats, required_tags
@@ -314,7 +315,7 @@ class NewMessage(MessageProcess, abstract=True):
 
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[User, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Post]]]:
         post_list = await self.get_sub_list(target)
         new_posts = await self.filter_common_with_diff(target, post_list)
         if not new_posts:
@@ -353,7 +354,7 @@ class StatusChange(Platform, abstract=True):
 
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[User, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Post]]]:
         try:
             new_status = await self.get_status(target)
         except self.FetchError as err:
@@ -381,7 +382,7 @@ class SimplePost(MessageProcess, abstract=True):
 
     async def fetch_new_post(
         self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[User, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Post]]]:
         new_posts = await self.get_sub_list(target)
         if not new_posts:
             return []

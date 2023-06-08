@@ -1,12 +1,11 @@
+import contextlib
 from typing import Type, cast
 
 from nonebot.adapters import Message, MessageTemplate
-from nonebot.adapters.onebot.v11 import Message as OB11Message
-from nonebot.adapters.onebot.v11.utils import unescape
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
 from nonebot.typing import T_State
-from nonebot_plugin_saa import PlatformTarget
+from nonebot_plugin_saa import PlatformTarget, SupportedAdapters, Text
 
 from ..apis import check_sub_target
 from ..config import config
@@ -75,13 +74,28 @@ def do_add_sub(add_sub: Type[Matcher]):
         try:
             if raw_id_text == "查询":
                 url = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
-                title = "Bison所支持的平台UID"
-                content = "查询相关平台的uid格式或获取方式"
-                image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
-                getId_share = f"[CQ:share,url={url},title={title},content={content},image={image}]"  # 缩短字符串格式长度，以及方便后续修改为消息段格式
-                await add_sub.reject(OB11Message(getId_share))
+                msg = Text(url)
+                with contextlib.suppress(ImportError):
+                    from nonebot.adapters.onebot.v11 import MessageSegment
+
+                    title = "Bison所支持的平台UID"
+                    content = "查询相关平台的uid格式或获取方式"
+                    image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
+                    msg.overwrite(
+                        SupportedAdapters.onebot_v11,
+                        MessageSegment.share(
+                            url=url, title=title, content=content, image=image
+                        ),
+                    )
+                await msg.reject()
             platform = platform_manager[state["platform"]]
-            raw_id_text = await platform.parse_target(unescape(raw_id_text))
+            with contextlib.suppress(ImportError):
+                from nonebot.adapters.onebot.v11 import Message
+                from nonebot.adapters.onebot.v11.utils import unescape
+
+                if isinstance(raw_id, Message):
+                    raw_id_text = unescape(raw_id_text)
+            raw_id_text = await platform.parse_target(raw_id_text)
             name = await check_sub_target(state["platform"], raw_id_text)
             if not name:
                 await add_sub.reject("id输入错误")

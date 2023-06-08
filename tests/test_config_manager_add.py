@@ -2,10 +2,16 @@ import pytest
 import respx
 from httpx import Response
 from nonebug.app import App
+from nonebug_saa import should_send_saa
 from pytest_mock import MockerFixture
 
 from .platforms.utils import get_json
-from .utils import BotReply, fake_admin_user, fake_group_message_event
+from .utils import (
+    BotReply,
+    add_reply_on_id_input_search,
+    fake_admin_user,
+    fake_group_message_event,
+)
 
 
 @pytest.mark.asyncio
@@ -335,7 +341,13 @@ async def test_platform_name_err(app: App):
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
-    from nonebot_plugin_saa import TargetQQGroup
+    from nonebot_plugin_saa import (
+        Custom,
+        MessageFactory,
+        SupportedAdapters,
+        TargetQQGroup,
+        Text,
+    )
 
     from nonebot_bison.config import config
     from nonebot_bison.config_manager import add_sub_matcher, common_platform
@@ -384,19 +396,19 @@ async def test_add_with_get_id(app: App):
             message=Message("查询"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_query)
-        ctx.should_rejected()
-        ctx.should_call_send(
-            event_4_query,
-            Message([MessageSegment(*BotReply.add_reply_on_id_input_search())]),
-            True,
+        should_send_saa(
+            ctx,
+            MessageFactory(
+                Text(add_reply_on_id_input_search).overwrite(
+                    SupportedAdapters.onebot_v11,
+                    BotReply.add_reply_on_id_input_search_ob11(),
+                )
+            ),
+            bot,
+            event=event_4_query,
         )
-        """
-        关于：Message([MessageSegment(*BotReply.add_reply_on_id_input_search())])
-        鬼知道为什么要在这里这样写，
-        没有[]的话assert不了(should_call_send使用[MessageSegment(...)]的格式进行比较)
-        不在这里MessageSegment()的话也assert不了(指不能让add_reply_on_id_input_search直接返回一个MessageSegment对象)
-        amen
-        """
+        ctx.should_rejected()
+
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=Sender(card="", nickname="test", role="admin")
         )
@@ -407,6 +419,7 @@ async def test_add_with_get_id(app: App):
             True,
         )
         ctx.should_finished()
+        await ctx.run()
     subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 0
 

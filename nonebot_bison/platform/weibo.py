@@ -124,7 +124,7 @@ class Weibo(NewMessage):
             return Category(4)
 
     def _get_text(self, raw_text: str) -> str:
-        text = raw_text.replace("<br />", "\n")
+        text = raw_text.replace("<br/>", "\n").replace("<br />", "\n")
         return bs(text, "html.parser").text
 
     async def parse(self, raw_post: RawPost) -> Post:

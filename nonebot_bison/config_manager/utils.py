@@ -1,8 +1,10 @@
+import contextlib
 from typing import Annotated, Type
 
 from nonebot.adapters import Event
 from nonebot.matcher import Matcher
 from nonebot.params import Depends, EventPlainText, EventToMe
+from nonebot.permission import SUPERUSER
 from nonebot.rule import Rule
 from nonebot.typing import T_State
 from nonebot_plugin_saa import extract_target
@@ -50,3 +52,13 @@ def ensure_user_info(matcher: Type[Matcher]):
 async def set_target_user_info(event: Event, state: T_State):
     user = extract_target(event)
     state["target_user_info"] = user
+
+
+def admin_permission():
+    permission = SUPERUSER
+    with contextlib.suppress(ImportError):
+        from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
+
+        permission = permission | GROUP_ADMIN | GROUP_OWNER
+
+    return permission

@@ -2,10 +2,8 @@ import asyncio
 from datetime import datetime
 
 from nonebot import on_command
-from nonebot.adapters import Bot, Event, MessageTemplate
-from nonebot.adapters.onebot.v11 import MessageEvent
+from nonebot.adapters import Bot, MessageTemplate
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
-from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText, ArgStr
 from nonebot.permission import SUPERUSER
@@ -17,6 +15,7 @@ from .add_sub import do_add_sub
 from .del_sub import do_del_sub
 from .query_sub import do_query_sub
 from .utils import (
+    admin_permission,
     common_platform,
     configurable_to_me,
     gen_handle_cancel,
@@ -26,7 +25,7 @@ from .utils import (
 add_sub_matcher = on_command(
     "添加订阅",
     rule=configurable_to_me,
-    permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
+    permission=admin_permission(),
     priority=5,
     block=True,
 )
@@ -42,7 +41,7 @@ do_query_sub(query_sub_matcher)
 del_sub_matcher = on_command(
     "删除订阅",
     rule=configurable_to_me,
-    permission=GROUP_ADMIN | GROUP_OWNER | SUPERUSER,
+    permission=admin_permission(),
     priority=5,
     block=True,
 )
@@ -124,3 +123,12 @@ async def do_dispatch_command(
         do_del_sub(new_matcher)
     new_matcher_ins = new_matcher()
     asyncio.create_task(new_matcher_ins.run(bot, event, state))
+
+
+__all__ = [
+    "common_platform",
+    "add_sub_matcher",
+    "query_sub_matcher",
+    "del_sub_matcher",
+    "group_manage_matcher",
+]

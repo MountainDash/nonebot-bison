@@ -179,25 +179,12 @@ class Weibo(NewMessage):
         return ""
 
     async def parse(self, raw_post: RawPost) -> Post:
-        header = {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "accept-language": "zh-CN,zh;q=0.9",
-            "authority": "m.weibo.cn",
-            "cache-control": "max-age=0",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "same-origin",
-            "sec-fetch-site": "same-origin",
-            "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 "
-            "Mobile Safari/537.36",
-        }
         info = raw_post["mblog"]
         retweeted = False
         if info.get("retweeted_status"):
             retweeted = True
         if info["isLongText"] or info["pic_num"] > 9:
-            info["text"] = (await self._get_long_weibo(info["mid"], header))["text"]
+            info["text"] = (await self._get_long_weibo(info["mid"]))["text"]
         parsed_text = self._get_text(info["text"])
         raw_pics_list = info.get("pics", [])
         if retweeted:

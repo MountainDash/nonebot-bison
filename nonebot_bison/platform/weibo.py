@@ -170,13 +170,13 @@ class Weibo(NewMessage):
             )
             weibo_info = weibo_info.json()
             if not weibo_info or weibo_info["ok"] != 1:
-                return ""
+                return {}
             return weibo_info["data"]
         except:
             logger.info(
                 "detail message error: https://m.weibo.cn/detail/{}".format(weibo_id)
             )
-        return ""
+        return {}
 
     async def parse(self, raw_post: RawPost) -> Post:
         info = raw_post["mblog"]

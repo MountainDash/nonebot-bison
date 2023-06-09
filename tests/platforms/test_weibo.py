@@ -99,9 +99,9 @@ async def test_classification(weibo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_parse_long(weibo):
-    detail_router = respx.get("https://m.weibo.cn/detail/4645748019299849")
+    detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
     detail_router.mock(
-        return_value=Response(200, text=get_file("weibo_detail_4645748019299849"))
+        return_value=Response(200, text=get_file("weibo_detail_4645748019299849.json"))
     )
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)

@@ -3,15 +3,31 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 from typing import Any, Optional
+from urllib.parse import unquote
 
 from bs4 import BeautifulSoup as bs
 from httpx import AsyncClient
+from lxml import etree
 from nonebot.log import logger
 
 from ..post import Post
 from ..types import *
 from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage
+
+_HEADER = {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-language": "zh-CN,zh;q=0.9",
+    "authority": "m.weibo.cn",
+    "cache-control": "max-age=0",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "same-origin",
+    "sec-fetch-site": "same-origin",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 "
+    "Mobile Safari/537.36",
+}
 
 
 class WeiboSchedConf(SchedulerConfig):
@@ -125,7 +141,42 @@ class Weibo(NewMessage):
 
     def _get_text(self, raw_text: str) -> str:
         text = raw_text.replace("<br/>", "\n").replace("<br />", "\n")
-        return bs(text, "html.parser").text
+        selector = etree.HTML(text)
+        if selector is None:
+            return text
+        url_elems = selector.xpath("//a[@href]/span[@class='surl-text']")
+        for br in selector.xpath("br"):
+            br.tail = "\n" + br.tail
+        for elem in url_elems:
+            url = elem.getparent().get("href")
+            if (
+                not elem.text.startswith("#")
+                and not elem.text.endswith("#")
+                and (
+                    url.startswith("https://weibo.cn/sinaurl?u=")
+                    or url.startswith("https://video.weibo.com")
+                )
+            ):
+                url = unquote(url.replace("https://weibo.cn/sinaurl?u=", ""))
+                elem.text = f"{elem.text}({url} )"
+        return selector.xpath("string(.)")
+
+    async def _get_long_weibo(self, weibo_id: str) -> dict:
+        try:
+            weibo_info = await self.client.get(
+                "https://m.weibo.cn/statuses/show",
+                params={"id": weibo_id},
+                headers=_HEADER,
+            )
+            weibo_info = weibo_info.json()
+            if not weibo_info or weibo_info["ok"] != 1:
+                return ""
+            return weibo_info["data"]
+        except:
+            logger.info(
+                "detail message error: https://m.weibo.cn/detail/{}".format(weibo_id)
+            )
+        return ""
 
     async def parse(self, raw_post: RawPost) -> Post:
         header = {
@@ -145,28 +196,19 @@ class Weibo(NewMessage):
         retweeted = False
         if info.get("retweeted_status"):
             retweeted = True
-        pic_num = info["retweeted_status"]["pic_num"] if retweeted else info["pic_num"]
-        if info["isLongText"] or pic_num > 9:
-            res = await self.client.get(
-                "https://m.weibo.cn/detail/{}".format(info["mid"]), headers=header
-            )
-            try:
-                match = re.search(r'"status": ([\s\S]+),\s+"call"', res.text)
-                assert match
-                full_json_text = match.group(1)
-                info = json.loads(full_json_text)
-            except:
-                logger.info(
-                    "detail message error: https://m.weibo.cn/detail/{}".format(
-                        info["mid"]
-                    )
-                )
+        if info["isLongText"] or info["pic_num"] > 9:
+            info["text"] = (await self._get_long_weibo(info["mid"], header))["text"]
         parsed_text = self._get_text(info["text"])
-        raw_pics_list = (
-            info["retweeted_status"].get("pics", [])
-            if retweeted
-            else info.get("pics", [])
-        )
+        raw_pics_list = info.get("pics", [])
+        if retweeted:
+            retweeted_status = info["retweeted_status"]
+            text = retweeted_status["text"]
+            raw_pics_list = retweeted_status.get("pics", [])
+            if retweeted_status["isLongText"] or retweeted_status["pic_num"] > 9:
+                retweeted_weibo = await self._get_long_weibo(retweeted_status["mid"])
+                text = retweeted_weibo["text"]
+                raw_pics_list = retweeted_weibo.get("pics", [])
+            parsed_text += f"\n=========转发=========\n>>转发@{retweeted_status['user']['screen_name']}\n{self._get_text(text)}"
         pic_urls = [img["large"]["url"] for img in raw_pics_list]
         pics = []
         for pic_url in pic_urls:

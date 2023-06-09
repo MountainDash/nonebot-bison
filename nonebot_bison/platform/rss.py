@@ -45,7 +45,7 @@ class Rss(NewMessage):
         return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
-        text = raw_post.get("title", "") + "\n" if raw_post.get("title") else ""
+        text = ""
         soup = bs(raw_post.description, "html.parser")
         text += soup.text.strip()
         pics = list(map(lambda x: x.attrs["src"], soup("img")))

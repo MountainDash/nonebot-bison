@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-bison-migang"
-version = "0.0.5"
+version = "0.0.6"
 description = "Subscribe message from social medias"
 authors = ["mobai <mobai@mobai.one>"]
 license = "MIT"

@@ -6,6 +6,10 @@
 
 - 使用 saa 代替所有发送 [@felinae98](https://github.com/felinae98) ([#219](https://github.com/felinae98/nonebot-bison/pull/219))
 
+### Bug 修复
+
+- 在Postgresql下，user_target字段使用jsonb代替json [@LambdaYH](https://github.com/LambdaYH) ([#271](https://github.com/felinae98/nonebot-bison/pull/271))
+
 ## v0.7.3
 
 ### Bug 修复

@@ -2,7 +2,6 @@ import datetime
 from pathlib import Path
 
 from nonebot_plugin_datastore import get_plugin_data
-from nonebot_plugin_datastore.db import get_engine
 from nonebot_plugin_saa.utils import PlatformTarget
 from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
@@ -16,10 +15,7 @@ get_plugin_data().set_migration_dir(Path(__file__).parent / "migrations")
 
 class User(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    if get_engine().name == "postgresql":
-        user_target: Mapped[dict] = mapped_column(JSONB)
-    else:
-        user_target: Mapped[dict] = mapped_column(JSON)
+    user_target: Mapped[dict] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="user")
 

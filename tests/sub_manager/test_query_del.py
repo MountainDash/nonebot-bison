@@ -1,11 +1,9 @@
 import pytest
-import respx
-from httpx import Response
 from nonebug.app import App
 from nonebug_saa import should_send_saa
 
-from .platforms.utils import get_json
-from .utils import fake_admin_user, fake_group_message_event
+from ..platforms.utils import get_json
+from ..utils import fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
@@ -15,8 +13,8 @@ async def test_query_sub(app: App, init_scheduler):
     from nonebot_plugin_saa import MessageFactory, SupportedAdapters, TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import query_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import query_sub_matcher
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
@@ -49,8 +47,8 @@ async def test_del_sub(app: App, init_scheduler):
     from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import del_sub_matcher
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
@@ -100,8 +98,8 @@ async def test_del_empty_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import del_sub_matcher
 
     async with app.test_matcher(del_sub_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)

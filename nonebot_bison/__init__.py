@@ -10,11 +10,11 @@ from . import (
     admin_page,
     bootstrap,
     config,
-    config_manager,
     platform,
     post,
     scheduler,
     send,
+    sub_manager,
     types,
     utils,
 )
@@ -38,7 +38,7 @@ __plugin_meta__ = PluginMetadata(
 __all__ = [
     "admin_page",
     "config",
-    "config_manager",
+    "sub_manager",
     "post",
     "scheduler",
     "send",

@@ -1,7 +1,7 @@
 from typing import Type
 
 from nonebot.matcher import Matcher
-from nonebot.typing import T_State
+from nonebot.params import Arg
 from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
 from ..config import config
@@ -15,9 +15,7 @@ def do_query_sub(query_sub: Type[Matcher]):
     query_sub.handle()(ensure_user_info(query_sub))
 
     @query_sub.handle()
-    async def _(state: T_State):
-        user_info = state["target_user_info"]
-        assert isinstance(user_info, PlatformTarget)
+    async def _(user_info: PlatformTarget = Arg("target_user_info")):
         sub_list = await config.list_subscribe(user_info)
         res = "订阅的帐号为：\n"
         for sub in sub_list:

@@ -37,8 +37,6 @@ def do_add_sub(add_sub: Type[Matcher]):
 
     @add_sub.got("platform", MessageTemplate("{_prompt}"), [handle_cancel])
     async def parse_platform(state: T_State, platform: str = ArgPlainText()) -> None:
-        if not isinstance(state["platform"], Message):
-            return
         if platform == "全部":
             message = "全部平台\n" + "\n".join(
                 [
@@ -152,9 +150,9 @@ def do_add_sub(add_sub: Type[Matcher]):
             state["tags"] = raw_tags_text.split()
 
     @add_sub.handle()
-    async def add_sub_process(state: T_State):
-        user = cast(PlatformTarget, state.get("target_user_info"))
-        assert isinstance(user, PlatformTarget)
+    async def add_sub_process(
+        state: T_State, user: PlatformTarget = Arg("target_user_info")
+    ):
         try:
             await config.add_subscribe(
                 user=user,

@@ -297,6 +297,21 @@ class Bilibililive(StatusChange):
             return None
         return res_data["data"]["card"]["name"]
 
+    def gen_empty_info(self, uid: int) -> Info:
+        """返回一个空的Info，用于该用户没有直播间的情况"""
+        return Bilibililive.Info(
+            title="",
+            room_id=0,
+            uid=uid,
+            live_time=0,
+            live_status=Bilibililive.LiveStatus.OFF,
+            area_v2_name="",
+            uname="",
+            face="",
+            cover_from_user="",
+            keyframe="",
+        )
+
     async def get_status(self, target: Target) -> Info:
         params = {"uids[]": target}
         # https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/live/info.md#批量查询直播间状态
@@ -307,14 +322,14 @@ class Bilibililive(StatusChange):
         )
         res_dict = res.json()
 
-        if res_dict["code"] == 0:
-            data = res_dict["data"][target]
-            self.Info.update_forward_refs()
-            info = self.Info.parse_obj(data)
-
-            return info
-        else:
+        if res_dict["code"] != 0:
             raise self.FetchError()
+
+        data = res_dict.get("data")
+        if not data:
+            return self.gen_empty_info(uid=int(target))
+        room_data = data[target]
+        return self.Info.parse_obj(room_data)
 
     def compare_status(
         self, _: Target, old_status: Info, new_status: Info
@@ -322,26 +337,25 @@ class Bilibililive(StatusChange):
         action = Bilibililive.LiveAction
         match new_status.get_live_action(old_status):
             case action.TURN_ON:
-                current_status = deepcopy(new_status)
-                current_status.category = Category(1)
-                return [current_status]
+                return self._gen_current_status(new_status, 1)
             case action.TITLE_UPDATE:
-                current_status = deepcopy(new_status)
-                current_status.category = Category(2)
-                return [current_status]
+                return self._gen_current_status(new_status, 2)
             case action.TURN_OFF:
-                current_status = deepcopy(new_status)
-                current_status.category = Category(3)
-                return [current_status]
+                return self._gen_current_status(new_status, 3)
             case _:
                 return []
+
+    def _gen_current_status(self, new_status: Info, category: Category):
+        current_status = deepcopy(new_status)
+        current_status.category = Category(category)
+        return [current_status]
 
     def get_category(self, status: Info) -> Category:
         assert status.category != Category(0)
         return status.category
 
     async def parse(self, raw_post: Info) -> Post:
-        url = "https://live.bilibili.com/{}".format(raw_post.room_id)
+        url = f"https://live.bilibili.com/{raw_post.room_id}"
         pic = (
             [raw_post.cover]
             if raw_post.category == Category(1)
@@ -387,11 +401,11 @@ class BilibiliBangumi(StatusChange):
         if re.match(r"\d+", target_string):
             return Target(target_string)
         elif m := re.match(r"md(\d+)", target_string):
-            return Target(m.group(1))
+            return Target(m[1])
         elif m := re.match(
             r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string
         ):
-            return Target(m.group(1))
+            return Target(m[1])
         raise cls.ParseTargetException()
 
     async def get_status(self, target: Target):
@@ -441,3 +455,6 @@ class BilibiliBangumi(StatusChange):
             target_name=target_name,
             compress=True,
         )
+
+
+Bilibililive.Info.update_forward_refs()

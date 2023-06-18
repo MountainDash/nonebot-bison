@@ -27,6 +27,20 @@ def bilibili(app: App):
     return platform_manager["bilibili"](ProcessContext(), AsyncClient())
 
 
+@pytest.fixture
+def without_dynamic(app: App):
+    return {
+        "code": 0,
+        "msg": "",
+        "message": "",
+        "data": {
+            "has_more": 0,
+            "next_offset": 0,
+            "_gt_": 0,
+        },
+    }
+
+
 @pytest.mark.asyncio
 async def test_video_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[1])
@@ -56,6 +70,21 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
         + "\n--------------\n"
         + "#明日方舟#\n【新增服饰】\n//殿堂上的游禽 - 星极\n塞壬唱片偶像企划《闪耀阶梯》特供服饰/殿堂上的游禽。星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n_____________\n谦逊留给观众，骄傲发自歌喉，此夜，唯我璀璨。 "
     )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_dynamic):
+    post_router = respx.get(
+        "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
+    )
+    post_router.mock(return_value=Response(200, json=without_dynamic))
+    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
+    bilibili_main_page_router.mock(return_value=Response(200))
+    target = "161775300"
+    res = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
+    assert post_router.called
+    assert len(res) == 0
 
 
 @pytest.mark.asyncio

@@ -100,7 +100,7 @@ class Bilibili(NewMessage):
         res.raise_for_status()
         res_dict = res.json()
         if res_dict["code"] == 0:
-            return res_dict["data"].get("cards")
+            return res_dict["data"].get("cards", [])
         else:
             raise ApiError(res.request.url)
 

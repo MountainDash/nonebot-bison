@@ -21,7 +21,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0.0"
-nonebot2 = "^2.0.0-rc.4"
+nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
 httpx = ">=0.16.1"
 bs4 = "^0.0.1"
 tinydb = "^4.3.0"

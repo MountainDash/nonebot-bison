@@ -2,10 +2,16 @@ import pytest
 import respx
 from httpx import Response
 from nonebug.app import App
+from nonebug_saa import should_send_saa
 from pytest_mock import MockerFixture
 
-from .platforms.utils import get_json
-from .utils import BotReply, fake_admin_user, fake_group_message_event
+from ..platforms.utils import get_json
+from ..utils import (
+    BotReply,
+    add_reply_on_id_input_search,
+    fake_admin_user,
+    fake_group_message_event,
+)
 
 
 @pytest.mark.asyncio
@@ -13,8 +19,8 @@ async def test_configurable_at_me_true_failed(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher
     from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.sub_manager import add_sub_matcher
 
     plugin_config.bison_to_me = True
     async with app.test_matcher(add_sub_matcher) as ctx:
@@ -39,9 +45,9 @@ async def test_configurable_at_me_false(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     plugin_config.bison_to_me = False
     async with app.test_matcher(add_sub_matcher) as ctx:
@@ -52,7 +58,7 @@ async def test_configurable_at_me_false(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         ctx.should_pass_rule()
@@ -67,9 +73,9 @@ async def test_add_with_target(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -95,10 +101,8 @@ async def test_add_with_target(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -118,7 +122,7 @@ async def test_add_with_target(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_4_err = fake_group_message_event(
@@ -140,7 +144,7 @@ async def test_add_with_target(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
+            BotReply.add_reply_on_cats(platform_manager, "weibo"),
             True,
         )
         event_5_err = fake_group_message_event(
@@ -155,7 +159,7 @@ async def test_add_with_target(app: App, init_scheduler):
             message=Message("图文 文字"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_ok)
-        ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
+        ctx.should_call_send(event_5_ok, BotReply.add_reply_on_tags, True)
         event_6_more_info = fake_group_message_event(
             message=Message("详情"), sender=fake_admin_user
         )
@@ -192,9 +196,9 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.ncm import NcmArtist
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
     ncm_router.mock(return_value=Response(200, json=get_json("ncm_siren.json")))
@@ -210,7 +214,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_3 = fake_group_message_event(
@@ -219,7 +223,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(NcmArtist)),
+            BotReply.add_reply_on_id(NcmArtist),
             True,
         )
         event_4_ok = fake_group_message_event(
@@ -253,8 +257,8 @@ async def test_add_no_target(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot()
@@ -267,7 +271,7 @@ async def test_add_no_target(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_3 = fake_group_message_event(
@@ -276,7 +280,7 @@ async def test_add_no_target(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager, "arknights")),
+            BotReply.add_reply_on_cats(platform_manager, "arknights"),
             True,
         )
         event_4 = fake_group_message_event(
@@ -302,8 +306,8 @@ async def test_platform_name_err(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot()
@@ -316,7 +320,7 @@ async def test_platform_name_err(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_2 = fake_group_message_event(
@@ -337,12 +341,18 @@ async def test_platform_name_err(app: App):
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message, MessageSegment
-    from nonebot_plugin_saa import TargetQQGroup
+    from nonebot_plugin_saa import (
+        Custom,
+        MessageFactory,
+        SupportedAdapters,
+        TargetQQGroup,
+        Text,
+    )
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -368,10 +378,8 @@ async def test_add_with_get_id(app: App):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -381,26 +389,26 @@ async def test_add_with_get_id(app: App):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_4_query = fake_group_message_event(
             message=Message("查询"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4_query)
-        ctx.should_rejected()
-        ctx.should_call_send(
-            event_4_query,
-            Message([MessageSegment(*BotReply.add_reply_on_id_input_search())]),
-            True,
+        should_send_saa(
+            ctx,
+            MessageFactory(
+                Text(add_reply_on_id_input_search).overwrite(
+                    SupportedAdapters.onebot_v11,
+                    BotReply.add_reply_on_id_input_search_ob11(),
+                )
+            ),
+            bot,
+            event=event_4_query,
         )
-        """
-        关于：Message([MessageSegment(*BotReply.add_reply_on_id_input_search())])
-        鬼知道为什么要在这里这样写，
-        没有[]的话assert不了(should_call_send使用[MessageSegment(...)]的格式进行比较)
-        不在这里MessageSegment()的话也assert不了(指不能让add_reply_on_id_input_search直接返回一个MessageSegment对象)
-        amen
-        """
+        ctx.should_rejected()
+
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=Sender(card="", nickname="test", role="admin")
         )
@@ -411,6 +419,7 @@ async def test_add_with_get_id(app: App):
             True,
         )
         ctx.should_finished()
+        await ctx.run()
     subs = await config.list_subscribe(TargetQQGroup(group_id=10000))
     assert len(subs) == 0
 
@@ -423,9 +432,9 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import Bilibili
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://api.bilibili.com/x/web-interface/card?mid=161775300"
@@ -448,10 +457,8 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -472,7 +479,7 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         assert Bilibili.parse_target_promot
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Bilibili)),
+            BotReply.add_reply_on_id(Bilibili),
             True,
         )
         event_4_err1 = fake_group_message_event(
@@ -513,14 +520,14 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager, "bilibili")),
+            BotReply.add_reply_on_cats(platform_manager, "bilibili"),
             True,
         )
         event_5_ok = fake_group_message_event(
             message=Message("视频"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_5_ok)
-        ctx.should_call_send(event_5_ok, Message(BotReply.add_reply_on_tags), True)
+        ctx.should_call_send(event_5_ok, BotReply.add_reply_on_tags, True)
         event_6 = fake_group_message_event(
             message=Message("全部标签"), sender=fake_admin_user
         )
@@ -547,9 +554,9 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import Bilibililive
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://api.bilibili.com/x/web-interface/card?mid=161775300"
@@ -572,10 +579,8 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -595,7 +600,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(Bilibililive)),
+            BotReply.add_reply_on_id(Bilibililive),
             True,
         )
 
@@ -611,7 +616,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_4_ok,
-            Message(BotReply.add_reply_on_cats(platform_manager, "bilibili-live")),
+            BotReply.add_reply_on_cats(platform_manager, "bilibili-live"),
             True,
         )
         event_5_ok = fake_group_message_event(
@@ -642,9 +647,9 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import BilibiliBangumi
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://api.bilibili.com/pgc/review/user?media_id=28235413"
@@ -667,10 +672,8 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -690,7 +693,7 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
         ctx.receive_event(bot, event_3)
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_id(BilibiliBangumi)),
+            BotReply.add_reply_on_id(BilibiliBangumi),
             True,
         )
 

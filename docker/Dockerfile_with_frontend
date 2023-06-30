@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-FROM python:3.10-slim as base
+FROM python:3.11-slim-bullseye as base
 
 FROM base as builder
 

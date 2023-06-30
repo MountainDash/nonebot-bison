@@ -75,6 +75,8 @@ from nonebot.adapters.onebot.v11.event import Sender
 fake_admin_user = Sender(nickname="test", role="admin")
 fake_superuser = Sender(user_id=10001, nickname="superuser")
 
+add_reply_on_id_input_search = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
+
 
 class BotReply:
     @staticmethod
@@ -102,20 +104,19 @@ class BotReply:
         )
 
     @staticmethod
-    def add_reply_on_id_input_search():
-        search_url = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
+    def add_reply_on_id_input_search_ob11():
+        from nonebot.adapters.onebot.v11 import Message, MessageSegment
+
         search_title = "Bison所支持的平台UID"
         search_content = "查询相关平台的uid格式或获取方式"
         search_image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
-        type = "share"
-        data = {
-            "url": search_url,
-            "title": search_title,
-            "content": search_content,
-            "image": search_image,
-        }
-        msg = [type, data]
-        return msg
+
+        return MessageSegment.share(
+            url=add_reply_on_id_input_search,
+            title=search_title,
+            content=search_content,
+            image=search_image,
+        )
 
     @staticmethod
     def add_reply_on_target_confirm(platform, name, id):

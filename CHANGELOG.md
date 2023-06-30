@@ -2,9 +2,15 @@
 
 ## 最近更新
 
+- :arrow_up: 支持nb2.0.0并更新metadata [@AzideCupric](https://github.com/AzideCupric) ([#274](https://github.com/felinae98/nonebot-bison/pull/274))
+
 ### 破坏性变更
 
 - 使用 saa 代替所有发送 [@felinae98](https://github.com/felinae98) ([#219](https://github.com/felinae98/nonebot-bison/pull/219))
+
+### 新功能
+
+- 移除交互式管理中的ob11 [@felinae98](https://github.com/felinae98) ([#268](https://github.com/felinae98/nonebot-bison/pull/268))
 
 ### Bug 修复
 

@@ -4,8 +4,8 @@ from httpx import Response
 from nonebug.app import App
 from nonebug_saa import should_send_saa
 
-from .platforms.utils import get_json
-from .utils import BotReply, fake_admin_user, fake_group_message_event
+from ..platforms.utils import get_json
+from ..utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 # 选择platform阶段中止
@@ -15,8 +15,8 @@ async def test_abort_add_on_platform(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -41,7 +41,7 @@ async def test_abort_add_on_platform(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_abort = fake_group_message_event(
@@ -63,9 +63,9 @@ async def test_abort_add_on_id(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -90,7 +90,7 @@ async def test_abort_add_on_id(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(BotReply.add_reply_on_platform(platform_manager, common_platform)),
+            BotReply.add_reply_on_platform(platform_manager, common_platform),
             True,
         )
         event_2 = fake_group_message_event(
@@ -99,7 +99,7 @@ async def test_abort_add_on_id(app: App, init_scheduler):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_abort = fake_group_message_event(
@@ -121,9 +121,9 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -148,10 +148,8 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -161,7 +159,7 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_3 = fake_group_message_event(
@@ -177,7 +175,7 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
+            BotReply.add_reply_on_cats(platform_manager, "weibo"),
             True,
         )
         event_abort = fake_group_message_event(
@@ -199,9 +197,9 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.config_manager import add_sub_matcher, common_platform
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get(
         "https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937"
@@ -226,10 +224,8 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
         ctx.should_pass_rule()
         ctx.should_call_send(
             event_1,
-            Message(
-                BotReply.add_reply_on_platform(
-                    platform_manager=platform_manager, common_platform=common_platform
-                )
+            BotReply.add_reply_on_platform(
+                platform_manager=platform_manager, common_platform=common_platform
             ),
             True,
         )
@@ -239,7 +235,7 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
         ctx.receive_event(bot, event_2)
         ctx.should_call_send(
             event_2,
-            Message(BotReply.add_reply_on_id(Weibo)),
+            BotReply.add_reply_on_id(Weibo),
             True,
         )
         event_3 = fake_group_message_event(
@@ -255,14 +251,14 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
         )
         ctx.should_call_send(
             event_3,
-            Message(BotReply.add_reply_on_cats(platform_manager, "weibo")),
+            BotReply.add_reply_on_cats(platform_manager, "weibo"),
             True,
         )
         event_4 = fake_group_message_event(
             message=Message("图文 文字"), sender=fake_admin_user
         )
         ctx.receive_event(bot, event_4)
-        ctx.should_call_send(event_4, Message(BotReply.add_reply_on_tags), True)
+        ctx.should_call_send(event_4, BotReply.add_reply_on_tags, True)
         event_abort = fake_group_message_event(
             message=Message("取消"), sender=Sender(card="", nickname="test", role="admin")
         )
@@ -283,8 +279,8 @@ async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config_manager import del_sub_matcher
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.sub_manager import del_sub_matcher
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(

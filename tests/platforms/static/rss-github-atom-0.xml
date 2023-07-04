@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:lang="en-US">
+  <id>tag:github.com,2008:https://github.com/R3nzTheCodeGOD/R3nzSkin/releases</id>
+  <link type="text/html" rel="alternate" href="https://github.com/R3nzTheCodeGOD/R3nzSkin/releases"/>
+  <link type="application/atom+xml" rel="self" href="https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom"/>
+  <title>Release notes from R3nzSkin</title>
+  <updated>2023-06-29T00:46:26+08:00</updated>
+  <entry>
+    <id>tag:github.com,2008:Repository/410126695/v3.0.8</id>
+    <updated>2023-06-25T22:19:30+08:00</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.8"/>
+    <title>R3nzSkin</title>
+    <content>No content.</content>
+    <author>
+      <name>hotline1337</name>
+    </author>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/32012110?s=60&amp;v=4"/>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Repository/410126695/v3.0.7</id>
+    <updated>2023-06-25T08:38:52+08:00</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.7"/>
+    <title>R3nzSkin</title>
+    <content>No content.</content>
+    <author>
+      <name>hotline1337</name>
+    </author>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/32012110?s=60&amp;v=4"/>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Repository/410126695/v3.0.6</id>
+    <updated>2023-06-06T23:05:38+08:00</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.6"/>
+    <title>R3nzSkin</title>
+    <content type="html">&lt;p&gt;Added update available information&lt;/p&gt;</content>
+    <author>
+      <name>hotline1337</name>
+    </author>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/32012110?s=60&amp;v=4"/>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Repository/410126695/v3.0.5</id>
+    <updated>2023-06-03T19:53:30+08:00</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.5"/>
+    <title>R3nzSkin</title>
+    <content type="html">&lt;p&gt;Added &quot;Hide to tray&quot; option to the injector&lt;/p&gt;</content>
+    <author>
+      <name>hotline1337</name>
+    </author>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/32012110?s=60&amp;v=4"/>
+  </entry>
+</feed>

@@ -1,4 +1,5 @@
 import calendar
+import time
 from typing import Any, Optional
 
 import feedparser
@@ -38,7 +39,12 @@ class Rss(NewMessage):
         return feed["feed"]["title"]
 
     def get_date(self, post: RawPost) -> int:
-        return calendar.timegm(post.published_parsed)
+        if hasattr(post, "published_parsed"):
+            return calendar.timegm(post.published_parsed)
+        elif hasattr(post, "updated_parsed"):
+            return calendar.timegm(post.updated_parsed)
+        else:
+            return calendar.timegm(time.gmtime())
 
     def get_id(self, post: RawPost) -> Any:
         return post.id

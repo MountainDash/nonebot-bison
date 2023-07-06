@@ -133,7 +133,7 @@ async def test_fetch_new_3(
     user_info_factory,
     update_time_feed_3,
 ):
-    ## 只有
+    ## 只有<updated>没有<published>
     rss_router = respx.get("https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom")
     rss_router.mock(return_value=Response(200, text=get_file("rss-github-atom-0.xml")))
     target = "https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom"
@@ -145,6 +145,7 @@ async def test_fetch_new_3(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.9"
+    assert post1.text == "R3nzSkin\n\nNo content."
 
 
 @pytest.mark.asyncio
@@ -165,3 +166,4 @@ async def test_fetch_new_4(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://wallhaven.cc/w/85rjej"
+    assert post1.text == "85rjej.jpg"

@@ -8,7 +8,7 @@ from httpx import AsyncClient
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import SchedulerConfig, longest_common_subsequence_similarity
+from ..utils import SchedulerConfig, get_similarity
 from .platform import NewMessage
 
 
@@ -64,7 +64,7 @@ class Rss(NewMessage):
         if not title or not desc:
             text = title or desc
         else:
-            if longest_common_subsequence_similarity(desc, title) > 0.8:
+            if get_similarity(desc, title) > 0.8:
                 text = desc if len(desc) > len(title) else title
             else:
                 text = f"{title}\n\n{desc}"

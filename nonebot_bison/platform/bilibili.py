@@ -297,7 +297,7 @@ class Bilibililive(StatusChange):
             return None
         return res_data["data"]["card"]["name"]
 
-    def gen_empty_info(self, uid: int) -> Info:
+    def _gen_empty_info(self, uid: int) -> Info:
         """返回一个空的Info，用于该用户没有直播间的情况"""
         return Bilibililive.Info(
             title="",
@@ -327,7 +327,7 @@ class Bilibililive(StatusChange):
 
         data = res_dict.get("data")
         if not data:
-            return self.gen_empty_info(uid=int(target))
+            return self._gen_empty_info(uid=int(target))
         room_data = data[target]
         return self.Info.parse_obj(room_data)
 

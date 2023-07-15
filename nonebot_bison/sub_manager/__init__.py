@@ -2,25 +2,19 @@ import asyncio
 from datetime import datetime
 
 from nonebot import on_command
+from nonebot.typing import T_State
+from nonebot.matcher import Matcher
+from nonebot.rule import Rule, to_me
+from nonebot.permission import SUPERUSER
+from nonebot_plugin_saa import TargetQQGroup
+from nonebot.params import ArgStr, ArgPlainText
 from nonebot.adapters import Bot, MessageTemplate
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
-from nonebot.matcher import Matcher
-from nonebot.params import ArgPlainText, ArgStr
-from nonebot.permission import SUPERUSER
-from nonebot.rule import Rule, to_me
-from nonebot.typing import T_State
-from nonebot_plugin_saa import TargetQQGroup
 
 from .add_sub import do_add_sub
 from .del_sub import do_del_sub
 from .query_sub import do_query_sub
-from .utils import (
-    admin_permission,
-    common_platform,
-    configurable_to_me,
-    gen_handle_cancel,
-    set_target_user_info,
-)
+from .utils import common_platform, admin_permission, gen_handle_cancel, configurable_to_me, set_target_user_info
 
 add_sub_matcher = on_command(
     "添加订阅",
@@ -48,9 +42,7 @@ del_sub_matcher = on_command(
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-group_manage_matcher = on_command(
-    "群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True
-)
+group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True)
 
 group_handle_cancel = gen_handle_cancel(group_manage_matcher, "已取消")
 
@@ -69,12 +61,8 @@ async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
     state["group_number_idx"] = group_number_idx
 
 
-@group_manage_matcher.got(
-    "group_idx", MessageTemplate("{_prompt}"), [group_handle_cancel]
-)
-async def do_choose_group_number(
-    state: T_State, event: PrivateMessageEvent, group_idx: str = ArgPlainText()
-):
+@group_manage_matcher.got("group_idx", MessageTemplate("{_prompt}"), [group_handle_cancel])
+async def do_choose_group_number(state: T_State, event: PrivateMessageEvent, group_idx: str = ArgPlainText()):
     group_number_idx: dict[int, int] = state["group_number_idx"]
     assert group_number_idx
     idx = int(group_idx)
@@ -87,9 +75,7 @@ async def do_choose_group_number(
     state["target_user_info"] = TargetQQGroup(group_id=group_id)
 
 
-@group_manage_matcher.got(
-    "command", "请输入需要使用的命令：添加订阅，查询订阅，删除订阅，取消", [group_handle_cancel]
-)
+@group_manage_matcher.got("command", "请输入需要使用的命令：添加订阅，查询订阅，删除订阅，取消", [group_handle_cancel])
 async def do_dispatch_command(
     bot: Bot,
     event: PrivateMessageEvent,

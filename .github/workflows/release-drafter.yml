@@ -16,7 +16,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v3
-      
+
       - uses: release-drafter/release-drafter@v5
         id: release-drafter
         env:
@@ -26,7 +26,7 @@ jobs:
         uses: docker://ghcr.io/nonebot/auto-changelog:master
         with:
           latest_changes_position: '# Change Log\n\n'
-          latest_changes_title: '## 最近更新'
+          latest_changes_title: "## 最近更新"
           replace_regex: '(?<=## 最近更新\n)[\s\S]*?(?=\n## )'
           changelog_body: ${{ steps.release-drafter.outputs.body }}
           commit_and_push: false

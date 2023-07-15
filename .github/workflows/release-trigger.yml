@@ -24,7 +24,7 @@ jobs:
           archive_regex: '(?<=## )最近更新(?=\n)'
           archive_title: ${{ env.TAG_NAME }}
           commit_and_push: false
-      
+
       - name: Push Tag
         run: |
           git config user.name github-actions[bot]

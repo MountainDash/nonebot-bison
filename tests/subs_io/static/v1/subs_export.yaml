@@ -1,35 +1,35 @@
 version: 1
 groups:
-- subs:
-  - categories: []
-    tags: []
-    target:
-      default_schedule_weight: 10
-      platform_name: weibo
-      target: weibo_id
-      target_name: weibo_name
-  user:
-    type: group
-    uid: 12355
-- subs:
-  - categories: []
-    tags:
-    - kaltsit
-    - amiya
-    target:
-      default_schedule_weight: 10
-      platform_name: weibo
-      target: weibo_id
-      target_name: weibo_name
-  - categories:
-    - 1
-    - 2
-    tags: []
-    target:
-      default_schedule_weight: 10
-      platform_name: bilibili
-      target: bilibili_id
-      target_name: bilibili_name
-  user:
-    type: group
-    uid: 23466
+  - subs:
+      - categories: []
+        tags: []
+        target:
+          default_schedule_weight: 10
+          platform_name: weibo
+          target: weibo_id
+          target_name: weibo_name
+    user:
+      type: group
+      uid: 12355
+  - subs:
+      - categories: []
+        tags:
+          - kaltsit
+          - amiya
+        target:
+          default_schedule_weight: 10
+          platform_name: weibo
+          target: weibo_id
+          target_name: weibo_name
+      - categories:
+          - 1
+          - 2
+        tags: []
+        target:
+          default_schedule_weight: 10
+          platform_name: bilibili
+          target: bilibili_id
+          target_name: bilibili_name
+    user:
+      type: group
+      uid: 23466

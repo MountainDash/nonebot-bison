@@ -1,16 +1,16 @@
 """ nbesf is Nonebot Bison Enchangable Subscribes File! ver.1"""
 
-from functools import partial
 from typing import Any
+from functools import partial
 
 from nonebot.log import logger
-from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
 from pydantic import BaseModel
+from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
 
-from ....types import Category, Tag
-from ...db_config import SubscribeDupException, config
 from ..utils import NBESFParseErr
+from ....types import Tag, Category
 from .base import NBESFBase, SubReceipt
+from ...db_config import SubscribeDupException, config
 
 # ===== nbesf 定义格式 ====== #
 NBESF_VERSION = 1
@@ -65,7 +65,6 @@ class SubGroup(
 
 async def subs_receipt_gen(nbesf_data: SubGroup):
     for item in nbesf_data.groups:
-
         match item.user.type:
             case "group":
                 user = TargetQQGroup(group_id=item.user.uid)
@@ -85,9 +84,7 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
                 tags=sub.tags,
             )
             try:
-                await config.add_subscribe(
-                    receipt.user, **receipt.dict(exclude={"user"})
-                )
+                await config.add_subscribe(receipt.user, **receipt.dict(exclude={"user"}))
             except SubscribeDupException:
                 logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
             except Exception as e:

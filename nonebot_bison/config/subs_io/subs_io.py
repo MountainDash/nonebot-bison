@@ -1,25 +1,26 @@
+from typing import cast
 from collections import defaultdict
-from typing import Callable, cast
+from collections.abc import Callable
 
-from nonebot.log import logger
-from nonebot_plugin_datastore.db import create_session
-from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy import select
-from sqlalchemy.orm.strategy_options import selectinload
+from nonebot.log import logger
 from sqlalchemy.sql.selectable import Select
+from nonebot_plugin_saa import PlatformTarget
+from nonebot_plugin_datastore.db import create_session
+from sqlalchemy.orm.strategy_options import selectinload
 
-from ..db_model import Subscribe, User
-from .nbesf_model import NBESFBase, v1, v2
 from .utils import NBESFVerMatchErr
+from ..db_model import User, Subscribe
+from .nbesf_model import NBESFBase, v1, v2
 
 
 async def subscribes_export(selector: Callable[[Select], Select]) -> v2.SubGroup:
-
     """
     将Bison订阅导出为 Nonebot Bison Exchangable Subscribes File 标准格式的 SubGroup 类型数据
 
     selector:
-        对 sqlalchemy Select 对象的操作函数，用于限定查询范围 e.g. lambda stmt: stmt.where(User.uid=2233, User.type="group")
+        对 sqlalchemy Select 对象的操作函数，用于限定查询范围
+        e.g. lambda stmt: stmt.where(User.uid=2233, User.type="group")
     """
     async with create_session() as sess:
         sub_stmt = select(Subscribe).join(User)

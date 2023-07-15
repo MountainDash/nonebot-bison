@@ -1,7 +1,6 @@
-from abc import abstractmethod
-from dataclasses import dataclass, field
 from functools import reduce
-from typing import Optional
+from abc import abstractmethod
+from dataclasses import field, dataclass
 
 from nonebot_plugin_saa import MessageFactory, MessageSegmentFactory
 
@@ -25,12 +24,12 @@ class BasePost:
 class OptionalMixin:
     # Because of https://stackoverflow.com/questions/51575931/class-inheritance-in-python-3-7-dataclasses
 
-    override_use_pic: Optional[bool] = None
+    override_use_pic: bool | None = None
     compress: bool = False
     extra_msg: list[MessageFactory] = field(default_factory=list)
 
     def _use_pic(self):
-        if not self.override_use_pic is None:
+        if self.override_use_pic is not None:
             return self.override_use_pic
         return plugin_config.bison_use_pic
 
@@ -44,13 +43,9 @@ class AbstractPost(OptionalMixin, BasePost):
             msg_segments = await self.generate_text_messages()
         if msg_segments:
             if self.compress:
-                msgs = [
-                    reduce(lambda x, y: x.append(y), msg_segments, MessageFactory([]))
-                ]
+                msgs = [reduce(lambda x, y: x.append(y), msg_segments, MessageFactory([]))]
             else:
-                msgs = list(
-                    map(lambda msg_segment: MessageFactory([msg_segment]), msg_segments)
-                )
+                msgs = [MessageFactory([msg_segment]) for msg_segment in msg_segments]
         else:
             msgs = []
         msgs.extend(self.extra_msg)

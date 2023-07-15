@@ -1,13 +1,13 @@
 import contextlib
-from typing import Annotated, Type
+from typing import Annotated
 
-from nonebot.adapters import Event
-from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventPlainText, EventToMe
-from nonebot.permission import SUPERUSER
 from nonebot.rule import Rule
+from nonebot.adapters import Event
 from nonebot.typing import T_State
+from nonebot.matcher import Matcher
+from nonebot.permission import SUPERUSER
 from nonebot_plugin_saa import extract_target
+from nonebot.params import Depends, EventToMe, EventPlainText
 
 from ..platform import platform_manager
 from ..plugin_config import plugin_config
@@ -31,7 +31,7 @@ common_platform = [
 ]
 
 
-def gen_handle_cancel(matcher: Type[Matcher], message: str):
+def gen_handle_cancel(matcher: type[Matcher], message: str):
     async def _handle_cancel(text: Annotated[str, EventPlainText()]):
         if text == "取消":
             await matcher.finish(message)
@@ -39,12 +39,10 @@ def gen_handle_cancel(matcher: Type[Matcher], message: str):
     return Depends(_handle_cancel)
 
 
-def ensure_user_info(matcher: Type[Matcher]):
+def ensure_user_info(matcher: type[Matcher]):
     async def _check_user_info(state: T_State):
         if not state.get("target_user_info"):
-            await matcher.finish(
-                "No target_user_info set, this shouldn't happen, please issue"
-            )
+            await matcher.finish("No target_user_info set, this shouldn't happen, please issue")
 
     return _check_user_info
 

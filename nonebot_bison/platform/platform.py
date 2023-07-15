@@ -1,29 +1,32 @@
-import json
 import ssl
+import json
 import time
 import typing
+from typing import Any
+from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Any, Collection, Optional, Type
+from collections.abc import Collection
 
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
-from ..plugin_config import plugin_config
 from ..post import Post
-from ..types import Category, RawPost, Tag, Target, UserSubInfo
+from ..plugin_config import plugin_config
 from ..utils import ProcessContext, SchedulerConfig
+from ..types import Tag, Target, RawPost, Category, UserSubInfo
 
 
 class CategoryNotSupport(Exception):
-    "raise in get_category, when you know the category of the post but don't want to support it or don't support its parsing yet"
+    """raise in get_category, when you know the category of the post
+    but don't want to support it or don't support its parsing yet
+    """
 
 
 class CategoryNotRecognize(Exception):
-    "raise in get_category, when you don't know the category of post"
+    """raise in get_category, when you don't know the category of post"""
 
 
 class RegistryMeta(type):
@@ -42,7 +45,6 @@ class RegistryMeta(type):
 
 
 class PlatformMeta(RegistryMeta):
-
     categories: dict[Category, str]
     store: dict[Target, Any]
 
@@ -60,8 +62,7 @@ class PlatformABCMeta(PlatformMeta, ABC):
 
 
 class Platform(metaclass=PlatformABCMeta, base=True):
-
-    scheduler: Type[SchedulerConfig]
+    scheduler: type[SchedulerConfig]
     ctx: ProcessContext
     is_common: bool
     enabled: bool
@@ -70,16 +71,14 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     categories: dict[Category, str]
     enable_tag: bool
     platform_name: str
-    parse_target_promot: Optional[str] = None
-    registry: list[Type["Platform"]]
+    parse_target_promot: str | None = None
+    registry: list[type["Platform"]]
     client: AsyncClient
     reverse_category: dict[str, Category]
 
     @classmethod
     @abstractmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         ...
 
     @abstractmethod
@@ -95,11 +94,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
             return await self.fetch_new_post(target, users)
         except httpx.RequestError as err:
             if plugin_config.bison_show_network_warning:
-                logger.warning(
-                    "network connection error: {}, url: {}".format(
-                        type(err), err.request.url
-                    )
-                )
+                logger.warning(f"network connection error: {type(err)}, url: {err.request.url}")
             return []
         except ssl.SSLError as err:
             if plugin_config.bison_show_network_warning:
@@ -130,7 +125,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return Target(target_string)
 
     @abstractmethod
-    def get_tags(self, raw_post: RawPost) -> Optional[Collection[Tag]]:
+    def get_tags(self, raw_post: RawPost) -> Collection[Tag] | None:
         "Return Tag list of given RawPost"
 
     @classmethod
@@ -201,9 +196,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     ) -> list[tuple[PlatformTarget, list[Post]]]:
         res: list[tuple[PlatformTarget, list[Post]]] = []
         for user, cats, required_tags in users:
-            user_raw_post = await self.filter_user_custom(
-                new_posts, cats, required_tags
-            )
+            user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
             user_post: list[Post] = []
             for raw_post in user_raw_post:
                 user_post.append(await self.do_parse(raw_post))
@@ -211,7 +204,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return res
 
     @abstractmethod
-    def get_category(self, post: RawPost) -> Optional[Category]:
+    def get_category(self, post: RawPost) -> Category | None:
         "Return category of given Rawpost"
         raise NotImplementedError()
 
@@ -221,7 +214,7 @@ class MessageProcess(Platform, abstract=True):
 
     def __init__(self, ctx: ProcessContext, client: AsyncClient):
         super().__init__(ctx, client)
-        self.parse_cache: dict[Any, Post] = dict()
+        self.parse_cache: dict[Any, Post] = {}
 
     @abstractmethod
     def get_id(self, post: RawPost) -> Any:
@@ -246,7 +239,7 @@ class MessageProcess(Platform, abstract=True):
         "Get post list of the given target"
 
     @abstractmethod
-    def get_date(self, post: RawPost) -> Optional[int]:
+    def get_date(self, post: RawPost) -> int | None:
         "Get post timestamp and return, return None if can't get the time"
 
     async def filter_common(self, raw_post_list: list[RawPost]) -> list[RawPost]:
@@ -286,9 +279,7 @@ class NewMessage(MessageProcess, abstract=True):
         inited: bool
         exists_posts: set[Any]
 
-    async def filter_common_with_diff(
-        self, target: Target, raw_post_list: list[RawPost]
-    ) -> list[RawPost]:
+    async def filter_common_with_diff(self, target: Target, raw_post_list: list[RawPost]) -> list[RawPost]:
         filtered_post = await self.filter_common(raw_post_list)
         store = self.get_stored_data(target) or self.MessageStorage(False, set())
         res = []
@@ -297,11 +288,7 @@ class NewMessage(MessageProcess, abstract=True):
             for raw_post in filtered_post:
                 post_id = self.get_id(raw_post)
                 store.exists_posts.add(post_id)
-            logger.info(
-                "init {}-{} with {}".format(
-                    self.platform_name, target, store.exists_posts
-                )
-            )
+            logger.info(f"init {self.platform_name}-{target} with {store.exists_posts}")
             store.inited = True
         else:
             for raw_post in filtered_post:
@@ -400,12 +387,11 @@ class SimplePost(MessageProcess, abstract=True):
         return res
 
 
-def make_no_target_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
-
+def make_no_target_group(platform_list: list[type[Platform]]) -> type[Platform]:
     if typing.TYPE_CHECKING:
 
         class NoTargetGroup(Platform, abstract=True):
-            platform_list: list[Type[Platform]]
+            platform_list: list[type[Platform]]
             platform_obj_list: list[Platform]
 
     DUMMY_STR = "_DUMMY"
@@ -418,24 +404,18 @@ def make_no_target_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
 
     for platform in platform_list:
         if platform.has_target:
-            raise RuntimeError(
-                "Platform {} should have no target".format(platform.name)
-            )
+            raise RuntimeError(f"Platform {platform.name} should have no target")
         if name == DUMMY_STR:
             name = platform.name
         elif name != platform.name:
-            raise RuntimeError("Platform name for {} not fit".format(platform_name))
+            raise RuntimeError(f"Platform name for {platform_name} not fit")
         platform_category_key_set = set(platform.categories.keys())
         if platform_category_key_set & categories_keys:
-            raise RuntimeError(
-                "Platform categories for {} duplicate".format(platform_name)
-            )
+            raise RuntimeError(f"Platform categories for {platform_name} duplicate")
         categories_keys |= platform_category_key_set
         categories.update(platform.categories)
         if platform.scheduler != scheduler:
-            raise RuntimeError(
-                "Platform scheduler for {} not fit".format(platform_name)
-            )
+            raise RuntimeError(f"Platform scheduler for {platform_name} not fit")
 
     def __init__(self: "NoTargetGroup", ctx: ProcessContext, client: AsyncClient):
         Platform.__init__(self, ctx, client)
@@ -444,15 +424,13 @@ def make_no_target_group(platform_list: list[Type[Platform]]) -> Type[Platform]:
             self.platform_obj_list.append(platform_class(ctx, client))
 
     def __str__(self: "NoTargetGroup") -> str:
-        return "[" + " ".join(map(lambda x: x.name, self.platform_list)) + "]"
+        return "[" + " ".join(x.name for x in self.platform_list) + "]"
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target):
         return await platform_list[0].get_target_name(client, target)
 
-    async def fetch_new_post(
-        self: "NoTargetGroup", target: Target, users: list[UserSubInfo]
-    ):
+    async def fetch_new_post(self: "NoTargetGroup", target: Target, users: list[UserSubInfo]):
         res = defaultdict(list)
         for platform in self.platform_obj_list:
             platform_res = await platform.fetch_new_post(target=target, users=users)

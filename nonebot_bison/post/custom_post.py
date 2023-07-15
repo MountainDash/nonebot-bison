@@ -1,19 +1,17 @@
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import field, dataclass
 
-from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.log import logger
 from nonebot.plugin import require
-from nonebot_plugin_saa import Image, MessageFactory, MessageSegmentFactory, Text
+from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from .abstract_post import AbstractPost, BasePost
+from .abstract_post import BasePost, AbstractPost
 
 
 @dataclass
 class _CustomPost(BasePost):
-
     ms_factories: list[MessageSegmentFactory] = field(default_factory=list)
-    css_path: Optional[str] = None  # 模板文件所用css路径
+    css_path: str | None = None  # 模板文件所用css路径
 
     async def generate_text_messages(self) -> list[MessageSegmentFactory]:
         return self.ms_factories
@@ -31,15 +29,13 @@ class _CustomPost(BasePost):
         for message_segment in self.ms_factories:
             match message_segment:
                 case Text(data={"text": text}):
-                    md += "{}<br>".format(text)
+                    md += f"{text}<br>"
                 case Image(data={"image": image}):
                     # use onebot v11 to convert image into url
                     ob11_image = MessageSegment.image(image)
                     md += "![Image]({})\n".format(ob11_image.data["file"])
                 case _:
-                    logger.warning(
-                        "custom_post不支持处理类型:{}".format(type(message_segment))
-                    )
+                    logger.warning(f"custom_post不支持处理类型:{type(message_segment)}")
                     continue
 
         return md

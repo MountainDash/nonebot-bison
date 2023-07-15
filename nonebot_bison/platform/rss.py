@@ -1,10 +1,10 @@
 import calendar
 import time
-from typing import Any, Optional
+from typing import Any
 
 import feedparser
-from bs4 import BeautifulSoup as bs
 from httpx import AsyncClient
+from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from ..types import RawPost, Target
@@ -20,7 +20,6 @@ class RssSchedConf(SchedulerConfig):
 
 
 class Rss(NewMessage):
-
     categories = {}
     enable_tag = False
     platform_name = "rss"
@@ -31,9 +30,7 @@ class Rss(NewMessage):
     has_target = True
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         res = await client.get(target, timeout=10.0)
         feed = feedparser.parse(res.text)
         return feed["feed"]["title"]
@@ -69,7 +66,7 @@ class Rss(NewMessage):
             else:
                 text = f"{title}\n\n{desc}"
 
-        pics = list(map(lambda x: x.attrs["src"], soup("img")))
+        pics = [x.attrs["src"] for x in soup("img")]
         if raw_post.get("media_content"):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):

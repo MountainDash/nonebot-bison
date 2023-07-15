@@ -1,6 +1,6 @@
 from base64 import b64encode
 
-from httpx import AsyncClient, Response
+from httpx import Response, AsyncClient
 
 
 class ProcessContext:
@@ -33,8 +33,13 @@ class ProcessContext:
         res = []
         for req in self.reqs:
             if self._should_print_content(req):
-                log_content = f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} {req.text}"
+                log_content = (
+                    f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} {req.text}"
+                )
             else:
-                log_content = f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} b64encoded: {b64encode(req.content[:50]).decode()}"
+                log_content = (
+                    f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} "
+                    f"b64encoded: {b64encode(req.content[:50]).decode()}"
+                )
             res.append(log_content)
         return res

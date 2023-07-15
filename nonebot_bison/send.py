@@ -1,17 +1,16 @@
 import asyncio
 from collections import deque
-from typing import Deque
 
-from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot.log import logger
-from nonebot_plugin_saa import AggregatedMessageFactory, MessageFactory, PlatformTarget
+from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
+from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
 
 from .plugin_config import plugin_config
 
 Sendable = MessageFactory | AggregatedMessageFactory
 
-QUEUE: Deque[tuple[PlatformTarget, Sendable, int]] = deque()
+QUEUE: deque[tuple[PlatformTarget, Sendable, int]] = deque()
 
 MESSGE_SEND_INTERVAL = 1.5
 

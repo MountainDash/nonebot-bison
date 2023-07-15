@@ -1,25 +1,23 @@
 import json
-from typing import Any, Optional
+from typing import Any
 
-from bs4 import BeautifulSoup as bs
 from httpx import AsyncClient
 from nonebot.plugin import require
+from bs4 import BeautifulSoup as bs
 
 from ..post import Post
-from ..types import Category, RawPost, Target
+from ..types import Target, RawPost, Category
 from ..utils.scheduler_config import SchedulerConfig
-from .platform import CategoryNotRecognize, NewMessage, StatusChange
+from .platform import NewMessage, StatusChange, CategoryNotRecognize
 
 
 class ArknightsSchedConf(SchedulerConfig):
-
     name = "arknights"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
 
 
 class Arknights(NewMessage):
-
     categories = {1: "游戏公告"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
@@ -30,9 +28,7 @@ class Arknights(NewMessage):
     has_target = False
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
@@ -92,7 +88,6 @@ class Arknights(NewMessage):
 
 
 class AkVersion(StatusChange):
-
     categories = {2: "更新信息"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
@@ -103,15 +98,11 @@ class AkVersion(StatusChange):
     has_target = False
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         return "明日方舟游戏信息"
 
     async def get_status(self, _):
-        res_ver = await self.client.get(
-            "https://ak-conf.hypergryph.com/config/prod/official/IOS/version"
-        )
+        res_ver = await self.client.get("https://ak-conf.hypergryph.com/config/prod/official/IOS/version")
         res_preanounce = await self.client.get(
             "https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/preannouncement.meta.json"
         )
@@ -121,20 +112,10 @@ class AkVersion(StatusChange):
 
     def compare_status(self, _, old_status, new_status):
         res = []
-        if (
-            old_status.get("preAnnounceType") == 2
-            and new_status.get("preAnnounceType") == 0
-        ):
-            res.append(
-                Post("arknights", text="登录界面维护公告上线（大概是开始维护了)", target_name="明日方舟更新信息")
-            )
-        elif (
-            old_status.get("preAnnounceType") == 0
-            and new_status.get("preAnnounceType") == 2
-        ):
-            res.append(
-                Post("arknights", text="登录界面维护公告下线（大概是开服了，冲！）", target_name="明日方舟更新信息")
-            )
+        if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
+            res.append(Post("arknights", text="登录界面维护公告上线（大概是开始维护了)", target_name="明日方舟更新信息"))  # noqa: E501
+        elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
+            res.append(Post("arknights", text="登录界面维护公告下线（大概是开服了，冲！）", target_name="明日方舟更新信息"))  # noqa: E501
         if old_status.get("clientVersion") != new_status.get("clientVersion"):
             res.append(Post("arknights", text="游戏本体更新（大更新）", target_name="明日方舟更新信息"))
         if old_status.get("resVersion") != new_status.get("resVersion"):
@@ -149,7 +130,6 @@ class AkVersion(StatusChange):
 
 
 class MonsterSiren(NewMessage):
-
     categories = {3: "塞壬唱片新闻"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
@@ -160,15 +140,11 @@ class MonsterSiren(NewMessage):
     has_target = False
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get(
-            "https://monster-siren.hypergryph.com/api/news"
-        )
+        raw_data = await self.client.get("https://monster-siren.hypergryph.com/api/news")
         return raw_data.json()["data"]["list"]
 
     def get_id(self, post: RawPost) -> Any:
@@ -182,14 +158,12 @@ class MonsterSiren(NewMessage):
 
     async def parse(self, raw_post: RawPost) -> Post:
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
-        res = await self.client.get(
-            f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}'
-        )
+        res = await self.client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
         raw_data = res.json()
         content = raw_data["data"]["content"]
         content = content.replace("</p>", "</p>\n")
         soup = bs(content, "html.parser")
-        imgs = list(map(lambda x: x["src"], soup("img")))
+        imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return Post(
             "monster-siren",
@@ -203,7 +177,6 @@ class MonsterSiren(NewMessage):
 
 
 class TerraHistoricusComic(NewMessage):
-
     categories = {4: "泰拉记事社漫画"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
@@ -214,15 +187,11 @@ class TerraHistoricusComic(NewMessage):
     has_target = False
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get(
-            "https://terra-historicus.hypergryph.com/api/recentUpdate"
-        )
+        raw_data = await self.client.get("https://terra-historicus.hypergryph.com/api/recentUpdate")
         return raw_data.json()["data"]
 
     def get_id(self, post: RawPost) -> Any:

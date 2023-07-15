@@ -1,18 +1,16 @@
-from typing import Type
-
 from ..config import config
-from ..config.db_model import Target
-from ..platform import platform_manager
-from ..types import Target as T_Target
-from ..utils import SchedulerConfig
 from .scheduler import Scheduler
+from ..utils import SchedulerConfig
+from ..config.db_model import Target
+from ..types import Target as T_Target
+from ..platform import platform_manager
 
-scheduler_dict: dict[Type[SchedulerConfig], Scheduler] = {}
+scheduler_dict: dict[type[SchedulerConfig], Scheduler] = {}
 
 
 async def init_scheduler():
-    _schedule_class_dict: dict[Type[SchedulerConfig], list[Target]] = {}
-    _schedule_class_platform_dict: dict[Type[SchedulerConfig], list[str]] = {}
+    _schedule_class_dict: dict[type[SchedulerConfig], list[Target]] = {}
+    _schedule_class_platform_dict: dict[type[SchedulerConfig], list[str]] = {}
     for platform in platform_manager.values():
         scheduler_config = platform.scheduler
         if not hasattr(scheduler_config, "name") or not scheduler_config.name:
@@ -33,9 +31,7 @@ async def init_scheduler():
         for target in target_list:
             schedulable_args.append((target.platform_name, T_Target(target.target)))
         platform_name_list = _schedule_class_platform_dict[scheduler_config]
-        scheduler_dict[scheduler_config] = Scheduler(
-            scheduler_config, schedulable_args, platform_name_list
-        )
+        scheduler_dict[scheduler_config] = Scheduler(scheduler_config, schedulable_args, platform_name_list)
     config.register_add_target_hook(handle_insert_new_target)
     config.register_delete_target_hook(handle_delete_target)
 

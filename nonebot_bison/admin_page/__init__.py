@@ -1,17 +1,16 @@
 import os
 from pathlib import Path
-from typing import Union
 
-from nonebot import get_driver, on_command
-from nonebot.adapters.onebot.v11 import Bot
-from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
-from nonebot.drivers.fastapi import Driver
 from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
+from nonebot import get_driver, on_command
+from nonebot.drivers.fastapi import Driver
+from nonebot.adapters.onebot.v11 import Bot
+from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
 
-from ..plugin_config import plugin_config
 from .api import router as api_router
+from ..plugin_config import plugin_config
 from .token_manager import token_manager as tm
 
 STATIC_PATH = (Path(__file__).parent / "dist").resolve()
@@ -28,11 +27,9 @@ def init_fastapi():
     class SinglePageApplication(StaticFiles):
         def __init__(self, directory: os.PathLike, index="index.html"):
             self.index = index
-            super().__init__(
-                directory=directory, packages=None, html=True, check_dir=True
-            )
+            super().__init__(directory=directory, packages=None, html=True, check_dir=True)
 
-        def lookup_path(self, path: str) -> tuple[str, Union[os.stat_result, None]]:
+        def lookup_path(self, path: str) -> tuple[str, os.stat_result | None]:
             full_path, stat_res = super().lookup_path(path)
             if stat_res is None:
                 return super().lookup_path(self.index)
@@ -45,9 +42,7 @@ def init_fastapi():
             description="nonebot-bison webui and api",
         )
         nonebot_app.include_router(api_router)
-        nonebot_app.mount(
-            "/", SinglePageApplication(directory=static_path), name="bison-frontend"
-        )
+        nonebot_app.mount("/", SinglePageApplication(directory=static_path), name="bison-frontend")
 
         app = driver.server_app
         app.mount("/bison", nonebot_app, "nonebot-bison")
@@ -63,10 +58,9 @@ def init_fastapi():
     if host in ["0.0.0.0", "127.0.0.1"]:
         host = "localhost"
     logger.opt(colors=True).info(
-        f"Nonebot Bison frontend will be running at: "
-        f"<b><u>http://{host}:{port}/bison</u></b>"
+        f"Nonebot Bison frontend will be running at: " f"<b><u>http://{host}:{port}/bison</u></b>"
     )
-    logger.opt(colors=True).info(f"该页面不能被直接访问，请私聊bot <b><u>后台管理</u></b> 以获取可访问地址")
+    logger.opt(colors=True).info("该页面不能被直接访问，请私聊bot <b><u>后台管理</u></b> 以获取可访问地址")
 
 
 def register_get_token_handler():
@@ -93,6 +87,4 @@ if (STATIC_PATH / "index.html").exists():
     else:
         logger.warning("your driver is not fastapi, webui feature will be disabled")
 else:
-    logger.warning(
-        "Frontend file not found, please compile it or use docker or pypi version"
-    )
+    logger.warning("Frontend file not found, please compile it or use docker or pypi version")

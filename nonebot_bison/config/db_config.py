@@ -1,19 +1,19 @@
 import asyncio
 from collections import defaultdict
-from datetime import datetime, time
-from typing import Awaitable, Callable, Optional, Sequence
+from datetime import time, datetime
+from collections.abc import Callable, Sequence, Awaitable
 
-from nonebot_plugin_datastore import create_session
-from nonebot_plugin_saa import PlatformTarget
-from sqlalchemy import delete, func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, delete, select
+from nonebot_plugin_saa import PlatformTarget
+from nonebot_plugin_datastore import create_session
 
-from ..types import Category, PlatformWeightConfigResp, Tag
+from ..types import Tag
 from ..types import Target as T_Target
-from ..types import TimeWeightConfig, UserSubInfo, WeightConfig
-from .db_model import ScheduleTimeWeight, Subscribe, Target, User
 from .utils import NoSuchTargetException
+from .db_model import User, Target, Subscribe, ScheduleTimeWeight
+from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 
 
 def _get_time():
@@ -48,23 +48,17 @@ class DBConfig:
     ):
         async with create_session() as session:
             db_user_stmt = select(User).where(User.user_target == user.dict())
-            db_user: Optional[User] = await session.scalar(db_user_stmt)
+            db_user: User | None = await session.scalar(db_user_stmt)
             if not db_user:
                 db_user = User(user_target=user.dict())
                 session.add(db_user)
             db_target_stmt = (
-                select(Target)
-                .where(Target.platform_name == platform_name)
-                .where(Target.target == target)
+                select(Target).where(Target.platform_name == platform_name).where(Target.target == target)
             )
-            db_target: Optional[Target] = await session.scalar(db_target_stmt)
+            db_target: Target | None = await session.scalar(db_target_stmt)
             if not db_target:
-                db_target = Target(
-                    target=target, platform_name=platform_name, target_name=target_name
-                )
-                await asyncio.gather(
-                    *[hook(platform_name, target) for hook in self.add_target_hook]
-                )
+                db_target = Target(target=target, platform_name=platform_name, target_name=target_name)
+                await asyncio.gather(*[hook(platform_name, target) for hook in self.add_target_hook])
             else:
                 db_target.target_name = target_name
             subscribe = Subscribe(
@@ -96,44 +90,25 @@ class DBConfig:
         """获取数据库中带有user、target信息的subscribe数据"""
         async with create_session() as session:
             query_stmt = (
-                select(Subscribe)
-                .join(User)
-                .options(selectinload(Subscribe.target), selectinload(Subscribe.user))
+                select(Subscribe).join(User).options(selectinload(Subscribe.target), selectinload(Subscribe.user))
             )
             subs = (await session.scalars(query_stmt)).all()
 
         return subs
 
-    async def del_subscribe(
-        self, user: PlatformTarget, target: str, platform_name: str
-    ):
+    async def del_subscribe(self, user: PlatformTarget, target: str, platform_name: str):
         async with create_session() as session:
-            user_obj = await session.scalar(
-                select(User).where(User.user_target == user.dict())
-            )
+            user_obj = await session.scalar(select(User).where(User.user_target == user.dict()))
             target_obj = await session.scalar(
-                select(Target).where(
-                    Target.platform_name == platform_name, Target.target == target
-                )
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
-            await session.execute(
-                delete(Subscribe).where(
-                    Subscribe.user == user_obj, Subscribe.target == target_obj
-                )
-            )
+            await session.execute(delete(Subscribe).where(Subscribe.user == user_obj, Subscribe.target == target_obj))
             target_count = await session.scalar(
-                select(func.count())
-                .select_from(Subscribe)
-                .where(Subscribe.target == target_obj)
+                select(func.count()).select_from(Subscribe).where(Subscribe.target == target_obj)
             )
             if target_count == 0:
                 # delete empty target
-                await asyncio.gather(
-                    *[
-                        hook(platform_name, T_Target(target))
-                        for hook in self.delete_target_hook
-                    ]
-                )
+                await asyncio.gather(*[hook(platform_name, T_Target(target)) for hook in self.delete_target_hook])
             await session.commit()
 
     async def update_subscribe(
@@ -165,29 +140,22 @@ class DBConfig:
     async def get_platform_target(self, platform_name: str) -> Sequence[Target]:
         async with create_session() as sess:
             subq = select(Subscribe.target_id).distinct().subquery()
-            query = (
-                select(Target).join(subq).where(Target.platform_name == platform_name)
-            )
+            query = select(Target).join(subq).where(Target.platform_name == platform_name)
             return (await sess.scalars(query)).all()
 
-    async def get_time_weight_config(
-        self, target: T_Target, platform_name: str
-    ) -> WeightConfig:
+    async def get_time_weight_config(self, target: T_Target, platform_name: str) -> WeightConfig:
         async with create_session() as sess:
             time_weight_conf = (
                 await sess.scalars(
                     select(ScheduleTimeWeight)
-                    .where(
-                        Target.platform_name == platform_name, Target.target == target
-                    )
+                    .where(Target.platform_name == platform_name, Target.target == target)
                     .join(Target)
                 )
             ).all()
             targetObj = await sess.scalar(
-                select(Target).where(
-                    Target.platform_name == platform_name, Target.target == target
-                )
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
+            assert targetObj
             return WeightConfig(
                 default=targetObj.default_schedule_weight,
                 time_config=[
@@ -200,22 +168,16 @@ class DBConfig:
                 ],
             )
 
-    async def update_time_weight_config(
-        self, target: T_Target, platform_name: str, conf: WeightConfig
-    ):
+    async def update_time_weight_config(self, target: T_Target, platform_name: str, conf: WeightConfig):
         async with create_session() as sess:
             targetObj = await sess.scalar(
-                select(Target).where(
-                    Target.platform_name == platform_name, Target.target == target
-                )
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
             if not targetObj:
                 raise NoSuchTargetException()
             target_id = targetObj.id
             targetObj.default_schedule_weight = conf.default
-            delete_statement = delete(ScheduleTimeWeight).where(
-                ScheduleTimeWeight.target_id == target_id
-            )
+            delete_statement = delete(ScheduleTimeWeight).where(ScheduleTimeWeight.target_id == target_id)
             await sess.execute(delete_statement)
             for time_conf in conf.time_config:
                 new_conf = ScheduleTimeWeight(
@@ -243,18 +205,13 @@ class DBConfig:
                 key = f"{target.platform_name}-{target.target}"
                 weight = target.default_schedule_weight
                 for time_conf in target.time_weight:
-                    if (
-                        time_conf.start_time <= cur_time
-                        and time_conf.end_time > cur_time
-                    ):
+                    if time_conf.start_time <= cur_time and time_conf.end_time > cur_time:
                         weight = time_conf.weight
                         break
                 res[key] = weight
         return res
 
-    async def get_platform_target_subscribers(
-        self, platform_name: str, target: T_Target
-    ) -> list[UserSubInfo]:
+    async def get_platform_target_subscribers(self, platform_name: str, target: T_Target) -> list[UserSubInfo]:
         async with create_session() as sess:
             query = (
                 select(Subscribe)
@@ -263,16 +220,14 @@ class DBConfig:
                 .options(selectinload(Subscribe.user))
             )
             subsribes = (await sess.scalars(query)).all()
-            return list(
-                map(
-                    lambda subscribe: UserSubInfo(
-                        PlatformTarget.deserialize(subscribe.user.user_target),
-                        subscribe.categories,
-                        subscribe.tags,
-                    ),
-                    subsribes,
+            return [
+                UserSubInfo(
+                    PlatformTarget.deserialize(subscribe.user.user_target),
+                    subscribe.categories,
+                    subscribe.tags,
                 )
-            )
+                for subscribe in subsribes
+            ]
 
     async def get_all_weight_config(
         self,
@@ -281,9 +236,7 @@ class DBConfig:
         async with create_session() as sess:
             query = select(Target)
             targets = (await sess.scalars(query)).all()
-            query = select(ScheduleTimeWeight).options(
-                selectinload(ScheduleTimeWeight.target)
-            )
+            query = select(ScheduleTimeWeight).options(selectinload(ScheduleTimeWeight.target))
             time_weights = (await sess.scalars(query)).all()
 
         for target in targets:
@@ -293,9 +246,7 @@ class DBConfig:
                     target=T_Target(target.target),
                     target_name=target.target_name,
                     platform_name=platform_name,
-                    weight=WeightConfig(
-                        default=target.default_schedule_weight, time_config=[]
-                    ),
+                    weight=WeightConfig(default=target.default_schedule_weight, time_config=[]),
                 )
 
         for time_weight_config in time_weights:

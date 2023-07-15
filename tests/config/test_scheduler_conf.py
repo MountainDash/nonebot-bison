@@ -5,12 +5,10 @@ from pytest_mock import MockerFixture
 
 
 async def test_create_config(init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.config.db_config import WeightConfig, TimeWeightConfig, config
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),
@@ -33,22 +31,14 @@ async def test_create_config(init_scheduler):
         platform_name="weibo",
         conf=WeightConfig(
             default=10,
-            time_config=[
-                TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20)
-            ],
+            time_config=[TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20)],
         ),
     )
 
-    test_config = await config.get_time_weight_config(
-        target=T_Target("weibo_id"), platform_name="weibo"
-    )
+    test_config = await config.get_time_weight_config(target=T_Target("weibo_id"), platform_name="weibo")
     assert test_config.default == 10
-    assert test_config.time_config == [
-        TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20)
-    ]
-    test_config1 = await config.get_time_weight_config(
-        target=T_Target("weibo_id1"), platform_name="weibo"
-    )
+    assert test_config.time_config == [TimeWeightConfig(start_time=time(1, 0), end_time=time(2, 0), weight=20)]
+    test_config1 = await config.get_time_weight_config(target=T_Target("weibo_id1"), platform_name="weibo")
     assert test_config1.default == 10
     assert test_config1.time_config == []
 
@@ -56,13 +46,11 @@ async def test_create_config(init_scheduler):
 async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
     from datetime import time
 
-    from nonebot_plugin_datastore.db import get_engine
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import db_config
-    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.config.db_config import WeightConfig, TimeWeightConfig, config
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),
@@ -120,14 +108,13 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
 
 
 async def test_get_platform_target(app: App, init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
     from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
 
-    from nonebot_bison.config import db_config
-    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
+    from nonebot_bison.config.db_model import Target
+    from nonebot_bison.config.db_config import config
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
@@ -156,14 +143,10 @@ async def test_get_platform_target(app: App, init_scheduler):
     )
     res = await config.get_platform_target("weibo")
     assert len(res) == 2
-    await config.del_subscribe(
-        TargetQQGroup(group_id=123), T_Target("weibo_id1"), "weibo"
-    )
+    await config.del_subscribe(TargetQQGroup(group_id=123), T_Target("weibo_id1"), "weibo")
     res = await config.get_platform_target("weibo")
     assert len(res) == 2
-    await config.del_subscribe(
-        TargetQQGroup(group_id=123), T_Target("weibo_id"), "weibo"
-    )
+    await config.del_subscribe(TargetQQGroup(group_id=123), T_Target("weibo_id"), "weibo")
     res = await config.get_platform_target("weibo")
     assert len(res) == 1
 
@@ -173,16 +156,11 @@ async def test_get_platform_target(app: App, init_scheduler):
 
 
 async def test_get_platform_target_subscribers(app: App, init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
     from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.ext.asyncio.session import AsyncSession
-    from sqlalchemy.sql.expression import select
 
-    from nonebot_bison.config import db_config
-    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig, config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.types import UserSubInfo
+    from nonebot_bison.config.db_config import config
+    from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),

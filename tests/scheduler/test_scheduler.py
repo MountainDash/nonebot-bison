@@ -1,6 +1,5 @@
 import typing
 from datetime import time
-from typing import Type
 
 from nonebug import App
 from pytest_mock import MockerFixture
@@ -9,11 +8,7 @@ if typing.TYPE_CHECKING:
     from nonebot_bison.utils.scheduler_config import SchedulerConfig
 
 
-async def get_schedule_times(
-    scheduler_config: Type["SchedulerConfig"], time: int
-) -> dict[str, int]:
-    from nonebot_plugin_saa import TargetQQGroup
-
+async def get_schedule_times(scheduler_config: type["SchedulerConfig"], time: int) -> dict[str, int]:
     from nonebot_bison.scheduler import scheduler_dict
 
     scheduler = scheduler_dict[scheduler_config]
@@ -30,27 +25,17 @@ async def test_scheduler_without_time(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.config.db_config import WeightConfig
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
-    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.config.db_config import WeightConfig
+    from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.platform.bilibili import BilibiliSchedConf
 
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], []
-    )
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], []
-    )
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-live", [], []
-    )
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-live", [], [])
 
-    await config.update_time_weight_config(
-        T_Target("t2"), "bilibili", WeightConfig(default=20, time_config=[])
-    )
-    await config.update_time_weight_config(
-        T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[])
-    )
+    await config.update_time_weight_config(T_Target("t2"), "bilibili", WeightConfig(default=20, time_config=[]))
+    await config.update_time_weight_config(T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[]))
 
     await init_scheduler()
 
@@ -69,34 +54,24 @@ async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixtu
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config, db_config
-    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
-    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.platform.bilibili import BilibiliSchedConf
+    from nonebot_bison.config.db_config import WeightConfig, TimeWeightConfig
 
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], []
-    )
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], []
-    )
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-live", [], []
-    )
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-live", [], [])
 
     await config.update_time_weight_config(
         T_Target("t2"),
         "bilibili",
         WeightConfig(
             default=20,
-            time_config=[
-                TimeWeightConfig(start_time=time(10), end_time=time(11), weight=1000)
-            ],
+            time_config=[TimeWeightConfig(start_time=time(10), end_time=time(11), weight=1000)],
         ),
     )
-    await config.update_time_weight_config(
-        T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[])
-    )
+    await config.update_time_weight_config(T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[]))
 
     await init_scheduler()
 
@@ -122,22 +97,16 @@ async def test_scheduler_add_new(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
-    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.platform.bilibili import BilibiliSchedConf
 
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], []
-    )
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
 
     await init_scheduler()
 
-    await config.add_subscribe(
-        TargetQQGroup(group_id=2345), T_Target("t1"), "target1", "bilibili", [], []
-    )
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili", [], []
-    )
+    await config.add_subscribe(TargetQQGroup(group_id=2345), T_Target("t1"), "target1", "bilibili", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili", [], [])
     stat_res = await get_schedule_times(BilibiliSchedConf, 1)
     assert stat_res["bilibili-t2"] == 1
 
@@ -146,16 +115,12 @@ async def test_schedule_delete(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
-    from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.platform.bilibili import BilibiliSchedConf
 
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], []
-    )
-    await config.add_subscribe(
-        TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], []
-    )
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
 
     await init_scheduler()
 

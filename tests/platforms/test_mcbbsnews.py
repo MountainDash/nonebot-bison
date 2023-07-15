@@ -1,16 +1,16 @@
-import pytest
 import respx
+import pytest
 from flaky import flaky
-from httpx import AsyncClient, Response
 from nonebug.app import App
+from httpx import Response, AsyncClient
 
 from .utils import get_file, get_json
 
 
-@pytest.fixture
+@pytest.fixture()
 def mcbbsnews(app: App):
-    from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.platform import platform_manager
 
     return platform_manager["mcbbsnews"](ProcessContext(), AsyncClient())
 
@@ -26,26 +26,14 @@ def raw_post_list():
 @flaky(max_runs=3, min_passes=1)
 async def test_fetch_new(mcbbsnews, dummy_user_subinfo, raw_post_list):
     news_router = respx.get("https://www.mcbbs.net/forum-news-1.html")
-    news_router.mock(
-        return_value=Response(
-            200, text=get_file("mcbbsnews/mock/mcbbsnews_post_list_html-0.html")
-        )
-    )
+    news_router.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_post_list_html-0.html")))
     new_post = respx.get("https://www.mcbbs.net/thread-1340927-1-1.html")
-    new_post.mock(
-        return_value=Response(
-            200, text=get_file("mcbbsnews/mock/mcbbsnews_new_post_html.html")
-        )
-    )
+    new_post.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_new_post_html.html")))
     target = ""
     res = await mcbbsnews.fetch_new_post(target, [dummy_user_subinfo])
     assert news_router.called
     assert len(res) == 0
-    news_router.mock(
-        return_value=Response(
-            200, text=get_file("mcbbsnews/mock/mcbbsnews_post_list_html-1.html")
-        )
-    )
+    news_router.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_post_list_html-1.html")))
     res = await mcbbsnews.fetch_new_post(target, [dummy_user_subinfo])
     assert news_router.called
     post = res[0][1][0]
@@ -63,20 +51,12 @@ async def test_fetch_new(mcbbsnews, dummy_user_subinfo, raw_post_list):
 @flaky(max_runs=3, min_passes=1)
 async def test_news_render(mcbbsnews, dummy_user_subinfo):
     new_post = respx.get("https://www.mcbbs.net/thread-1340927-1-1.html")
-    new_post.mock(
-        return_value=Response(
-            200, text=get_file("mcbbsnews/mock/mcbbsnews_new_post_html.html")
-        )
-    )
-    pics = await mcbbsnews._news_render(
-        "https://www.mcbbs.net/thread-1340927-1-1.html", "#post_25849603"
-    )
+    new_post.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_new_post_html.html")))
+    pics = await mcbbsnews._news_render("https://www.mcbbs.net/thread-1340927-1-1.html", "#post_25849603")
     assert len(pics) == 1
 
     pics_err_on_assert = await mcbbsnews._news_render("", "##post_25849603")
     assert len(pics_err_on_assert) == 2
 
-    pics_err_on_other = await mcbbsnews._news_render(
-        "https://www.mcbbs.net/thread-1340927-1-1.html", "#post_err"
-    )
+    pics_err_on_other = await mcbbsnews._news_render("https://www.mcbbs.net/thread-1340927-1-1.html", "#post_err")
     assert len(pics_err_on_other) == 2

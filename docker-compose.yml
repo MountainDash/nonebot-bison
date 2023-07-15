@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   go-cqhttp:
@@ -15,8 +15,8 @@ services:
       # SUPERUSERS: '[<your QQ>]'
       BISON_CONFIG_PATH: /data
       # BISON_OUTER_URL: 'http://<your server ip>:8080/bison'
-      BISON_FILTER_LOG: 'true'
-      BISON_USE_PIC: 'false' # 如果需要将文字转为图片发送请改为true
+      BISON_FILTER_LOG: "true"
+      BISON_USE_PIC: "false" # 如果需要将文字转为图片发送请改为true
     ports:
       - 8080:8080
     depends_on:

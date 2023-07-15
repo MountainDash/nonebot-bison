@@ -76,10 +76,10 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
-          context: 
+          context:
             - docker
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG}'
+          cache_from: "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_TAG}"
           tag: latest,${CIRCLE_TAG}
           update-description: true
           docker-username: DOCKERHUB_USERNAME
@@ -91,13 +91,13 @@ workflows:
             tags:
               ignore: /.*/
           tag: ${CIRCLE_BRANCH//\//-}
-          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}'
+          cache_from: "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}"
       - docker/publish:
           <<: *docker-push
           dockerfile: docker/Dockerfile_with_frontend_sentry
           name: "docker/publish-sentry"
           tag: sentry,${CIRCLE_TAG//\//-}-sentry
-          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:sentry'
+          cache_from: "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:sentry"
       - docker/publish:
           <<: *docker-push
           name: "docker/publish-debug-sentry"
@@ -108,7 +108,7 @@ workflows:
             tags:
               ignore: /.*/
           tag: ${CIRCLE_BRANCH//\//-}-sentry
-          cache_from: '$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}-sentry'
+          cache_from: "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${CIRCLE_BRANCH}-sentry"
 
 jobs:
   build-frontend:
@@ -164,7 +164,8 @@ jobs:
       #     command: poetry run playwright install-deps && poetry run playwright install chromium
       - run:
           name: Coverage test
-          command: poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml
+          command:
+            poetry run pytest --cov-report html --cov-report xml --cov=./src/plugins/nonebot_bison --junitxml=test-results/junit.xml
             -k 'not compare and not render'
       - store_test_results:
           path: test-results
@@ -215,4 +216,3 @@ jobs:
             go install github.com/tcnksm/ghr@latest
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} \
               -delete ${CIRCLE_TAG} -n ${CIRCLE_TAG} -b $(git log --format=%B -n 1 $CIRCLE_SHA1) ./dist
-

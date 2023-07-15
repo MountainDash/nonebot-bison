@@ -1,10 +1,10 @@
 from nonebot.log import logger
-from nonebot_plugin_datastore.db import get_engine, post_db_init, pre_db_init
-from sqlalchemy import inspect, text
+from sqlalchemy import text, inspect
+from nonebot_plugin_datastore.db import get_engine, pre_db_init, post_db_init
 
-from .config.config_legacy import start_up as legacy_db_startup
 from .config.db_migration import data_migrate
 from .scheduler.manager import init_scheduler
+from .config.config_legacy import start_up as legacy_db_startup
 
 
 @pre_db_init
@@ -35,9 +35,7 @@ async def pre():
         if await conn.run_sync(_has_table, "nonebot_bison_alembic_version"):
             await conn.execute(text("drop table nonebot_bison_alembic_version"))
 
-        await conn.execute(
-            text("alter table alembic_version rename to nonebot_bison_alembic_version")
-        )
+        await conn.execute(text("alter table alembic_version rename to nonebot_bison_alembic_version"))
 
 
 @post_db_init

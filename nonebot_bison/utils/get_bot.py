@@ -1,11 +1,11 @@
 """ 提供获取 Bot 的方法 """
-from collections import defaultdict
 from typing import Any
+from collections import defaultdict
 
 import nonebot
 from nonebot.adapters import Bot
-from nonebot.adapters.onebot.v11 import Bot as Ob11Bot
 from nonebot_plugin_saa import PlatformTarget
+from nonebot.adapters.onebot.v11 import Bot as Ob11Bot
 
 GROUP: dict[int, list[Bot]] = {}
 USER: dict[int, list[Bot]] = {}
@@ -28,12 +28,6 @@ async def get_groups() -> list[dict[str, Any]]:
     all_groups: dict[int, dict[str, Any]] = {}
     for bot in get_bots():
         groups = await bot.get_group_list()
-        all_groups.update(
-            {
-                group["group_id"]: group
-                for group in groups
-                if group["group_id"] not in all_groups
-            }
-        )
+        all_groups.update({group["group_id"]: group for group in groups if group["group_id"] not in all_groups})
 
     return list(all_groups.values())

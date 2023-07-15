@@ -1,7 +1,7 @@
 import pytest
 from nonebug import App
 
-from ..utils import fake_group_message_event, fake_private_message_event, fake_superuser
+from ..utils import fake_superuser, fake_group_message_event, fake_private_message_event
 
 
 @pytest.mark.asyncio
@@ -22,9 +22,7 @@ async def test_query_with_superuser_private(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_api(
-            "get_group_list", {}, [{"group_id": 101, "group_name": "test group"}]
-        )
+        ctx.should_call_api("get_group_list", {}, [{"group_id": 101, "group_name": "test group"}])
         ctx.should_call_send(
             event,
             "请选择需要管理的群：\n1. 101 - test group\n请输入左侧序号\n中止操作请输入'取消'",
@@ -85,9 +83,7 @@ async def test_query_with_abort_on_idx(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_api(
-            "get_group_list", {}, [{"group_id": 101, "group_name": "test group"}]
-        )
+        ctx.should_call_api("get_group_list", {}, [{"group_id": 101, "group_name": "test group"}])
         ctx.should_call_send(
             event,
             "请选择需要管理的群：\n1. 101 - test group\n请输入左侧序号\n中止操作请输入'取消'",
@@ -121,9 +117,7 @@ async def test_query_with_abort_on_command(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_rule()
         ctx.should_pass_permission()
-        ctx.should_call_api(
-            "get_group_list", {}, [{"group_id": 101, "group_name": "test group"}]
-        )
+        ctx.should_call_api("get_group_list", {}, [{"group_id": 101, "group_name": "test group"}])
         ctx.should_call_send(
             event,
             "请选择需要管理的群：\n1. 101 - test group\n请输入左侧序号\n中止操作请输入'取消'",

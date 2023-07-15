@@ -4,10 +4,6 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
-registries:
-  npm-npmjs:
-    type: npm-registry
-    url: "https://registry.npmmirror.com"
 updates:
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
@@ -21,4 +17,7 @@ updates:
     directory: "/admin-frontend/"
     schedule:
       interval: "weekly"
-
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

@@ -54,7 +54,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-
   publish-docker:
     runs-on: ubuntu-latest
     needs: build-frontend

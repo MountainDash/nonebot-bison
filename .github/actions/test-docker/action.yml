@@ -8,7 +8,7 @@ inputs:
   wait-time:
     description: how many seconds to wait for
     required: true
-    default: '5'
+    default: "5"
 
 runs:
   using: composite

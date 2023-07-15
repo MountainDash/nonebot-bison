@@ -107,9 +107,7 @@ async def test_fetch_new_2(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "http://www.ruanyifeng.com/blog/2023/05/weekly-issue-255.html"
-    assert (
-        post1.text == "科技爱好者周刊（第 255 期）：对待 AI 的正确态度\n\n这里记录每周值得分享的科技内容，周五发布。..."
-    )
+    assert post1.text == "科技爱好者周刊（第 255 期）：对待 AI 的正确态度\n\n这里记录每周值得分享的科技内容，周五发布。..."
 
 
 @pytest.fixture()

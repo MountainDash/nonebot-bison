@@ -1,26 +1,37 @@
+default_install_hook_types: [pre-commit, prepare-commit-msg]
 ci:
   autofix_commit_msg: ":lipstick: auto fix by pre-commit hooks"
   autofix_prs: true
-  autoupdate_branch: dev
-  autoupdate_schedule: weekly
+  autoupdate_branch: main
+  autoupdate_schedule: monthly
   autoupdate_commit_msg: ":arrow_up: auto update by pre-commit hooks"
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.276
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        stages: [commit]
+
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
+        stages: [commit]
 
   - repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.7.0
     hooks:
       - id: black
+        stages: [commit]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
+    rev: v3.0.0-alpha.9-for-vscode
     hooks:
       - id: prettier
-        types_or: [markdown, ts, tsx]
-        exclude: 'admin-frontend/'
+        types_or: [javascript, jsx, ts, tsx, markdown, yaml, json]
+        exclude: "admin-frontend/"
+        stages: [commit]
 
   - repo: https://github.com/pre-commit/mirrors-eslint
     rev: v8.33.0
@@ -41,6 +52,19 @@ repos:
         types_or: [ts, tsx]
         types: []
         files: ^admin-frontend/
-        args: [--fix, -c, './admin-frontend/.eslintrc.json', --rule, 'import/no-unresolved: off']
+        args:
+          [
+            --fix,
+            -c,
+            "./admin-frontend/.eslintrc.json",
+            --rule,
+            "import/no-unresolved: off",
+          ]
 
-exclude: 'CHANGELOG.md'
+  - repo: https://github.com/nonebot/nonemoji
+    rev: v0.1.4
+    hooks:
+      - id: nonemoji
+        stages: [prepare-commit-msg]
+
+exclude: "CHANGELOG.md"

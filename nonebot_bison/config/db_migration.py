@@ -32,8 +32,7 @@ async def data_migrate():
                     if key in user_sub_set:
                         # a user subscribe a target twice
                         logger.error(
-                            f"用户 {user['user_type']}-{user['user']} 订阅了 {platform_name}-{target_name} 两次，"
-                            "随机采用了一个订阅",
+                            f"用户 {user['user_type']}-{user['user']} 订阅了 {platform_name}-{target_name} 两次，随机采用了一个订阅",
                         )
                         continue
                     user_sub_set.add(key)

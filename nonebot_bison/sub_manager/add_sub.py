@@ -89,9 +89,7 @@ def do_add_sub(add_sub: type[Matcher]):
         except Platform.ParseTargetException:
             await add_sub.reject("不能从你的输入中提取出id，请检查你输入的内容是否符合预期")
         else:
-            await add_sub.send(
-                f"即将订阅的用户为:{state['platform']} {state['name']} {state['id']}\n如有错误请输入“取消”重新订阅"
-            )
+            await add_sub.send(f"即将订阅的用户为:{state['platform']} {state['name']} {state['id']}\n如有错误请输入“取消”重新订阅")
 
     @add_sub.handle()
     async def prepare_get_categories(matcher: Matcher, state: T_State):
@@ -120,9 +118,7 @@ def do_add_sub(add_sub: type[Matcher]):
             matcher.set_arg("raw_tags", None)  # type: ignore
             state["tags"] = []
             return
-        state["_prompt"] = (
-            '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
-        )
+        state["_prompt"] = '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
 
     @add_sub.got("raw_tags", MessageTemplate("{_prompt}"), [handle_cancel])
     async def parser_tags(state: T_State, raw_tags: Message = Arg()):

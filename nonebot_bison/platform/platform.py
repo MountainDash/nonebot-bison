@@ -82,9 +82,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         ...
 
     @abstractmethod
-    async def fetch_new_post(
-        self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[PlatformTarget, list[Post]]]:
         ...
 
     async def do_fetch_new_post(
@@ -300,9 +298,7 @@ class NewMessage(MessageProcess, abstract=True):
         self.set_stored_data(target, store)
         return res
 
-    async def fetch_new_post(
-        self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[PlatformTarget, list[Post]]]:
         post_list = await self.get_sub_list(target)
         new_posts = await self.filter_common_with_diff(target, post_list)
         if not new_posts:
@@ -339,9 +335,7 @@ class StatusChange(Platform, abstract=True):
     async def parse(self, raw_post: RawPost) -> Post:
         ...
 
-    async def fetch_new_post(
-        self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[PlatformTarget, list[Post]]]:
         try:
             new_status = await self.get_status(target)
         except self.FetchError as err:
@@ -367,9 +361,7 @@ class StatusChange(Platform, abstract=True):
 class SimplePost(MessageProcess, abstract=True):
     "Fetch a list of messages, dispatch it to different users"
 
-    async def fetch_new_post(
-        self, target: Target, users: list[UserSubInfo]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[PlatformTarget, list[Post]]]:
         new_posts = await self.get_sub_list(target)
         if not new_posts:
             return []

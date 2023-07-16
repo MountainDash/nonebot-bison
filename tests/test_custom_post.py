@@ -24,7 +24,10 @@ def ms_list():
 
 @pytest.fixture()
 def expected_md():
-    return "【Zc】每早合约日替攻略！<br>![Image](http://i0.hdslb.com/bfs/live/new_room_cover/cf7d4d3b2f336c6dba299644c3af952c5db82612.jpg)\n来源: Bilibili直播 魔法Zc目录<br>详情: https://live.bilibili.com/3044248<br>"  # noqa: E501
+    return (
+        "【Zc】每早合约日替攻略！<br>![Image](http://i0.hdslb.com/bfs/live/new_room_cover/cf7d4d3b2f336c6dba299644c3af952c5db82612.jpg)\n来源:"
+        " Bilibili直播 魔法Zc目录<br>详情: https://live.bilibili.com/3044248<br>"
+    )
 
 
 def test_gene_md(app: App, expected_md, ms_list):

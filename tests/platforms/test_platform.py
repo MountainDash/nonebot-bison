@@ -349,9 +349,7 @@ async def test_new_message_target_without_cats_tags(mock_platform_without_cats_t
 async def test_new_message_target(mock_platform, user_info_factory):
     from nonebot_bison.utils import ProcessContext
 
-    res1 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post(
-        "dummy", [user_info_factory([1, 2], [])]
-    )
+    res1 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post("dummy", [user_info_factory([1, 2], [])])
     assert len(res1) == 0
     res2 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post(
         "dummy",

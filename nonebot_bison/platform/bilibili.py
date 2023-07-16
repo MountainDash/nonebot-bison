@@ -54,7 +54,7 @@ class Bilibili(NewMessage):
         2: "专栏文章",
         3: "视频",
         4: "纯文字",
-        5: "转发"
+        5: "转发",
         # 5: "短视频"
     }
     platform_name = "bilibili"

@@ -57,9 +57,7 @@ def init_fastapi():
     port = driver.config.port
     if host in ["0.0.0.0", "127.0.0.1"]:
         host = "localhost"
-    logger.opt(colors=True).info(
-        f"Nonebot Bison frontend will be running at: " f"<b><u>http://{host}:{port}/bison</u></b>"
-    )
+    logger.opt(colors=True).info(f"Nonebot Bison frontend will be running at: <b><u>http://{host}:{port}/bison</u></b>")
     logger.opt(colors=True).info("该页面不能被直接访问，请私聊bot <b><u>后台管理</u></b> 以获取可访问地址")
 
 
@@ -72,7 +70,7 @@ def register_get_token_handler():
         await get_token.finish(f"请访问: {plugin_config.bison_outer_url}auth/{token}")
 
     get_token.__help__name__ = "获取后台管理地址"  # type: ignore
-    get_token.__help__info__ = "获取管理bot后台的地址，该地址会" "在一段时间过后过期，请不要泄漏该地址"  # type: ignore
+    get_token.__help__info__ = "获取管理bot后台的地址，该地址会在一段时间过后过期，请不要泄漏该地址"  # type: ignore
 
 
 def check_driver_is_fastapi() -> bool:

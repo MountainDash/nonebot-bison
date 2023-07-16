@@ -16,7 +16,7 @@ __help__plugin__name__ = "nonebot_bison"
 __usage__ = (
     "本bot可以提供b站、微博等社交媒体的消息订阅，详情请查看本bot文档，"
     f"或者{'at本bot' if plugin_config.bison_to_me else '' }发送“添加订阅”订阅第一个帐号，"
-    f"发送“查询订阅”或“删除订阅”管理订阅"
+    "发送“查询订阅”或“删除订阅”管理订阅"
 )
 
 __supported_adapters__ = nonebot_plugin_saa.__plugin_meta__.supported_adapters

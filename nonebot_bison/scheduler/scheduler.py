@@ -69,9 +69,7 @@ class Scheduler:
         if not (schedulable := await self.get_next_schedulable()):
             return
         logger.trace(f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}")
-        send_userinfo_list = await config.get_platform_target_subscribers(
-            schedulable.platform_name, schedulable.target
-        )
+        send_userinfo_list = await config.get_platform_target_subscribers(schedulable.platform_name, schedulable.target)
 
         client = await self.scheduler_config_obj.get_client(schedulable.target)
         context.register_to_client(client)

@@ -52,9 +52,7 @@ class DBConfig:
             if not db_user:
                 db_user = User(user_target=user.dict())
                 session.add(db_user)
-            db_target_stmt = (
-                select(Target).where(Target.platform_name == platform_name).where(Target.target == target)
-            )
+            db_target_stmt = select(Target).where(Target.platform_name == platform_name).where(Target.target == target)
             db_target: Target | None = await session.scalar(db_target_stmt)
             if not db_target:
                 db_target = Target(target=target, platform_name=platform_name, target_name=target_name)

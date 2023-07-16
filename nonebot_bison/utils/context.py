@@ -33,9 +33,7 @@ class ProcessContext:
         res = []
         for req in self.reqs:
             if self._should_print_content(req):
-                log_content = (
-                    f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} {req.text}"
-                )
+                log_content = f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} {req.text}"
             else:
                 log_content = (
                     f"{req.request.url} {req.request.headers} | [{req.status_code}] {req.headers} "

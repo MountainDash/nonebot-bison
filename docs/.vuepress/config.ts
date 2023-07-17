@@ -1,9 +1,15 @@
 import { defineUserConfig, defaultTheme } from "vuepress";
+import { mdEnhancePlugin } from "vuepress-plugin-md-enhance";
 
 export default defineUserConfig({
   lang: "zh-CN",
   title: "Nonebot Bison",
   description: "Docs for Nonebot Bison",
+  plugins: [
+    mdEnhancePlugin({
+      mermaid: true,
+    }),
+  ],
   theme: defaultTheme({
     navbar: [
       { text: "主页", link: "/" },

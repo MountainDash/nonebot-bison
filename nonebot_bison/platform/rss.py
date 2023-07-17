@@ -64,7 +64,7 @@ class Rss(NewMessage):
         if not title or not desc:
             text = title or desc
         else:
-            if get_similarity(desc, title) > 0.8:
+            if text_similarity(desc, title) > 0.8:
                 text = desc if len(desc) > len(title) else title
             else:
                 text = f"{title}\n\n{desc}"

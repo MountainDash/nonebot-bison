@@ -8,7 +8,7 @@ from httpx import AsyncClient
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import SchedulerConfig, get_similarity
+from ..utils import SchedulerConfig, text_similarity
 from .platform import NewMessage
 
 

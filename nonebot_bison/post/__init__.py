@@ -1,3 +1,4 @@
-from .post import Post
+from .base_post import BasePost as BasePost
+from .plain_post import PlainPost as PlainPost
 
-__all__ = ["Post"]
+Post = BasePost | PlainPost

@@ -1,3 +1,4 @@
+import difflib
 import re
 import sys
 from typing import Union
@@ -109,3 +110,9 @@ def jaccard_text_similarity(str1: str, str2: str) -> float:
     set1 = set(str1)
     set2 = set(str2)
     return len(set1 & set2) / len(set1 | set2)
+
+
+def text_similarity(str1, str2) -> float:
+    matcher = difflib.SequenceMatcher(None, str1, str2)
+    t = sum(temp.size for temp in matcher.get_matching_blocks())
+    return t / min(len(str1), len(str2))

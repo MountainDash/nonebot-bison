@@ -1,0 +1,57 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+<channel>
+<title>
+<![CDATA[ Hot Wallpapers - wallhaven.cc ]]>
+</title>
+<link>https://wallhaven.cc/hot</link>
+<atom:link href="https://rsshub.app/wallhaven/hot?limit=5" rel="self" type="application/rss+xml"/>
+<description>
+<![CDATA[ Hot Wallpapers - wallhaven.cc - Made with love by RSSHub(https://github.com/DIYgod/RSSHub) ]]>
+</description>
+<generator>RSSHub</generator>
+<webMaster>i@diygod.me (DIYgod)</webMaster>
+<language>zh-cn</language>
+<lastBuildDate>Tue, 04 Jul 2023 06:23:09 GMT</lastBuildDate>
+<ttl>120</ttl>
+<item>
+<title>
+<![CDATA[ 2y322g.jpg ]]>
+</title>
+<description>
+<![CDATA[ <img alt="loading" class="lazyload" data-src="https://th.wallhaven.cc/small/2y/2y322g.jpg" src="https://th.wallhaven.cc/small/2y/2y322g.jpg" referrerpolicy="no-referrer"> ]]>
+</description>
+<guid isPermaLink="false">https://wallhaven.cc/w/2y322g</guid>
+<link>https://wallhaven.cc/w/2y322g</link>
+</item>
+<item>
+<title>
+<![CDATA[ rrj6qw.jpg ]]>
+</title>
+<description>
+<![CDATA[ <img alt="loading" class="lazyload" data-src="https://th.wallhaven.cc/small/rr/rrj6qw.jpg" src="https://th.wallhaven.cc/small/rr/rrj6qw.jpg" referrerpolicy="no-referrer"> ]]>
+</description>
+<guid isPermaLink="false">https://wallhaven.cc/w/rrj6qw</guid>
+<link>https://wallhaven.cc/w/rrj6qw</link>
+</item>
+<item>
+<title>
+<![CDATA[ 9drg1d.jpg ]]>
+</title>
+<description>
+<![CDATA[ <img alt="loading" class="lazyload" data-src="https://th.wallhaven.cc/small/9d/9drg1d.jpg" src="https://th.wallhaven.cc/small/9d/9drg1d.jpg" referrerpolicy="no-referrer"> ]]>
+</description>
+<guid isPermaLink="false">https://wallhaven.cc/w/9drg1d</guid>
+<link>https://wallhaven.cc/w/9drg1d</link>
+</item>
+<item>
+<title>
+<![CDATA[ vq5eem.jpg ]]>
+</title>
+<description>
+<![CDATA[ <img alt="loading" class="lazyload" data-src="https://th.wallhaven.cc/small/vq/vq5eem.jpg" src="https://th.wallhaven.cc/small/vq/vq5eem.jpg" referrerpolicy="no-referrer"> ]]>
+</description>
+<guid isPermaLink="false">https://wallhaven.cc/w/vq5eem</guid>
+<link>https://wallhaven.cc/w/vq5eem</link>
+</item>
+</channel>
+</rss>

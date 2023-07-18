@@ -1,4 +1,5 @@
 import calendar
+import time
 from typing import Any, Optional
 
 import feedparser
@@ -7,8 +8,15 @@ from httpx import AsyncClient
 
 from ..post import Post
 from ..types import RawPost, Target
-from ..utils import scheduler
+from ..utils import SchedulerConfig, text_similarity
 from .platform import NewMessage
+
+
+class RssSchedConf(SchedulerConfig):
+
+    name = "rss"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 30}
 
 
 class Rss(NewMessage):
@@ -19,7 +27,7 @@ class Rss(NewMessage):
     name = "Rss"
     enabled = True
     is_common = True
-    scheduler = scheduler("interval", {"seconds": 30})
+    scheduler = RssSchedConf
     has_target = True
 
     @classmethod
@@ -31,7 +39,12 @@ class Rss(NewMessage):
         return feed["feed"]["title"]
 
     def get_date(self, post: RawPost) -> int:
-        return calendar.timegm(post.published_parsed)
+        if hasattr(post, "published_parsed"):
+            return calendar.timegm(post.published_parsed)
+        elif hasattr(post, "updated_parsed"):
+            return calendar.timegm(post.updated_parsed)
+        else:
+            return calendar.timegm(time.gmtime())
 
     def get_id(self, post: RawPost) -> Any:
         return post.id
@@ -45,9 +58,17 @@ class Rss(NewMessage):
         return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
-        text = raw_post.get("title", "") + "\n" if raw_post.get("title") else ""
+        title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
-        text += soup.text.strip()
+        desc = soup.text.strip()
+        if not title or not desc:
+            text = title or desc
+        else:
+            if text_similarity(desc, title) > 0.8:
+                text = desc if len(desc) > len(title) else title
+            else:
+                text = f"{title}\n\n{desc}"
+
         pics = list(map(lambda x: x.attrs["src"], soup("img")))
         if raw_post.get("media_content"):
             for media in raw_post["media_content"]:

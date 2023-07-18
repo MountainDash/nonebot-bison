@@ -1,6 +1,6 @@
-import difflib
 import re
 import sys
+import difflib
 
 import nonebot
 from nonebot.plugin import require

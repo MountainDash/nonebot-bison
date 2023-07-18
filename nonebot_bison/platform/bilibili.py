@@ -11,9 +11,9 @@ from nonebot.log import logger
 from pydantic import Field, BaseModel
 
 from ..post import Post
-from ..types import ApiError, Category, RawPost, Tag, Target
 from ..utils import SchedulerConfig, text_similarity
-from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
+from ..types import Tag, Target, RawPost, ApiError, Category
+from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
 
 class BilibiliSchedConf(SchedulerConfig):
@@ -300,9 +300,7 @@ class Bilibililive(StatusChange):
         room_data = data[target]
         return self.Info.parse_obj(room_data)
 
-    def compare_status(
-        self, _: Target, old_status: Info, new_status: Info
-    ) -> list[RawPost]:
+    def compare_status(self, _: Target, old_status: Info, new_status: Info) -> list[RawPost]:
         action = Bilibililive.LiveAction
         match new_status.get_live_action(old_status):
             case action.TURN_ON:
@@ -325,11 +323,7 @@ class Bilibililive(StatusChange):
 
     async def parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
-        pic = (
-            [raw_post.cover]
-            if raw_post.category == Category(1)
-            else [raw_post.keyframe]
-        )
+        pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
@@ -369,9 +363,7 @@ class BilibiliBangumi(StatusChange):
             return Target(target_string)
         elif m := re.match(r"md(\d+)", target_string):
             return Target(m[1])
-        elif m := re.match(
-            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string
-        ):
+        elif m := re.match(r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string):
             return Target(m[1])
         raise cls.ParseTargetException()
 

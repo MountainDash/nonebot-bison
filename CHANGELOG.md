@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- 🎈优化RSS推送的内容 [@UKMeng](https://github.com/UKMeng) ([#259](https://github.com/felinae98/nonebot-bison/pull/259))
 - 🐛 修复B站订阅没有动态或者B站直播订阅没有直播间的用户时轮询报错的问题 [@AzideCupric](https://github.com/AzideCupric) ([#273](https://github.com/felinae98/nonebot-bison/pull/273))
 - :arrow_up: 支持nb2.0.0并更新metadata [@AzideCupric](https://github.com/AzideCupric) ([#274](https://github.com/felinae98/nonebot-bison/pull/274))
 

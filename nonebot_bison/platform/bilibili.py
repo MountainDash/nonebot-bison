@@ -12,7 +12,7 @@ from typing_extensions import Self
 
 from ..post import Post
 from ..types import ApiError, Category, RawPost, Tag, Target
-from ..utils import SchedulerConfig, jaccard_text_similarity
+from ..utils import SchedulerConfig, text_similarity
 from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
 
 
@@ -151,7 +151,7 @@ class Bilibili(NewMessage):
             title = card["title"]
             desc = card.get("desc", "")
 
-            if jaccard_text_similarity(desc, dynamic) > 0.8:
+            if text_similarity(desc, dynamic) > 0.8:
                 # 如果视频简介和动态内容相似，就只保留长的那个
                 if len(dynamic) > len(desc):
                     text = f"{dynamic}\n=================\n{title}"
@@ -159,12 +159,7 @@ class Bilibili(NewMessage):
                     text = f"{title}\n\n{desc}"
             else:
                 # 否则就把两个拼起来
-                text = f"""
-                {dynamic}
-                \n=================\n
-                {title}\n\n
-                {desc}
-                """
+                text = f"{dynamic}\n=================\n{title}\n\n{desc}"
 
             pic = [card["pic"]]
         elif post_type == 4:

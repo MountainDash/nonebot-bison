@@ -101,17 +101,6 @@ if plugin_config.bison_filter_log:
     )
 
 
-def jaccard_text_similarity(str1: str, str2: str) -> float:
-    """
-    计算两个字符串(基于字符)的
-    [Jaccard相似系数](https://zh.wikipedia.org/wiki/雅卡尔指数)
-    是否达到阈值
-    """
-    set1 = set(str1)
-    set2 = set(str2)
-    return len(set1 & set2) / len(set1 | set2)
-
-
 def text_similarity(str1, str2) -> float:
     matcher = difflib.SequenceMatcher(None, str1, str2)
     t = sum(temp.size for temp in matcher.get_matching_blocks())

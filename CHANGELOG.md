@@ -2,21 +2,20 @@
 
 ## 最近更新
 
-- 修复bilibili推送的一些格式错误 [@UKMeng](https://github.com/UKMeng) ([#263](https://github.com/felinae98/nonebot-bison/pull/263))
-- 🎈优化RSS推送的内容 [@UKMeng](https://github.com/UKMeng) ([#259](https://github.com/felinae98/nonebot-bison/pull/259))
-- 🐛 修复B站订阅没有动态或者B站直播订阅没有直播间的用户时轮询报错的问题 [@AzideCupric](https://github.com/AzideCupric) ([#273](https://github.com/felinae98/nonebot-bison/pull/273))
-- :arrow_up: 支持nb2.0.0并更新metadata [@AzideCupric](https://github.com/AzideCupric) ([#274](https://github.com/felinae98/nonebot-bison/pull/274))
-
 ### 破坏性变更
 
 - 使用 saa 代替所有发送 [@felinae98](https://github.com/felinae98) ([#219](https://github.com/felinae98/nonebot-bison/pull/219))
 
 ### 新功能
 
+- 🎈优化RSS推送的内容 [@UKMeng](https://github.com/UKMeng) ([#259](https://github.com/felinae98/nonebot-bison/pull/259))
+- :arrow_up: 支持nb2.0.0并更新metadata [@AzideCupric](https://github.com/AzideCupric) ([#274](https://github.com/felinae98/nonebot-bison/pull/274))
 - 移除交互式管理中的ob11 [@felinae98](https://github.com/felinae98) ([#268](https://github.com/felinae98/nonebot-bison/pull/268))
 
 ### Bug 修复
 
+- 修复bilibili推送的一些格式错误 [@UKMeng](https://github.com/UKMeng) ([#263](https://github.com/felinae98/nonebot-bison/pull/263))
+- 🐛 修复B站订阅没有动态或者B站直播订阅没有直播间的用户时轮询报错的问题 [@AzideCupric](https://github.com/AzideCupric) ([#273](https://github.com/felinae98/nonebot-bison/pull/273))
 - 在Postgresql下，user_target字段使用jsonb代替json [@LambdaYH](https://github.com/LambdaYH) ([#271](https://github.com/felinae98/nonebot-bison/pull/271))
 
 ## v0.7.3

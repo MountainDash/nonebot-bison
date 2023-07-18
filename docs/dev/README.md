@@ -1,5 +1,6 @@
 ---
 sidebar: auto
+next: /dev/workflow
 ---
 
 # 基本开发须知
@@ -257,3 +258,33 @@ CustomPost 的可选参数及作用与上文中的[Post](#什么是nonebot-bison
 ```
 
 :::
+
+## Bison 的工作流程
+
+```mermaid
+flowchart TB
+    init[初始化] --> schedule_pool[调度池]
+
+    schedule_pool((调度池)) --> choose_platform[选择Platform]
+    choose_platform --> get_targets[获取Target列表]
+    get_targets --> get_rawposts[获取Target的RawPost列表]
+    get_rawposts --> compare_with_old[(与上次状态对比)]
+
+    compare_with_old -- 有新增 --> dispatch[分发到对应用户]
+    compare_with_old -- 无新增 --> schedule_pool
+
+    dispatch --> user_filter[用户订阅过滤]
+
+    user_filter -- 不匹配 --> schedule_pool
+    user_filter -- 匹配 --> parse[选择Post解析方式]
+
+    parse -.-> to_text((文本Post))
+    parse -.-> to_pic((图片Post))
+    parse -.-> to_other((...))
+
+    to_text -.-> message_render[消息渲染]
+    to_pic -.-> message_render
+    to_other -.-> message_render
+
+    message_render --> send_to[发送到对应用户]
+```

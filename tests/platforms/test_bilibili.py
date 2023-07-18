@@ -26,7 +26,7 @@ def bilibili(app: App):
     return platform_manager["bilibili"](ProcessContext(), AsyncClient())
 
 
-@pytest.fixture
+@pytest.fixture()
 def without_dynamic(app: App):
     return {
         "code": 0,

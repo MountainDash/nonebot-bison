@@ -1,5 +1,5 @@
-import calendar
 import time
+import calendar
 from typing import Any
 
 import feedparser
@@ -7,13 +7,12 @@ from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
-from ..types import RawPost, Target
-from ..utils import SchedulerConfig, text_similarity
 from .platform import NewMessage
+from ..types import Target, RawPost
+from ..utils import SchedulerConfig, text_similarity
 
 
 class RssSchedConf(SchedulerConfig):
-
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}

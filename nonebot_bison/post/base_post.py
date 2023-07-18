@@ -1,22 +1,23 @@
 from io import BytesIO
-from dataclasses import field, dataclass
 
 from PIL import Image
+from pydantic import Field
 from nonebot.log import logger
 import nonebot_plugin_saa as saa
 from nonebot_plugin_saa.utils import MessageSegmentFactory
 
-from ..utils import parse_text, http_client
-from .abstract_post import BasePost, AbstractPost
+from ..utils import http_client
+from .abstract_post import AbstractPost
 
 
-@dataclass
-class _Post(BasePost):
+class BasePost(AbstractPost):
+    """所有平台都应该支持的Post类型"""
+
     target_type: str
     text: str
     url: str | None = None
     target_name: str | None = None
-    pics: list[str | bytes] = field(default_factory=list)
+    pics: list[str | bytes] = Field(default_factory=list)
 
     _message: list[MessageSegmentFactory] | None = None
     _pic_message: list[MessageSegmentFactory] | None = None
@@ -97,7 +98,7 @@ class _Post(BasePost):
         self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
 
-    async def generate_text_messages(self) -> list[MessageSegmentFactory]:
+    async def generate(self) -> list[MessageSegmentFactory]:
         if self._message is None:
             await self._pic_merge()
             msg_segments: list[MessageSegmentFactory] = []
@@ -117,25 +118,6 @@ class _Post(BasePost):
             self._message = msg_segments
         return self._message
 
-    async def generate_pic_messages(self) -> list[MessageSegmentFactory]:
-        if self._pic_message is None:
-            await self._pic_merge()
-            msg_segments: list[MessageSegmentFactory] = []
-            text = ""
-            if self.text:
-                text += f"{self.text}"
-                text += "\n"
-            text += f"来源: {self.target_type}"
-            if self.target_name:
-                text += f" {self.target_name}"
-            msg_segments.append(await parse_text(text))
-            if not self.target_type == "rss" and self.url:
-                msg_segments.append(saa.Text(self.url))
-            for pic in self.pics:
-                msg_segments.append(saa.Image(pic))
-            self._pic_message = msg_segments
-        return self._pic_message
-
     def __str__(self):
         return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(
             self.target_type,
@@ -144,8 +126,3 @@ class _Post(BasePost):
             self.url,
             ", ".join("b64img" if isinstance(x, bytes) or x.startswith("base64") else x for x in self.pics),
         )
-
-
-@dataclass
-class Post(AbstractPost, _Post):
-    pass

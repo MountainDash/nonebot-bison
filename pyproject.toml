@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-bison"
-version = "0.7.3"
+version = "0.8.0"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"

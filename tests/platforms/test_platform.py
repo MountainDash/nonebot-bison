@@ -469,3 +469,165 @@ async def test_group(
     assert "p6" in id_set_2
     res3 = await group_platform.fetch_new_post(dummy, [user_info_factory([1, 4], [])])
     assert len(res3) == 0
+
+
+async def test_batch_fetch_new_message(app: App):
+    from nonebot_plugin_saa import TargetQQGroup
+
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.utils.context import ProcessContext
+    from nonebot_bison.types import Target, RawPost, UserSubInfo
+
+    class BatchNewMessage(NewMessage):
+        platform_name = "mock_platform"
+        name = "Mock Platform"
+        enabled = True
+        is_common = True
+        schedule_interval = 10
+        enable_tag = False
+        categories = {}
+        has_target = True
+
+        sub_index = 0
+
+        @classmethod
+        async def get_target_name(cls, client, _: "Target"):
+            return "MockPlatform"
+
+        def get_id(self, post: "RawPost") -> Any:
+            return post["id"]
+
+        def get_date(self, raw_post: "RawPost") -> float:
+            return raw_post["date"]
+
+        async def parse(self, raw_post: "RawPost") -> "Post":
+            return Post(
+                "mock_platform",
+                raw_post["text"],
+                "http://t.tt/" + str(self.get_id(raw_post)),
+                target_name="Mock",
+            )
+
+        @classmethod
+        async def batch_get_sub_list(cls, targets: list[Target]) -> list[list[RawPost]]:
+            assert len(targets) > 1
+            if cls.sub_index == 0:
+                cls.sub_index += 1
+                res = [
+                    [raw_post_list_2[0]],
+                    [raw_post_list_2[1]],
+                ]
+            else:
+                res = [
+                    [raw_post_list_2[0], raw_post_list_2[2]],
+                    [raw_post_list_2[1], raw_post_list_2[3]],
+                ]
+            res += [[]] * (len(targets) - 2)
+            return res
+
+    user1 = UserSubInfo(TargetQQGroup(group_id=123), [1, 2, 3], [])
+    user2 = UserSubInfo(TargetQQGroup(group_id=234), [1, 2, 3], [])
+
+    platform_obj = BatchNewMessage(ProcessContext(), None)  # type:ignore
+
+    res1 = await platform_obj.batch_fetch_new_post(
+        [
+            (Target("target1"), [user1]),
+            (Target("target2"), [user1, user2]),
+            (Target("target3"), [user2]),
+        ]
+    )
+    assert len(res1) == 0
+
+    res2 = await platform_obj.batch_fetch_new_post(
+        [
+            (Target("target1"), [user1]),
+            (Target("target2"), [user1, user2]),
+            (Target("target3"), [user2]),
+        ]
+    )
+    assert len(res2) == 3
+    send_set = set()
+    for platform_target, posts in res2:
+        for post in posts:
+            send_set.add((platform_target, post.text))
+    assert (TargetQQGroup(group_id=123), "p3") in send_set
+    assert (TargetQQGroup(group_id=123), "p4") in send_set
+    assert (TargetQQGroup(group_id=234), "p4") in send_set
+
+
+async def test_batch_fetch_compare_status(app: App):
+    from nonebot_plugin_saa import TargetQQGroup
+
+    from nonebot_bison.post import Post
+    from nonebot_bison.utils.context import ProcessContext
+    from nonebot_bison.platform.platform import StatusChange
+    from nonebot_bison.types import Target, RawPost, Category, UserSubInfo
+
+    class BatchStatusChange(StatusChange):
+        platform_name = "mock_platform"
+        name = "Mock Platform"
+        enabled = True
+        is_common = True
+        enable_tag = False
+        schedule_type = "interval"
+        schedule_kw = {"seconds": 10}
+        has_target = False
+        categories = {
+            Category(1): "转发",
+            Category(2): "视频",
+        }
+
+        sub_index = 0
+
+        @classmethod
+        async def batch_get_status(cls, targets: "list[Target]"):
+            assert len(targets) > 0
+            res = [{"s": cls.sub_index == 1} for _ in targets]
+            res[0]["s"] = not res[0]["s"]
+            if cls.sub_index == 0:
+                cls.sub_index += 1
+            return res
+
+        def compare_status(self, target, old_status, new_status) -> list["RawPost"]:
+            if old_status["s"] is False and new_status["s"] is True:
+                return [{"text": "on", "cat": 1}]
+            elif old_status["s"] is True and new_status["s"] is False:
+                return [{"text": "off", "cat": 2}]
+            return []
+
+        async def parse(self, raw_post) -> "Post":
+            return Post("mock_status", raw_post["text"], "")
+
+        def get_category(self, raw_post):
+            return raw_post["cat"]
+
+    batch_status_change = BatchStatusChange(ProcessContext(), None)  # type: ignore
+
+    user1 = UserSubInfo(TargetQQGroup(group_id=123), [1, 2, 3], [])
+    user2 = UserSubInfo(TargetQQGroup(group_id=234), [1, 2, 3], [])
+
+    res1 = await batch_status_change.batch_fetch_new_post(
+        [
+            (Target("target1"), [user1]),
+            (Target("target2"), [user1, user2]),
+        ]
+    )
+    assert len(res1) == 0
+
+    res2 = await batch_status_change.batch_fetch_new_post(
+        [
+            (Target("target1"), [user1]),
+            (Target("target2"), [user1, user2]),
+        ]
+    )
+
+    send_set = set()
+    for platform_target, posts in res2:
+        for post in posts:
+            send_set.add((platform_target, post.text))
+    assert len(send_set) == 3
+    assert (TargetQQGroup(group_id=123), "off") in send_set
+    assert (TargetQQGroup(group_id=123), "on") in send_set
+    assert (TargetQQGroup(group_id=234), "on") in send_set

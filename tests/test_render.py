@@ -7,12 +7,12 @@ from nonebug.app import App
 async def test_render(app: App):
     from nonebot_plugin_saa import Image
 
-    from nonebot_bison.utils import parse_text
+    from nonebot_bison.utils import text_to_saa
     from nonebot_bison.plugin_config import plugin_config
 
     plugin_config.bison_use_pic = True
 
-    res = await parse_text(
+    res = await text_to_saa(
         "a\nbbbbbbbbbbbbbbbbbbbbbb\ncd\n<h1>中文</h1>VuePress 由两部分组成：第一部分是一个极简静态网站生成器(opens new"
         " window)，它包含由 Vue 驱动的主题系统和插件 API，另一个部分是为书写技术文档而优化的默认主题，"
         "它的诞生初衷是为了支持 Vue 及其子项目的文档需求。每一个由 VuePress 生成的页面都带有预渲染好的 HTML，"

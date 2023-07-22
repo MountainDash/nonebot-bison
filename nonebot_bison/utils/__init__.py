@@ -16,7 +16,7 @@ from .scheduler_config import SchedulerConfig, scheduler
 __all__ = [
     "http_client",
     "Singleton",
-    "parse_text",
+    "text_to_saa",
     "ProcessContext",
     "html_to_text",
     "SchedulerConfig",
@@ -33,12 +33,17 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-async def parse_text(text: str) -> MessageSegmentFactory:
+async def _text_to_pic(text: str):
+    """调用htmlrender文转图"""
+    require("nonebot_plugin_htmlrender")
+    from nonebot_plugin_htmlrender import text_to_pic
+
+    return await text_to_pic(text)
+
+
+async def text_to_saa(text: str) -> MessageSegmentFactory:
     "return raw text if don't use pic, otherwise return rendered opcode"
     if plugin_config.bison_use_pic:
-        require("nonebot_plugin_htmlrender")
-        from nonebot_plugin_htmlrender import text_to_pic as _text_to_pic
-
         return Image(await _text_to_pic(text))
     else:
         return Text(text)

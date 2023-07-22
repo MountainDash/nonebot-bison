@@ -5,7 +5,7 @@ from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
 from ..config import config
 from ..types import Category
-from ..utils import parse_text
+from ..utils import text_to_saa
 from ..platform import platform_manager
 from .utils import ensure_user_info, gen_handle_cancel
 
@@ -35,7 +35,7 @@ def do_del_sub(del_sub: type[Matcher]):
                 res += " {}".format(", ".join(sub.tags))
             res += "\n"
         res += "请输入要删除的订阅的序号\n输入'取消'中止"
-        await MessageFactory(await parse_text(res)).send()
+        await MessageFactory(await text_to_saa(res)).send()
 
     @del_sub.receive(parameterless=[handle_cancel])
     async def do_del(

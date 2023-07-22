@@ -7,7 +7,8 @@ import nonebot_plugin_saa as saa
 from nonebot_plugin_saa.utils import MessageSegmentFactory
 
 from .abstract_post import AbstractPost
-from ..utils import parse_text, http_client
+from ..plugin_config import plugin_config
+from ..utils import http_client, text_to_saa
 
 
 class BasePost(AbstractPost):
@@ -131,7 +132,7 @@ class BasePost(AbstractPost):
 class PlainPost(BasePost):
     """最基本的Post, 支持简单的文转图"""
 
-    async def _generate(self) -> list[MessageSegmentFactory]:
+    async def _text_to_img(self) -> list[MessageSegmentFactory]:
         if self._pic_message is None:
             await self._pic_merge()
             msg_segments: list[MessageSegmentFactory] = []
@@ -142,7 +143,7 @@ class PlainPost(BasePost):
             text += f"来源: {self.target_type}"
             if self.target_name:
                 text += f" {self.target_name}"
-            msg_segments.append(await parse_text(text))
+            msg_segments.append(await text_to_saa(text))
             if not self.target_type == "rss" and self.url:
                 msg_segments.append(saa.Text(self.url))
             for pic in self.pics:
@@ -151,8 +152,7 @@ class PlainPost(BasePost):
         return self._pic_message
 
     async def generate(self) -> list[MessageSegmentFactory]:
-        try:
-            return await self._generate()
-        except Exception as e:
-            logger.error(f"调用PicPost.generate()时出现错误: {repr(e)}, 尝试使用BasePost.generate()")
+        if plugin_config.bison_use_pic:
+            return await self._text_to_img()
+        else:
             return await super().generate()

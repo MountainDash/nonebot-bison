@@ -4,7 +4,7 @@ from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
 from ..config import config
 from ..types import Category
-from ..utils import parse_text
+from ..utils import text_to_saa
 from .utils import ensure_user_info
 from ..platform import platform_manager
 
@@ -24,5 +24,5 @@ def do_query_sub(query_sub: type[Matcher]):
             if platform.enable_tag:
                 res += " {}".format(", ".join(sub.tags))
             res += "\n"
-        await MessageFactory(await parse_text(res)).send()
+        await MessageFactory(await text_to_saa(res)).send()
         await query_sub.finish()

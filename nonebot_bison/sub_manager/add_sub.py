@@ -89,7 +89,9 @@ def do_add_sub(add_sub: type[Matcher]):
         except Platform.ParseTargetException:
             await add_sub.reject("不能从你的输入中提取出id，请检查你输入的内容是否符合预期")
         else:
-            await add_sub.send(f"即将订阅的用户为:{state['platform']} {state['name']} {state['id']}\n如有错误请输入“取消”重新订阅")
+            await add_sub.send(
+                f"即将订阅的用户为:{state['platform']} {state['name']} {state['id']}\n如有错误请输入“取消”重新订阅"
+            )
 
     @add_sub.handle()
     async def prepare_get_categories(matcher: Matcher, state: T_State):

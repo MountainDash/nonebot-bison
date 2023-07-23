@@ -38,7 +38,7 @@ async def test_fetch_new(mcbbsnews, dummy_user_subinfo, raw_post_list):
     assert news_router.called
     post = res[0][1][0]
     raw_post = raw_post_list[0]
-    assert post.target_type == "MCBBS幻翼块讯"
+    assert post.platform == "MCBBS幻翼块讯"
     assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
     assert post.url == "https://www.mcbbs.net/{}".format(raw_post["url"])
     assert post.target_name == raw_post["category"]

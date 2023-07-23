@@ -9,6 +9,9 @@ class AbstractPost(ABC, BaseModel):
     compress: bool = False
     extra_msg: list[MessageFactory] = Field(default_factory=list)
 
+    class Config:
+        arbitrary_types_allowed = True
+
     @abstractmethod
     async def generate(self) -> list[MessageSegmentFactory]:
         "Generate MessageFactory list from this instance"

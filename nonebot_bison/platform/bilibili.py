@@ -10,7 +10,7 @@ from httpx import AsyncClient
 from nonebot.log import logger
 from pydantic import Field, BaseModel
 
-from ..post import Post
+from ..post import PlainPost
 from ..utils import SchedulerConfig, text_similarity
 from ..types import Tag, Target, RawPost, ApiError, Category
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
@@ -159,7 +159,7 @@ class Bilibili(NewMessage):
             raise CategoryNotSupport(post_type)
         return text, pic
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         card_content = json.loads(raw_post["card"])
         post_type = self.get_category(raw_post)
         target_name = raw_post["desc"]["user_profile"]["info"]["uname"]
@@ -189,7 +189,7 @@ class Bilibili(NewMessage):
             text += orig_text
         else:
             raise CategoryNotSupport(post_type)
-        return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
+        return PlainPost(platform="bilibili", text=text, url=url, pics=pic, target_name=target_name)
 
 
 class Bilibililive(StatusChange):
@@ -321,13 +321,13 @@ class Bilibililive(StatusChange):
         assert status.category != Category(0)
         return status.category
 
-    async def parse(self, raw_post: Info) -> Post:
+    async def parse(self, raw_post: Info) -> PlainPost:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
         pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
-        return Post(
-            self.name,
+        return PlainPost(
+            platform=self.name,
             text=title,
             url=url,
             pics=list(pic),
@@ -389,7 +389,7 @@ class BilibiliBangumi(StatusChange):
         else:
             return []
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         detail_res = await self.client.get(
             f'https://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
         )
@@ -406,8 +406,8 @@ class BilibiliBangumi(StatusChange):
         pic: list[str] = [lastest_episode["cover"]]
         target_name = detail_dict["result"]["season_title"]
         text = lastest_episode["share_copy"]
-        return Post(
-            self.name,
+        return PlainPost(
+            platform=self.name,
             text=text,
             url=url,
             pics=list(pic),

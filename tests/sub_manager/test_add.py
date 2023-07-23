@@ -86,7 +86,9 @@ async def test_add_with_target(app: App, init_scheduler):
             BotReply.add_reply_on_platform(platform_manager=platform_manager, common_platform=common_platform),
             True,
         )
-        event_2 = fake_group_message_event(message=Message("全部"), sender=Sender(card="", nickname="test", role="admin"))
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
         ctx.receive_event(bot, event_2)
         ctx.should_rejected()
         ctx.should_call_send(
@@ -380,7 +382,9 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
             BotReply.add_reply_on_platform(platform_manager=platform_manager, common_platform=common_platform),
             True,
         )
-        event_2 = fake_group_message_event(message=Message("全部"), sender=Sender(card="", nickname="test", role="admin"))
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
         ctx.receive_event(bot, event_2)
         ctx.should_rejected()
         ctx.should_call_send(
@@ -482,7 +486,9 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
             BotReply.add_reply_on_platform(platform_manager=platform_manager, common_platform=common_platform),
             True,
         )
-        event_2 = fake_group_message_event(message=Message("全部"), sender=Sender(card="", nickname="test", role="admin"))
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
         ctx.receive_event(bot, event_2)
         ctx.should_rejected()
         ctx.should_call_send(
@@ -559,7 +565,9 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
             BotReply.add_reply_on_platform(platform_manager=platform_manager, common_platform=common_platform),
             True,
         )
-        event_2 = fake_group_message_event(message=Message("全部"), sender=Sender(card="", nickname="test", role="admin"))
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
         ctx.receive_event(bot, event_2)
         ctx.should_rejected()
         ctx.should_call_send(

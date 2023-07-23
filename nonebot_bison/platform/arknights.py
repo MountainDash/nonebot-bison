@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from nonebot.plugin import require
 from bs4 import BeautifulSoup as bs
 
-from ..post import Post
+from ..post import PlainPost
 from ..types import Target, RawPost, Category
 from ..utils.scheduler_config import SchedulerConfig
 from .platform import NewMessage, StatusChange, CategoryNotRecognize
@@ -44,7 +44,7 @@ class Arknights(NewMessage):
     def get_category(self, _) -> Category:
         return Category(1)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         raw_data = await self.client.get(
             f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
@@ -86,14 +86,13 @@ class Arknights(NewMessage):
                 text = "图片渲染失败"
         else:
             raise CategoryNotRecognize("未找到可渲染部分")
-        return Post(
-            "arknights",
+        return PlainPost(
+            platform="arknights",
             text=text,
             url="",
             target_name="明日方舟游戏内公告",
             pics=pics,
             compress=True,
-            override_use_pic=False,
         )
 
 
@@ -120,20 +119,25 @@ class AkVersion(StatusChange):
         res.update(res_preanounce.json())
         return res
 
+    def _gen_post(self, text: str) -> PlainPost:
+        return PlainPost(
+            platform="arknights",
+            text=text,
+            target_name="明日方舟更新信息",
+        )
+
     def compare_status(self, _, old_status, new_status):
         res = []
         if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
-            res.append(
-                Post("arknights", text="登录界面维护公告上线（大概是开始维护了)", target_name="明日方舟更新信息")
-            )
+            res.append(self._gen_post("登录界面维护公告上线（大概是开始维护了)"))
         elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
-            res.append(
-                Post("arknights", text="登录界面维护公告下线（大概是开服了，冲！）", target_name="明日方舟更新信息")
-            )
+            res.append(self._gen_post("登录界面维护公告下线（大概是开服了，冲！）"))
+
         if old_status.get("clientVersion") != new_status.get("clientVersion"):
-            res.append(Post("arknights", text="游戏本体更新（大更新）", target_name="明日方舟更新信息"))
+            res.append(self._gen_post("游戏本体更新（大更新）"))
         if old_status.get("resVersion") != new_status.get("resVersion"):
-            res.append(Post("arknights", text="游戏资源更新（小更新）", target_name="明日方舟更新信息"))
+            res.append(self._gen_post("游戏资源更新（小更新）"))
+
         return res
 
     def get_category(self, _):
@@ -170,7 +174,7 @@ class MonsterSiren(NewMessage):
     def get_category(self, _) -> Category:
         return Category(3)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
         res = await self.client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
         raw_data = res.json()
@@ -179,14 +183,13 @@ class MonsterSiren(NewMessage):
         soup = bs(content, "html.parser")
         imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
-        return Post(
-            "monster-siren",
+        return PlainPost(
+            platform="monster-siren",
             text=text,
             pics=imgs,
             url=url,
             target_name="塞壬唱片新闻",
             compress=True,
-            override_use_pic=False,
         )
 
 
@@ -217,14 +220,13 @@ class TerraHistoricusComic(NewMessage):
     def get_category(self, _) -> Category:
         return Category(4)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
-        return Post(
-            "terra-historicus",
+        return PlainPost(
+            platform="terra-historicus",
             text=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
             pics=[raw_post["coverUrl"]],
             url=url,
             target_name="泰拉记事社漫画",
             compress=True,
-            override_use_pic=False,
         )

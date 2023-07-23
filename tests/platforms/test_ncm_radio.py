@@ -52,7 +52,7 @@ async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo
     ncm_router.mock(return_value=Response(200, json=ncm_radio_1))
     res2 = await ncm_radio.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     post = res2[0][1][0]
-    assert post.target_type == "ncm-radio"
+    assert post.platform == "ncm-radio"
     assert post.text == "网易云电台更新：「松烟行动」灰齐山麓"
     assert post.url == "https://music.163.com/#/program/2494997688"
     assert post.pics == ["http://p1.music.126.net/H5em5xUNIYXcjJhOmeaSqQ==/109951166647436789.jpg"]

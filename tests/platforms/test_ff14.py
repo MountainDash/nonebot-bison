@@ -41,7 +41,7 @@ async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_new
     res = await ff14.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert newdata.called
     post = res[0][1][0]
-    assert post.target_type == "ff14"
+    assert post.platform == "ff14"
     assert post.text == "最终幻想XIV 银质坠饰 ＜友谊永存＞预售开启！\n最终幻想XIV 银质坠饰 ＜友谊永存＞现已开启预售！"
     assert post.url == "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/336870"
     assert post.target_name == "最终幻想XIV官方公告"

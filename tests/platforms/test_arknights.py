@@ -76,7 +76,7 @@ async def test_fetch_new(
     assert len(res3[0][1]) == 1
     assert detail_router.called
     post = res3[0][1][0]
-    assert post.target_type == "arknights"
+    assert post.platform == "arknights"
     assert post.text == ""
     assert post.url == ""
     assert post.target_name == "明日方舟游戏内公告"
@@ -87,7 +87,7 @@ async def test_fetch_new(
     res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res) == 1
     post = res[0][1][0]
-    assert post.target_type == "terra-historicus"
+    assert post.platform == "terra-historicus"
     assert post.text == "123罗德岛！？ - 「掠风」篇"
     assert post.url == "https://terra-historicus.hypergryph.com/comic/6253/episode/4938"
     assert post.pics == ["https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png"]
@@ -130,7 +130,7 @@ async def test_send_with_render(
     assert len(res3[0][1]) == 1
     assert detail_router.called
     post = res3[0][1][0]
-    assert post.target_type == "arknights"
+    assert post.platform == "arknights"
     assert post.text == ""
     assert post.url == ""
     assert post.target_name == "明日方舟游戏内公告"

@@ -65,7 +65,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert len(res3[0][1]) == 1
     assert not detail_router.called
     post = res3[0][1][0]
-    assert post.target_type == "weibo"
+    assert post.platform == "weibo"
     assert post.text == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
     assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
     assert post.target_name == "明日方舟Arknights"

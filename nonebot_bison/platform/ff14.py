@@ -2,7 +2,7 @@ from typing import Any
 
 from httpx import AsyncClient
 
-from ..post import Post
+from ..post import PlainPost
 from ..utils import scheduler
 from .platform import NewMessage
 from ..types import Target, RawPost
@@ -39,7 +39,7 @@ class FF14(NewMessage):
     def get_date(self, _: RawPost) -> None:
         return None
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         text = f'{raw_post["Title"]}\n{raw_post["Summary"]}'
         url = raw_post["Author"]
-        return Post("ff14", text=text, url=url, target_name="最终幻想XIV官方公告")
+        return PlainPost(platform="ff14", text=text, url=url, target_name="最终幻想XIV官方公告")

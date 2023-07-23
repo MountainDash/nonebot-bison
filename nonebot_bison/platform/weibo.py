@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
 
-from ..post import Post
+from ..post import PlainPost
 from .platform import NewMessage
 from ..utils import SchedulerConfig, http_client
 from ..types import Tag, Target, RawPost, ApiError, Category
@@ -110,7 +110,7 @@ class Weibo(NewMessage):
         text = raw_text.replace("<br />", "\n")
         return bs(text, "html.parser").text
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         header = {
             "accept": (
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,"
@@ -154,8 +154,8 @@ class Weibo(NewMessage):
                 pics.append(res.content)
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
         # return parsed_text, detail_url, pic_urls
-        return Post(
-            "weibo",
+        return PlainPost(
+            platform="weibo",
             text=parsed_text,
             url=detail_url,
             pics=pics,

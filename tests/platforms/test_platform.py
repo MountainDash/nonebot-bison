@@ -37,7 +37,7 @@ def user_info_factory(app: App, dummy_user):
 
 @pytest.fixture()
 def mock_platform_without_cats_tags(app: App):
-    from nonebot_bison.post import Post
+    from nonebot_bison.post import Post, PlainPost
     from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
 
@@ -63,11 +63,11 @@ def mock_platform_without_cats_tags(app: App):
         def get_date(self, raw_post: "RawPost") -> float:
             return raw_post["date"]
 
-        async def parse(self, raw_post: "RawPost") -> "Post":
-            return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
+        async def parse(self, raw_post: "RawPost") -> Post:
+            return PlainPost(
+                platform="mock_platform",
+                text=raw_post["text"],
+                url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
             )
 
@@ -84,7 +84,7 @@ def mock_platform_without_cats_tags(app: App):
 
 @pytest.fixture()
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
+    from nonebot_bison.post import Post, PlainPost
     from nonebot_bison.utils import SchedulerConfig
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.types import Tag, Target, RawPost, Category
@@ -126,10 +126,10 @@ def mock_platform(app: App):
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
+            return PlainPost(
+                platform="mock_platform",
+                text=raw_post["text"],
+                url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
             )
 
@@ -158,7 +158,7 @@ def mock_scheduler_conf(app):
 
 @pytest.fixture()
 def mock_platform_no_target(app: App, mock_scheduler_conf):
-    from nonebot_bison.post import Post
+    from nonebot_bison.post import Post, PlainPost
     from nonebot_bison.types import Tag, Target, RawPost, Category
     from nonebot_bison.platform.platform import NewMessage, CategoryNotSupport
 
@@ -193,10 +193,10 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
+            return PlainPost(
+                platform="mock_platform",
+                text=raw_post["text"],
+                url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
             )
 
@@ -213,7 +213,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
 @pytest.fixture()
 def mock_platform_no_target_2(app: App, mock_scheduler_conf):
-    from nonebot_bison.post import Post
+    from nonebot_bison.post import Post, PlainPost
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.types import Tag, Target, RawPost, Category
 
@@ -249,10 +249,10 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
             return raw_post["category"]
 
         async def parse(self, raw_post: "RawPost") -> "Post":
-            return Post(
-                "mock_platform_2",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
+            return PlainPost(
+                platform="mock_platform_2",
+                text=raw_post["text"],
+                url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
             )
 
@@ -275,7 +275,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
 
 @pytest.fixture()
 def mock_status_change(app: App):
-    from nonebot_bison.post import Post
+    from nonebot_bison.post import Post, PlainPost
     from nonebot_bison.platform.platform import StatusChange
     from nonebot_bison.types import Target, RawPost, Category
 
@@ -314,7 +314,7 @@ def mock_status_change(app: App):
             return []
 
         async def parse(self, raw_post) -> "Post":
-            return Post("mock_status", raw_post["text"], "")
+            return PlainPost(platform="mock_status", text=raw_post["text"], url="")
 
         def get_category(self, raw_post):
             return raw_post["cat"]

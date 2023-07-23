@@ -7,7 +7,7 @@ from nonebot.log import logger
 from bs4 import Tag, BeautifulSoup
 from nonebot.plugin import require
 
-from ..post import Post
+from ..post import PlainPost
 from ..types import Target, RawPost, Category
 from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage, CategoryNotSupport, CategoryNotRecognize
@@ -139,7 +139,7 @@ class McbbsNews(NewMessage):
             raise CategoryNotRecognize(f"Mcbbsnews订阅尚未识别 {categoty_name}")
         return category_id
 
-    async def parse(self, post: RawPost) -> Post:
+    async def parse(self, post: RawPost) -> PlainPost:
         """获取并分配正式推文交由相应的函数渲染"""
         post_url = "https://www.mcbbs.net/{}".format(post["url"])
         async with http_client() as client:
@@ -154,8 +154,8 @@ class McbbsNews(NewMessage):
             post_id = None
         pics = await self._news_render(post_url, f"#{post_id}")
 
-        return Post(
-            self.name,
+        return PlainPost(
+            platform=self.name,
             text="{}\n│\n└由 {} 发表".format(post["title"], post["author"]),
             url=post_url,
             pics=list(pics),

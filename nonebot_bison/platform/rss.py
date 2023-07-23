@@ -6,7 +6,7 @@ import feedparser
 from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 
-from ..post import Post
+from ..post import PlainPost
 from .platform import NewMessage
 from ..types import Target, RawPost
 from ..utils import SchedulerConfig, text_similarity
@@ -61,7 +61,7 @@ class Rss(NewMessage):
             text = title + "\n\n" + desc
         return text
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> PlainPost:
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()
@@ -71,8 +71,8 @@ class Rss(NewMessage):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
-        return Post(
-            "rss",
+        return PlainPost(
+            platform="rss",
             text=text,
             url=raw_post.link,
             pics=pics,

@@ -92,6 +92,7 @@ async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_sub
     bilibili_main_page_router.mock(return_value=Response(200))
 
     target = Target("13164144")
+    bili_live.set_stored_data(target, {})
     res = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
     assert bili_live_router.call_count == 1
     assert len(res) == 0

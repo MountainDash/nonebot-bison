@@ -1,4 +1,4 @@
-# Jinja模版与LOGO图片说破
+# Jinja模版与LOGO图片说明
 
 ## LOGO图片
 - `templates/ceobecanteen_logo.png`

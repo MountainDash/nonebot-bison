@@ -95,6 +95,8 @@ if plugin_config.bison_filter_log:
 
 
 def text_similarity(str1, str2) -> float:
+    if len(str1) == 0 or len(str2) == 0:
+        return 1.0
     matcher = difflib.SequenceMatcher(None, str1, str2)
     t = sum(temp.size for temp in matcher.get_matching_blocks())
     return t / min(len(str1), len(str2))

@@ -7,27 +7,27 @@
 <body>
     <div id="ceobecanteen-card">
         {% if card.info.image %}
-        <img src="{{ card.info.image }}" class="cover-img">
+        <img src="{{ card.image }}" class="cover-img">
         {% endif %}
         {% if card.info.text %}
-        <div class="main-content">{{ card.info.text }}</div>
+        <div class="main-content">{{ card.text }}</div>
         {% endif %}
         <div class="footer">
             <div class="datasource">
                 <div class="datasource-text">
-                    <div class="datasource-name">{{ card.info.datasource }}</div>
-                    <div class="time">{{ card.info.time }}</div>
+                    <div class="datasource-name">{{ card.datasource }}</div>
+                    <div class="time">{{ card.time }}</div>
                 </div>
-                <img class='qr' src="{{ card.info.qr }}">
+                <img class='qr' src="{{ card.qr }}">
             </div>
             <div class="source">
-                <img class='bison-logo' src="{{ card.info.bison_logo }}">
+                <img class='bison-logo' src="{{ card.bison_logo }}">
                 <div class="source-text">
                     <div class="slogan">小刻吃到饼啦！</div>
                     <div class="linkage">bison&小刻食堂联动</div>
                     <div class="description">来自小刻食堂再转发</div>
                 </div>
-                <img class='ceobe-logo' src="{{ card.info.ceobecanteen_logo }}">
+                <img class='ceobe-logo' src="{{ card.ceobecanteen_logo }}">
             </div>
         </div>
     </div>

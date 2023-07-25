@@ -66,7 +66,7 @@ class PlainPost(BasePost):
             if self.target_name:
                 text += f" {self.target_name}"
             msg_segments.append(await text_to_saa(text))
-            if not self.platform == "rss" and self.url:
+            if self.url:
                 msg_segments.append(saa.Text(self.url))
             for pic in self.pics:
                 msg_segments.append(saa.Image(pic))

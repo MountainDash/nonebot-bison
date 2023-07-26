@@ -1,4 +1,3 @@
-import json
 from typing import Any
 from pathlib import Path
 
@@ -33,16 +32,14 @@ class Arknights(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get(
-            "https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS"
-        )
+        raw_data = await self.client.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
         return raw_data.json()["data"]["list"]
 
     def get_id(self, post: RawPost) -> Any:
         return post["cid"]
 
-    def get_date(self, post: RawPost) -> Any:
-        return post["displayTime"]
+    def get_date(self, _: RawPost) -> Any:
+        return None
 
     def get_category(self, _) -> Category:
         return Category(1)
@@ -53,25 +50,26 @@ class Arknights(NewMessage):
         )
         raw_data = raw_data.json()["data"]
 
-        announce_title = raw_data.get("header") if raw_data.get("header")!="" else raw_data.get("title") 
-        text = "游戏公告更新：" + announce_title.replace('\n','')
+        announce_title = raw_data.get("header") if raw_data.get("header") != "" else raw_data.get("title")
+        # text = "游戏公告更新：" + announce_title.replace('\n','')
+        text = ""
 
         pics = []
         if "content" in raw_data:
             require("nonebot_plugin_htmlrender")
             from nonebot_plugin_htmlrender import template_to_pic
 
-            template_path = str(Path(__file__).parent / "post" / "templates" /"ark_announce")
+            template_path = str(Path(__file__).parent.parent / "post/templates/ark_announce")
             pic_data = await template_to_pic(
-            template_path=template_path,
-            template_name="index.html",
-            templates={
-                    "announce_title":announce_title,
+                template_path=template_path,
+                template_name="index.html",
+                templates={
+                    "announce_title": announce_title,
                     "content": raw_data["content"],
                 },
-            pages={
-                "viewport": {"width": 500, "height": 6400},
-                "base_url": f"file://{template_path}",
+                pages={
+                    "viewport": {"width": 500, "height": 6400},
+                    "base_url": f"file://{template_path}",
                 },
             )
             # render = Render()
@@ -84,7 +82,7 @@ class Arknights(NewMessage):
             else:
                 text = "图片渲染失败"
         elif "bannerImageUrl" in raw_data:
-            pics.append(pic["bannerImageUrl"])  # type: ignore
+            pics.append(raw_post["bannerImageUrl"])  # type: ignore
         else:
             raise CategoryNotRecognize("未找到可渲染部分")
         return Post(

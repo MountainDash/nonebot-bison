@@ -3,7 +3,7 @@ from nonebug import App
 
 
 @pytest.mark.asyncio
-async def test_text_to_pic(app: App):
+async def test_rss_has_url(app: App):
     from nonebot_bison.post.plain_post import PlainPost
 
     post = PlainPost(

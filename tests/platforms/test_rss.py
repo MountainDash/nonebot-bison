@@ -165,7 +165,7 @@ async def test_fetch_new_4(
     assert post1.text == "85rjej.jpg"
 
 
-def test_text_similarity_with_text_empty():
+def test_text_similarity():
     from nonebot_bison.utils import text_similarity
 
     str1 = ""

@@ -49,8 +49,8 @@ async def test_fetch_new(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    ak_list_router = respx.get("https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/announcement.meta.json")
-    detail_router = respx.get("https://ak.hycdn.cn/announce/IOS/announcement/807_1640060583.html")
+    ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
+    detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/5716")
     version_router = respx.get("https://ak-conf.hypergryph.com/config/prod/official/IOS/version")
     preannouncement_router = respx.get(
         "https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/preannouncement.meta.json"

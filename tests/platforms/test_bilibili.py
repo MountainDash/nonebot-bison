@@ -53,6 +53,22 @@ async def test_video_forward(bilibili, bing_dy_list):
 
 
 @pytest.mark.asyncio
+async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
+    # 视频简介和动态文本其中一方为空的情况
+    post = await bilibili.parse(bing_dy_list[2])
+    assert (
+        post.text
+        == "阿消的罗德岛闲谈直播#01:《女人最喜欢的女人，就是在战场上熠熠生辉的女人》"
+        + "\n\n"
+        + "本系列视频为饼组成员的有趣直播录播，主要内容为方舟相关，未来可能系列其他视频会包含部分饼组团建日常等。"
+        "仅为娱乐性视频，内容与常规饼学预测无关。视频仅为当期主播主观观点，不代表饼组观点。仅供娱乐。"
+        "\n\n直播主播:@寒蝉慕夏 \n后期剪辑:@Melodiesviel \n\n本群视频为9.11组员慕夏直播录播，"
+        "包含慕夏对新PV的个人解读，风笛厨力疯狂放出，CP言论输出，9.16轮换池预测视频分析和理智规划杂谈内容。"
+        "\n注意:内含大量个人性质对风笛的厨力观点，与多CP混乱发言，不适者请及时点击退出或跳到下一片段。"
+    )
+
+
+@pytest.mark.asyncio
 async def test_article_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[4])
     assert (

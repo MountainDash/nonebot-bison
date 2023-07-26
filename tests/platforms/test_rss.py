@@ -163,3 +163,28 @@ async def test_fetch_new_4(
     post1 = res2[0][1][0]
     assert post1.url == "https://wallhaven.cc/w/85rjej"
     assert post1.text == "85rjej.jpg"
+
+
+def test_text_similarity_with_text_empty():
+    from nonebot_bison.utils import text_similarity
+
+    str1 = ""
+    str2 = "xxxx"
+    assert text_similarity(str1, str2) == 1.0
+    str1 = "xxxx"
+    str2 = ""
+    assert text_similarity(str1, str2) == 1.0
+    str1 = (
+        "天使九局下被追平，米基-莫尼亚克(Mickey Moniak)超前安打拒绝剧本，天使7-6老虎；阿莱克-博姆（Alec"
+        " Bohm）再见安打，费城人4-3金莺..."
+    )
+    str2 = (
+        "天使九局下被追平，米基-莫尼亚克(Mickey Moniak)超前安打拒绝剧本，天使7-6老虎；阿莱克-博姆（Alec"
+        " Bohm）再见安打，费城人4-3金莺；布兰登-洛维（Brandon Lowe）阳春炮，光芒4-1马林鱼；皮特-阿隆索(Pete Alonso)、"
+        "丹尼尔-沃格尔巴克(Daniel Vogelbach)背靠背本垒打，大都会9-3扬基；吉田正尚（Masataka Yoshida）3安2打点，"
+        "红袜7-1勇士；凯尔-塔克（Kyle Tucker）阳春炮，太空人4-3连胜游骑兵。"
+    )
+    assert text_similarity(str1, str2) > 0.8
+    str1 = "我爱你"
+    str2 = "你爱我"
+    assert text_similarity(str1, str2) <= 0.8

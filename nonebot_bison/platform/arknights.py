@@ -1,5 +1,5 @@
-import json
 from typing import Any
+from pathlib import Path
 
 from httpx import AsyncClient
 from nonebot.plugin import require
@@ -32,36 +32,45 @@ class Arknights(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get(
-            "https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/announcement.meta.json"
-        )
-        return json.loads(raw_data.text)["announceList"]
+        raw_data = await self.client.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
+        return raw_data.json()["data"]["list"]
 
     def get_id(self, post: RawPost) -> Any:
-        return post["announceId"]
+        return post["cid"]
 
-    def get_date(self, _: RawPost) -> None:
+    def get_date(self, _: RawPost) -> Any:
         return None
 
     def get_category(self, _) -> Category:
         return Category(1)
 
     async def parse(self, raw_post: RawPost) -> Post:
-        announce_url = raw_post["webUrl"]
-        text = ""
-        raw_html = await self.client.get(announce_url)
-        soup = bs(raw_html.text, "html.parser")
-        pics = []
-        if soup.find("div", class_="standerd-container"):
-            # 图文
-            require("nonebot_plugin_htmlrender")
-            from nonebot_plugin_htmlrender import capture_element
+        raw_data = await self.client.get(
+            f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
+        )
+        raw_data = raw_data.json()["data"]
 
-            pic_data = await capture_element(
-                announce_url,
-                "div.main",
-                viewport={"width": 320, "height": 6400},
-                device_scale_factor=3,
+        announce_title = raw_data.get("header") if raw_data.get("header") != "" else raw_data.get("title")
+        # text = "游戏公告更新：" + announce_title.replace('\n','')
+        text = ""
+
+        pics = []
+        if "content" in raw_data:
+            require("nonebot_plugin_htmlrender")
+            from nonebot_plugin_htmlrender import template_to_pic
+
+            template_path = str(Path(__file__).parent.parent / "post/templates/ark_announce")
+            pic_data = await template_to_pic(
+                template_path=template_path,
+                template_name="index.html",
+                templates={
+                    "announce_title": announce_title,
+                    "content": raw_data["content"],
+                },
+                pages={
+                    "viewport": {"width": 500, "height": 6400},
+                    "base_url": f"file://{template_path}",
+                },
             )
             # render = Render()
             # viewport = {"width": 320, "height": 6400, "deviceScaleFactor": 3}
@@ -72,8 +81,8 @@ class Arknights(NewMessage):
                 pics.append(pic_data)
             else:
                 text = "图片渲染失败"
-        elif pic := soup.find("img", class_="banner-image"):
-            pics.append(pic["src"])  # type: ignore
+        elif "bannerImageUrl" in raw_data:
+            pics.append(raw_post["bannerImageUrl"])  # type: ignore
         else:
             raise CategoryNotRecognize("未找到可渲染部分")
         return Post(

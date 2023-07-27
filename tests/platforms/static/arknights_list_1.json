@@ -1,108 +1,148 @@
 {
-  "focusAnnounceId": "816",
-  "announceList": [
-    {
-      "announceId": "805",
-      "title": "「风雪过境」\n暨跨年活动开启",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/805_1640074952.html",
-      "day": 21,
-      "month": 12,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "807",
-      "title": "【雪融之诺】\n限时寻访开启",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/807_1640060583.html",
-      "day": 21,
-      "month": 12,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "809",
-      "title": "冰原信使系列\n新装限时上架",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/809_1640060505.html",
-      "day": 21,
-      "month": 12,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "810",
-      "title": "寒武纪系列\n限时复刻上架",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/810_1640060511.html",
-      "day": 21,
-      "month": 12,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "806",
-      "title": "跨年欢庆·回首\n限时寻访说明",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/806_1639379808.html",
-      "day": 14,
-      "month": 12,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "802",
-      "title": "「制作组通讯」\n#15期",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/802_1638871766.html",
-      "day": 8,
-      "month": 12,
-      "group": "SYSTEM"
-    },
-    {
-      "announceId": "97",
-      "title": "新人寻访特惠\n必得六星干员",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/97_1606379786.html",
-      "day": 30,
-      "month": 4,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "95",
-      "title": "通关特定关卡\n赠送专属时装",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/95_1606379781.html",
-      "day": 30,
-      "month": 4,
-      "group": "ACTIVITY"
-    },
-    {
-      "announceId": "192",
-      "title": "《明日方舟》\n公测开启说明",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/192_1606379744.html",
-      "day": 30,
-      "month": 4,
-      "group": "SYSTEM"
-    },
-    {
-      "announceId": "98",
-      "title": "《明日方舟》\n公平运营申明",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/98_1638970453.html",
-      "day": 30,
-      "month": 4,
-      "group": "SYSTEM"
-    },
-    {
-      "announceId": "94",
-      "title": "常驻活动介绍",
-      "isWebUrl": true,
-      "webUrl": "https://ak.hycdn.cn/announce/IOS/announcement/94_1606379757.html",
-      "day": 30,
-      "month": 4,
-      "group": "ACTIVITY"
+  "code": 0,
+  "msg": "",
+  "data": {
+    "list": [
+      {
+        "cid": "8397",
+        "title": "【公开招募】\n标签刷新通知",
+        "category": 2,
+        "displayTime": "2023-07-23",
+        "updatedAt": 1689935607,
+        "sticky": false
+      },
+      {
+        "cid": "5716",
+        "title": "「夏日嘉年华」\n活动即将开启",
+        "category": 1,
+        "displayTime": "2023-07-23",
+        "updatedAt": 1689938907,
+        "sticky": false
+      },
+      {
+        "cid": "0525",
+        "title": "云间清醒梦\n限定寻访说明",
+        "category": 1,
+        "displayTime": "2023-07-23",
+        "updatedAt": 1689938897,
+        "sticky": false
+      },
+      {
+        "cid": "4970",
+        "title": "软绵绵工坊\n网页活动进行中",
+        "category": 4,
+        "displayTime": "2023-07-23",
+        "updatedAt": 1690122403,
+        "sticky": false
+      },
+      {
+        "cid": "2009",
+        "title": "音律联觉\n录播正式上线",
+        "category": 4,
+        "displayTime": "2023-07-22",
+        "updatedAt": 1689999831,
+        "sticky": false
+      },
+      {
+        "cid": "1163",
+        "title": "常驻标准寻访\n限时出率上升",
+        "category": 1,
+        "displayTime": "2023-07-20",
+        "updatedAt": 1689747296,
+        "sticky": false
+      },
+      {
+        "cid": "7639",
+        "title": "【沙洲引路人】\n限时寻访开启",
+        "category": 1,
+        "displayTime": "2023-07-18",
+        "updatedAt": 1689592428,
+        "sticky": false
+      },
+      {
+        "cid": "4971",
+        "title": "时代系列\n新装限时上架",
+        "category": 1,
+        "displayTime": "2023-07-18",
+        "updatedAt": 1689592322,
+        "sticky": false
+      },
+      {
+        "cid": "1172",
+        "title": "珊瑚海岸系列\n限时复刻上架",
+        "category": 1,
+        "displayTime": "2023-07-18",
+        "updatedAt": 1689592270,
+        "sticky": false
+      },
+      {
+        "cid": "7645",
+        "title": "宿于繁星\n联名礼盒开售",
+        "category": 4,
+        "displayTime": "2023-07-14",
+        "updatedAt": 1689238086,
+        "sticky": false
+      },
+      {
+        "cid": "2017",
+        "title": "眠于树影之中\n系列周边开售",
+        "category": 4,
+        "displayTime": "2023-07-14",
+        "updatedAt": 1689238029,
+        "sticky": false
+      },
+      {
+        "cid": "0530",
+        "title": "UP主应援计划\n限时直播活动",
+        "category": 4,
+        "displayTime": "2023-07-13",
+        "updatedAt": 1689235574,
+        "sticky": false
+      },
+      {
+        "cid": "3453",
+        "title": "中坚寻访\n干员出率上升",
+        "category": 1,
+        "displayTime": "2023-07-13",
+        "updatedAt": 1689161228,
+        "sticky": false
+      },
+      {
+        "cid": "4989",
+        "title": "「绿野幻梦」\n复刻活动开启",
+        "category": 1,
+        "displayTime": "2023-07-12",
+        "updatedAt": 1689761635,
+        "sticky": false
+      },
+      {
+        "cid": "2037",
+        "title": "个人信息保护\n双清单查询指引",
+        "category": 2,
+        "displayTime": "2022-09-19",
+        "updatedAt": 1663316121,
+        "sticky": false
+      },
+      {
+        "cid": "7758",
+        "title": "《明日方舟》\n未成年护航指引",
+        "category": 2,
+        "displayTime": "2022-05-26",
+        "updatedAt": 1661249665,
+        "sticky": false
+      },
+      {
+        "cid": "0664",
+        "title": "《明日方舟》\n公平运营申明",
+        "category": 2,
+        "displayTime": "2019-04-30",
+        "updatedAt": 1678935570,
+        "sticky": false
+      }
+    ],
+    "popup": {
+      "popupList": [],
+      "defaultPopup": "7639"
     }
-  ],
-  "extra": {
-    "enable": false,
-    "name": "额外活动"
   }
 }

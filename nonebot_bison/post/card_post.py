@@ -4,7 +4,7 @@ from pydantic import Field, ValidationError
 from nonebot_plugin_saa import Image, MessageSegmentFactory
 
 from .abstract_post import AbstractPost
-from .cards import ThemeMetadata, card_manager
+from ..cards import ThemeMetadata, card_manager
 
 
 class CardPost(AbstractPost):

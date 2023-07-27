@@ -95,6 +95,10 @@ if plugin_config.bison_filter_log:
 
 
 def text_similarity(str1, str2) -> float:
+    """利用最长公共子序列的算法判断两个字符串是否相似，并返回0到1.0的相似度
+    目前以大于0.8认定两个字符串相似
+    当其中有一个字符串长度为0的特殊情况，认为两字符串相似，返回1.0
+    """
     if len(str1) == 0 or len(str2) == 0:
         return 1.0
     matcher = difflib.SequenceMatcher(None, str1, str2)

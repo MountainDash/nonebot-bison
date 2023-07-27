@@ -165,15 +165,23 @@ async def test_fetch_new_4(
     assert post1.text == "85rjej.jpg"
 
 
-def test_text_similarity():
-    from nonebot_bison.utils import text_similarity
+@pytest.fixture()
+def similar_text_process_template():
+    from nonebot_bison.utils import similar_text_process
 
+    custom_comparison = {0.8: lambda x, y: x if len(x) > len(y) else y, 0: lambda x, y: f"{x}\n\n{y}"}
+    return lambda str1, str2: similar_text_process(str1, str2, custom_comparison)
+
+
+def test_similar_text_process(similar_text_process_template):
     str1 = ""
     str2 = "xxxx"
-    assert text_similarity(str1, str2) == 1.0
+    res = similar_text_process_template(str1, str2)
+    assert res == "xxxx"
     str1 = "xxxx"
     str2 = ""
-    assert text_similarity(str1, str2) == 1.0
+    res = similar_text_process_template(str1, str2)
+    assert res == "xxxx"
     str1 = (
         "天使九局下被追平，米基-莫尼亚克(Mickey Moniak)超前安打拒绝剧本，天使7-6老虎；阿莱克-博姆（Alec"
         " Bohm）再见安打，费城人4-3金莺..."
@@ -184,7 +192,15 @@ def test_text_similarity():
         "丹尼尔-沃格尔巴克(Daniel Vogelbach)背靠背本垒打，大都会9-3扬基；吉田正尚（Masataka Yoshida）3安2打点，"
         "红袜7-1勇士；凯尔-塔克（Kyle Tucker）阳春炮，太空人4-3连胜游骑兵。"
     )
-    assert text_similarity(str1, str2) > 0.8
+    res = similar_text_process_template(str1, str2)
+    assert (
+        res
+        == "天使九局下被追平，米基-莫尼亚克(Mickey Moniak)超前安打拒绝剧本，天使7-6老虎；阿莱克-博姆（Alec"
+        " Bohm）再见安打，费城人4-3金莺；布兰登-洛维（Brandon Lowe）阳春炮，光芒4-1马林鱼；皮特-阿隆索(Pete Alonso)、"
+        "丹尼尔-沃格尔巴克(Daniel Vogelbach)背靠背本垒打，大都会9-3扬基；吉田正尚（Masataka Yoshida）3安2打点，"
+        "红袜7-1勇士；凯尔-塔克（Kyle Tucker）阳春炮，太空人4-3连胜游骑兵。"
+    )
     str1 = "我爱你"
     str2 = "你爱我"
-    assert text_similarity(str1, str2) <= 0.8
+    res = similar_text_process_template(str1, str2)
+    assert res == f"{str1}\n\n{str2}"

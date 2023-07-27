@@ -11,7 +11,7 @@ from nonebot.log import logger
 from pydantic import Field, BaseModel
 
 from ..post import Post
-from ..utils import SchedulerConfig, text_similarity
+from ..utils import SchedulerConfig, similar_text_process
 from ..types import Tag, Target, RawPost, ApiError, Category
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
@@ -139,16 +139,14 @@ class Bilibili(NewMessage):
             dynamic = card.get("dynamic", "")
             title = card["title"]
             desc = card.get("desc", "")
-
-            if text_similarity(desc, dynamic) > 0.8:
-                # 如果视频简介和动态内容相似，就只保留长的那个
-                if len(dynamic) > len(desc):
-                    text = f"{dynamic}\n=================\n{title}"
-                else:
-                    text = f"{title}\n\n{desc}"
-            else:
-                # 否则就把两个拼起来
-                text = f"{dynamic}\n=================\n{title}\n\n{desc}"
+            text = similar_text_process(
+                desc,
+                dynamic,
+                {
+                    0.8: lambda x, y: f"{title}\n\n{x}" if len(x) > len(y) else f"{y}\n=================\n{title}",
+                    0: lambda x, y: f"{y}\n=================\n{title}\n\n{x}",
+                },
+            )
 
             pic = [card["pic"]]
         elif post_type == 4:

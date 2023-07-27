@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import SchedulerConfig, text_similarity
+from ..utils import SchedulerConfig, similar_text_process
 
 
 class RssSchedConf(SchedulerConfig):
@@ -57,13 +57,9 @@ class Rss(NewMessage):
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()
-        if not title or not desc:
-            text = title or desc
-        else:
-            if text_similarity(desc, title) > 0.8:
-                text = desc if len(desc) > len(title) else title
-            else:
-                text = f"{title}\n\n{desc}"
+        text = similar_text_process(
+            title, desc, {0.8: lambda x, y: x if len(x) > len(y) else y, 0: lambda x, y: f"{x}\n\n{y}"}
+        )
 
         pics = [x.attrs["src"] for x in soup("img")]
         if raw_post.get("media_content"):

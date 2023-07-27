@@ -64,11 +64,12 @@ class Arknights(NewMessage):
                 template_path=template_path,
                 template_name="index.html",
                 templates={
+                    "bannerImageUrl": raw_data["bannerImageUrl"],
                     "announce_title": announce_title,
                     "content": raw_data["content"],
                 },
                 pages={
-                    "viewport": {"width": 500, "height": 6400},
+                    "viewport": {"width": 500, "height": 100},
                     "base_url": f"file://{template_path}",
                 },
             )

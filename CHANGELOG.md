@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### 新功能
+
+- 适配明日方舟新版公告栏API [@GuGuMur](https://github.com/GuGuMur) ([#305](https://github.com/felinae98/nonebot-bison/pull/305))
+
 ## v0.8.0
 
 ### 破坏性变更

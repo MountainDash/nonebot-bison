@@ -2,6 +2,7 @@ from io import BytesIO
 from pathlib import Path
 from collections.abc import Callable, Coroutine
 
+from nonebot.log import logger
 from pydantic import BaseModel
 
 
@@ -22,6 +23,9 @@ class CardManager:
     _cards: dict[str, ThemeMetadata] = {}
 
     def register(self, card: ThemeMetadata):
+        if card.theme in self._cards:
+            raise ValueError(f"Card {card.theme} already exists")
+        logger.opt(colors=True).success(f"Registering card <b><u>{card.theme}</u></b>")
         self._cards[card.theme] = card
 
     def get(self, theme: str):

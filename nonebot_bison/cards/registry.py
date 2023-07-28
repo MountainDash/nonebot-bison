@@ -28,7 +28,7 @@ class CardManager:
         logger.opt(colors=True).success(f"Registering card <b><u>{card.theme}</u></b>")
         self._cards[card.theme] = card
 
-    def get(self, theme: str):
+    def __getitem__(self, theme: str):
         return self._cards[theme]
 
 

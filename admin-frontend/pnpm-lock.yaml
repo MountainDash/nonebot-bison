@@ -19,7 +19,7 @@ dependencies:
     version: 7.22.5(@babel/core@7.20.2)
   '@reduxjs/toolkit':
     specifier: ^1.9.0
-    version: 1.9.0(react-redux@8.0.5)(react@18.2.0)
+    version: 1.9.0(react-redux@8.1.2)(react@18.2.0)
   '@testing-library/dom':
     specifier: ^8.19.0
     version: 8.19.0
@@ -48,8 +48,8 @@ dependencies:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
   react-redux:
-    specifier: ^8.0.5
-    version: 8.0.5(@types/react-dom@18.0.8)(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+    specifier: ^8.1.2
+    version: 8.1.2(@types/react-dom@18.0.8)(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
   react-router-dom:
     specifier: ^6.4.3
     version: 6.4.3(react-dom@18.2.0)(react@18.2.0)
@@ -2103,7 +2103,7 @@ packages:
       webpack-dev-server: 4.11.1(webpack@5.75.0)
     dev: false
 
-  /@reduxjs/toolkit@1.9.0(react-redux@8.0.5)(react@18.2.0):
+  /@reduxjs/toolkit@1.9.0(react-redux@8.1.2)(react@18.2.0):
     resolution: {integrity: sha512-ak11IrjYcUXRqlhNPwnz6AcvA2ynJTu8PzDbbqQw4a3xR4KZtgiqbNblQD+10CRbfK4+5C79SOyxnT9dhBqFnA==}
     peerDependencies:
       react: ^16.9.0 || ^17.0.0 || ^18
@@ -2116,7 +2116,7 @@ packages:
     dependencies:
       immer: 9.0.16
       react: 18.2.0
-      react-redux: 8.0.5(@types/react-dom@18.0.8)(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+      react-redux: 8.1.2(@types/react-dom@18.0.8)(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
       redux: 4.2.1
       redux-thunk: 2.4.2(redux@4.2.1)
       reselect: 4.1.7
@@ -8371,15 +8371,15 @@ packages:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
     dev: false
 
-  /react-redux@8.0.5(@types/react-dom@18.0.8)(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
-    resolution: {integrity: sha512-Q2f6fCKxPFpkXt1qNRZdEDLlScsDWyrgSj0mliK59qU6W5gvBiKkdMEG2lJzhd1rCctf0hb6EtePPLZ2e0m1uw==}
+  /react-redux@8.1.2(@types/react-dom@18.0.8)(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
+    resolution: {integrity: sha512-xJKYI189VwfsFc4CJvHqHlDrzyFTY/3vZACbE+rr/zQ34Xx1wQfB4OTOSeOSNrF6BDVe8OOdxIrAnMGXA3ggfw==}
     peerDependencies:
       '@types/react': ^16.8 || ^17.0 || ^18.0
       '@types/react-dom': ^16.8 || ^17.0 || ^18.0
       react: ^16.8 || ^17.0 || ^18.0
       react-dom: ^16.8 || ^17.0 || ^18.0
       react-native: '>=0.59'
-      redux: ^4
+      redux: ^4 || ^5.0.0-beta.0
     peerDependenciesMeta:
       '@types/react':
         optional: true

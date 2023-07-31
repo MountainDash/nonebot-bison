@@ -6,7 +6,7 @@ from nonebot.log import logger
 from pydantic import BaseModel
 
 
-class ThemeMetadata(BaseModel):
+class ThemeMetadata(BaseModel, frozen=True):
     theme: str
     # FIXME: 这里想注解一个Callable[[BaseModel], Coroutine[None, None, bytes | BytesIO | Path | str]]
     # 但是在给render赋值一个接受BaseModel子类作为参数的函数时，Pylance会报错

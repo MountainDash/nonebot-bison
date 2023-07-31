@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 import nonebot
 from sqlalchemy import delete
+from pydantic import BaseModel
 from nonebug import NONEBOT_INIT_KWARGS, App
 from pytest_mock.plugin import MockerFixture
 from nonebot.adapters.onebot.v11 import Adapter as OnebotV11Adapter
@@ -106,3 +107,19 @@ async def use_legacy_config(app: App):
 
     # 清除单例的缓存
     Singleton._instances.clear()
+
+
+@pytest.fixture()
+def fake_card():
+    class FakeCard(BaseModel):
+        text: str
+
+    return FakeCard
+
+
+@pytest.fixture()
+def fake_render(fake_card):
+    async def fake_render_func(x: fake_card) -> str:
+        return f"{x.text} is test!"
+
+    return fake_render_func

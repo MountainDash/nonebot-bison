@@ -1,5 +1,5 @@
-from pydantic import Field
 import nonebot_plugin_saa as saa
+from pydantic import Field, PrivateAttr
 from nonebot_plugin_saa.utils import MessageSegmentFactory
 
 from .utils import pic_merge
@@ -17,10 +17,10 @@ class BasePost(AbstractPost):
     target_name: str | None = None
     pics: list[str | bytes] = Field(default_factory=list)
 
-    message: list[MessageSegmentFactory] | None = None
+    _message: list[MessageSegmentFactory] | None = PrivateAttr(default=None)
 
     async def generate(self) -> list[MessageSegmentFactory]:
-        if self.message is None:
+        if self._message is None:
             self.pics = await pic_merge(self.pics)
             msg_segments: list[MessageSegmentFactory] = []
             text = ""
@@ -36,8 +36,8 @@ class BasePost(AbstractPost):
             msg_segments.append(saa.Text(text))
             for pic in self.pics:
                 msg_segments.append(saa.Image(pic))
-            self.message = msg_segments
-        return self.message
+            self._message = msg_segments
+        return self._message
 
     def __str__(self):
         return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(
@@ -52,10 +52,10 @@ class BasePost(AbstractPost):
 class PlainPost(BasePost):
     """最基本的Post, 支持简单的文转图"""
 
-    pic_message: list[MessageSegmentFactory] | None = None
+    _pic_message: list[MessageSegmentFactory] | None = PrivateAttr(None)
 
     async def _text_to_img(self) -> list[MessageSegmentFactory]:
-        if self.pic_message is None:
+        if self._pic_message is None:
             self.pics = await pic_merge(self.pics)
             msg_segments: list[MessageSegmentFactory] = []
             text = ""
@@ -70,8 +70,8 @@ class PlainPost(BasePost):
                 msg_segments.append(saa.Text(self.url))
             for pic in self.pics:
                 msg_segments.append(saa.Image(pic))
-            self.pic_message = msg_segments
-        return self.pic_message
+            self._pic_message = msg_segments
+        return self._pic_message
 
     async def generate(self) -> list[MessageSegmentFactory]:
         if plugin_config.bison_use_pic:

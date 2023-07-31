@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@arco-design/web-react':
-    specifier: ^2.50.2
-    version: 2.50.2(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^2.51.0
+    version: 2.51.0(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0)
   '@babel/core':
     specifier: ^7.20.2
     version: 7.20.2
@@ -139,8 +139,8 @@ packages:
       color: 3.2.1
     dev: false
 
-  /@arco-design/web-react@2.50.2(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-ko5IUP4aVGp8v6IMQD95eg7O3bFfUYZjr+qX5bCrXpaz7txPcT99D1tQYwByZ5AP3rIifjKWKdbrXpWH96zEnQ==}
+  /@arco-design/web-react@2.51.0(@types/react@18.0.25)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-oHZFLYSU81WY6Fyg2b+1X96MUhDtImwCqqABO7cIfNerzw3MkEW9xExaOCkvolbBjPKmFOzXrYgxg75TJBymMw==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'

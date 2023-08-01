@@ -16,7 +16,7 @@ from nonebot_plugin_saa import PlatformTarget
 from ..post import Post
 from ..plugin_config import plugin_config
 from ..utils import ProcessContext, SchedulerConfig
-from ..types import Tag, Target, RawPost, Category, UserSubInfo
+from ..types import Tag, Target, RawPost, SubUnit, Category, UserSubInfo
 
 
 class CategoryNotSupport(Exception):
@@ -112,15 +112,11 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return await catch_network_error(self.fetch_new_post, target, users) or []
 
     @abstractmethod
-    async def batch_fetch_new_post(
-        self, targets: list[tuple[Target, list[UserSubInfo]]]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
         ...
 
-    async def do_batch_fetch_new_post(
-        self, targets: list[tuple[Target, list[UserSubInfo]]]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
-        return await catch_network_error(self.batch_fetch_new_post, targets) or []
+    async def do_batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
+        return await catch_network_error(self.batch_fetch_new_post, sub_units) or []
 
     @abstractmethod
     async def parse(self, raw_post: RawPost) -> Post:
@@ -347,14 +343,12 @@ class NewMessage(MessageProcess, abstract=True):
         post_list = await self.get_sub_list(target)
         return await self._handle_new_post(post_list, target, users)
 
-    async def batch_fetch_new_post(
-        self, targets: list[tuple[Target, list[UserSubInfo]]]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
         if not self.has_target:
             raise RuntimeError("Target without target should not use batch api")  # pragma: no cover
-        posts_set = await self.batch_get_sub_list([x[0] for x in targets])
+        posts_set = await self.batch_get_sub_list([x[0] for x in sub_units])
         res = []
-        for (target, users), posts in zip(targets, posts_set):
+        for (target, users), posts in zip(sub_units, posts_set):
             res.extend(await self._handle_new_post(posts, target, users))
         return res
 
@@ -408,19 +402,17 @@ class StatusChange(Platform, abstract=True):
             raise
         return await self._handle_status_change(new_status, target, users)
 
-    async def batch_fetch_new_post(
-        self, targets: list[tuple[Target, list[UserSubInfo]]]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
         if not self.has_target:
             raise RuntimeError("Target without target should not use batch api")  # pragma: no cover
-        new_statuses = await self.batch_get_status([x[0] for x in targets])
+        new_statuses = await self.batch_get_status([x[0] for x in sub_units])
         res = []
-        for (target, users), new_status in zip(targets, new_statuses):
+        for (target, users), new_status in zip(sub_units, new_statuses):
             res.extend(await self._handle_status_change(new_status, target, users))
         return res
 
 
-class SimplePost(MessageProcess, abstract=True):
+class SimplePost(NewMessage, abstract=True):
     "Fetch a list of messages, dispatch it to different users"
 
     async def _handle_new_post(
@@ -439,21 +431,6 @@ class SimplePost(MessageProcess, abstract=True):
                 )
         res = await self.dispatch_user_post(target, new_posts, users)
         self.parse_cache = {}
-        return res
-
-    async def fetch_new_post(self, target: Target, users: list[UserSubInfo]) -> list[tuple[PlatformTarget, list[Post]]]:
-        new_posts = await self.get_sub_list(target)
-        return await self._handle_new_post(new_posts, target, users)
-
-    async def batch_fetch_new_post(
-        self, targets: list[tuple[Target, list[UserSubInfo]]]
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
-        if not self.has_target:
-            raise RuntimeError("Target without target should not use batch api")  # pragma: no cover
-        new_posts_set = await self.batch_get_sub_list([x[0] for x in targets])
-        res = []
-        for (target, users), new_posts in zip(targets, new_posts_set):
-            res.extend(await self._handle_new_post(new_posts, target, users))
         return res
 
 

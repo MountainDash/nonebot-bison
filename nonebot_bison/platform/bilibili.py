@@ -201,6 +201,7 @@ class Bilibililive(StatusChange):
     scheduler = BilibiliSchedConf
     name = "Bilibili直播"
     has_target = True
+    use_batch = True
 
     @unique
     class LiveStatus(Enum):
@@ -281,12 +282,11 @@ class Bilibililive(StatusChange):
             keyframe="",
         )
 
-    async def get_status(self, target: Target) -> Info:
-        params = {"uids[]": target}
+    async def batch_get_status(self, targets: list[Target]) -> list[Info]:
         # https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/live/info.md#批量查询直播间状态
         res = await self.client.get(
             "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
-            params=params,
+            params={"uids[]": targets},
             timeout=4.0,
         )
         res_dict = res.json()
@@ -294,11 +294,14 @@ class Bilibililive(StatusChange):
         if res_dict["code"] != 0:
             raise self.FetchError()
 
-        data = res_dict.get("data")
-        if not data:
-            return self._gen_empty_info(uid=int(target))
-        room_data = data[target]
-        return self.Info.parse_obj(room_data)
+        data = res_dict.get("data", {})
+        infos = []
+        for target in targets:
+            if target in data.keys():
+                infos.append(self.Info.parse_obj(data[target]))
+            else:
+                infos.append(self._gen_empty_info(int(target)))
+        return infos
 
     def compare_status(self, _: Target, old_status: Info, new_status: Info) -> list[RawPost]:
         action = Bilibililive.LiveAction

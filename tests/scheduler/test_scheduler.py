@@ -1,7 +1,9 @@
 import typing
 from datetime import time
+from unittest.mock import AsyncMock
 
 from nonebug import App
+from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 if typing.TYPE_CHECKING:
@@ -48,6 +50,45 @@ async def test_scheduler_without_time(init_scheduler):
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
     assert static_res["bilibili-live-t2"] == 3
+
+
+async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
+    from nonebot_plugin_saa import TargetQQGroup
+
+    from nonebot_bison.config import config
+    from nonebot_bison.types import UserSubInfo
+    from nonebot_bison.scheduler import scheduler_dict
+    from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.platform.bilibili import BilibiliSchedConf
+
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
+
+    mocker.patch.object(BilibiliSchedConf, "get_client", return_value=AsyncClient())
+
+    await init_scheduler()
+
+    batch_fetch_mock = AsyncMock()
+
+    class FakePlatform:
+        def __init__(self) -> None:
+            self.do_batch_fetch_new_post = batch_fetch_mock
+
+    fake_platform_obj = FakePlatform()
+    mocker.patch.dict(
+        "nonebot_bison.scheduler.scheduler.platform_manager",
+        {"bilibili-live": mocker.Mock(return_value=fake_platform_obj)},
+    )
+
+    await scheduler_dict[BilibiliSchedConf].exec_fetch()
+
+    batch_fetch_mock.assert_called_once_with(
+        [
+            (T_Target("t1"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
+            (T_Target("t2"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
+        ]
+    )
 
 
 async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixture):

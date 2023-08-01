@@ -1,11 +1,10 @@
 from typing import Any
-from pathlib import Path
 
 from httpx import AsyncClient
-from nonebot.plugin import require
 from bs4 import BeautifulSoup as bs
 
-from ..post import PlainPost
+from ..cards import card_manager
+from ..post import CardPost, PlainPost
 from ..types import Target, RawPost, Category
 from ..utils.scheduler_config import SchedulerConfig
 from .platform import NewMessage, StatusChange, CategoryNotRecognize
@@ -44,7 +43,7 @@ class Arknights(NewMessage):
     def get_category(self, _) -> Category:
         return Category(1)
 
-    async def parse(self, raw_post: RawPost) -> PlainPost:
+    async def parse(self, raw_post: RawPost) -> CardPost | PlainPost:
         raw_data = await self.client.get(
             f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
@@ -86,14 +85,6 @@ class Arknights(NewMessage):
                 text = "图片渲染失败"
         else:
             raise CategoryNotRecognize("未找到可渲染部分")
-        return PlainPost(
-            platform="arknights",
-            text=text,
-            url="",
-            target_name="明日方舟游戏内公告",
-            pics=pics,
-            compress=True,
-        )
 
 
 class AkVersion(StatusChange):

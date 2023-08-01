@@ -17,6 +17,7 @@ async def card_render(card: Card) -> bytes:
         template_name=TEMPLATE_NAME,
         templates={
             "card": card,
+            "base_url": f"file://{card_dir}",
         },
         pages={
             "viewport": {"width": 500, "height": 6400},

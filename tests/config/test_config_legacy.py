@@ -1,5 +1,4 @@
 import typing
-from pathlib import Path
 
 import pytest
 from nonebug.app import App
@@ -11,9 +10,8 @@ if typing.TYPE_CHECKING:
     from nonebot_bison.config.config_legacy import Config
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_legacy(app: App, use_legacy_config):
-    from nonebot_bison import config
     from nonebot_bison.config import config_legacy as config
 
     config.start_up()
@@ -38,9 +36,7 @@ def test_create_and_get(config_legacy: "Config", app: App):
     )
     confs = config_legacy.list_subscribe(123, "group")
     assert len(confs) == 1
-    assert config_legacy.target_user_cache["weibo"][Target("weibo_id")] == [
-        types.User(123, "group")
-    ]
+    assert config_legacy.target_user_cache["weibo"][Target("weibo_id")] == [types.User(123, "group")]
     assert confs[0]["cats"] == []
     config_legacy.update_subscribe(
         user=123,

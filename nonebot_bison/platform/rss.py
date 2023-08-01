@@ -1,37 +1,46 @@
+import time
 import calendar
-from typing import Any, Optional
+from typing import Any
 
 import feedparser
-from bs4 import BeautifulSoup as bs
 from httpx import AsyncClient
+from bs4 import BeautifulSoup as bs
 
 from ..post import Post
-from ..types import RawPost, Target
-from ..utils import scheduler
 from .platform import NewMessage
+from ..types import Target, RawPost
+from ..utils import SchedulerConfig, text_similarity
+
+
+class RssSchedConf(SchedulerConfig):
+    name = "rss"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 30}
 
 
 class Rss(NewMessage):
-
     categories = {}
     enable_tag = False
     platform_name = "rss"
     name = "Rss"
     enabled = True
     is_common = True
-    scheduler = scheduler("interval", {"seconds": 30})
+    scheduler = RssSchedConf
     has_target = True
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         res = await client.get(target, timeout=10.0)
         feed = feedparser.parse(res.text)
         return feed["feed"]["title"]
 
     def get_date(self, post: RawPost) -> int:
-        return calendar.timegm(post.published_parsed)
+        if hasattr(post, "published_parsed"):
+            return calendar.timegm(post.published_parsed)
+        elif hasattr(post, "updated_parsed"):
+            return calendar.timegm(post.updated_parsed)
+        else:
+            return calendar.timegm(time.gmtime())
 
     def get_id(self, post: RawPost) -> Any:
         return post.id
@@ -45,10 +54,18 @@ class Rss(NewMessage):
         return feed.entries
 
     async def parse(self, raw_post: RawPost) -> Post:
-        text = ""
+        title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
-        text += soup.text.strip()
-        pics = list(map(lambda x: x.attrs["src"], soup("img")))
+        desc = soup.text.strip()
+        if not title or not desc:
+            text = title or desc
+        else:
+            if text_similarity(desc, title) > 0.8:
+                text = desc if len(desc) > len(title) else title
+            else:
+                text = f"{title}\n\n{desc}"
+
+        pics = [x.attrs["src"] for x in soup("img")]
         if raw_post.get("media_content"):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):

@@ -1,13 +1,13 @@
 import datetime
 from pathlib import Path
 
-from nonebot_plugin_datastore import get_plugin_data
-from nonebot_plugin_saa.utils import PlatformTarget
-from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from nonebot_plugin_saa.utils import PlatformTarget
+from nonebot_plugin_datastore import get_plugin_data
+from sqlalchemy.orm import Mapped, relationship, mapped_column
+from sqlalchemy import JSON, String, ForeignKey, UniqueConstraint
 
-from ..types import Category, Tag
+from ..types import Tag, Category
 
 Model = get_plugin_data().Model
 get_plugin_data().set_migration_dir(Path(__file__).parent / "migrations")
@@ -25,9 +25,7 @@ class User(Model):
 
 
 class Target(Model):
-    __table_args__ = (
-        UniqueConstraint("target", "platform_name", name="unique-target-constraint"),
-    )
+    __table_args__ = (UniqueConstraint("target", "platform_name", name="unique-target-constraint"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     platform_name: Mapped[str] = mapped_column(String(20))
@@ -36,9 +34,7 @@ class Target(Model):
     default_schedule_weight: Mapped[int] = mapped_column(default=10)
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="target")
-    time_weight: Mapped[list["ScheduleTimeWeight"]] = relationship(
-        back_populates="target"
-    )
+    time_weight: Mapped[list["ScheduleTimeWeight"]] = relationship(back_populates="target")
 
 
 class ScheduleTimeWeight(Model):
@@ -55,9 +51,7 @@ class ScheduleTimeWeight(Model):
 
 
 class Subscribe(Model):
-    __table_args__ = (
-        UniqueConstraint("target_id", "user_id", name="unique-subscribe-constraint"),
-    )
+    __table_args__ = (UniqueConstraint("target_id", "user_id", name="unique-subscribe-constraint"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     target_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_target.id"))

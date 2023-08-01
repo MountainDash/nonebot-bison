@@ -1,5 +1,4 @@
 import typing
-from sys import dont_write_bytecode
 
 import pytest
 from flaky import flaky
@@ -9,7 +8,6 @@ if typing.TYPE_CHECKING:
     import sys
 
     sys.path.append("./src/plugins")
-    import nonebot_bison
 
 merge_source_9 = [
     "https://wx1.sinaimg.cn/large/0071VPLMgy1gq0vib7zooj30dx0dxmz5.jpg",
@@ -54,12 +52,12 @@ async def download_imgs(url_list: list[str]) -> list[bytes]:
     return img_contents
 
 
-@pytest.fixture
+@pytest.fixture()
 async def downloaded_resource():
     return await download_imgs(merge_source_9)
 
 
-@pytest.fixture
+@pytest.fixture()
 async def downloaded_resource_2():
     return await download_imgs(merge_source_9_2)
 
@@ -91,9 +89,7 @@ async def test_9_merge_2(app: App, downloaded_resource_2: list[bytes]):
 async def test_6_merge(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
 
-    post = Post(
-        "", "", "", pics=list(downloaded_resource[0:6] + downloaded_resource[9:])
-    )
+    post = Post("", "", "", pics=list(downloaded_resource[0:6] + downloaded_resource[9:]))
     await post._pic_merge()
     assert len(post.pics) == 5
 
@@ -103,9 +99,7 @@ async def test_6_merge(app: App, downloaded_resource: list[bytes]):
 async def test_3_merge(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
 
-    post = Post(
-        "", "", "", pics=list(downloaded_resource[0:3] + downloaded_resource[9:])
-    )
+    post = Post("", "", "", pics=list(downloaded_resource[0:3] + downloaded_resource[9:]))
     await post._pic_merge()
     assert len(post.pics) == 5
 

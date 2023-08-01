@@ -1,6 +1,6 @@
-from .platform import platform_manager
-from .scheduler import scheduler_dict
 from .types import Target
+from .scheduler import scheduler_dict
+from .platform import platform_manager
 
 
 async def check_sub_target(platform_name: str, target: Target):

@@ -1,19 +1,19 @@
-import json
 import re
+import json
+from typing import Any
 from copy import deepcopy
-from datetime import datetime, timedelta
 from enum import Enum, unique
-from typing import Any, Literal, Optional
+from typing_extensions import Self
+from datetime import datetime, timedelta
 
 from httpx import AsyncClient
 from nonebot.log import logger
-from pydantic import BaseModel, Field
-from typing_extensions import Self
+from pydantic import Field, BaseModel
 
 from ..post import Post
-from ..types import ApiError, Category, RawPost, Tag, Target
-from ..utils import SchedulerConfig, jaccard_text_similarity
-from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
+from ..utils import SchedulerConfig, text_similarity
+from ..types import Tag, Target, RawPost, ApiError, Category
+from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
 
 class BilibiliSchedConf(SchedulerConfig):
@@ -25,9 +25,7 @@ class BilibiliSchedConf(SchedulerConfig):
     cookie_expire_time = timedelta(hours=5)
 
     def __init__(self):
-        self._client_refresh_time = datetime(
-            year=2000, month=1, day=1
-        )  # an expired time
+        self._client_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
         super().__init__()
 
     async def _init_session(self):
@@ -56,7 +54,7 @@ class Bilibili(NewMessage):
         2: "专栏文章",
         3: "视频",
         4: "纯文字",
-        5: "转发"
+        5: "转发",
         # 5: "短视频"
     }
     platform_name = "bilibili"
@@ -69,12 +67,8 @@ class Bilibili(NewMessage):
     parse_target_promot = "请输入用户主页的链接"
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
-        res = await client.get(
-            "https://api.bilibili.com/x/web-interface/card", params={"mid": target}
-        )
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
+        res = await client.get("https://api.bilibili.com/x/web-interface/card", params={"mid": target})
         res.raise_for_status()
         res_data = res.json()
         if res_data["code"]:
@@ -100,7 +94,7 @@ class Bilibili(NewMessage):
         res.raise_for_status()
         res_dict = res.json()
         if res_dict["code"] == 0:
-            return res_dict["data"].get("cards")
+            return res_dict["data"].get("cards", [])
         else:
             raise ApiError(res.request.url)
 
@@ -129,12 +123,7 @@ class Bilibili(NewMessage):
         return self._do_get_category(post_type)
 
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
-        return [
-            *map(
-                lambda tp: tp["topic_name"],
-                raw_post["display"]["topic_info"]["topic_details"],
-            )
-        ]
+        return [*(tp["topic_name"] for tp in raw_post["display"]["topic_info"]["topic_details"])]
 
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
         if post_type == 1:
@@ -151,7 +140,7 @@ class Bilibili(NewMessage):
             title = card["title"]
             desc = card.get("desc", "")
 
-            if jaccard_text_similarity(desc, dynamic) > 0.8:
+            if text_similarity(desc, dynamic) > 0.8:
                 # 如果视频简介和动态内容相似，就只保留长的那个
                 if len(dynamic) > len(desc):
                     text = f"{dynamic}\n=================\n{title}"
@@ -159,12 +148,7 @@ class Bilibili(NewMessage):
                     text = f"{title}\n\n{desc}"
             else:
                 # 否则就把两个拼起来
-                text = f"""
-                {dynamic}
-                \n=================\n
-                {title}\n\n
-                {desc}
-                """
+                text = f"{dynamic}\n=================\n{title}\n\n{desc}"
 
             pic = [card["pic"]]
         elif post_type == 4:
@@ -183,24 +167,16 @@ class Bilibili(NewMessage):
             url = ""
             if post_type == 1:
                 # 一般动态
-                url = "https://t.bilibili.com/{}".format(
-                    raw_post["desc"]["dynamic_id_str"]
-                )
+                url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
             elif post_type == 2:
                 # 专栏文章
-                url = "https://www.bilibili.com/read/cv{}".format(
-                    raw_post["desc"]["rid"]
-                )
+                url = "https://www.bilibili.com/read/cv{}".format(raw_post["desc"]["rid"])
             elif post_type == 3:
                 # 视频
-                url = "https://www.bilibili.com/video/{}".format(
-                    raw_post["desc"]["bvid"]
-                )
+                url = "https://www.bilibili.com/video/{}".format(raw_post["desc"]["bvid"])
             elif post_type == 4:
                 # 纯文字
-                url = "https://t.bilibili.com/{}".format(
-                    raw_post["desc"]["dynamic_id_str"]
-                )
+                url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
             text, pic = self._get_info(post_type, card_content)
         elif post_type == 5:
             # 转发
@@ -266,10 +242,7 @@ class Bilibililive(StatusChange):
         def get_live_action(self, old_info: Self) -> "Bilibililive.LiveAction":
             status = Bilibililive.LiveStatus
             action = Bilibililive.LiveAction
-            if (
-                old_info.live_status in [status.OFF, status.CYCLE]
-                and self.live_status == status.ON
-            ):
+            if old_info.live_status in [status.OFF, status.CYCLE] and self.live_status == status.ON:
                 return action.TURN_ON
             elif old_info.live_status == status.ON and self.live_status in [
                 status.OFF,
@@ -286,16 +259,27 @@ class Bilibililive(StatusChange):
                 return action.OFF
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
-        res = await client.get(
-            "https://api.bilibili.com/x/web-interface/card", params={"mid": target}
-        )
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
+        res = await client.get("https://api.bilibili.com/x/web-interface/card", params={"mid": target})
         res_data = json.loads(res.text)
         if res_data["code"]:
             return None
         return res_data["data"]["card"]["name"]
+
+    def _gen_empty_info(self, uid: int) -> Info:
+        """返回一个空的Info，用于该用户没有直播间的情况"""
+        return Bilibililive.Info(
+            title="",
+            room_id=0,
+            uid=uid,
+            live_time=0,
+            live_status=Bilibililive.LiveStatus.OFF,
+            area_v2_name="",
+            uname="",
+            face="",
+            cover_from_user="",
+            keyframe="",
+        )
 
     async def get_status(self, target: Target) -> Info:
         params = {"uids[]": target}
@@ -307,46 +291,39 @@ class Bilibililive(StatusChange):
         )
         res_dict = res.json()
 
-        if res_dict["code"] == 0:
-            data = res_dict["data"][target]
-            self.Info.update_forward_refs()
-            info = self.Info.parse_obj(data)
-
-            return info
-        else:
+        if res_dict["code"] != 0:
             raise self.FetchError()
 
-    def compare_status(
-        self, _: Target, old_status: Info, new_status: Info
-    ) -> list[RawPost]:
+        data = res_dict.get("data")
+        if not data:
+            return self._gen_empty_info(uid=int(target))
+        room_data = data[target]
+        return self.Info.parse_obj(room_data)
+
+    def compare_status(self, _: Target, old_status: Info, new_status: Info) -> list[RawPost]:
         action = Bilibililive.LiveAction
         match new_status.get_live_action(old_status):
             case action.TURN_ON:
-                current_status = deepcopy(new_status)
-                current_status.category = Category(1)
-                return [current_status]
+                return self._gen_current_status(new_status, 1)
             case action.TITLE_UPDATE:
-                current_status = deepcopy(new_status)
-                current_status.category = Category(2)
-                return [current_status]
+                return self._gen_current_status(new_status, 2)
             case action.TURN_OFF:
-                current_status = deepcopy(new_status)
-                current_status.category = Category(3)
-                return [current_status]
+                return self._gen_current_status(new_status, 3)
             case _:
                 return []
+
+    def _gen_current_status(self, new_status: Info, category: Category):
+        current_status = deepcopy(new_status)
+        current_status.category = Category(category)
+        return [current_status]
 
     def get_category(self, status: Info) -> Category:
         assert status.category != Category(0)
         return status.category
 
     async def parse(self, raw_post: Info) -> Post:
-        url = "https://live.bilibili.com/{}".format(raw_post.room_id)
-        pic = (
-            [raw_post.cover]
-            if raw_post.category == Category(1)
-            else [raw_post.keyframe]
-        )
+        url = f"https://live.bilibili.com/{raw_post.room_id}"
+        pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
@@ -373,9 +350,7 @@ class BilibiliBangumi(StatusChange):
     _url = "https://api.bilibili.com/pgc/review/user"
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         res = await client.get(cls._url, params={"media_id": target})
         res_data = res.json()
         if res_data["code"]:
@@ -387,11 +362,9 @@ class BilibiliBangumi(StatusChange):
         if re.match(r"\d+", target_string):
             return Target(target_string)
         elif m := re.match(r"md(\d+)", target_string):
-            return Target(m.group(1))
-        elif m := re.match(
-            r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string
-        ):
-            return Target(m.group(1))
+            return Target(m[1])
+        elif m := re.match(r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string):
+            return Target(m[1])
         raise cls.ParseTargetException()
 
     async def get_status(self, target: Target):
@@ -441,3 +414,6 @@ class BilibiliBangumi(StatusChange):
             target_name=target_name,
             compress=True,
         )
+
+
+Bilibililive.Info.update_forward_refs()

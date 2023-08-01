@@ -1,4 +1,4 @@
-from typing import Literal, Type
+from typing import Literal
 
 from httpx import AsyncClient
 
@@ -7,7 +7,6 @@ from .http import http_client
 
 
 class SchedulerConfig:
-
     schedule_type: Literal["date", "interval", "cron"]
     schedule_setting: dict
     name: str
@@ -25,9 +24,7 @@ class SchedulerConfig:
         return self.default_http_client
 
 
-def scheduler(
-    schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict
-) -> Type[SchedulerConfig]:
+def scheduler(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[SchedulerConfig]:
     return type(
         "AnonymousScheduleConfig",
         (SchedulerConfig,),

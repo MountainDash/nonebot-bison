@@ -2,15 +2,15 @@ import re
 import time
 import traceback
 
-from bs4 import BeautifulSoup, Tag
 from httpx import AsyncClient
 from nonebot.log import logger
+from bs4 import Tag, BeautifulSoup
 from nonebot.plugin import require
 
 from ..post import Post
-from ..types import Category, RawPost, Target
+from ..types import Target, RawPost, Category
 from ..utils import SchedulerConfig, http_client
-from .platform import CategoryNotRecognize, CategoryNotSupport, NewMessage
+from .platform import NewMessage, CategoryNotSupport, CategoryNotRecognize
 
 
 class McbbsnewsSchedConf(SchedulerConfig):
@@ -134,9 +134,9 @@ class McbbsNews(NewMessage):
         if categoty_name in category_values:
             category_id = category_keys[category_values.index(categoty_name)]
         elif categoty_name in known_category_values:
-            raise CategoryNotSupport("McbbsNews订阅暂不支持 {}".format(categoty_name))
+            raise CategoryNotSupport(f"McbbsNews订阅暂不支持 {categoty_name}")
         else:
-            raise CategoryNotRecognize("Mcbbsnews订阅尚未识别 {}".format(categoty_name))
+            raise CategoryNotRecognize(f"Mcbbsnews订阅尚未识别 {categoty_name}")
         return category_id
 
     async def parse(self, post: RawPost) -> Post:
@@ -170,7 +170,7 @@ class McbbsNews(NewMessage):
             一般而言每条新闻的长度都很可观，图片生成时间比较喜人
         """
         require("nonebot_plugin_htmlrender")
-        from nonebot_plugin_htmlrender import capture_element, text_to_pic
+        from nonebot_plugin_htmlrender import text_to_pic, capture_element
 
         try:
             assert url
@@ -181,7 +181,7 @@ class McbbsNews(NewMessage):
                 device_scale_factor=3,
             )
             assert pic_data
-        except:
+        except Exception:
             err_info = traceback.format_exc()
             logger.warning(f"渲染错误：{err_info}")
 

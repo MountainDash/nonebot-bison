@@ -9,16 +9,14 @@ from .utils import fake_admin_user, fake_private_message_event
 
 @pytest.mark.asyncio
 async def test_command(app: App):
-
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
+    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.admin_page import register_get_token_handler
     from nonebot_bison.admin_page.token_manager import token_manager as tm
-    from nonebot_bison.plugin_config import plugin_config
 
     with patch.object(tm, "get_user_token", return_value="test_token"):
-
         register_get_token_handler()
 
         async with app.test_matcher() as ctx:
@@ -30,27 +28,21 @@ async def test_command(app: App):
                 to_me=True,
             )
             ctx.receive_event(bot, event_1)
-            ctx.should_call_send(
-                event_1, f"请访问: {plugin_config.bison_outer_url}auth/test_token", True
-            )
+            ctx.should_call_send(event_1, f"请访问: {plugin_config.bison_outer_url}auth/test_token", True)
             ctx.should_finished()
 
-            event_2 = fake_private_message_event(
-                message=Message("管理后台"), sender=fake_admin_user, to_me=True
-            )
+            event_2 = fake_private_message_event(message=Message("管理后台"), sender=fake_admin_user, to_me=True)
             ctx.receive_event(bot, event_2)
-            ctx.should_call_send(
-                event_2, f"请访问: {plugin_config.bison_outer_url}auth/test_token", True
-            )
+            ctx.should_call_send(event_2, f"请访问: {plugin_config.bison_outer_url}auth/test_token", True)
             ctx.should_finished()
 
 
 @pytest.mark.asyncio
 async def test_log(app: App, tmp_path: Path):
-    import contextlib
     import io
+    import contextlib
 
-    from nonebot.log import default_format, logger
+    from nonebot.log import logger, default_format
 
     from nonebot_bison.admin_page import init_fastapi
 

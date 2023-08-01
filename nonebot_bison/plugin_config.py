@@ -1,11 +1,8 @@
-from typing import Optional
-
 import nonebot
 from pydantic import BaseSettings
 
 
 class PlugConfig(BaseSettings):
-
     bison_config_path: str = ""
     bison_use_pic: bool = False
     bison_init_filter: bool = True
@@ -17,8 +14,10 @@ class PlugConfig(BaseSettings):
     bison_use_pic_merge: int = 0  # 多图片时启用图片合并转发（仅限群）
     # 0：不启用；1：首条消息单独发送，剩余照片合并转发；2以及以上：所有消息全部合并转发
     bison_resend_times: int = 0
-    bison_proxy: Optional[str]
-    bison_ua: str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    bison_proxy: str | None
+    bison_ua: str = (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    )
     bison_show_network_warning: bool = True
 
     class Config:

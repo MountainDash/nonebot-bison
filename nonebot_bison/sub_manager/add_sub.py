@@ -1,21 +1,20 @@
 import contextlib
-from typing import Type, cast
 
-from nonebot.adapters import Message, MessageTemplate
+from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
-from nonebot.typing import T_State
-from nonebot_plugin_saa import PlatformTarget, SupportedAdapters, Text
+from nonebot.adapters import Message, MessageTemplate
+from nonebot_plugin_saa import Text, PlatformTarget, SupportedAdapters
 
-from ..apis import check_sub_target
-from ..config import config
-from ..config.db_config import SubscribeDupException
-from ..platform import Platform, platform_manager
 from ..types import Target
+from ..config import config
+from ..apis import check_sub_target
+from ..platform import Platform, platform_manager
+from ..config.db_config import SubscribeDupException
 from .utils import common_platform, ensure_user_info, gen_handle_cancel
 
 
-def do_add_sub(add_sub: Type[Matcher]):
+def do_add_sub(add_sub: type[Matcher]):
     handle_cancel = gen_handle_cancel(add_sub, "已中止订阅")
 
     add_sub.handle()(ensure_user_info(add_sub))
@@ -25,12 +24,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         state["_prompt"] = (
             "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
             + "".join(
-                [
-                    "{}：{}\n".format(
-                        platform_name, platform_manager[platform_name].name
-                    )
-                    for platform_name in common_platform
-                ]
+                [f"{platform_name}: {platform_manager[platform_name].name}\n" for platform_name in common_platform]
             )
             + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
         )
@@ -39,10 +33,7 @@ def do_add_sub(add_sub: Type[Matcher]):
     async def parse_platform(state: T_State, platform: str = ArgPlainText()) -> None:
         if platform == "全部":
             message = "全部平台\n" + "\n".join(
-                [
-                    "{}：{}".format(platform_name, platform.name)
-                    for platform_name, platform in platform_manager.items()
-                ]
+                [f"{platform_name}: {platform.name}" for platform_name, platform in platform_manager.items()]
             )
             await add_sub.reject(message)
         elif platform == "取消":
@@ -57,9 +48,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         cur_platform = platform_manager[state["platform"]]
         if cur_platform.has_target:
             state["_prompt"] = (
-                ("1." + cur_platform.parse_target_promot + "\n2.")
-                if cur_platform.parse_target_promot
-                else ""
+                ("1." + cur_platform.parse_target_promot + "\n2.") if cur_platform.parse_target_promot else ""
             ) + "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
         else:
             matcher.set_arg("raw_id", None)  # type: ignore
@@ -81,9 +70,7 @@ def do_add_sub(add_sub: Type[Matcher]):
                     image = "https://s3.bmp.ovh/imgs/2022/03/ab3cc45d83bd3dd3.jpg"
                     msg.overwrite(
                         SupportedAdapters.onebot_v11,
-                        MessageSegment.share(
-                            url=url, title=title, content=content, image=image
-                        ),
+                        MessageSegment.share(url=url, title=title, content=content, image=image),
                     )
                 await msg.reject()
             platform = platform_manager[state["platform"]]
@@ -99,13 +86,11 @@ def do_add_sub(add_sub: Type[Matcher]):
                 await add_sub.reject("id输入错误")
             state["id"] = raw_id_text
             state["name"] = name
-        except (Platform.ParseTargetException):
+        except Platform.ParseTargetException:
             await add_sub.reject("不能从你的输入中提取出id，请检查你输入的内容是否符合预期")
         else:
             await add_sub.send(
-                "即将订阅的用户为:{} {} {}\n如有错误请输入“取消”重新订阅".format(
-                    state["platform"], state["name"], state["id"]
-                )
+                f"即将订阅的用户为:{state['platform']} {state['name']} {state['id']}\n如有错误请输入“取消”重新订阅"
             )
 
     @add_sub.handle()
@@ -125,7 +110,7 @@ def do_add_sub(add_sub: Type[Matcher]):
         if platform_manager[state["platform"]].categories:
             for cat in raw_cats_text.split():
                 if cat not in platform_manager[state["platform"]].reverse_category:
-                    await add_sub.reject("不支持 {}".format(cat))
+                    await add_sub.reject(f"不支持 {cat}")
                 res.append(platform_manager[state["platform"]].reverse_category[cat])
         state["cats"] = res
 
@@ -135,14 +120,18 @@ def do_add_sub(add_sub: Type[Matcher]):
             matcher.set_arg("raw_tags", None)  # type: ignore
             state["tags"] = []
             return
-        state["_prompt"] = '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
+        state["_prompt"] = (
+            '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
+        )
 
     @add_sub.got("raw_tags", MessageTemplate("{_prompt}"), [handle_cancel])
     async def parser_tags(state: T_State, raw_tags: Message = Arg()):
         raw_tags_text = raw_tags.extract_plain_text()
         if raw_tags_text == "详情":
             await add_sub.reject(
-                "订阅标签直接输入标签内容\n屏蔽标签请在标签名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#%E5%B9%B3%E5%8F%B0%E8%AE%A2%E9%98%85%E6%A0%87%E7%AD%BE-tag"
+                "订阅标签直接输入标签内容\n"
+                "屏蔽标签请在标签名称前添加~号\n"
+                "详见https://nonebot-bison.netlify.app/usage/#%E5%B9%B3%E5%8F%B0%E8%AE%A2%E9%98%85%E6%A0%87%E7%AD%BE-tag"
             )
         if raw_tags_text in ["全部标签", "全部", "全标签"]:
             state["tags"] = []
@@ -150,9 +139,7 @@ def do_add_sub(add_sub: Type[Matcher]):
             state["tags"] = raw_tags_text.split()
 
     @add_sub.handle()
-    async def add_sub_process(
-        state: T_State, user: PlatformTarget = Arg("target_user_info")
-    ):
+    async def add_sub_process(state: T_State, user: PlatformTarget = Arg("target_user_info")):
         try:
             await config.add_subscribe(
                 user=user,

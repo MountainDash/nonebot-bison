@@ -1,15 +1,14 @@
 from abc import ABC
 
-from nonebot_plugin_saa.utils import AllSupportedPlatformTarget as UserInfo
 from pydantic import BaseModel
+from nonebot_plugin_saa.utils import AllSupportedPlatformTarget as UserInfo
 
-from ....types import Category, Tag
+from ....types import Tag, Category
 
 
 class NBESFBase(BaseModel, ABC):
-
     version: int  # 表示nbesf格式版本，有效版本从1开始
-    groups: list = list()
+    groups: list = []
 
     class Config:
         orm_mode = True

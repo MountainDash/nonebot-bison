@@ -8,8 +8,8 @@ Create Date: 2023-03-02 14:04:16.492133
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import select
-from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.automap import automap_base
 
 # revision identifiers, used by Alembic.
 revision = "bd92923c218f"

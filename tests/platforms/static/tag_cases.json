@@ -1,129 +1,74 @@
 [
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": [
-                "222"
-            ],
-            "banned_tags": [
-                "555"
-            ]
-        },
-        "result": false
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": ["222"],
+      "banned_tags": ["555"]
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": [],
-            "banned_tags": [
-                "555"
-            ]
-        },
-        "result": false
+    "result": false
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": [],
+      "banned_tags": ["555"]
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": [],
-            "banned_tags": [
-                "444"
-            ]
-        },
-        "result": true
+    "result": false
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": [],
+      "banned_tags": ["444"]
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": [
-                "222"
-            ],
-            "banned_tags": []
-        },
-        "result": false
+    "result": true
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": ["222"],
+      "banned_tags": []
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": [],
-            "banned_tags": []
-        },
-        "result": false
+    "result": false
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": [],
+      "banned_tags": []
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": ["111","555","666"],
-            "banned_tags": []
-        },
-        "result": false
+    "result": false
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": ["111", "555", "666"],
+      "banned_tags": []
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": ["111","555"],
-            "banned_tags": ["333"]
-        },
-        "result": true
+    "result": false
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": ["111", "555"],
+      "banned_tags": ["333"]
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": ["111","333"],
-            "banned_tags": ["111"]
-        },
-        "result": true
+    "result": true
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": ["111", "333"],
+      "banned_tags": ["111"]
     },
-    {
-        "case": {
-            "post_tags": [
-                "111",
-                "222",
-                "333",
-                "444"
-            ],
-            "subscribed_tags": ["222"],
-            "banned_tags": ["555","333"]
-        },
-        "result": true
-    }
+    "result": true
+  },
+  {
+    "case": {
+      "post_tags": ["111", "222", "333", "444"],
+      "subscribed_tags": ["222"],
+      "banned_tags": ["555", "333"]
+    },
+    "result": true
+  }
 ]

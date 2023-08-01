@@ -1,16 +1,16 @@
 import re
 import sys
-from typing import Union
+import difflib
 
 import nonebot
-from bs4 import BeautifulSoup as bs
-from nonebot.log import default_format, logger
 from nonebot.plugin import require
-from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
+from bs4 import BeautifulSoup as bs
+from nonebot.log import logger, default_format
+from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from ..plugin_config import plugin_config
-from .context import ProcessContext
 from .http import http_client
+from .context import ProcessContext
+from ..plugin_config import plugin_config
 from .scheduler_config import SchedulerConfig, scheduler
 
 __all__ = [
@@ -29,7 +29,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -62,7 +62,7 @@ def html_to_text(html: str, query_dict: dict = {}) -> str:
 
 class Filter:
     def __init__(self) -> None:
-        self.level: Union[int, str] = "DEBUG"
+        self.level: int | str = "DEBUG"
 
     def __call__(self, record):
         module_name: str = record["name"]
@@ -70,9 +70,7 @@ class Filter:
         if module:
             module_name = getattr(module, "__module_name__", module_name)
         record["name"] = module_name.split(".")[0]
-        levelno = (
-            logger.level(self.level).no if isinstance(self.level, str) else self.level
-        )
+        levelno = logger.level(self.level).no if isinstance(self.level, str) else self.level
         nonebot_warning_level = logger.level("WARNING").no
         return (
             record["level"].no >= levelno
@@ -93,19 +91,10 @@ if plugin_config.bison_filter_log:
     )
     config = nonebot.get_driver().config
     logger.success("Muted info & success from nonebot")
-    default_filter.level = (
-        ("DEBUG" if config.debug else "INFO")
-        if config.log_level is None
-        else config.log_level
-    )
+    default_filter.level = ("DEBUG" if config.debug else "INFO") if config.log_level is None else config.log_level
 
 
-def jaccard_text_similarity(str1: str, str2: str) -> float:
-    """
-    计算两个字符串(基于字符)的
-    [Jaccard相似系数](https://zh.wikipedia.org/wiki/雅卡尔指数)
-    是否达到阈值
-    """
-    set1 = set(str1)
-    set2 = set(str2)
-    return len(set1 & set2) / len(set1 | set2)
+def text_similarity(str1, str2) -> float:
+    matcher = difflib.SequenceMatcher(None, str1, str2)
+    t = sum(temp.size for temp in matcher.get_matching_blocks())
+    return t / min(len(str1), len(str2))

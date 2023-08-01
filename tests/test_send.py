@@ -1,8 +1,6 @@
 import asyncio
-import typing
 
 import pytest
-from flaky import flaky
 from nonebug import App
 from nonebug_saa import should_send_saa
 from pytest_mock.plugin import MockerFixture
@@ -11,11 +9,10 @@ from pytest_mock.plugin import MockerFixture
 @pytest.mark.asyncio
 async def test_send_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot_plugin_saa import MessageFactory, TargetQQGroup, TargetQQPrivate
-    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
+    from nonebot_plugin_saa import TargetQQGroup, MessageFactory, TargetQQPrivate
 
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
+    from nonebot_bison.plugin_config import plugin_config
 
     mocker.patch.object(plugin_config, "bison_use_queue", False)
 
@@ -37,7 +34,7 @@ async def test_send_no_queue(app: App, mocker: MockerFixture):
 async def test_send_queue(app: App, mocker: MockerFixture):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
+    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
     from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
@@ -47,7 +44,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
     async with app.test_api() as ctx:
         new_bot = ctx.create_bot(base=Bot)
         await refresh_bots()
-        mocker.patch.object(nonebot, "get_bot", lambda: new_bot)
+        mocker.patch.object(nonebot, "get_bot", return_value=new_bot)
         bot = nonebot.get_bot()
         assert isinstance(bot, Bot)
         assert bot == new_bot
@@ -66,17 +63,11 @@ async def test_send_queue(app: App, mocker: MockerFixture):
 @pytest.mark.asyncio
 async def test_send_merge_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot_plugin_saa import (
-        AggregatedMessageFactory,
-        Image,
-        MessageFactory,
-        TargetQQGroup,
-        Text,
-    )
     from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
+    from nonebot_plugin_saa import Text, Image, TargetQQGroup, MessageFactory, AggregatedMessageFactory
 
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
+    from nonebot_bison.plugin_config import plugin_config
 
     plugin_config.bison_use_pic_merge = 1
     plugin_config.bison_use_queue = False
@@ -117,17 +108,11 @@ async def test_send_merge_no_queue(app: App):
 
 async def test_send_merge2_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot_plugin_saa import (
-        AggregatedMessageFactory,
-        Image,
-        MessageFactory,
-        TargetQQGroup,
-        Text,
-    )
     from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
+    from nonebot_plugin_saa import Text, Image, TargetQQGroup, MessageFactory, AggregatedMessageFactory
 
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import send_msgs
+    from nonebot_bison.plugin_config import plugin_config
 
     plugin_config.bison_use_pic_merge = 2
     plugin_config.bison_use_queue = False

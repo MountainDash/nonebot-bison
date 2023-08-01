@@ -1,10 +1,10 @@
 import time
 import typing
 
-import pytest
 import respx
-from httpx import AsyncClient, Response
+import pytest
 from nonebug.app import App
+from httpx import Response, AsyncClient
 
 from .utils import get_json
 
@@ -12,10 +12,10 @@ if typing.TYPE_CHECKING:
     from nonebot_bison.platform.ncm import NcmArtist
 
 
-@pytest.fixture
+@pytest.fixture()
 def ncm_artist(app: App):
-    from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.platform import platform_manager
 
     return platform_manager["ncm-artist"](ProcessContext(), AsyncClient())
 

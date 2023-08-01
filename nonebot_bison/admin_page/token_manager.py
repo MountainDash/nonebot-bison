@@ -1,6 +1,5 @@
 import random
 import string
-from typing import Optional
 
 from expiringdict import ExpiringDict
 
@@ -9,7 +8,7 @@ class TokenManager:
     def __init__(self):
         self.token_manager = ExpiringDict(max_len=100, max_age_seconds=60 * 10)
 
-    def get_user(self, token: str) -> Optional[tuple]:
+    def get_user(self, token: str) -> tuple | None:
         res = self.token_manager.get(token)
         assert res is None or isinstance(res, tuple)
         return res

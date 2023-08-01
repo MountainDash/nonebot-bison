@@ -1,15 +1,14 @@
-from typing import Any, Optional
+from typing import Any
 
 from httpx import AsyncClient
 
 from ..post import Post
-from ..types import RawPost, Target
 from ..utils import scheduler
 from .platform import NewMessage
+from ..types import Target, RawPost
 
 
 class FF14(NewMessage):
-
     categories = {}
     platform_name = "ff14"
     name = "最终幻想XIV官方公告"
@@ -21,9 +20,7 @@ class FF14(NewMessage):
     has_target = False
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         return "最终幻想XIV官方公告"
 
     async def get_sub_list(self, _) -> list[RawPost]:

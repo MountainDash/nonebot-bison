@@ -6,25 +6,18 @@ require("nonebot_plugin_saa")
 
 import nonebot_plugin_saa
 
-from . import (
-    admin_page,
-    bootstrap,
-    config,
-    platform,
-    post,
-    scheduler,
-    send,
-    sub_manager,
-    types,
-    utils,
-)
 from .plugin_config import PlugConfig, plugin_config
+from . import post, send, types, utils, config, platform, bootstrap, scheduler, admin_page, sub_manager
 
-__help__version__ = "0.7.3"
+__help__version__ = "0.8.0"
 nonebot_plugin_saa.enable_auto_select_bot()
 
 __help__plugin__name__ = "nonebot_bison"
-__usage__ = f"本bot可以提供b站、微博等社交媒体的消息订阅，详情请查看本bot文档，或者{'at本bot' if plugin_config.bison_to_me else '' }发送“添加订阅”订阅第一个帐号，发送“查询订阅”或“删除订阅”管理订阅"
+__usage__ = (
+    "本bot可以提供b站、微博等社交媒体的消息订阅，详情请查看本bot文档，"
+    f"或者{'at本bot' if plugin_config.bison_to_me else '' }发送“添加订阅”订阅第一个帐号，"
+    "发送“查询订阅”或“删除订阅”管理订阅"
+)
 
 __supported_adapters__ = nonebot_plugin_saa.__plugin_meta__.supported_adapters
 
@@ -41,6 +34,7 @@ __plugin_meta__ = PluginMetadata(
 
 __all__ = [
     "admin_page",
+    "bootstrap",
     "config",
     "sub_manager",
     "post",

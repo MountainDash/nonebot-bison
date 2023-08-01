@@ -1,30 +1,27 @@
-from dataclasses import dataclass, field
-from functools import reduce
 from io import BytesIO
-from typing import Optional, Union
+from dataclasses import field, dataclass
 
-import nonebot_plugin_saa as saa
-from nonebot.log import logger
-from nonebot_plugin_saa.utils import MessageFactory, MessageSegmentFactory
 from PIL import Image
+from nonebot.log import logger
+import nonebot_plugin_saa as saa
+from nonebot_plugin_saa.utils import MessageSegmentFactory
 
-from ..utils import http_client, parse_text
-from .abstract_post import AbstractPost, BasePost, OptionalMixin
+from ..utils import parse_text, http_client
+from .abstract_post import BasePost, AbstractPost
 
 
 @dataclass
 class _Post(BasePost):
-
     target_type: str
     text: str
-    url: Optional[str] = None
-    target_name: Optional[str] = None
-    pics: list[Union[str, bytes]] = field(default_factory=list)
+    url: str | None = None
+    target_name: str | None = None
+    pics: list[str | bytes] = field(default_factory=list)
 
-    _message: Optional[list[MessageSegmentFactory]] = None
-    _pic_message: Optional[list[MessageSegmentFactory]] = None
+    _message: list[MessageSegmentFactory] | None = None
+    _pic_message: list[MessageSegmentFactory] | None = None
 
-    async def _pic_url_to_image(self, data: Union[str, bytes]) -> Image.Image:
+    async def _pic_url_to_image(self, data: str | bytes) -> Image.Image:
         pic_buffer = BytesIO()
         if isinstance(data, str):
             async with http_client() as client:
@@ -101,22 +98,19 @@ class _Post(BasePost):
         self.pics.insert(0, target_io.getvalue())
 
     async def generate_text_messages(self) -> list[MessageSegmentFactory]:
-
         if self._message is None:
             await self._pic_merge()
             msg_segments: list[MessageSegmentFactory] = []
             text = ""
             if self.text:
-                text += "{}".format(
-                    self.text if len(self.text) < 500 else self.text[:500] + "..."
-                )
+                text += "{}".format(self.text if len(self.text) < 500 else self.text[:500] + "...")
             if text:
                 text += "\n"
-            text += "来源: {}".format(self.target_type)
+            text += f"来源: {self.target_type}"
             if self.target_name:
-                text += " {}".format(self.target_name)
+                text += f" {self.target_name}"
             if self.url:
-                text += " \n详情: {}".format(self.url)
+                text += f" \n详情: {self.url}"
             msg_segments.append(saa.Text(text))
             for pic in self.pics:
                 msg_segments.append(saa.Image(pic))
@@ -124,17 +118,16 @@ class _Post(BasePost):
         return self._message
 
     async def generate_pic_messages(self) -> list[MessageSegmentFactory]:
-
         if self._pic_message is None:
             await self._pic_merge()
             msg_segments: list[MessageSegmentFactory] = []
             text = ""
             if self.text:
-                text += "{}".format(self.text)
+                text += f"{self.text}"
                 text += "\n"
-            text += "来源: {}".format(self.target_type)
+            text += f"来源: {self.target_type}"
             if self.target_name:
-                text += " {}".format(self.target_name)
+                text += f" {self.target_name}"
             msg_segments.append(await parse_text(text))
             if not self.target_type == "rss" and self.url:
                 msg_segments.append(saa.Text(self.url))
@@ -149,14 +142,7 @@ class _Post(BasePost):
             self.target_name,
             self.text if len(self.text) < 500 else self.text[:500] + "...",
             self.url,
-            ", ".join(
-                map(
-                    lambda x: "b64img"
-                    if isinstance(x, bytes) or x.startswith("base64")
-                    else x,
-                    self.pics,
-                )
-            ),
+            ", ".join("b64img" if isinstance(x, bytes) or x.startswith("base64") else x for x in self.pics),
         )
 
 

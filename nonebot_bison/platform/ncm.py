@@ -1,23 +1,21 @@
 import re
-from typing import Any, Optional
+from typing import Any
 
 from httpx import AsyncClient
 
 from ..post import Post
-from ..types import ApiError, RawPost, Target
-from ..utils import SchedulerConfig
 from .platform import NewMessage
+from ..utils import SchedulerConfig
+from ..types import Target, RawPost, ApiError
 
 
 class NcmSchedConf(SchedulerConfig):
-
     name = "music.163.com"
     schedule_type = "interval"
     schedule_setting = {"minutes": 1}
 
 
 class NcmArtist(NewMessage):
-
     categories = {}
     platform_name = "ncm-artist"
     enable_tag = False
@@ -29,11 +27,9 @@ class NcmArtist(NewMessage):
     parse_target_promot = "请输入歌手主页（包含数字ID）的链接"
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         res = await client.get(
-            "https://music.163.com/api/artist/albums/{}".format(target),
+            f"https://music.163.com/api/artist/albums/{target}",
             headers={"Referer": "https://music.163.com/"},
         )
         res_data = res.json()
@@ -45,16 +41,14 @@ class NcmArtist(NewMessage):
     async def parse_target(cls, target_text: str) -> Target:
         if re.match(r"^\d+$", target_text):
             return Target(target_text)
-        elif match := re.match(
-            r"(?:https?://)?music\.163\.com/#/artist\?id=(\d+)", target_text
-        ):
+        elif match := re.match(r"(?:https?://)?music\.163\.com/#/artist\?id=(\d+)", target_text):
             return Target(match.group(1))
         else:
             raise cls.ParseTargetException()
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         res = await self.client.get(
-            "https://music.163.com/api/artist/albums/{}".format(target),
+            f"https://music.163.com/api/artist/albums/{target}",
             headers={"Referer": "https://music.163.com/"},
         )
         res_data = res.json()
@@ -74,13 +68,10 @@ class NcmArtist(NewMessage):
         target_name = raw_post["artist"]["name"]
         pics = [raw_post["picUrl"]]
         url = "https://music.163.com/#/album?id={}".format(raw_post["id"])
-        return Post(
-            "ncm-artist", text=text, url=url, pics=pics, target_name=target_name
-        )
+        return Post("ncm-artist", text=text, url=url, pics=pics, target_name=target_name)
 
 
 class NcmRadio(NewMessage):
-
     categories = {}
     platform_name = "ncm-radio"
     enable_tag = False
@@ -92,9 +83,7 @@ class NcmRadio(NewMessage):
     parse_target_promot = "请输入主播电台主页（包含数字ID）的链接"
 
     @classmethod
-    async def get_target_name(
-        cls, client: AsyncClient, target: Target
-    ) -> Optional[str]:
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         res = await client.post(
             "http://music.163.com/api/dj/program/byradio",
             headers={"Referer": "https://music.163.com/"},
@@ -109,9 +98,7 @@ class NcmRadio(NewMessage):
     async def parse_target(cls, target_text: str) -> Target:
         if re.match(r"^\d+$", target_text):
             return Target(target_text)
-        elif match := re.match(
-            r"(?:https?://)?music\.163\.com/#/djradio\?id=(\d+)", target_text
-        ):
+        elif match := re.match(r"(?:https?://)?music\.163\.com/#/djradio\?id=(\d+)", target_text):
             return Target(match.group(1))
         else:
             raise cls.ParseTargetException()

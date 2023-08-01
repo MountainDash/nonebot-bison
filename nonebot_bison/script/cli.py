@@ -1,21 +1,23 @@
-import importlib
 import json
 import time
-from functools import partial, wraps
+import importlib
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Coroutine, TypeVar
+from typing import Any, TypeVar
+from functools import wraps, partial
+from collections.abc import Callable, Coroutine
 
 from nonebot.log import logger
 
-from ..config.subs_io import subscribes_export, subscribes_import
-from ..config.subs_io.nbesf_model import v1, v2
 from ..scheduler.manager import init_scheduler
+from ..config.subs_io.nbesf_model import v1, v2
+from ..config.subs_io import subscribes_export, subscribes_import
 
 try:
+    from typing_extensions import ParamSpec
+
     import anyio
     import click
-    from typing_extensions import ParamSpec
 except ImportError as e:  # pragma: no cover
     raise ImportError("请使用 `pip install nonebot-bison[cli]` 安装所需依赖") from e
 
@@ -65,9 +67,7 @@ def path_init(ctx, param, value):
 
 
 @cli.command(help="导出Nonebot Bison Exchangable Subcribes File", name="export")
-@click.option(
-    "--path", "-p", default=None, callback=path_init, help="导出路径,  如果不指定，则默认为工作目录"
-)
+@click.option("--path", "-p", default=None, callback=path_init, help="导出路径,  如果不指定，则默认为工作目录")
 @click.option(
     "--format",
     default="json",
@@ -76,7 +76,6 @@ def path_init(ctx, param, value):
 )
 @run_async
 async def subs_export(path: Path, format: str):
-
     await init_scheduler()
 
     export_file = path / f"bison_subscribes_export_{int(time.time())}.{format}"
@@ -121,7 +120,6 @@ async def subs_export(path: Path, format: str):
 )
 @run_async
 async def subs_import(path: str, format: str):
-
     await init_scheduler()
 
     import_file_path = Path(path)

@@ -1,12 +1,12 @@
 import sys
 from pathlib import Path
 
-import nonebot
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter as OnebotV11Adapter
+import nonebot
+from sqlalchemy import delete
 from nonebug import NONEBOT_INIT_KWARGS, App
 from pytest_mock.plugin import MockerFixture
-from sqlalchemy import delete
+from nonebot.adapters.onebot.v11 import Adapter as OnebotV11Adapter
 
 from .utils import AppReq
 
@@ -24,24 +24,20 @@ def pytest_configure(config: pytest.Config) -> None:
 def load_adapters(nonebug_init: None):
     driver = nonebot.get_driver()
     driver.register_adapter(OnebotV11Adapter)
+    return driver
 
 
-@pytest.fixture
+@pytest.fixture()
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
-    from nonebot_plugin_datastore.config import plugin_config as datastore_config
-    from nonebot_plugin_datastore.db import create_session, init_db
     from nonebot_plugin_htmlrender.browser import shutdown_browser
+    from nonebot_plugin_datastore.db import init_db, create_session
+    from nonebot_plugin_datastore.config import plugin_config as datastore_config
 
     from nonebot_bison import plugin_config
-    from nonebot_bison.config.db_model import (
-        ScheduleTimeWeight,
-        Subscribe,
-        Target,
-        User,
-    )
+    from nonebot_bison.config.db_model import User, Target, Subscribe, ScheduleTimeWeight
 
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
@@ -72,7 +68,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     await shutdown_browser()
 
 
-@pytest.fixture
+@pytest.fixture()
 def dummy_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -82,19 +78,19 @@ def dummy_user_subinfo(app: App):
     return UserSubInfo(user=user, categories=[], tags=[])
 
 
-@pytest.fixture
+@pytest.fixture()
 async def init_scheduler(app: App):
     from nonebot_bison.scheduler.manager import init_scheduler
 
-    await init_scheduler()
+    return await init_scheduler()
 
 
-@pytest.fixture
+@pytest.fixture()
 async def use_legacy_config(app: App):
     import aiofiles
 
-    from nonebot_bison.config.config_legacy import Config, get_config_path
     from nonebot_bison.utils import Singleton
+    from nonebot_bison.config.config_legacy import Config, get_config_path
 
     # 默认不创建配置所在的文件夹
     # 如果需要测试需要手动创建相关文件夹
@@ -106,7 +102,7 @@ async def use_legacy_config(app: App):
 
     Config()._do_init()
 
-    yield
+    yield None
 
     # 清除单例的缓存
     Singleton._instances.clear()

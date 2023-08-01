@@ -7,8 +7,8 @@ Create Date: 2023-03-20 01:14:42.623789
 """
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.automap import automap_base
 
 # revision identifiers, used by Alembic.
 revision = "a5466912fad0"

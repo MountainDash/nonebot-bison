@@ -1,7 +1,6 @@
-import datetime
 import random
 import string
-from typing import Optional
+import datetime
 
 import jwt
 
@@ -16,8 +15,8 @@ def pack_jwt(obj: dict) -> str:
     )
 
 
-def load_jwt(token: str) -> Optional[dict]:
+def load_jwt(token: str) -> dict | None:
     try:
         return jwt.decode(token, _key, algorithms=["HS256"])
-    except:
+    except Exception:
         return None

@@ -3,14 +3,14 @@ from nonebug.app import App
 
 
 async def test_add_subscribe(app: App, init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
     from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
 
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as TTarget
+    from nonebot_bison.config.db_model import User, Target, Subscribe
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),
@@ -32,12 +32,8 @@ async def test_add_subscribe(app: App, init_scheduler):
     assert len(confs) == 1
     conf: Subscribe = confs[0]
     async with AsyncSession(get_engine()) as sess:
-        related_user_obj = await sess.scalar(
-            select(User).where(User.id == conf.user_id)
-        )
-        related_target_obj = await sess.scalar(
-            select(Target).where(Target.id == conf.target_id)
-        )
+        related_user_obj = await sess.scalar(select(User).where(User.id == conf.user_id))
+        related_target_obj = await sess.scalar(select(Target).where(Target.id == conf.target_id))
     assert related_user_obj
     assert related_target_obj
     assert related_user_obj.user_target["group_id"] == 123
@@ -58,12 +54,8 @@ async def test_add_subscribe(app: App, init_scheduler):
     assert len(confs) == 1
     conf: Subscribe = confs[0]
     async with AsyncSession(get_engine()) as sess:
-        related_user_obj = await sess.scalar(
-            select(User).where(User.id == conf.user_id)
-        )
-        related_target_obj = await sess.scalar(
-            select(Target).where(Target.id == conf.target_id)
-        )
+        related_user_obj = await sess.scalar(select(User).where(User.id == conf.user_id))
+        related_target_obj = await sess.scalar(select(Target).where(Target.id == conf.target_id))
     assert related_user_obj
     assert related_target_obj
     assert related_user_obj.user_target["group_id"] == 123
@@ -77,8 +69,8 @@ async def test_add_subscribe(app: App, init_scheduler):
 async def test_add_dup_sub(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.config.db_config import SubscribeDupException, config
     from nonebot_bison.types import Target as TTarget
+    from nonebot_bison.config.db_config import SubscribeDupException, config
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),
@@ -101,15 +93,15 @@ async def test_add_dup_sub(init_scheduler):
 
 
 async def test_del_subsribe(init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
-    from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.ext.asyncio.session import AsyncSession
-    from sqlalchemy.sql.expression import select
     from sqlalchemy.sql.functions import func
+    from nonebot_plugin_saa import TargetQQGroup
+    from sqlalchemy.sql.expression import select
+    from nonebot_plugin_datastore.db import get_engine
+    from sqlalchemy.ext.asyncio.session import AsyncSession
 
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.config.db_model import Subscribe, Target
     from nonebot_bison.types import Target as TTarget
+    from nonebot_bison.config.db_model import Target, Subscribe
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),

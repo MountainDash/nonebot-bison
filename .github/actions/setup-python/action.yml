@@ -18,4 +18,3 @@ runs:
       uses: Gr1N/setup-poetry@v8
       with:
         poetry-version: "1.3.2"
-

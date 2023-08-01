@@ -1,0 +1,107 @@
+/**
+    引用自 https://ak.hycdn.cn/announce/assets/css/announcement.v_0_1_2.css
+**/
+@media screen and (max-device-width: 480px) {
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+html {
+  height: 100%;
+}
+body,
+head {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: #313131;
+  min-height: 100%;
+  background-color: #d0d0cf;
+}
+.main {
+  max-width: 980px;
+  font-family: "Microsoft Yahei";
+  width: 100%;
+  margin: auto;
+  font-size: 1rem;
+  min-height: 100%;
+}
+.main .container {
+  min-height: 100%;
+}
+.main .container .standerd-container {
+  padding: 2.72727273%;
+  width: 94.54545455%;
+  margin: auto;
+}
+.main .container .standerd-container .banner-image-container {
+  margin-bottom: 0.8rem;
+}
+.main .container .standerd-container .banner-image-container .banner-image {
+  display: block;
+  width: 100%;
+}
+.main .container .standerd-container .head-title-container {
+  margin: 0;
+  background-image: url(
+    https://ak.hycdn.cn/announce/assets/images/announcement/header.jpg);
+  background-size: cover;
+  position: relative;
+  margin-bottom: 0.6rem;
+}
+.main .container .standerd-container .head-title-container::before {
+  content: "";
+  display: block;
+  width: 100%;
+  padding-top: 6.02564103%;
+}
+.main .container .standerd-container .head-title-container .head-title {
+  padding-left: 0.25rem;
+  color: #fff;
+  font-weight: 500;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 1rem;
+}
+.main .container .standerd-container .content {
+  line-height: 0.8rem;
+  font-size: 0.6rem;
+}
+.main .container .standerd-container .content h4 {
+  font-size: 110%;
+  margin-block-start: 0.5rem;
+  margin-block-end: 0.5rem;
+}
+.main .container .standerd-container .content p {
+  margin-block-start: 0.25rem;
+  margin-block-end: 0.25rem;
+  min-height: 0.8rem;
+}
+.main .container .standerd-container .content img {
+  max-width: 100%;
+  margin: auto;
+  display: block;
+}
+.main .container .banner-image-container.cover {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  overflow: hidden;
+}
+.main .container .banner-image-container.cover .cover-jumper {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.main .container .banner-image-container.cover .banner-image {
+  width: 100%;
+  height: 100%;
+}

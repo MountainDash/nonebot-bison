@@ -1396,26 +1396,26 @@ nonebot2 = ">=2.0.0,<3.0.0"
 
 [[package]]
 name = "nonebot-plugin-datastore"
-version = "1.0.0"
+version = "1.1.0"
 description = "适用于 Nonebot2 的数据存储插件"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "nonebot_plugin_datastore-1.0.0-py3-none-any.whl", hash = "sha256:d52185fc711f2f950a2d2868c18d957fde166691f84390ac7bc724b463e4fc1d"},
-    {file = "nonebot_plugin_datastore-1.0.0.tar.gz", hash = "sha256:b10ebac479563b8dbb0f4fca99b8252d065f368a79bb02d220c7565815dd284c"},
+    {file = "nonebot_plugin_datastore-1.1.0-py3-none-any.whl", hash = "sha256:8ca11b6da0f1ff09cf0effe9f1baf3475874ec1c7c8ffe0053bb21524112c95e"},
+    {file = "nonebot_plugin_datastore-1.1.0.tar.gz", hash = "sha256:1e7fdba17fba3986467a98e1938d3e2ad65767d548146a31b7ded340d050a22c"},
 ]
 
 [package.dependencies]
 alembic = ">=1.9.1,<2.0.0"
-nonebot-plugin-localstore = ">=0.2.0,<0.3.0 || >0.3.0,<0.4.0 || >0.4.0,<0.6.0"
+nonebot-plugin-localstore = ">=0.2.0,<0.3.0 || >0.3.0,<0.4.0 || >0.4.0"
 nonebot2 = {version = ">=2.0.0,<3.0.0", extras = ["httpx"]}
 sqlalchemy = {version = ">=2.0.0,<3.0.0", extras = ["aiosqlite"]}
 
 [package.extras]
-all = ["anyio (>=3.6)", "click (>=8.0)", "pyyaml (>=6.0,<7.0)", "rtoml (>=0.9.0,<0.10.0)", "typing-extensions (>=4.4)"]
+all = ["anyio (>=3.6)", "click (>=8.0)", "pyyaml (>=6.0)", "rtoml (>=0.9.0)", "typing-extensions (>=4.4)"]
 cli = ["anyio (>=3.6)", "click (>=8.0)", "typing-extensions (>=4.4)"]
-toml = ["rtoml (>=0.9.0,<0.10.0)"]
-yaml = ["pyyaml (>=6.0,<7.0)"]
+toml = ["rtoml (>=0.9.0)"]
+yaml = ["pyyaml (>=6.0)"]
 
 [[package]]
 name = "nonebot-plugin-htmlrender"
@@ -2903,4 +2903,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "34202653798dd2b1257591356d7cede75ba535a38ae4ca737cd5dff0004b0ca1"
+content-hash = "533d03c17993c6354a06a595819d887ad12cb65ef639b30e133bbab3ad22d931"

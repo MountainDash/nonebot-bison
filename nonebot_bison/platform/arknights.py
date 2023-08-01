@@ -56,7 +56,7 @@ class Arknights(NewMessage):
         pics = []
         if raw_data["bannerImageUrl"]:
             pics.append(raw_post["bannerImageUrl"])
-        
+
         elif raw_data["content"]:
             require("nonebot_plugin_htmlrender")
             from nonebot_plugin_htmlrender import template_to_pic

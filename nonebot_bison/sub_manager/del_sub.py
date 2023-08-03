@@ -1,13 +1,18 @@
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, EventPlainText
+from nonebot.adapters.onebot.v11 import Bot as V11Bot
+from nonebot.adapters.onebot.v12 import Bot as V12Bot
 from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
 from ..config import config
 from ..types import Category
 from ..utils import parse_text
 from ..platform import platform_manager
+from ..plugin_config import plugin_config
 from .utils import ensure_user_info, gen_handle_cancel
+
+from typing import Union
 
 
 def do_del_sub(del_sub: type[Matcher]):
@@ -35,11 +40,12 @@ def do_del_sub(del_sub: type[Matcher]):
                 res += " {}".format(", ".join(sub.tags))
             res += "\n"
         res += "请输入要删除的订阅的序号\n输入'取消'中止"
-        await MessageFactory(await parse_text(res)).send()
+        state["sub_list_message_id"] = int((await del_sub.send(res))["message_id"])
 
     @del_sub.receive(parameterless=[handle_cancel])
     async def do_del(
         state: T_State,
+        bot: Union[V11Bot, V12Bot],
         index_str: str = EventPlainText(),
         user_info: PlatformTarget = Arg("target_user_info"),
     ):
@@ -49,4 +55,6 @@ def do_del_sub(del_sub: type[Matcher]):
         except Exception:
             await del_sub.reject("删除错误")
         else:
+            if plugin_config.bison_withdraw_after_delete:
+                await bot.delete_msg(message_id=state["sub_list_message_id"])
             await del_sub.finish("删除成功")

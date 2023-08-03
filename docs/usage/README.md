@@ -64,6 +64,7 @@ next: /usage/easy-use
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
 - `BISON_UA`: 使用的 User-Agent，默认为 Chrome
 - `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认为`True`
+- `BISON_WITHDRAW_AFTER_DELETE`: 是否在删除订阅后撤回订阅列表消息，默认为`True`
 
 ## 使用
 

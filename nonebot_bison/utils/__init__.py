@@ -123,4 +123,4 @@ def similar_text_process(str1: str, str2: str, custom_comparison: dict[float, Ca
         if similarity >= threshold:
             return custom_comparison[threshold](str1, str2)
 
-    return ""
+    raise ValueError("No similarity threshold was met.")

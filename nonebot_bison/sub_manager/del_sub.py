@@ -31,6 +31,7 @@ def do_del_sub(del_sub: type[Matcher]):
             state["sub_table"][index] = {
                 "platform_name": sub.target.platform_name,
                 "target": sub.target.target,
+                "target_name": sub.target.target_name,
             }
             res += f"{index} {sub.target.platform_name} {sub.target.target_name} {sub.target.target}\n"
             platform = platform_manager[sub.target.platform_name]
@@ -50,11 +51,20 @@ def do_del_sub(del_sub: type[Matcher]):
         user_info: PlatformTarget = Arg("target_user_info"),
     ):
         try:
-            index = int(index_str)
-            await config.del_subscribe(user_info, **state["sub_table"][index])
+            message = ""
+            index_list = sorted([int(x) for x in index_str.split() if x.isdigit()], reverse=True)
+            for index in index_list:
+                sub = state["sub_table"][index]
+                sub_info = f"{sub['platform_name']} {sub['target_name']}"
+                try:
+                    await config.del_subscribe(user_info, sub["target"], sub["platform_name"])
+                except Exception:
+                    message = f"{sub_info} 删除失败\n" + message
+                else:
+                    message = f"{sub_info} 删除成功\n" + message
         except Exception:
             await del_sub.reject("删除错误")
         else:
             if plugin_config.bison_withdraw_after_delete:
                 await bot.delete_msg(message_id=state["sub_list_message_id"])
-            await del_sub.finish("删除成功")
+            await del_sub.finish(message)

@@ -1,4 +1,6 @@
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, validator, root_validator
+
+from ...utils import convert_to_qr
 
 
 class CeoboInfo(BaseModel):
@@ -41,3 +43,9 @@ class Card(BaseModel):
     info: CeoboInfo
     content: CeoboContent
     qr: str
+
+    @validator("qr")
+    def convert_qr(cls, v):
+        if not v.startswith("http"):
+            raise ValueError("qr must be a valid url")
+        return convert_to_qr(v)

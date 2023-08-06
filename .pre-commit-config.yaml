@@ -1,4 +1,4 @@
-default_install_hook_types: [pre-commit, prepare-commit-msg]
+default_install_hook_types: [pre-commit]
 ci:
   autofix_commit_msg: ":lipstick: auto fix by pre-commit hooks"
   autofix_prs: true
@@ -60,11 +60,5 @@ repos:
             --rule,
             "import/no-unresolved: off",
           ]
-
-  - repo: https://github.com/nonebot/nonemoji
-    rev: v0.1.4
-    hooks:
-      - id: nonemoji
-        stages: [prepare-commit-msg]
 
 exclude: "CHANGELOG.md"

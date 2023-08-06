@@ -29,7 +29,7 @@ httpx = ">=0.16.1"
 nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
 nonebot-adapter-onebot = "^2.0.0"
 nonebot-plugin-htmlrender = ">=0.2.0"
-nonebot-plugin-datastore = ">=0.6.2,<1.2.0"
+nonebot-plugin-datastore = ">=0.6.2,<2.0.0"
 nonebot-plugin-apscheduler = ">=0.2,<0.4"
 nonebot-plugin-send-anything-anywhere = "^0.2.7"
 pillow = ">=8.1,<11.0"

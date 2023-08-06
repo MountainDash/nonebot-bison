@@ -1,4 +1,8 @@
+import io
+import base64
 from typing import TYPE_CHECKING, Literal, TypedDict
+
+from PIL import Image
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
@@ -7,6 +11,28 @@ if TYPE_CHECKING:
 class AppReq(TypedDict, total=False):
     refresh_bot: bool
     no_init_db: bool
+
+
+async def show_pic(pic_data: str | bytes):
+    """
+    用来在测试时查看图片的函数，接受的参数为图片的数据
+
+    允许的数据类型：
+
+    `str`: base64编码的字符串，应以base64://开头
+
+    `bytes`: 图片的二进制数据
+    """
+
+    if isinstance(pic_data, str) and pic_data.startswith("base64://"):
+        img_bytes = base64.b64decode(pic_data[9:])
+    elif isinstance(pic_data, bytes):
+        img_bytes = pic_data
+    else:
+        raise ValueError("pic_data应为base64编码的字符串或图片的二进制数据")
+
+    img = Image.open(io.BytesIO(img_bytes))
+    img.show()
 
 
 def fake_group_message_event(**field) -> "GroupMessageEvent":

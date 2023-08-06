@@ -32,7 +32,7 @@ class CardManager:
     _cards: dict[str, ThemeMetadata] = {}
 
     def register(self, card: ThemeMetadata):
-        logger.debug(f"Registering card {card}")
+        logger.trace(f"Registering card {card}")
         if card.theme in self._cards:
             raise ValueError(f"Card {card.theme} already exists")
         logger.opt(colors=True).success(f"Registering card <b><u>{card.theme}</u></b>")

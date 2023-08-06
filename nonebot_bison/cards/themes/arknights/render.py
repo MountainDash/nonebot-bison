@@ -20,7 +20,7 @@ async def card_render(card: Card) -> bytes:
             "base_url": f"file://{CARD_DIR}",
         },
         pages={
-            "viewport": {"width": 500, "height": 100},
+            "viewport": {"width": 600, "height": 100},
             "base_url": CARD_DIR,
         },
     )

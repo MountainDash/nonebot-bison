@@ -29,7 +29,7 @@ async def test_plain_post(app: App):
 
     # 顺便测试rss的url不被忽略
     post = PlainPost(
-        platform="rss",
+        "rss",
         text="Nonebot Bison 通用的平台消息推送工具，励志做全泰拉骑自行车最快的信使",
         url="https://nonebot-bison.netlify.app/",
         target_name="rss-bison",

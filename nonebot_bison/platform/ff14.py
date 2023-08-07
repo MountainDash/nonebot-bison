@@ -42,4 +42,4 @@ class FF14(NewMessage):
     async def parse(self, raw_post: RawPost) -> PlainPost:
         text = f'{raw_post["Title"]}\n{raw_post["Summary"]}'
         url = raw_post["Author"]
-        return PlainPost(platform="ff14", text=text, url=url, target_name="最终幻想XIV官方公告")
+        return PlainPost("ff14", text=text, url=url, target_name="最终幻想XIV官方公告")

@@ -112,7 +112,7 @@ class AkVersion(StatusChange):
 
     def _gen_post(self, text: str) -> PlainPost:
         return PlainPost(
-            platform="arknights",
+            "arknights",
             text=text,
             target_name="明日方舟更新信息",
         )
@@ -175,7 +175,7 @@ class MonsterSiren(NewMessage):
         imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return PlainPost(
-            platform="monster-siren",
+            "monster-siren",
             text=text,
             pics=imgs,
             url=url,
@@ -214,7 +214,7 @@ class TerraHistoricusComic(NewMessage):
     async def parse(self, raw_post: RawPost) -> PlainPost:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return PlainPost(
-            platform="terra-historicus",
+            "terra-historicus",
             text=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
             pics=[raw_post["coverUrl"]],
             url=url,

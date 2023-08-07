@@ -155,7 +155,7 @@ class McbbsNews(NewMessage):
         pics = await self._news_render(post_url, f"#{post_id}")
 
         return PlainPost(
-            platform=self.name,
+            self.name,
             text="{}\n│\n└由 {} 发表".format(post["title"], post["author"]),
             url=post_url,
             pics=list(pics),

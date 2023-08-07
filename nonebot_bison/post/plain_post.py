@@ -15,8 +15,8 @@ class BasePost(AbstractPost):
 
     platform: str
     text: str
-    url: str | None = None
     target_name: str | None = None
+    url: str | None = None
     pics: list[str | bytes] = field(default_factory=list)
 
     _message: list[MessageSegmentFactory] | None = field(init=False, default=None)

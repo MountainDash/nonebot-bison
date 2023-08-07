@@ -65,7 +65,7 @@ def mock_platform_without_cats_tags(app: App):
 
         async def parse(self, raw_post: "RawPost") -> Post:
             return PlainPost(
-                platform="mock_platform",
+                "mock_platform",
                 text=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
@@ -127,7 +127,7 @@ def mock_platform(app: App):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return PlainPost(
-                platform="mock_platform",
+                "mock_platform",
                 text=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
@@ -194,7 +194,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return PlainPost(
-                platform="mock_platform",
+                "mock_platform",
                 text=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
@@ -250,7 +250,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return PlainPost(
-                platform="mock_platform_2",
+                "mock_platform_2",
                 text=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 target_name="Mock",
@@ -314,7 +314,7 @@ def mock_status_change(app: App):
             return []
 
         async def parse(self, raw_post) -> "Post":
-            return PlainPost(platform="mock_status", text=raw_post["text"], url="")
+            return PlainPost("mock_status", text=raw_post["text"], url="")
 
         def get_category(self, raw_post):
             return raw_post["cat"]
@@ -460,6 +460,7 @@ async def test_group(
     user_info_factory,
 ):
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.post import PlainPost
     from nonebot_bison.utils import ProcessContext, http_client
     from nonebot_bison.platform.platform import make_no_target_group
 
@@ -473,9 +474,11 @@ async def test_group(
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 2
-    id_set_2 = {x.text for x in posts}
-    assert "p2" in id_set_2
-    assert "p6" in id_set_2
+
+    for post in posts:
+        assert isinstance(post, PlainPost)
+        assert post.text in ["p2", "p6"]
+
     res3 = await group_platform.fetch_new_post(SubUnit(dummy, [user_info_factory([1, 4], [])]))
     assert len(res3) == 0
 

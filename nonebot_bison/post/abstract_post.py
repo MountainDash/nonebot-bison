@@ -1,16 +1,14 @@
 from functools import reduce
 from abc import ABC, abstractmethod
+from dataclasses import field, dataclass
 
-from pydantic import Field, BaseModel
 from nonebot_plugin_saa import MessageFactory, MessageSegmentFactory
 
 
-class AbstractPost(ABC, BaseModel):
+@dataclass(kw_only=True)
+class AbstractPost(ABC):
     compress: bool = False
-    extra_msg: list[MessageFactory] = Field(default_factory=list)
-
-    class Config:
-        arbitrary_types_allowed = True
+    extra_msg: list[MessageFactory] = field(default_factory=list)
 
     @abstractmethod
     async def generate(self) -> list[MessageSegmentFactory]:

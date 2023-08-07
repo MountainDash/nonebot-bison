@@ -1,5 +1,6 @@
+from dataclasses import field, dataclass
+
 import nonebot_plugin_saa as saa
-from pydantic import Field, PrivateAttr
 from nonebot_plugin_saa.utils import MessageSegmentFactory
 
 from .utils import pic_merge
@@ -8,6 +9,7 @@ from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
 
 
+@dataclass
 class BasePost(AbstractPost):
     """所有平台都应该支持的Post类型"""
 
@@ -15,9 +17,9 @@ class BasePost(AbstractPost):
     text: str
     url: str | None = None
     target_name: str | None = None
-    pics: list[str | bytes] = Field(default_factory=list)
+    pics: list[str | bytes] = field(default_factory=list)
 
-    _message: list[MessageSegmentFactory] | None = PrivateAttr(default=None)
+    _message: list[MessageSegmentFactory] | None = field(init=False, default=None)
 
     async def generate(self) -> list[MessageSegmentFactory]:
         if self._message is None:
@@ -49,10 +51,11 @@ class BasePost(AbstractPost):
         )
 
 
+@dataclass
 class PlainPost(BasePost):
     """最基本的Post, 支持简单的文转图"""
 
-    _pic_message: list[MessageSegmentFactory] | None = PrivateAttr(None)
+    _pic_message: list[MessageSegmentFactory] | None = field(init=False, default=None)
 
     async def _text_to_img(self) -> list[MessageSegmentFactory]:
         if self._pic_message is None:

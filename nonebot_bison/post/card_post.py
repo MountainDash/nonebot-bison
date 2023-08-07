@@ -1,19 +1,22 @@
+from dataclasses import field, dataclass
+
 from nonebot.log import logger
-from pydantic import Field, BaseModel, PrivateAttr
+from pydantic import BaseModel
 from nonebot_plugin_saa import Image, MessageSegmentFactory
 
 from .abstract_post import AbstractPost
 from ..cards import ThemeMetadata, card_manager
 
 
+@dataclass
 class CardPost(AbstractPost):
     """额外的文本请考虑extra_msg"""
 
     theme: str
     card_data: BaseModel
-    pics: list[str | bytes] = Field(default_factory=list)
+    pics: list[str | bytes] = field(default_factory=list)
 
-    _card_meta: ThemeMetadata | None = PrivateAttr(None)
+    _card_meta: ThemeMetadata | None = field(init=False, default=None)
 
     @property
     def card_meta(self):

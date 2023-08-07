@@ -35,6 +35,7 @@ async def test_plain_post(app: App):
         target_name="rss-bison",
     )
     messages = await post.generate()
+    assert isinstance(messages, list)
     assert isinstance(messages[0], Image)
     assert len(messages) == 2
 

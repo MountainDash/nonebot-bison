@@ -16,7 +16,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/admin-frontend/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

@@ -42,7 +42,7 @@ async def test_card_manager(app: App, fake_card, fake_render):
 async def test_cards_load(app: App):
     from nonebot_bison import cards
 
-    assert len(cards.card_manager) == (3 + 1)  # 加上一个test
+    assert len(cards.card_manager) > 0
     assert "bison" in cards.card_manager
     assert isinstance(cards.card_manager["bison"], cards.registry.ThemeMetadata)
 

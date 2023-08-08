@@ -9,10 +9,10 @@ async def test_card_post(app: App, fake_card, fake_render):
     from nonebot_bison.post.card_post import CardPost
     from nonebot_bison.cards import ThemeMetadata, card_manager
 
-    card_manager.register(ThemeMetadata(theme="test", render=fake_render, schemas=fake_card))
+    card_manager.register(ThemeMetadata(theme="fake", render=fake_render, schemas=fake_card))
 
     post = CardPost(
-        theme="test",
+        theme="fake",
         card_data=fake_card(text="wow"),
     )
     messages = await post.generate()

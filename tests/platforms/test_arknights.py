@@ -81,9 +81,6 @@ async def test_fetch_new(
     assert post2.theme == "arknights"
     assert post2.card_data.announce_title == "2023「夏日嘉年华」限时活动即将开启"
     assert post2.card_data.content
-    from ..utils import show_pic
-
-    await show_pic(await post2._render_card())
 
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
     res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))

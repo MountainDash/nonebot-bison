@@ -16,6 +16,7 @@ class AppReq(TypedDict, total=False):
 async def show_pic(pic_data: str | bytes):
     """
     用来在测试时查看图片的函数，接受的参数为图片的数据
+    # 警告: 请确保在正式运行时不会调用此函数，否则会导致测试卡死
 
     允许的数据类型：
 

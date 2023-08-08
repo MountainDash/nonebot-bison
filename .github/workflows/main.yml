@@ -130,7 +130,7 @@ jobs:
           path: ./src/plugins/nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -191,7 +191,7 @@ jobs:
           path: ./src/plugins/nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2

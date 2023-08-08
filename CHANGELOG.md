@@ -2,8 +2,6 @@
 
 ## 最近更新
 
-- :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#316](https://github.com/felinae98/nonebot-bison/pull/316))
-
 ### 新功能
 
 - 适配明日方舟新版公告栏API [@GuGuMur](https://github.com/GuGuMur) ([#305](https://github.com/felinae98/nonebot-bison/pull/305))

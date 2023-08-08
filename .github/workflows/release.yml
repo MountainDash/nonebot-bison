@@ -84,7 +84,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./docker/Dockerfile_with_frontend
@@ -96,7 +96,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build Sentry and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./docker/Dockerfile_with_frontend_sentry

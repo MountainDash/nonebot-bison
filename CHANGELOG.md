@@ -6,6 +6,10 @@
 
 - 适配明日方舟新版公告栏API [@GuGuMur](https://github.com/GuGuMur) ([#305](https://github.com/felinae98/nonebot-bison/pull/305))
 
+### Bug 修复
+
+- :ambulance: 修正明日方舟游戏信息的模板与图片渲染 [@GuGuMur](https://github.com/GuGuMur) ([#306](https://github.com/felinae98/nonebot-bison/pull/306))
+
 ## v0.8.0
 
 ### 破坏性变更

@@ -15,6 +15,11 @@
     <div class="main">
       <div class="container">
         <div class="standerd-container">
+          {% if bannerImageUrl %}
+          <div class="banner-image-container">
+            <img class="banner-image" src="{{ bannerImageUrl }}" />
+          </div>
+          {% endif %}
           <div class="head-title-container">
             <span class="head-title">{{ announce_title }}</span>
           </div>

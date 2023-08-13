@@ -51,11 +51,13 @@ class Arknights(NewMessage):
         raw_data = raw_data.json()["data"]
 
         announce_title = raw_data.get("header") if raw_data.get("header") != "" else raw_data.get("title")
-        # text = "游戏公告更新：" + announce_title.replace('\n','')
         text = ""
 
         pics = []
-        if "content" in raw_data:
+        if raw_data["bannerImageUrl"]:
+            pics.append(raw_post["bannerImageUrl"])
+
+        elif raw_data["content"]:
             require("nonebot_plugin_htmlrender")
             from nonebot_plugin_htmlrender import template_to_pic
 
@@ -64,11 +66,12 @@ class Arknights(NewMessage):
                 template_path=template_path,
                 template_name="index.html",
                 templates={
+                    "bannerImageUrl": raw_data["bannerImageUrl"],
                     "announce_title": announce_title,
                     "content": raw_data["content"],
                 },
                 pages={
-                    "viewport": {"width": 500, "height": 6400},
+                    "viewport": {"width": 400, "height": 100},
                     "base_url": f"file://{template_path}",
                 },
             )
@@ -81,8 +84,6 @@ class Arknights(NewMessage):
                 pics.append(pic_data)
             else:
                 text = "图片渲染失败"
-        elif "bannerImageUrl" in raw_data:
-            pics.append(raw_post["bannerImageUrl"])  # type: ignore
         else:
             raise CategoryNotRecognize("未找到可渲染部分")
         return Post(

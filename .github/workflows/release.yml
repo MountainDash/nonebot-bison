@@ -116,7 +116,7 @@ jobs:
         uses: ./.github/actions/build-docs
 
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1
+        uses: nwtgck/actions-netlify@v2
         with:
           publish-dir: "./docs/.vuepress/dist"
           production-deploy: true

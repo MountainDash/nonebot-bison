@@ -7,7 +7,7 @@
   "dependencies": {
     "@arco-design/web-react": "^2.51.1",
     "@babel/core": "^7.22.10",
-    "@babel/plugin-syntax-flow": "^7.18.6",
+    "@babel/plugin-syntax-flow": "^7.22.5",
     "@babel/plugin-transform-react-jsx": "^7.22.5",
     "@reduxjs/toolkit": "^1.9.5",
     "@testing-library/dom": "^9.3.1",

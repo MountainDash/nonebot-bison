@@ -11,7 +11,7 @@ from nonebot.log import logger
 from pydantic import Field, BaseModel
 
 from ..post import Post
-from ..utils import SchedulerConfig, similar_text_process
+from ..utils import SchedulerConfig, text_similarity
 from ..types import Tag, Target, RawPost, ApiError, Category
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
@@ -125,6 +125,16 @@ class Bilibili(NewMessage):
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
         return [*(tp["topic_name"] for tp in raw_post["display"]["topic_info"]["topic_details"])]
 
+    def _text_process(self, dynamic, desc, title) -> str:
+        similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
+        if len(dynamic) == 0 and len(desc) == 0:
+            text = title
+        elif similarity > 0.8:
+            text = title + "\n\n" + desc if len(dynamic) < len(desc) else dynamic + "\n=================\n" + title
+        else:
+            text = dynamic + "\n=================\n" + title + "\n\n" + desc
+        return text
+
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
         if post_type == 1:
             # 一般动态
@@ -139,15 +149,7 @@ class Bilibili(NewMessage):
             dynamic = card.get("dynamic", "")
             title = card["title"]
             desc = card.get("desc", "")
-            text = similar_text_process(
-                desc,
-                dynamic,
-                {
-                    0.8: lambda x, y: f"{title}\n\n{x}" if len(x) > len(y) else f"{y}\n=================\n{title}",
-                    0: lambda x, y: f"{y}\n=================\n{title}\n\n{x}",
-                },
-            )
-
+            text = self._text_process(dynamic, desc, title)
             pic = [card["pic"]]
         elif post_type == 4:
             # 纯文字

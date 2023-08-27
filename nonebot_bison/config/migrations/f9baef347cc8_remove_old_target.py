@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.automap import automap_base
 
 # revision identifiers, used by Alembic.
-revision = 'f9baef347cc8'
-down_revision = '8d3863e9d74b'
+revision = "f9baef347cc8"
+down_revision = "8d3863e9d74b"
 branch_labels = None
 depends_on = None
 

@@ -53,7 +53,7 @@ class Rss(NewMessage):
             entry["_target_name"] = feed.feed.title
         return feed.entries
 
-    def _text_process(self, title, desc) -> str:
+    def _text_process(self, title: str, desc: str) -> str:
         similarity = 1.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc)
         if similarity > 0.8:
             text = title if len(title) > len(desc) else desc

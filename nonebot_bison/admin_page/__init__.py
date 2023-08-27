@@ -74,8 +74,7 @@ def register_get_token_handler():
 
 
 def check_driver_is_fastapi() -> bool:
-    driver = get_driver()
-    return driver.type == "fastapi"
+    return isinstance(get_driver(), Driver)
 
 
 if (STATIC_PATH / "index.html").exists():

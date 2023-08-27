@@ -125,6 +125,16 @@ class Bilibili(NewMessage):
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
         return [*(tp["topic_name"] for tp in raw_post["display"]["topic_info"]["topic_details"])]
 
+    def _text_process(self, dynamic: str, desc: str, title: str) -> str:
+        similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
+        if len(dynamic) == 0 and len(desc) == 0:
+            text = title
+        elif similarity > 0.8:
+            text = title + "\n\n" + desc if len(dynamic) < len(desc) else dynamic + "\n=================\n" + title
+        else:
+            text = dynamic + "\n=================\n" + title + "\n\n" + desc
+        return text
+
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
         if post_type == 1:
             # 一般动态
@@ -139,17 +149,7 @@ class Bilibili(NewMessage):
             dynamic = card.get("dynamic", "")
             title = card["title"]
             desc = card.get("desc", "")
-
-            if text_similarity(desc, dynamic) > 0.8:
-                # 如果视频简介和动态内容相似，就只保留长的那个
-                if len(dynamic) > len(desc):
-                    text = f"{dynamic}\n=================\n{title}"
-                else:
-                    text = f"{title}\n\n{desc}"
-            else:
-                # 否则就把两个拼起来
-                text = f"{dynamic}\n=================\n{title}\n\n{desc}"
-
+            text = self._text_process(dynamic, desc, title)
             pic = [card["pic"]]
         elif post_type == 4:
             # 纯文字

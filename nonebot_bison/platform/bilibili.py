@@ -125,7 +125,7 @@ class Bilibili(NewMessage):
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
         return [*(tp["topic_name"] for tp in raw_post["display"]["topic_info"]["topic_details"])]
 
-    def _text_process(self, dynamic, desc, title) -> str:
+    def _text_process(self, dynamic: str, desc: str, title: str) -> str:
         similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
         if len(dynamic) == 0 and len(desc) == 0:
             text = title

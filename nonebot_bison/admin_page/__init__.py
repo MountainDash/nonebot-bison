@@ -1,17 +1,21 @@
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot import get_driver, on_command
-from nonebot.drivers.fastapi import Driver
 from nonebot.adapters.onebot.v11 import Bot
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
 
 from .api import router as api_router
 from ..plugin_config import plugin_config
 from .token_manager import token_manager as tm
+
+if TYPE_CHECKING:
+    from nonebot.drivers.fastapi import Driver
+
 
 STATIC_PATH = (Path(__file__).parent / "dist").resolve()
 
@@ -22,7 +26,7 @@ def init_fastapi():
     from fastapi.staticfiles import StaticFiles
 
     sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
-    socket_app = socketio.ASGIApp(sio, socketio_path="socket")
+    socketio.ASGIApp(sio, socketio_path="socket")
 
     class SinglePageApplication(StaticFiles):
         def __init__(self, directory: os.PathLike, index="index.html"):
@@ -35,7 +39,7 @@ def init_fastapi():
                 return super().lookup_path(self.index)
             return (full_path, stat_res)
 
-    def register_router_fastapi(driver: Driver, socketio):
+    def register_router_fastapi(driver: "Driver", socketio):
         static_path = STATIC_PATH
         nonebot_app = FastAPI(
             title="nonebot-bison",
@@ -48,11 +52,6 @@ def init_fastapi():
         app.mount("/bison", nonebot_app, "nonebot-bison")
 
     driver = get_driver()
-    if isinstance(driver, Driver):
-        register_router_fastapi(driver, socket_app)
-    else:
-        logger.warning(f"Driver {driver.type} not supported")
-        return
     host = str(driver.config.host)
     port = driver.config.port
     if host in ["0.0.0.0", "127.0.0.1"]:
@@ -74,7 +73,12 @@ def register_get_token_handler():
 
 
 def check_driver_is_fastapi() -> bool:
-    return isinstance(get_driver(), Driver)
+    try:
+        from nonebot.drivers.fastapi import Driver
+
+        return isinstance(get_driver(), Driver)
+    except ImportError:
+        return False
 
 
 if (STATIC_PATH / "index.html").exists():

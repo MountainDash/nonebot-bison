@@ -26,7 +26,7 @@ def init_fastapi():
     from fastapi.staticfiles import StaticFiles
 
     sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
-    socketio.ASGIApp(sio, socketio_path="socket")
+    socket_app = socketio.ASGIApp(sio, socketio_path="socket")
 
     class SinglePageApplication(StaticFiles):
         def __init__(self, directory: os.PathLike, index="index.html"):
@@ -52,6 +52,7 @@ def init_fastapi():
         app.mount("/bison", nonebot_app, "nonebot-bison")
 
     driver = get_driver()
+    register_router_fastapi(driver, socket_app)
     host = str(driver.config.host)
     port = driver.config.port
     if host in ["0.0.0.0", "127.0.0.1"]:

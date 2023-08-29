@@ -55,4 +55,6 @@ class ApiError(Exception):
         super().__init__(msg)
 
 
-SubUnit = tuple[Target, list[UserSubInfo]]
+class SubUnit(NamedTuple):
+    sub_target: Target
+    user_sub_infos: list[UserSubInfo]

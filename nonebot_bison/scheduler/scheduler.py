@@ -5,9 +5,9 @@ from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
-from ..types import Target
 from ..config import config
 from ..send import send_msgs
+from ..types import Target, SubUnit
 from ..platform import platform_manager
 from ..utils import ProcessContext, SchedulerConfig
 
@@ -95,16 +95,16 @@ class Scheduler:
             platform_obj = platform_manager[schedulable.platform_name](context, client)
             if schedulable.use_batch:
                 batch_targets = self.batch_api_target_cache[schedulable.platform_name][schedulable.target]
-                target_user_info_list = []
+                sub_units = []
                 for batch_target in batch_targets:
                     userinfo = await config.get_platform_target_subscribers(schedulable.platform_name, batch_target)
-                    target_user_info_list.append((batch_target, userinfo))
-                to_send = await platform_obj.do_batch_fetch_new_post(target_user_info_list)
+                    sub_units.append(SubUnit(batch_target, userinfo))
+                to_send = await platform_obj.do_batch_fetch_new_post(sub_units)
             else:
                 send_userinfo_list = await config.get_platform_target_subscribers(
                     schedulable.platform_name, schedulable.target
                 )
-                to_send = await platform_obj.do_fetch_new_post(schedulable.target, send_userinfo_list)
+                to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
         except Exception as err:
             records = context.gen_req_records()
             for record in records:

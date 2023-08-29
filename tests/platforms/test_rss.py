@@ -68,15 +68,17 @@ async def test_fetch_new_1(
     user_info_factory,
     update_time_feed_1,
 ):
+    from nonebot_bison.types import Target, SubUnit
+
     ## 标题重复的情况
     rss_router = respx.get("https://rsshub.app/twitter/user/ArknightsStaff")
     rss_router.mock(return_value=Response(200, text=get_file("rss-twitter-ArknightsStaff-0.xml")))
-    target = "https://rsshub.app/twitter/user/ArknightsStaff"
-    res1 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    target = Target("https://rsshub.app/twitter/user/ArknightsStaff")
+    res1 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res1) == 0
 
     rss_router.mock(return_value=Response(200, text=update_time_feed_1))
-    res2 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    res2 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://twitter.com/ArknightsStaff/status/1659091539023282178"
@@ -95,15 +97,17 @@ async def test_fetch_new_2(
     user_info_factory,
     update_time_feed_2,
 ):
+    from nonebot_bison.types import Target, SubUnit
+
     ## 标题与正文不重复的情况
     rss_router = respx.get("https://www.ruanyifeng.com/blog/atom.xml")
     rss_router.mock(return_value=Response(200, text=get_file("rss-ruanyifeng-0.xml")))
-    target = "https://www.ruanyifeng.com/blog/atom.xml"
-    res1 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    target = Target("https://www.ruanyifeng.com/blog/atom.xml")
+    res1 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res1) == 0
 
     rss_router.mock(return_value=Response(200, text=update_time_feed_2))
-    res2 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    res2 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "http://www.ruanyifeng.com/blog/2023/05/weekly-issue-255.html"
@@ -129,15 +133,17 @@ async def test_fetch_new_3(
     user_info_factory,
     update_time_feed_3,
 ):
+    from nonebot_bison.types import Target, SubUnit
+
     ## 只有<updated>没有<published>
     rss_router = respx.get("https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom")
     rss_router.mock(return_value=Response(200, text=get_file("rss-github-atom-0.xml")))
-    target = "https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom"
-    res1 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    target = Target("https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom")
+    res1 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res1) == 0
 
     rss_router.mock(return_value=Response(200, text=update_time_feed_3))
-    res2 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    res2 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.9"
@@ -150,15 +156,17 @@ async def test_fetch_new_4(
     rss,
     user_info_factory,
 ):
+    from nonebot_bison.types import Target, SubUnit
+
     ## 没有日期信息的情况
     rss_router = respx.get("https://rsshub.app/wallhaven/hot?limit=5")
     rss_router.mock(return_value=Response(200, text=get_file("rss-top5-old.xml")))
-    target = "https://rsshub.app/wallhaven/hot?limit=5"
-    res1 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    target = Target("https://rsshub.app/wallhaven/hot?limit=5")
+    res1 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res1) == 0
 
     rss_router.mock(return_value=Response(200, text=get_file("rss-top5-new.xml")))
-    res2 = await rss.fetch_new_post(target, [user_info_factory([], [])])
+    res2 = await rss.fetch_new_post(SubUnit(target, [user_info_factory([], [])]))
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://wallhaven.cc/w/85rjej"

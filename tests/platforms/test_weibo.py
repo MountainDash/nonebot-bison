@@ -41,25 +41,27 @@ async def test_get_name(weibo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(weibo, dummy_user_subinfo):
+    from nonebot_bison.types import Target, SubUnit
+
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
     detail_router = respx.get("https://m.weibo.cn/detail/4649031014551911")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_list_0.json")))
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4649031014551911")))
     image_cdn_router.mock(Response(200, content=b""))
-    target = "6279793937"
-    res = await weibo.fetch_new_post(target, [dummy_user_subinfo])
+    target = Target("6279793937")
+    res = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert ak_list_router.called
     assert len(res) == 0
     assert not detail_router.called
     mock_data = get_json("weibo_ak_list_1.json")
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    res2 = await weibo.fetch_new_post(target, [dummy_user_subinfo])
+    res2 = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2) == 0
     mock_data["data"]["cards"][1]["mblog"]["created_at"] = datetime.now(timezone("Asia/Shanghai")).strftime(
         "%a %b %d %H:%M:%S %z %Y"
     )
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    res3 = await weibo.fetch_new_post(target, [dummy_user_subinfo])
+    res3 = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3[0][1]) == 1
     assert not detail_router.called
     post = res3[0][1][0]
@@ -103,7 +105,9 @@ def test_tag(weibo, weibo_ak_list_1):
 @pytest.mark.asyncio
 @pytest.mark.compare
 async def test_rsshub_compare(weibo):
-    target = "6279793937"
+    from nonebot_bison.types import Target
+
+    target = Target("6279793937")
     raw_posts = filter(weibo.filter_platform_custom, await weibo.get_sub_list(target))
     posts = []
     for raw_post in raw_posts:

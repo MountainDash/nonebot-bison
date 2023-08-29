@@ -35,7 +35,7 @@ async def test_parse_target(bili_bangumi: "BilibiliBangumi"):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bilibili_bangumi_status(bili_bangumi: "BilibiliBangumi", dummy_user_subinfo):
-    from nonebot_bison.types import Target
+    from nonebot_bison.types import Target, SubUnit
 
     bili_bangumi_router = respx.get("https://api.bilibili.com/pgc/review/user?media_id=28235413")
     bili_bangumi_detail_router = respx.get("https://api.bilibili.com/pgc/view/web/season?season_id=39719")
@@ -43,15 +43,15 @@ async def test_fetch_bilibili_bangumi_status(bili_bangumi: "BilibiliBangumi", du
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")
     bilibili_main_page_router.mock(return_value=Response(200))
     target = Target("28235413")
-    res = await bili_bangumi.fetch_new_post(target, [dummy_user_subinfo])
+    res = await bili_bangumi.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res) == 0
 
-    res = await bili_bangumi.fetch_new_post(target, [dummy_user_subinfo])
+    res = await bili_bangumi.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res) == 0
 
     bili_bangumi_router.mock(return_value=Response(200, json=get_json("bilibili-gangumi-hanhua1.json")))
     bili_bangumi_detail_router.mock(return_value=Response(200, json=get_json("bilibili-gangumi-hanhua1-detail.json")))
-    res2 = await bili_bangumi.fetch_new_post(target, [dummy_user_subinfo])
+    res2 = await bili_bangumi.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
 
     post = res2[0][1][0]
     assert post.target_type == "Bilibili剧集"

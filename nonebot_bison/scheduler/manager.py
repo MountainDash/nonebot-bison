@@ -29,7 +29,9 @@ async def init_scheduler():
     for scheduler_config, target_list in _schedule_class_dict.items():
         schedulable_args = []
         for target in target_list:
-            schedulable_args.append((target.platform_name, T_Target(target.target)))
+            schedulable_args.append(
+                (target.platform_name, T_Target(target.target), platform_manager[target.platform_name].use_batch)
+            )
         platform_name_list = _schedule_class_platform_dict[scheduler_config]
         scheduler_dict[scheduler_config] = Scheduler(scheduler_config, schedulable_args, platform_name_list)
     config.register_add_target_hook(handle_insert_new_target)

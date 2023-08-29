@@ -49,6 +49,8 @@ async def test_fetch_new(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
+    from nonebot_bison.types import Target, SubUnit
+
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/5716")
     version_router = respx.get("https://ak-conf.hypergryph.com/config/prod/official/IOS/version")
@@ -63,14 +65,14 @@ async def test_fetch_new(
     preannouncement_router.mock(return_value=Response(200, json=get_json("arknights-pre-0.json")))
     monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_0))
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-0.json")))
-    target = ""
-    res = await arknights.fetch_new_post(target, [dummy_user_subinfo])
+    target = Target("")
+    res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert ak_list_router.called
     assert len(res) == 0
     assert not detail_router.called
     mock_data = arknights_list_0
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    res3 = await arknights.fetch_new_post(target, [dummy_user_subinfo])
+    res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3[0][1]) == 1
     assert detail_router.called
     post = res3[0][1][0]
@@ -82,7 +84,7 @@ async def test_fetch_new(
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
     await post.generate_messages()
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
-    res = await arknights.fetch_new_post(target, [dummy_user_subinfo])
+    res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res) == 1
     post = res[0][1][0]
     assert post.target_type == "terra-historicus"
@@ -101,6 +103,8 @@ async def test_send_with_render(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
+    from nonebot_bison.types import Target, SubUnit
+
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")
     version_router = respx.get("https://ak-conf.hypergryph.com/config/prod/official/IOS/version")
@@ -115,14 +119,14 @@ async def test_send_with_render(
     preannouncement_router.mock(return_value=Response(200, json=get_json("arknights-pre-0.json")))
     monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_0))
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-0.json")))
-    target = ""
-    res = await arknights.fetch_new_post(target, [dummy_user_subinfo])
+    target = Target("")
+    res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert ak_list_router.called
     assert len(res) == 0
     assert not detail_router.called
     mock_data = arknights_list_1
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    res3 = await arknights.fetch_new_post(target, [dummy_user_subinfo])
+    res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3[0][1]) == 1
     assert detail_router.called
     post = res3[0][1][0]

@@ -5,7 +5,7 @@
   "homepage": "bison",
   "proxy": "http://127.0.0.1:8080",
   "dependencies": {
-    "@arco-design/web-react": "^2.51.1",
+    "@arco-design/web-react": "^2.52.2",
     "@babel/core": "^7.22.11",
     "@babel/plugin-syntax-flow": "^7.22.5",
     "@babel/plugin-transform-react-jsx": "^7.22.5",

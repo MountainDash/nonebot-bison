@@ -5,7 +5,7 @@
   "homepage": "bison",
   "proxy": "http://127.0.0.1:8080",
   "dependencies": {
-    "@arco-design/web-react": "^2.51.1",
+    "@arco-design/web-react": "^2.52.2",
     "@babel/core": "^7.22.11",
     "@babel/plugin-syntax-flow": "^7.22.5",
     "@babel/plugin-transform-react-jsx": "^7.22.5",
@@ -15,7 +15,7 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/jest": "^29.5.3",
     "@types/node": "^20.5.0",
-    "@types/react": "^18.0.25",
+    "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

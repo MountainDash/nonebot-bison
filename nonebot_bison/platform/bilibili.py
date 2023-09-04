@@ -124,7 +124,7 @@ class Bilibili(NewMessage):
 
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
         # FIXME: 更深的原因可能是返回格式的变动，需要进一步确认
-        if topic_info := raw_post["display"].get("topic_info", None):
+        if topic_info := raw_post["display"].get("topic_info"):
             return [*(tp["topic_name"] for tp in topic_info["topic_details"])]
 
         return []

@@ -1452,13 +1452,13 @@ yaml = ["pyyaml (>=6.0)"]
 
 [[package]]
 name = "nonebot-plugin-htmlrender"
-version = "0.2.1"
+version = "0.2.2"
 description = "通过浏览器渲染图片"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "nonebot_plugin_htmlrender-0.2.1-py3-none-any.whl", hash = "sha256:caf26189fdfec1eb20c022a39da2758bf239285ccc3428756ea5446f91125df4"},
-    {file = "nonebot_plugin_htmlrender-0.2.1.tar.gz", hash = "sha256:da5d28366846eccc0037386a08834d234883a933a49f647ea56842fe1aa2e43f"},
+    {file = "nonebot_plugin_htmlrender-0.2.2-py3-none-any.whl", hash = "sha256:0415d8123a3c1a8bc321762631e1bfa33611530122ad662b95a7a772c24a0725"},
+    {file = "nonebot_plugin_htmlrender-0.2.2.tar.gz", hash = "sha256:d79c4fa1c9bd655ac12caa4289da58d249f67ed45d29754565e05e4efbfa1e85"},
 ]
 
 [package.dependencies]
@@ -2124,13 +2124,13 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-engineio"
-version = "4.6.1"
+version = "4.7.0"
 description = "Engine.IO server and client for Python"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "python-engineio-4.6.1.tar.gz", hash = "sha256:83fee966bec427e74b23a8c5d261655ed780bec147ff01cadc9f48ae9b8b6220"},
-    {file = "python_engineio-4.6.1-py3-none-any.whl", hash = "sha256:eed1ffa9b003104b92c7760de5ac43d074abce28fd28a511d5268da82bfb8644"},
+    {file = "python-engineio-4.7.0.tar.gz", hash = "sha256:8b4f30ba58a5bff001801127227f44a1da0c0a22045f798c1a13ebb0d618e2a3"},
+    {file = "python_engineio-4.7.0-py3-none-any.whl", hash = "sha256:23b05b768d61c281104d8c69e069cea356b2e60aa982f718cdf1731719ce2803"},
 ]
 
 [package.extras]
@@ -2171,22 +2171,23 @@ unidecode = ["Unidecode (>=1.1.1)"]
 
 [[package]]
 name = "python-socketio"
-version = "5.8.0"
+version = "5.9.0"
 description = "Socket.IO server and client for Python"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "python-socketio-5.8.0.tar.gz", hash = "sha256:e714f4dddfaaa0cb0e37a1e2deef2bb60590a5b9fea9c343dd8ca5e688416fd9"},
-    {file = "python_socketio-5.8.0-py3-none-any.whl", hash = "sha256:7adb8867aac1c2929b9c1429f1c02e12ca4c36b67c807967393e367dfbb01441"},
+    {file = "python-socketio-5.9.0.tar.gz", hash = "sha256:dc42735f65534187f381fde291ebf620216a4960001370f32de940229b2e7f8f"},
+    {file = "python_socketio-5.9.0-py3-none-any.whl", hash = "sha256:c20f12e4ed0cba57581af26bbeea9998bc2eeebb3b952fa92493a1e051cfe9dc"},
 ]
 
 [package.dependencies]
 bidict = ">=0.21.0"
-python-engineio = ">=4.3.0"
+python-engineio = ">=4.7.0"
 
 [package.extras]
 asyncio-client = ["aiohttp (>=3.4)"]
 client = ["requests (>=2.21.0)", "websocket-client (>=0.54.0)"]
+docs = ["sphinx"]
 
 [[package]]
 name = "pytz"

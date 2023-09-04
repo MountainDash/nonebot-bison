@@ -10,24 +10,17 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      prod-patch-update:
+      prod-update:
         dependency-type: "production"
-        update-types: ["patch"]
-      prod-minor-update:
-        dependency-type: "production"
-        update-types: ["minor"]
-      prod-major-update:
-        dependency-type: "production"
-        update-types: ["major"]
-      dev-patch-update:
+        update-types:
+          - "patch"
+          - "minor"
+      dev-update:
         dependency-type: "development"
-        update-types: ["patch"]
-      dev-minor-update:
-        dependency-type: "development"
-        update-types: ["minor"]
-      dev-major-update:
-        dependency-type: "development"
-        update-types: ["major"]
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
 
   - package-ecosystem: "npm"
     directory: "/"
@@ -43,24 +36,17 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      prod-patch-update:
+      prod-update:
         dependency-type: "production"
-        update-types: ["patch"]
-      prod-minor-update:
-        dependency-type: "production"
-        update-types: ["minor"]
-      prod-major-update:
-        dependency-type: "production"
-        update-types: ["major"]
-      dev-patch-update:
+        update-types:
+          - "patch"
+          - "minor"
+      dev-update:
         dependency-type: "development"
-        update-types: ["patch"]
-      dev-minor-update:
-        dependency-type: "development"
-        update-types: ["minor"]
-      dev-major-update:
-        dependency-type: "development"
-        update-types: ["major"]
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
 
   - package-ecosystem: github-actions
     directory: "/"

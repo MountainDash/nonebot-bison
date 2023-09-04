@@ -421,17 +421,6 @@
     envinfo "^7.10.0"
     esbuild "~0.18.20"
 
-"@vuepress/client@2.0.0-beta.66":
-  version "2.0.0-beta.66"
-  resolved "https://registry.yarnpkg.com/@vuepress/client/-/client-2.0.0-beta.66.tgz#adf27f8574667589749995ac6f475a0683a91bd4"
-  integrity sha512-WjrL1u0NOVUwiGoVOIfQqSU7SwzJUkyBFu3xiZoNmWFD9VdPIfuSRvVeZDhr+br/0tA7XrJd2ueSEDt5+BM3Qg==
-  dependencies:
-    "@vue/devtools-api" "^6.5.0"
-    "@vuepress/shared" "2.0.0-beta.66"
-    "@vueuse/core" "^10.2.1"
-    vue "^3.3.4"
-    vue-router "^4.2.4"
-
 "@vuepress/client@2.0.0-beta.67":
   version "2.0.0-beta.67"
   resolved "https://registry.yarnpkg.com/@vuepress/client/-/client-2.0.0-beta.67.tgz#7cb444eaa12032a7d07b8d59a515d291933518dc"
@@ -584,14 +573,6 @@
     "@vuepress/utils" "2.0.0-beta.67"
     vue "^3.3.4"
 
-"@vuepress/shared@2.0.0-beta.66":
-  version "2.0.0-beta.66"
-  resolved "https://registry.yarnpkg.com/@vuepress/shared/-/shared-2.0.0-beta.66.tgz#0e139aa88715023f1434b76e2ed6f1092d91bafe"
-  integrity sha512-hMnFFHee6xLYVcSdpbKddcqunrOxIp2/B1gOGorcF5bZfnhJJWWsdZ//kwemAqlB8d10Z7f3x+b69Ur1LDPThw==
-  dependencies:
-    "@mdit-vue/types" "^0.12.0"
-    "@vue/shared" "^3.3.4"
-
 "@vuepress/shared@2.0.0-beta.67":
   version "2.0.0-beta.67"
   resolved "https://registry.yarnpkg.com/@vuepress/shared/-/shared-2.0.0-beta.67.tgz#fb9abc662904117a97c26004aa436f1f2aa02263"
@@ -642,7 +623,7 @@
     picocolors "^1.0.0"
     upath "^2.0.1"
 
-"@vueuse/core@^10.2.1", "@vueuse/core@^10.4.1":
+"@vueuse/core@^10.4.1":
   version "10.4.1"
   resolved "https://registry.yarnpkg.com/@vueuse/core/-/core-10.4.1.tgz#fc2c8a83a571c207aaedbe393b22daa6d35123f2"
   integrity sha512-DkHIfMIoSIBjMgRRvdIvxsyboRZQmImofLyOHADqiVbQVilP8VVHDhBX2ZqoItOgu7dWa8oXiNnScOdPLhdEXg==

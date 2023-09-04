@@ -41,6 +41,36 @@ def without_dynamic(app: App):
 
 
 @pytest.mark.asyncio
+async def test_get_tag_without_topic_info(bilibili, bing_dy_list):
+    simple_raw_post = {
+        "display": {
+            "topic_info": {
+                "topic_details": [
+                    {
+                        "topic_name": "可露希尔的秘密档案",
+                    },
+                    {
+                        "topic_name": "罗德岛相簿",
+                    },
+                ],
+            },
+        },
+    }
+
+    simple_raw_post_without_topic_info = {
+        "display": {
+            "damedane": "dameyo",
+        },
+    }
+
+    res1 = bilibili.get_tags(simple_raw_post)
+    assert res1 == ["可露希尔的秘密档案", "罗德岛相簿"]
+
+    res2 = bilibili.get_tags(simple_raw_post_without_topic_info)
+    assert res2 == []
+
+
+@pytest.mark.asyncio
 async def test_video_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[1])
     assert (

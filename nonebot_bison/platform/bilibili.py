@@ -123,7 +123,11 @@ class Bilibili(NewMessage):
         return self._do_get_category(post_type)
 
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
-        return [*(tp["topic_name"] for tp in raw_post["display"]["topic_info"]["topic_details"])]
+        # FIXME: 更深的原因可能是返回格式的变动，需要进一步确认
+        if topic_info := raw_post["display"].get("topic_info"):
+            return [tp["topic_name"] for tp in topic_info["topic_details"]]
+
+        return []
 
     def _text_process(self, dynamic: str, desc: str, title: str) -> str:
         similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)

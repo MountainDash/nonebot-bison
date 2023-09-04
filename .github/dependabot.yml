@@ -12,22 +12,22 @@ updates:
     groups:
       prod-patch-update:
         dependency-type: "production"
-        update-type: "patch"
+        update-types: "patch"
       prod-minor-update:
         dependency-type: "production"
-        update-type: "minor"
+        update-types: "minor"
       prod-major-update:
         dependency-type: "production"
-        update-type: "major"
+        update-types: "major"
       dev-patch-update:
         dependency-type: "development"
-        update-type: "patch"
+        update-types: "patch"
       dev-minor-update:
         dependency-type: "development"
-        update-type: "minor"
+        update-types: "minor"
       dev-major-update:
         dependency-type: "development"
-        update-type: "major"
+        update-types: "major"
 
   - package-ecosystem: "npm"
     directory: "/"
@@ -45,22 +45,22 @@ updates:
     groups:
       prod-patch-update:
         dependency-type: "production"
-        update-type: "patch"
+        update-types: "patch"
       prod-minor-update:
         dependency-type: "production"
-        update-type: "minor"
+        update-types: "minor"
       prod-major-update:
         dependency-type: "production"
-        update-type: "major"
+        update-types: "major"
       dev-patch-update:
         dependency-type: "development"
-        update-type: "patch"
+        update-types: "patch"
       dev-minor-update:
         dependency-type: "development"
-        update-type: "minor"
+        update-types: "minor"
       dev-major-update:
         dependency-type: "development"
-        update-type: "major"
+        update-types: "major"
 
   - package-ecosystem: github-actions
     directory: "/"

@@ -2,8 +2,6 @@
 
 ## 最近更新
 
-- :bug: update-types应为array [@AzideCupric](https://github.com/AzideCupric) ([#362](https://github.com/MountainDash/nonebot-bison/pull/362))
-
 ### 新功能
 
 - 提供批量 api 接口 [@felinae98](https://github.com/felinae98) ([#290](https://github.com/MountainDash/nonebot-bison/pull/290))

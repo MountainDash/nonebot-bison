@@ -41,6 +41,36 @@ def without_dynamic(app: App):
 
 
 @pytest.mark.asyncio
+async def test_get_tag_without_topic_info(bilibili, bing_dy_list):
+    simple_raw_post = {
+        "display": {
+            "topic_info": {
+                "topic_details": [
+                    {
+                        "topic_name": "可露希尔的秘密档案",
+                    },
+                    {
+                        "topic_name": "罗德岛相簿",
+                    },
+                ],
+            },
+        },
+    }
+
+    simple_raw_post_without_topic_info = {
+        "display": {
+            "damedane": "dameyo",
+        },
+    }
+
+    res1 = bilibili.get_tags(simple_raw_post)
+    assert res1 == ["可露希尔的秘密档案", "罗德岛相簿"]
+
+    res2 = bilibili.get_tags(simple_raw_post_without_topic_info)
+    assert res2 == []
+
+
+@pytest.mark.asyncio
 async def test_video_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[1])
     assert (
@@ -49,6 +79,22 @@ async def test_video_forward(bilibili, bing_dy_list):
         " \n11：来宿舍休息一下吧 \n档案来源：lambda:\\罗德岛内务\\秘密档案 \n发布时间：9/12 1:00 P.M."
         " \n档案类型：可见 \n档案描述：今天请了病假在宿舍休息。很舒适。"
         " \n提供者：赫默\n=================\n《可露希尔的秘密档案》11话：来宿舍休息一下吧"
+    )
+
+
+@pytest.mark.asyncio
+async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
+    # 视频简介和动态文本其中一方为空的情况
+    post = await bilibili.parse(bing_dy_list[2])
+    assert (
+        post.text
+        == "阿消的罗德岛闲谈直播#01:《女人最喜欢的女人，就是在战场上熠熠生辉的女人》"
+        + "\n\n"
+        + "本系列视频为饼组成员的有趣直播录播，主要内容为方舟相关，未来可能系列其他视频会包含部分饼组团建日常等。"
+        "仅为娱乐性视频，内容与常规饼学预测无关。视频仅为当期主播主观观点，不代表饼组观点。仅供娱乐。"
+        "\n\n直播主播:@寒蝉慕夏 \n后期剪辑:@Melodiesviel \n\n本群视频为9.11组员慕夏直播录播，"
+        "包含慕夏对新PV的个人解读，风笛厨力疯狂放出，CP言论输出，9.16轮换池预测视频分析和理智规划杂谈内容。"
+        "\n注意:内含大量个人性质对风笛的厨力观点，与多CP混乱发言，不适者请及时点击退出或跳到下一片段。"
     )
 
 
@@ -90,14 +136,16 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_dynamic):
+    from nonebot_bison.types import Target, SubUnit
+
     post_router = respx.get(
         "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
     )
     post_router.mock(return_value=Response(200, json=without_dynamic))
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")
     bilibili_main_page_router.mock(return_value=Response(200))
-    target = "161775300"
-    res = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
+    target = Target("161775300")
+    res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert post_router.called
     assert len(res) == 0
 
@@ -105,21 +153,23 @@ async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_d
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(bilibili, dummy_user_subinfo):
+    from nonebot_bison.types import Target, SubUnit
+
     post_router = respx.get(
         "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
     )
     post_router.mock(return_value=Response(200, json=get_json("bilibili_strange_post-0.json")))
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")
     bilibili_main_page_router.mock(return_value=Response(200))
-    target = "161775300"
-    res = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
+    target = Target("161775300")
+    res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert post_router.called
     assert len(res) == 0
 
     mock_data = get_json("bilibili_strange_post.json")
     mock_data["data"]["cards"][0]["desc"]["timestamp"] = int(datetime.now().timestamp())
     post_router.mock(return_value=Response(200, json=mock_data))
-    res2 = await bilibili.fetch_new_post(target, [dummy_user_subinfo])
+    res2 = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     post = res2[0][1][0]
     assert (

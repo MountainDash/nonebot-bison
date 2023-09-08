@@ -123,7 +123,21 @@ class Bilibili(NewMessage):
         return self._do_get_category(post_type)
 
     def get_tags(self, raw_post: RawPost) -> list[Tag]:
-        return [*(tp["topic_name"] for tp in raw_post["display"]["topic_info"]["topic_details"])]
+        # FIXME: 更深的原因可能是返回格式的变动，需要进一步确认
+        if topic_info := raw_post["display"].get("topic_info"):
+            return [tp["topic_name"] for tp in topic_info["topic_details"]]
+
+        return []
+
+    def _text_process(self, dynamic: str, desc: str, title: str) -> str:
+        similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
+        if len(dynamic) == 0 and len(desc) == 0:
+            text = title
+        elif similarity > 0.8:
+            text = title + "\n\n" + desc if len(dynamic) < len(desc) else dynamic + "\n=================\n" + title
+        else:
+            text = dynamic + "\n=================\n" + title + "\n\n" + desc
+        return text
 
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
         if post_type == 1:
@@ -139,17 +153,7 @@ class Bilibili(NewMessage):
             dynamic = card.get("dynamic", "")
             title = card["title"]
             desc = card.get("desc", "")
-
-            if text_similarity(desc, dynamic) > 0.8:
-                # 如果视频简介和动态内容相似，就只保留长的那个
-                if len(dynamic) > len(desc):
-                    text = f"{dynamic}\n=================\n{title}"
-                else:
-                    text = f"{title}\n\n{desc}"
-            else:
-                # 否则就把两个拼起来
-                text = f"{dynamic}\n=================\n{title}\n\n{desc}"
-
+            text = self._text_process(dynamic, desc, title)
             pic = [card["pic"]]
         elif post_type == 4:
             # 纯文字
@@ -201,6 +205,7 @@ class Bilibililive(StatusChange):
     scheduler = BilibiliSchedConf
     name = "Bilibili直播"
     has_target = True
+    use_batch = True
 
     @unique
     class LiveStatus(Enum):
@@ -281,12 +286,11 @@ class Bilibililive(StatusChange):
             keyframe="",
         )
 
-    async def get_status(self, target: Target) -> Info:
-        params = {"uids[]": target}
+    async def batch_get_status(self, targets: list[Target]) -> list[Info]:
         # https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/live/info.md#批量查询直播间状态
         res = await self.client.get(
             "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
-            params=params,
+            params={"uids[]": targets},
             timeout=4.0,
         )
         res_dict = res.json()
@@ -294,11 +298,14 @@ class Bilibililive(StatusChange):
         if res_dict["code"] != 0:
             raise self.FetchError()
 
-        data = res_dict.get("data")
-        if not data:
-            return self._gen_empty_info(uid=int(target))
-        room_data = data[target]
-        return self.Info.parse_obj(room_data)
+        data = res_dict.get("data", {})
+        infos = []
+        for target in targets:
+            if target in data.keys():
+                infos.append(self.Info.parse_obj(data[target]))
+            else:
+                infos.append(self._gen_empty_info(int(target)))
+        return infos
 
     def compare_status(self, _: Target, old_status: Info, new_status: Info) -> list[RawPost]:
         action = Bilibililive.LiveAction

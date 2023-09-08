@@ -1,14 +1,48 @@
 <div align="center">
-<h1>Bison </br>通用订阅推送插件</h1>
 
-[![pypi](https://badgen.net/pypi/v/nonebot-bison)](https://pypi.org/project/nonebot-bison/)
-[![license](https://img.shields.io/github/license/felinae98/nonebot-bison)](https://github.com/felinae98/nonebot-bison/blob/main/LICENSE)
-[![action](https://img.shields.io/github/actions/workflow/status/felinae98/nonebot-bison/main.yml?branch=main)](https://github.com/felinae98/nonebot-bison/actions/workflows/main.yml)
-[![docker](https://img.shields.io/docker/image-size/felinae98/nonebot-bison)](https://hub.docker.com/r/felinae98/nonebot-bison)
-[![codecov](https://codecov.io/gh/felinae98/nonebot-bison/branch/main/graph/badge.svg?token=QCFIODJOOA)](https://codecov.io/gh/felinae98/nonebot-bison)
-[![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-868610060-orange)](https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi)
+# Bison
 
-[文档](https://nonebot-bison.netlify.app)|[开发文档](https://nonebot-bison.netlify.app/dev)
+_✨ 通用订阅推送插件 ✨_
+
+<a href="https://raw.githubusercontent.com/MountainDash/nonebot-bison/main/LICENSE">
+    <img src="https://img.shields.io/github/license/MountainDash/nonebot-bison" alt="license">
+</a>
+<a href="https://pypi.python.org/pypi/nonebot-bison">
+    <img src="https://img.shields.io/pypi/v/nonebot-bison?logo=python&logoColor=edb641" alt="pypi">
+</a>
+<img src="https://img.shields.io/badge/python-3.8+-blue?logo=python&logoColor=edb641" alt="python">
+<a href="https://github.com/psf/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg?logo=python&logoColor=edb641" alt="black">
+</a>
+<a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="ruff">
+</a>
+<br />
+<a href="https://codecov.io/gh/MountainDash/nonebot-bison">
+    <img src="https://codecov.io/gh/MountainDash/nonebot-bison/branch/main/graph/badge.svg?token=QCFIODJOOA" alt="codecov"/>
+</a>
+<a href="https://github.com/MountainDash/nonebot-bison/actions/workflows/main.yml.yml">
+    <img src="https://github.com/MountainDash/nonebot-bison/actions/workflows/main.yml/badge.svg?branch=main&event=push" alt="action"/>
+</a>
+<a href="https://results.pre-commit.ci/latest/github/MountainDash/nonebot-bison/main">
+    <img src="https://results.pre-commit.ci/badge/github/MountainDash/nonebot-bison/main.svg" alt="pre-commit" />
+</a>
+<a href="https://github.com/MountainDash/nonebot-bison/actions/workflows/ruff.yml">
+    <img src="https://github.com/MountainDash/nonebot-bison/actions/workflows/ruff.yml/badge.svg?branch=main&event=push" alt="ruff">
+</a>
+
+<br />
+<a href="https://nonebot-bison.netlify.app/" target="__blank">
+    <strong>📖 官方文档</strong>
+  </a>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <a href="https://nonebot-bison.netlify.app/usage/easy-use.html" target="__blank">
+    <strong>🚀 快速开始</strong>
+  </a>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <a href="https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi" target="__blank">
+    <strong>💬 讨论交流</strong>
+  </a>
 
 </div>
 

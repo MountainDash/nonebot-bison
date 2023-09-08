@@ -53,18 +53,19 @@ class Rss(NewMessage):
             entry["_target_name"] = feed.feed.title
         return feed.entries
 
+    def _text_process(self, title: str, desc: str) -> str:
+        similarity = 1.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc)
+        if similarity > 0.8:
+            text = title if len(title) > len(desc) else desc
+        else:
+            text = title + "\n\n" + desc
+        return text
+
     async def parse(self, raw_post: RawPost) -> Post:
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()
-        if not title or not desc:
-            text = title or desc
-        else:
-            if text_similarity(desc, title) > 0.8:
-                text = desc if len(desc) > len(title) else title
-            else:
-                text = f"{title}\n\n{desc}"
-
+        text = self._text_process(title, desc)
         pics = [x.attrs["src"] for x in soup("img")]
         if raw_post.get("media_content"):
             for media in raw_post["media_content"]:

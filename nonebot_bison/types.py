@@ -53,3 +53,8 @@ class ApiError(Exception):
     def __init__(self, url: URL) -> None:
         msg = f"api {url} error"
         super().__init__(msg)
+
+
+class SubUnit(NamedTuple):
+    sub_target: Target
+    user_sub_infos: list[UserSubInfo]

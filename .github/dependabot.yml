@@ -9,15 +9,50 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    groups:
+      prod-update:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
+      dev-update:
+        dependency-type: "development"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      docs-update:
+        patterns:
+          - "*"
+
   - package-ecosystem: "npm"
     directory: "/admin-frontend/"
     schedule:
       interval: "monthly"
+    groups:
+      prod-update:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
+      dev-update:
+        dependency-type: "development"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
+    groups:
+      actions-update:
+        patterns:
+          - "*"

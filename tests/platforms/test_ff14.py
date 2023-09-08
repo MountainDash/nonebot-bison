@@ -27,16 +27,18 @@ def ff14_newdata_json_1():
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_newdata_json_1):
+    from nonebot_bison.types import Target, SubUnit
+
     newdata = respx.get(
         "https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5309,5310,5311,5312,5313&pageIndex=0&pageSize=5"
     )
     newdata.mock(return_value=Response(200, json=ff14_newdata_json_0))
-    target = ""
-    res = await ff14.fetch_new_post(target, [dummy_user_subinfo])
+    target = Target("")
+    res = await ff14.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert newdata.called
     assert len(res) == 0
     newdata.mock(return_value=Response(200, json=ff14_newdata_json_1))
-    res = await ff14.fetch_new_post(target, [dummy_user_subinfo])
+    res = await ff14.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert newdata.called
     post = res[0][1][0]
     assert post.target_type == "ff14"

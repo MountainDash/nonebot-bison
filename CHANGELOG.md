@@ -1,14 +1,19 @@
 # Change Log
 
-## 最近更新
+## v0.8.2
 
 ### 新功能
 
-- 适配明日方舟新版公告栏API [@GuGuMur](https://github.com/GuGuMur) ([#305](https://github.com/felinae98/nonebot-bison/pull/305))
+- 提供批量 api 接口 [@felinae98](https://github.com/felinae98) ([#290](https://github.com/MountainDash/nonebot-bison/pull/290))
+- 适配明日方舟新版公告栏API [@GuGuMur](https://github.com/GuGuMur) ([#305](https://github.com/MountainDash/nonebot-bison/pull/305))
 
 ### Bug 修复
 
-- :ambulance: 修正明日方舟游戏信息的模板与图片渲染 [@GuGuMur](https://github.com/GuGuMur) ([#306](https://github.com/felinae98/nonebot-bison/pull/306))
+- :bug: 处理topic_info字段缺失的问题 [@AzideCupric](https://github.com/AzideCupric) ([#354](https://github.com/MountainDash/nonebot-bison/pull/354))
+- 修复无法正常判断 FastAPI 是否存在的问题 [@KomoriDev](https://github.com/KomoriDev) ([#350](https://github.com/MountainDash/nonebot-bison/pull/350))
+- 适配 SAA 0.3 [@he0119](https://github.com/he0119) ([#349](https://github.com/MountainDash/nonebot-bison/pull/349))
+- 修复文本相似度函数除0报错 [@UKMeng](https://github.com/UKMeng) ([#302](https://github.com/MountainDash/nonebot-bison/pull/302))
+- :ambulance: 修正明日方舟游戏信息的模板与图片渲染 [@GuGuMur](https://github.com/GuGuMur) ([#306](https://github.com/MountainDash/nonebot-bison/pull/306))
 
 ## v0.8.0
 

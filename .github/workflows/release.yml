@@ -23,7 +23,12 @@ jobs:
   publish-pypi-github:
     runs-on: ubuntu-latest
     needs: build-frontend
-
+    permissions:
+      # write permission is required to create a github release
+      contents: write
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
+      pull-requests: write
     steps:
       - uses: actions/checkout@v3
 

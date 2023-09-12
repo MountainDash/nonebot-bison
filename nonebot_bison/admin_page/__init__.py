@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 STATIC_PATH = (Path(__file__).parent / "dist").resolve()
 
 
-def init_fastapi():
+def init_fastapi(driver: "Driver"):
     import socketio
     from fastapi.applications import FastAPI
     from fastapi.staticfiles import StaticFiles
@@ -51,8 +51,7 @@ def init_fastapi():
         app = driver.server_app
         app.mount("/bison", nonebot_app, "nonebot-bison")
 
-    driver = get_driver()
-    register_router_fastapi(driver, socket_app)  # type: ignore
+    register_router_fastapi(driver, socket_app)
     host = str(driver.config.host)
     port = driver.config.port
     if host in ["0.0.0.0", "127.0.0.1"]:
@@ -73,18 +72,21 @@ def register_get_token_handler():
     get_token.__help__info__ = "获取管理bot后台的地址，该地址会在一段时间过后过期，请不要泄漏该地址"  # type: ignore
 
 
-def check_driver_is_fastapi() -> bool:
+def check_driver_is_fastapi() -> "Driver" | None:
     try:
         from nonebot.drivers.fastapi import Driver
 
-        return isinstance(get_driver(), Driver)
+        if (driver := get_driver()) and isinstance(driver, Driver):
+            return driver
+        return None
+
     except ImportError:
-        return False
+        return None
 
 
 if (STATIC_PATH / "index.html").exists():
-    if check_driver_is_fastapi():
-        init_fastapi()
+    if driver := check_driver_is_fastapi():
+        init_fastapi(driver)
         register_get_token_handler()
     else:
         logger.warning("your driver is not fastapi, webui feature will be disabled")

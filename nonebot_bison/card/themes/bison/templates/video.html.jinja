@@ -1,0 +1,22 @@
+{% extends "common.html.jinja" %}
+
+{% block link %}
+<link rel="stylesheet" href="video.css">
+{% endblock %}
+
+{% block extend %}
+<div class="video">
+    <img src="{{card.content.cover}}" alt="封面" class="cover">
+    <div class="desc">
+        <div class="title">
+            {{card.content.title}}
+        </div>
+        <div class="brief">
+            {{card.content.brief}}
+        </div>
+        <div class="category">
+            {{card.content.category}}
+        </div>
+    </div>
+</div>
+{% endblock %}

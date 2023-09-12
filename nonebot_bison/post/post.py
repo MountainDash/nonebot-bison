@@ -1,27 +1,54 @@
 from io import BytesIO
 from dataclasses import field, dataclass
 
-from PIL import Image
 from nonebot.log import logger
-import nonebot_plugin_saa as saa
-from nonebot_plugin_saa.utils import MessageSegmentFactory
+from PIL import Image as PILImage
+from nonebot_plugin_saa import Image, MessageSegmentFactory
 
-from ..utils import parse_text, http_client
-from .abstract_post import BasePost, AbstractPost
+from ..utils import http_client
+from .abstract_post import AbstractPost
+from ..card import BaseStem, ThemeMetadata, card_manager
 
 
 @dataclass
-class _Post(BasePost):
-    target_type: str
-    text: str
-    url: str | None = None
-    target_name: str | None = None
+class Post(AbstractPost):
+    """额外的文本请考虑extra_msg"""
+
+    theme: str
+    card_data: BaseStem
     pics: list[str | bytes] = field(default_factory=list)
 
-    _message: list[MessageSegmentFactory] | None = None
-    _pic_message: list[MessageSegmentFactory] | None = None
+    _card_meta: ThemeMetadata | None = field(init=False, default=None)
 
-    async def _pic_url_to_image(self, data: str | bytes) -> Image.Image:
+    @property
+    def card_meta(self):
+        if not self._card_meta:
+            self._card_meta = card_manager[self.theme]
+
+        return self._card_meta
+
+    async def _render_card(self) -> list[MessageSegmentFactory] | MessageSegmentFactory:
+        if not isinstance(self.card_data, self.card_meta.stem):
+            logger.error("data schemas NOT match card theme")
+            raise TypeError("data schemas NOT match card theme")
+
+        return await self.card_data.render()
+
+    async def generate(self) -> list[MessageSegmentFactory]:
+        msg_segments: list[MessageSegmentFactory] = []
+        render_result = await self._render_card()
+        if isinstance(render_result, list):
+            msg_segments.extend(render_result)
+        else:
+            msg_segments.append(render_result)
+
+        await self._pic_merge()
+        for pic in self.pics:
+            msg_segments.append(Image(pic))
+
+        return msg_segments
+
+    async def _pic_url_to_image(self, data: str | bytes) -> PILImage.Image:
         pic_buffer = BytesIO()
         if isinstance(data, str):
             async with http_client() as client:
@@ -29,7 +56,7 @@ class _Post(BasePost):
             pic_buffer.write(res.content)
         else:
             pic_buffer.write(data)
-        return Image.open(pic_buffer)
+        return PILImage.open(pic_buffer)
 
     def _check_image_square(self, size: tuple[int, int]) -> bool:
         return abs(size[0] - size[1]) / size[0] < 0.05
@@ -40,7 +67,7 @@ class _Post(BasePost):
         first_image = await self._pic_url_to_image(self.pics[0])
         if not self._check_image_square(first_image.size):
             return
-        images: list[Image.Image] = [first_image]
+        images: list[PILImage.Image] = [first_image]
         # first row
         for i in range(1, 3):
             cur_img = await self._pic_url_to_image(self.pics[i])
@@ -64,7 +91,7 @@ class _Post(BasePost):
                 return False
             if row_first_img.size[0] != images[0].size[0]:
                 return False
-            image_row: list[Image.Image] = [row_first_img]
+            image_row: list[PILImage.Image] = [row_first_img]
             for i in range(row * 3 + 1, row * 3 + 3):
                 cur_img = await self._pic_url_to_image(self.pics[i])
                 if not self._check_image_square(cur_img.size):
@@ -85,7 +112,7 @@ class _Post(BasePost):
         if await process_row(2):
             matrix = (3, 3)
         logger.info("trigger merge image")
-        target = Image.new("RGB", (x_coord[-1], y_coord[-1]))
+        target = PILImage.new("RGB", (x_coord[-1], y_coord[-1]))
         for y in range(matrix[1]):
             for x in range(matrix[0]):
                 target.paste(
@@ -96,56 +123,3 @@ class _Post(BasePost):
         target.save(target_io, "JPEG")
         self.pics = self.pics[matrix[0] * matrix[1] :]
         self.pics.insert(0, target_io.getvalue())
-
-    async def generate_text_messages(self) -> list[MessageSegmentFactory]:
-        if self._message is None:
-            await self._pic_merge()
-            msg_segments: list[MessageSegmentFactory] = []
-            text = ""
-            if self.text:
-                text += "{}".format(self.text if len(self.text) < 500 else self.text[:500] + "...")
-            if text:
-                text += "\n"
-            text += f"来源: {self.target_type}"
-            if self.target_name:
-                text += f" {self.target_name}"
-            if self.url:
-                text += f" \n详情: {self.url}"
-            msg_segments.append(saa.Text(text))
-            for pic in self.pics:
-                msg_segments.append(saa.Image(pic))
-            self._message = msg_segments
-        return self._message
-
-    async def generate_pic_messages(self) -> list[MessageSegmentFactory]:
-        if self._pic_message is None:
-            await self._pic_merge()
-            msg_segments: list[MessageSegmentFactory] = []
-            text = ""
-            if self.text:
-                text += f"{self.text}"
-                text += "\n"
-            text += f"来源: {self.target_type}"
-            if self.target_name:
-                text += f" {self.target_name}"
-            msg_segments.append(await parse_text(text))
-            if not self.target_type == "rss" and self.url:
-                msg_segments.append(saa.Text(self.url))
-            for pic in self.pics:
-                msg_segments.append(saa.Image(pic))
-            self._pic_message = msg_segments
-        return self._pic_message
-
-    def __str__(self):
-        return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(
-            self.target_type,
-            self.target_name,
-            self.text if len(self.text) < 500 else self.text[:500] + "...",
-            self.url,
-            ", ".join("b64img" if isinstance(x, bytes) or x.startswith("base64") else x for x in self.pics),
-        )
-
-
-@dataclass
-class Post(AbstractPost, _Post):
-    pass

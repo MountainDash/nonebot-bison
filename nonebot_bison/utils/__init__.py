@@ -33,9 +33,9 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-async def parse_text(text: str) -> MessageSegmentFactory:
+async def parse_text(text: str, force_pic: bool = False) -> MessageSegmentFactory:
     "return raw text if don't use pic, otherwise return rendered opcode"
-    if plugin_config.bison_use_pic:
+    if plugin_config.bison_use_pic or force_pic:
         require("nonebot_plugin_htmlrender")
         from nonebot_plugin_htmlrender import text_to_pic as _text_to_pic
 

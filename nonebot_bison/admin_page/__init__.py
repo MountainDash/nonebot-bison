@@ -52,7 +52,7 @@ def init_fastapi():
         app.mount("/bison", nonebot_app, "nonebot-bison")
 
     driver = get_driver()
-    register_router_fastapi(driver, socket_app)
+    register_router_fastapi(driver, socket_app)  # type: ignore
     host = str(driver.config.host)
     port = driver.config.port
     if host in ["0.0.0.0", "127.0.0.1"]:

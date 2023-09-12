@@ -11,7 +11,7 @@ from .abstract_post import BasePost, AbstractPost
 @dataclass
 class _CustomPost(BasePost):
     ms_factories: list[MessageSegmentFactory] = field(default_factory=list)
-    css_path: str | None = None  # 模板文件所用css路径
+    css_path: str = ""  # 模板文件所用css路径
 
     async def generate_text_messages(self) -> list[MessageSegmentFactory]:
         return self.ms_factories

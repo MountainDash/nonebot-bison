@@ -72,7 +72,7 @@ def register_get_token_handler():
     get_token.__help__info__ = "获取管理bot后台的地址，该地址会在一段时间过后过期，请不要泄漏该地址"  # type: ignore
 
 
-def check_driver_is_fastapi() -> "Driver" | None:
+def check_driver_is_fastapi() -> "Driver | None":
     try:
         from nonebot.drivers.fastapi import Driver
 

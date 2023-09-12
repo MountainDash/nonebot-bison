@@ -42,15 +42,20 @@ async def test_log(app: App, tmp_path: Path):
     import io
     import contextlib
 
+    from nonebot import get_driver
+    from nonebot.drivers.fastapi import Driver
     from nonebot.log import logger, default_format
 
     from nonebot_bison.admin_page import init_fastapi
+
+    driver = get_driver()
+    assert isinstance(driver, Driver)
 
     log_path = tmp_path / "temp.log"
 
     logger.add(log_path, level="INFO", format=default_format, rotation="1 day")
     with contextlib.redirect_stderr(io.StringIO()) as f:
-        init_fastapi()
+        init_fastapi(driver)
 
     with log_path.open("r", encoding="utf-8") as f:
         log = f.read()

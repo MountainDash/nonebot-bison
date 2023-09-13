@@ -48,7 +48,7 @@ def update_time_feed_1():
     current_time = datetime.now(pytz.timezone("GMT")).strftime("%a, %d %b %Y %H:%M:%S %Z")
     assert item
     pubdate_elem = item.find("pubDate")
-    assert pubdate_elem
+    assert pubdate_elem is not None
     pubdate_elem.text = current_time
     return ET.tostring(root, encoding="unicode")
 
@@ -59,7 +59,7 @@ def update_time_feed_2():
     root = ET.fromstring(file)
     current_time = datetime.now(pytz.timezone("GMT")).strftime("%a, %d %b %Y %H:%M:%S %Z")
     published_element = root.find(".//{*}published")
-    assert published_element
+    assert published_element is not None
     published_element.text = current_time
     return ET.tostring(root, encoding="unicode")
 

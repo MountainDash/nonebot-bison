@@ -139,7 +139,7 @@ class McbbsNews(NewMessage):
             raise CategoryNotRecognize(f"Mcbbsnews订阅尚未识别 {categoty_name}")
         return category_id
 
-    async def parse(self, post: RawPost) -> Post:
+    async def plain_parse(self, post: RawPost) -> Post:
         """获取并分配正式推文交由相应的函数渲染"""
         post_url = "https://www.mcbbs.net/{}".format(post["url"])
         async with http_client() as client:

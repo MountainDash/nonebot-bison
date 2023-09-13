@@ -110,7 +110,7 @@ class Weibo(NewMessage):
         text = raw_text.replace("<br />", "\n")
         return bs(text, "html.parser").text
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         header = {
             "accept": (
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,"

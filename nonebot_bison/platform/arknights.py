@@ -44,7 +44,7 @@ class Arknights(NewMessage):
     def get_category(self, _) -> Category:
         return Category(1)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         raw_data = await self.client.get(
             f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
@@ -139,7 +139,7 @@ class AkVersion(StatusChange):
     def get_category(self, _):
         return Category(2)
 
-    async def parse(self, raw_post):
+    async def plain_parse(self, raw_post):
         return raw_post
 
 
@@ -170,7 +170,7 @@ class MonsterSiren(NewMessage):
     def get_category(self, _) -> Category:
         return Category(3)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
         res = await self.client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
         raw_data = res.json()
@@ -217,7 +217,7 @@ class TerraHistoricusComic(NewMessage):
     def get_category(self, _) -> Category:
         return Category(4)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
             "terra-historicus",

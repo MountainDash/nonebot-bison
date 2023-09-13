@@ -61,7 +61,7 @@ class Rss(NewMessage):
             text = title + "\n\n" + desc
         return text
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()

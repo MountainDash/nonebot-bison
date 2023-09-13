@@ -63,7 +63,7 @@ class NcmArtist(NewMessage):
     def get_date(self, post: RawPost) -> int:
         return post["publishTime"] // 1000
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         text = "新专辑发布：{}".format(raw_post["name"])
         target_name = raw_post["artist"]["name"]
         pics = [raw_post["picUrl"]]
@@ -121,7 +121,7 @@ class NcmRadio(NewMessage):
     def get_date(self, post: RawPost) -> int:
         return post["createTime"] // 1000
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         text = "网易云电台更新：{}".format(raw_post["name"])
         target_name = raw_post["radio"]["name"]
         pics = [raw_post["coverUrl"]]

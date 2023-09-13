@@ -63,7 +63,7 @@ def mock_platform_without_cats_tags(app: App):
         def get_date(self, raw_post: "RawPost") -> float:
             return raw_post["date"]
 
-        async def parse(self, raw_post: "RawPost") -> "Post":
+        async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
                 "mock_platform",
                 raw_post["text"],
@@ -125,7 +125,7 @@ def mock_platform(app: App):
         def get_category(self, raw_post: "RawPost") -> "Category":
             return raw_post["category"]
 
-        async def parse(self, raw_post: "RawPost") -> "Post":
+        async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
                 "mock_platform",
                 raw_post["text"],
@@ -192,7 +192,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
                 raise CategoryNotSupport(raw_post["category"])
             return raw_post["category"]
 
-        async def parse(self, raw_post: "RawPost") -> "Post":
+        async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
                 "mock_platform",
                 raw_post["text"],
@@ -248,7 +248,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
         def get_category(self, raw_post: "RawPost") -> "Category":
             return raw_post["category"]
 
-        async def parse(self, raw_post: "RawPost") -> "Post":
+        async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
                 "mock_platform_2",
                 raw_post["text"],
@@ -313,7 +313,7 @@ def mock_status_change(app: App):
                 return [{"text": "off", "cat": 2}]
             return []
 
-        async def parse(self, raw_post) -> "Post":
+        async def plain_parse(self, raw_post) -> "Post":
             return Post("mock_status", raw_post["text"], "")
 
         def get_category(self, raw_post):
@@ -510,7 +510,7 @@ async def test_batch_fetch_new_message(app: App):
         def get_date(self, raw_post: "RawPost") -> float:
             return raw_post["date"]
 
-        async def parse(self, raw_post: "RawPost") -> "Post":
+        async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
                 "mock_platform",
                 raw_post["text"],
@@ -606,7 +606,7 @@ async def test_batch_fetch_compare_status(app: App):
                 return [{"text": "off", "cat": 2}]
             return []
 
-        async def parse(self, raw_post) -> "Post":
+        async def plain_parse(self, raw_post) -> "Post":
             return Post("mock_status", raw_post["text"], "")
 
         def get_category(self, raw_post):

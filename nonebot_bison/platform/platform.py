@@ -5,8 +5,9 @@ import typing
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from inspect import ismethod, getmembers
 from typing import Any, TypeVar, ParamSpec
-from collections.abc import Callable, Awaitable, Collection
+from collections.abc import Callable, Awaitable, Coroutine, Collection
 
 import httpx
 from httpx import AsyncClient
@@ -14,6 +15,7 @@ from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
 from ..post import Post
+from ..card import card_manager
 from ..plugin_config import plugin_config
 from ..utils import ProcessContext, SchedulerConfig
 from ..types import Tag, Target, RawPost, SubUnit, Category
@@ -67,6 +69,8 @@ async def catch_network_error(func: Callable[P, Awaitable[R]], *args: P.args, **
 class PlatformMeta(RegistryMeta):
     categories: dict[Category, str]
     store: dict[Target, Any]
+    supported_themes: tuple[str, ...]
+    _supported_theme_map: dict[str, Callable[[RawPost], Coroutine[Any, Any, Post]]]
 
     def __init__(cls, name, bases, namespace, **kwargs):
         cls.reverse_category = {}
@@ -74,6 +78,28 @@ class PlatformMeta(RegistryMeta):
         if hasattr(cls, "categories") and cls.categories:
             for key, val in cls.categories.items():
                 cls.reverse_category[val] = key
+
+        def is_theme_parse_method(x):
+            if not ismethod(x):
+                return False
+            func_name = x.__name__
+            match func_name.split("_"):
+                case [theme_name, "parse"] if theme_name in card_manager:
+                    return True
+                case _:
+                    return False
+
+        # TODO: >=3.11 可以使用getmembers_static
+        theme_parse_methods = getmembers(cls, is_theme_parse_method)
+        if theme_parse_methods:
+            cls._supported_theme_map = dict(theme_parse_methods)
+            cls.supported_themes = tuple(cls._supported_theme_map.keys())
+        else:
+            raise NotImplementedError(f"Platform {name} has no theme parse method")
+
+        if "plain" not in cls.supported_themes:
+            raise NotImplementedError(f"Platform {name} MUST support plain theme")
+
         super().__init__(name, bases, namespace, **kwargs)
 
 
@@ -96,6 +122,10 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     client: AsyncClient
     reverse_category: dict[str, Category]
     use_batch: bool = False
+    default_theme: str = "plain"
+
+    supported_themes: tuple[str, ...]
+    _supported_theme_map: dict[str, Callable[[RawPost], Coroutine[Any, Any, Post]]]
 
     @classmethod
     @abstractmethod
@@ -117,12 +147,22 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return await catch_network_error(self.batch_fetch_new_post, sub_units) or []
 
     @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         ...
 
     async def do_parse(self, raw_post: RawPost) -> Post:
         "actually function called"
-        return await self.parse(raw_post)
+        theme_parse = self.get_theme_parse()
+        return await theme_parse(raw_post)
+
+    def get_theme_parse(self):
+        """使用的主题由配置文件中的bison_platforms_theme指定，若未指定则使用默认主题"""
+        using_theme = plugin_config.bison_platforms_theme[self.platform_name] or self.default_theme
+        if using_theme in self.supported_themes:
+            return self._supported_theme_map[using_theme]
+        raise NotImplementedError(
+            f"Platform {self.platform_name} MUST has `{using_theme}_parse` method to support theme {using_theme}"
+        )
 
     def __init__(self, context: ProcessContext, client: AsyncClient):
         super().__init__()
@@ -238,7 +278,7 @@ class MessageProcess(Platform, abstract=True):
             retry_times = 3
             while retry_times:
                 try:
-                    self.parse_cache[post_id] = await self.parse(raw_post)
+                    self.parse_cache[post_id] = await super().do_parse(raw_post)
                     break
                 except Exception as err:
                     retry_times -= 1
@@ -372,7 +412,7 @@ class StatusChange(Platform, abstract=True):
         ...
 
     @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         ...
 
     async def _handle_status_change(

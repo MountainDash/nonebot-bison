@@ -39,7 +39,7 @@ class FF14(NewMessage):
     def get_date(self, _: RawPost) -> None:
         return None
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         text = f'{raw_post["Title"]}\n{raw_post["Summary"]}'
         url = raw_post["Author"]
         return Post("ff14", text=text, url=url, target_name="最终幻想XIV官方公告")

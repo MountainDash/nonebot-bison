@@ -163,7 +163,7 @@ class Bilibili(NewMessage):
             raise CategoryNotSupport(post_type)
         return text, pic
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         card_content = json.loads(raw_post["card"])
         post_type = self.get_category(raw_post)
         target_name = raw_post["desc"]["user_profile"]["info"]["uname"]
@@ -328,7 +328,7 @@ class Bilibililive(StatusChange):
         assert status.category != Category(0)
         return status.category
 
-    async def parse(self, raw_post: Info) -> Post:
+    async def plain_parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
         pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
@@ -396,7 +396,7 @@ class BilibiliBangumi(StatusChange):
         else:
             return []
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: RawPost) -> Post:
         detail_res = await self.client.get(
             f'https://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
         )

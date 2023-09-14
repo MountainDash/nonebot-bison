@@ -7,11 +7,15 @@ from ....plugin_config import plugin_config
 
 
 class Stem(BaseStem):
-    target_type: str
+    platform: str
     text: str
     url: str | None = None
     target_name: str | None = None
     override_text_to_pic: bool = False
+
+    @classmethod
+    def get_theme_name(cls):
+        return "plain"
 
     async def render(self):
         if self.use_pic:
@@ -31,7 +35,7 @@ class Stem(BaseStem):
             text += "{}".format(self.text if len(self.text) < 500 else self.text[:500] + "...")
         if text:
             text += "\n"
-        text += f"来源: {self.target_type}"
+        text += f"来源: {self.platform}"
         if self.target_name:
             text += f" {self.target_name}"
         if self.url:
@@ -44,15 +48,15 @@ class Stem(BaseStem):
         if self.text:
             text += f"{self.text}"
             text += "\n"
-        text += f"来源: {self.target_type}"
+        text += f"来源: {self.platform}"
         if self.target_name:
             text += f" {self.target_name}"
         msg_segments.append(await parse_text(text, force_pic=True))
-        if not self.target_type == "rss" and self.url:
+        if not self.platform == "rss" and self.url:
             msg_segments.append(Text(self.url))
         return msg_segments
 
     def __str__(self):
         return "type: {}\nfrom: {}\ntext: {}\nurl: {}".format(
-            self.target_type, self.target_name, self.text if len(self.text) < 500 else self.text[:500] + "...", self.url
+            self.platform, self.target_name, self.text if len(self.text) < 500 else self.text[:500] + "...", self.url
         )

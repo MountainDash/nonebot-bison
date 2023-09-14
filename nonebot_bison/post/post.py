@@ -14,16 +14,21 @@ from ..card import BaseStem, ThemeMetadata, card_manager
 class Post(AbstractPost):
     """额外的文本请考虑extra_msg"""
 
-    theme: str
     card_data: BaseStem
     pics: list[str | bytes] = field(default_factory=list)
+    theme: str | None = None
+    """显式指定theme，不指定则使用card_data的theme"""
 
     _card_meta: ThemeMetadata | None = field(init=False, default=None)
 
     @property
+    def post_theme(self) -> str:
+        return self.theme or self.card_data.get_theme_name()
+
+    @property
     def card_meta(self):
         if not self._card_meta:
-            self._card_meta = card_manager[self.theme]
+            self._card_meta = card_manager[self.post_theme]
 
         return self._card_meta
 

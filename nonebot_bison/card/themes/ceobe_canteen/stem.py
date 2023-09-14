@@ -59,6 +59,10 @@ class Card(BaseStem):
             raise ValueError("qr must be a valid url")
         return convert_to_qr(v)
 
+    @classmethod
+    def get_theme_name(cls):
+        return "ceobecanteen"
+
     async def render(self) -> Image:
         require("nonebot_plugin_htmlrender")
         from nonebot_plugin_htmlrender import get_new_page

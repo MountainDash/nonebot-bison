@@ -22,6 +22,10 @@ class Card(BaseStem):
     banner_image_url: str | None
     content: HTML
 
+    @classmethod
+    def get_theme_name(cls):
+        return "arknights"
+
     async def render(self) -> Image:
         require("nonebot_plugin_htmlrender")
         from nonebot_plugin_htmlrender import template_to_pic

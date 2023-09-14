@@ -7,6 +7,13 @@ from nonebot_plugin_saa import MessageSegmentFactory
 class BaseStem(ABC, BaseModel):
     @abstractmethod
     async def render(self) -> list[MessageSegmentFactory] | MessageSegmentFactory:
+        """渲染卡片数据"""
+        ...
+
+    @classmethod
+    @abstractmethod
+    def get_theme_name(cls) -> str:
+        """获取主题名称"""
         ...
 
     def __str__(self):

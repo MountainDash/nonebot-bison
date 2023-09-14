@@ -1,7 +1,7 @@
-from .stem import Card
+from .stem import Card as CeobeStem
 from ...registry import ThemeMetadata
 
 __theme_meta__ = ThemeMetadata(
-    theme="ceobecanteen",
-    stem=Card,
+    theme=CeobeStem.get_theme_name(),
+    stem=CeobeStem,
 )

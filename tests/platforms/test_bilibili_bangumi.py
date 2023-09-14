@@ -35,6 +35,7 @@ async def test_parse_target(bili_bangumi: "BilibiliBangumi"):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bilibili_bangumi_status(bili_bangumi: "BilibiliBangumi", dummy_user_subinfo):
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Target, SubUnit
 
     bili_bangumi_router = respx.get("https://api.bilibili.com/pgc/review/user?media_id=28235413")
@@ -53,10 +54,12 @@ async def test_fetch_bilibili_bangumi_status(bili_bangumi: "BilibiliBangumi", du
     bili_bangumi_detail_router.mock(return_value=Response(200, json=get_json("bilibili-gangumi-hanhua1-detail.json")))
     res2 = await bili_bangumi.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
 
-    post = res2[0][1][0]
-    assert post.target_type == "Bilibili剧集"
-    assert post.text == "《汉化日记 第三季》第2话 什么是战区导弹防御系统工作日"
-    assert post.url == "https://www.bilibili.com/bangumi/play/ep519207"
-    assert post.target_name == "汉化日记 第三季"
-    assert post.pics == ["http://i0.hdslb.com/bfs/archive/ea0a302c954f9dbc3d593e676486396c551529c9.jpg"]
-    assert post.compress is True
+    post2 = res2[0][1][0]
+    card_data = post2.card_data
+    assert isinstance(card_data, PlainStem)
+    assert card_data.platform == "Bilibili剧集"
+    assert card_data.text == "《汉化日记 第三季》第2话 什么是战区导弹防御系统工作日"
+    assert card_data.url == "https://www.bilibili.com/bangumi/play/ep519207"
+    assert card_data.target_name == "汉化日记 第三季"
+    assert post2.pics == ["http://i0.hdslb.com/bfs/archive/ea0a302c954f9dbc3d593e676486396c551529c9.jpg"]
+    assert post2.compress is True

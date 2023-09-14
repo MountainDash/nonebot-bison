@@ -1,9 +1,14 @@
+from typing import TYPE_CHECKING
+
 import respx
 import pytest
 from nonebug.app import App
 from httpx import Response, AsyncClient
 
 from .utils import get_json
+
+if TYPE_CHECKING:
+    from nonebot_bison.platform.ff14 import FF14
 
 
 @pytest.fixture()
@@ -26,7 +31,8 @@ def ff14_newdata_json_1():
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_newdata_json_1):
+async def test_fetch_new(ff14: "FF14", dummy_user_subinfo, ff14_newdata_json_0, ff14_newdata_json_1):
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Target, SubUnit
 
     newdata = respx.get(
@@ -41,7 +47,11 @@ async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_new
     res = await ff14.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert newdata.called
     post = res[0][1][0]
-    assert post.target_type == "ff14"
-    assert post.text == "最终幻想XIV 银质坠饰 ＜友谊永存＞预售开启！\n最终幻想XIV 银质坠饰 ＜友谊永存＞现已开启预售！"
-    assert post.url == "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/336870"
-    assert post.target_name == "最终幻想XIV官方公告"
+    assert isinstance(post.card_data, PlainStem)
+    assert post.card_data.platform == "ff14"
+    assert (
+        post.card_data.text
+        == "最终幻想XIV 银质坠饰 ＜友谊永存＞预售开启！\n最终幻想XIV 银质坠饰 ＜友谊永存＞现已开启预售！"
+    )
+    assert post.card_data.url == "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/336870"
+    assert post.card_data.target_name == "最终幻想XIV官方公告"

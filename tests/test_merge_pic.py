@@ -66,8 +66,9 @@ async def downloaded_resource_2():
 @flaky
 async def test_9_merge(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
 
-    post = Post("", "", "", pics=list(downloaded_resource))
+    post = Post(PlainStem(platform="", text=""), pics=list(downloaded_resource))
     await post._pic_merge()
     assert len(post.pics) == 5
     await post.generate_messages()
@@ -77,8 +78,9 @@ async def test_9_merge(app: App, downloaded_resource: list[bytes]):
 @flaky
 async def test_9_merge_2(app: App, downloaded_resource_2: list[bytes]):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
 
-    post = Post("", "", "", pics=list(downloaded_resource_2))
+    post = Post(PlainStem(platform="", text=""), pics=list(downloaded_resource_2))
     await post._pic_merge()
     assert len(post.pics) == 4
     await post.generate_messages()
@@ -88,8 +90,9 @@ async def test_9_merge_2(app: App, downloaded_resource_2: list[bytes]):
 @flaky
 async def test_6_merge(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
 
-    post = Post("", "", "", pics=list(downloaded_resource[0:6] + downloaded_resource[9:]))
+    post = Post(PlainStem(platform="", text=""), pics=list(downloaded_resource[0:6] + downloaded_resource[9:]))
     await post._pic_merge()
     assert len(post.pics) == 5
 
@@ -98,8 +101,9 @@ async def test_6_merge(app: App, downloaded_resource: list[bytes]):
 @flaky
 async def test_3_merge(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
 
-    post = Post("", "", "", pics=list(downloaded_resource[0:3] + downloaded_resource[9:]))
+    post = Post(PlainStem(platform="", text=""), pics=list(downloaded_resource[0:3] + downloaded_resource[9:]))
     await post._pic_merge()
     assert len(post.pics) == 5
 
@@ -108,8 +112,9 @@ async def test_3_merge(app: App, downloaded_resource: list[bytes]):
 @flaky
 async def test_6_merge_only(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
 
-    post = Post("", "", "", pics=list(downloaded_resource[0:6]))
+    post = Post(PlainStem(platform="", text=""), pics=list(downloaded_resource[0:6]))
     await post._pic_merge()
     assert len(post.pics) == 1
 
@@ -118,7 +123,8 @@ async def test_6_merge_only(app: App, downloaded_resource: list[bytes]):
 @flaky
 async def test_3_merge_only(app: App, downloaded_resource: list[bytes]):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
 
-    post = Post("", "", "", pics=list(downloaded_resource[0:3]))
+    post = Post(PlainStem(platform="", text=""), pics=list(downloaded_resource[0:3]))
     await post._pic_merge()
     assert len(post.pics) == 1

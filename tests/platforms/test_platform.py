@@ -38,6 +38,7 @@ def user_info_factory(app: App, dummy_user):
 @pytest.fixture()
 def mock_platform_without_cats_tags(app: App):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
 
@@ -65,10 +66,12 @@ def mock_platform_without_cats_tags(app: App):
 
         async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
-                target_name="Mock",
+                PlainStem(
+                    platform="mock_platform",
+                    text=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    target_name="Mock",
+                )
             )
 
         @classmethod
@@ -85,6 +88,7 @@ def mock_platform_without_cats_tags(app: App):
 @pytest.fixture()
 def mock_platform(app: App):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.utils import SchedulerConfig
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.types import Tag, Target, RawPost, Category
@@ -127,10 +131,12 @@ def mock_platform(app: App):
 
         async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
-                target_name="Mock",
+                PlainStem(
+                    platform="mock_platform",
+                    text=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    target_name="Mock",
+                )
             )
 
         @classmethod
@@ -159,6 +165,7 @@ def mock_scheduler_conf(app):
 @pytest.fixture()
 def mock_platform_no_target(app: App, mock_scheduler_conf):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Tag, Target, RawPost, Category
     from nonebot_bison.platform.platform import NewMessage, CategoryNotSupport
 
@@ -194,10 +201,12 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
         async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
-                target_name="Mock",
+                PlainStem(
+                    platform="mock_platform",
+                    text=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    target_name="Mock",
+                )
             )
 
         @classmethod
@@ -214,6 +223,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 @pytest.fixture()
 def mock_platform_no_target_2(app: App, mock_scheduler_conf):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.types import Tag, Target, RawPost, Category
 
@@ -250,10 +260,12 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
 
         async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform_2",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
-                target_name="Mock",
+                PlainStem(
+                    platform="mock_platform",
+                    text=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    target_name="Mock",
+                )
             )
 
         @classmethod
@@ -276,6 +288,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
 @pytest.fixture()
 def mock_status_change(app: App):
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.platform.platform import StatusChange
     from nonebot_bison.types import Target, RawPost, Category
 
@@ -314,7 +327,13 @@ def mock_status_change(app: App):
             return []
 
         async def plain_parse(self, raw_post) -> "Post":
-            return Post("mock_status", raw_post["text"], "")
+            return Post(
+                PlainStem(
+                    platform="mock_status",
+                    text=raw_post["text"],
+                    url="",
+                )
+            )
 
         def get_category(self, raw_post):
             return raw_post["cat"]
@@ -459,6 +478,7 @@ async def test_group(
     mock_platform_no_target_2,
     user_info_factory,
 ):
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.utils import ProcessContext, http_client
     from nonebot_bison.platform.platform import make_no_target_group
@@ -473,7 +493,7 @@ async def test_group(
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 2
-    id_set_2 = {x.text for x in posts}
+    id_set_2 = {x.card_data.text for x in posts if isinstance(x.card_data, PlainStem)}
     assert "p2" in id_set_2
     assert "p6" in id_set_2
     res3 = await group_platform.fetch_new_post(SubUnit(dummy, [user_info_factory([1, 4], [])]))
@@ -484,6 +504,7 @@ async def test_batch_fetch_new_message(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.utils.context import ProcessContext
     from nonebot_bison.types import Target, RawPost, SubUnit, UserSubInfo
@@ -512,10 +533,12 @@ async def test_batch_fetch_new_message(app: App):
 
         async def plain_parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
-                raw_post["text"],
-                "http://t.tt/" + str(self.get_id(raw_post)),
-                target_name="Mock",
+                PlainStem(
+                    platform="mock_platform",
+                    text=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    target_name="Mock",
+                )
             )
 
         @classmethod
@@ -560,7 +583,8 @@ async def test_batch_fetch_new_message(app: App):
     send_set = set()
     for platform_target, posts in res2:
         for post in posts:
-            send_set.add((platform_target, post.text))
+            assert isinstance(post.card_data, PlainStem)
+            send_set.add((platform_target, post.card_data.text))
     assert (TargetQQGroup(group_id=123), "p3") in send_set
     assert (TargetQQGroup(group_id=123), "p4") in send_set
     assert (TargetQQGroup(group_id=234), "p4") in send_set
@@ -570,6 +594,7 @@ async def test_batch_fetch_compare_status(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.post import Post
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.utils.context import ProcessContext
     from nonebot_bison.platform.platform import StatusChange
     from nonebot_bison.types import Target, RawPost, SubUnit, Category, UserSubInfo
@@ -607,7 +632,13 @@ async def test_batch_fetch_compare_status(app: App):
             return []
 
         async def plain_parse(self, raw_post) -> "Post":
-            return Post("mock_status", raw_post["text"], "")
+            return Post(
+                PlainStem(
+                    platform="mock_status",
+                    text=raw_post["text"],
+                    url="",
+                )
+            )
 
         def get_category(self, raw_post):
             return raw_post["cat"]
@@ -635,7 +666,8 @@ async def test_batch_fetch_compare_status(app: App):
     send_set = set()
     for platform_target, posts in res2:
         for post in posts:
-            send_set.add((platform_target, post.text))
+            assert isinstance(post.card_data, PlainStem)
+            send_set.add((platform_target, post.card_data.text))
     assert len(send_set) == 3
     assert (TargetQQGroup(group_id=123), "off") in send_set
     assert (TargetQQGroup(group_id=123), "on") in send_set

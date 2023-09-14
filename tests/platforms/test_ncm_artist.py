@@ -40,7 +40,8 @@ def ncm_artist_1(ncm_artist_raw: dict):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_new(ncm_artist, ncm_artist_0, ncm_artist_1, dummy_user_subinfo):
+async def test_fetch_new(ncm_artist: "NcmArtist", ncm_artist_0, ncm_artist_1, dummy_user_subinfo):
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Target, SubUnit
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
@@ -51,10 +52,11 @@ async def test_fetch_new(ncm_artist, ncm_artist_0, ncm_artist_1, dummy_user_subi
     assert len(res) == 0
     ncm_router.mock(return_value=Response(200, json=ncm_artist_1))
     res2 = await ncm_artist.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
-    post = res2[0][1][0]
-    assert post.target_type == "ncm-artist"
-    assert post.text == "新专辑发布：Y1K"
-    assert post.url == "https://music.163.com/#/album?id=131074504"
+    post2 = res2[0][1][0]
+    assert isinstance(post2.card_data, PlainStem)
+    assert post2.card_data.platform == "ncm-artist"
+    assert post2.card_data.text == "新专辑发布：Y1K"
+    assert post2.card_data.url == "https://music.163.com/#/album?id=131074504"
 
 
 async def test_parse_target(ncm_artist: "NcmArtist"):

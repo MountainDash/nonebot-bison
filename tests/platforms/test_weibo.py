@@ -40,7 +40,8 @@ async def test_get_name(weibo):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_new(weibo, dummy_user_subinfo):
+async def test_fetch_new(weibo: "Weibo", dummy_user_subinfo):
+    from nonebot_bison.card.themes import PlainStem
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
@@ -48,15 +49,19 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_list_0.json")))
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4649031014551911")))
     image_cdn_router.mock(Response(200, content=b""))
+
     target = Target("6279793937")
+
     res = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert ak_list_router.called
     assert len(res) == 0
     assert not detail_router.called
+
     mock_data = get_json("weibo_ak_list_1.json")
     ak_list_router.mock(return_value=Response(200, json=mock_data))
     res2 = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2) == 0
+
     mock_data["data"]["cards"][1]["mblog"]["created_at"] = datetime.now(timezone("Asia/Shanghai")).strftime(
         "%a %b %d %H:%M:%S %z %Y"
     )
@@ -64,12 +69,13 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     res3 = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3[0][1]) == 1
     assert not detail_router.called
-    post = res3[0][1][0]
-    assert post.target_type == "weibo"
-    assert post.text == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
-    assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
-    assert post.target_name == "明日方舟Arknights"
-    assert len(post.pics) == 1
+    post3 = res3[0][1][0]
+    assert isinstance(post3.card_data, PlainStem)
+    assert post3.card_data.platform == "weibo"
+    assert post3.card_data.text == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
+    assert post3.card_data.url == "https://weibo.com/6279793937/KkBtUx2dv"
+    assert post3.card_data.target_name == "明日方舟Arknights"
+    assert len(post3.pics) == 1
 
 
 @pytest.mark.asyncio
@@ -88,12 +94,12 @@ async def test_classification(weibo):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_parse_long(weibo):
+async def test_parse_long(weibo: "Weibo"):
     detail_router = respx.get("https://m.weibo.cn/detail/4645748019299849")
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
-    post = await weibo.parse(raw_post)
-    assert "全文" not in post.text
+    post = await weibo.plain_parse(raw_post)
+    assert "全文" not in post.card_data.text  # type: ignore
     assert detail_router.called
 
 
@@ -104,14 +110,14 @@ def test_tag(weibo, weibo_ak_list_1):
 
 @pytest.mark.asyncio
 @pytest.mark.compare
-async def test_rsshub_compare(weibo):
+async def test_rsshub_compare(weibo: "Weibo"):
     from nonebot_bison.types import Target
 
     target = Target("6279793937")
     raw_posts = filter(weibo.filter_platform_custom, await weibo.get_sub_list(target))
     posts = []
     for raw_post in raw_posts:
-        posts.append(await weibo.parse(raw_post))
+        posts.append(await weibo.plain_parse(raw_post))
     url_set = {x.url for x in posts}
     feedres = feedparser.parse("https://rsshub.app/weibo/user/6279793937")
     for entry in feedres.entries[:5]:

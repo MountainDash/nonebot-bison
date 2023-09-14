@@ -11,6 +11,7 @@ from nonebot.log import logger
 from pydantic import Field, BaseModel
 
 from ..post import Post
+from ..card.themes import PlainStem
 from ..utils import SchedulerConfig, text_similarity
 from ..types import Tag, Target, RawPost, ApiError, Category
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
@@ -193,7 +194,15 @@ class Bilibili(NewMessage):
             text += orig_text
         else:
             raise CategoryNotSupport(post_type)
-        return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
+        return Post(
+            PlainStem(
+                platform="bilibili",
+                text=text,
+                url=url,
+                target_name=target_name,
+            ),
+            pics=pic,
+        )
 
 
 class Bilibililive(StatusChange):
@@ -333,12 +342,15 @@ class Bilibililive(StatusChange):
         pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
+
         return Post(
-            self.name,
-            text=title,
-            url=url,
+            PlainStem(
+                platform="bilibili-live",
+                text=title,
+                url=url,
+                target_name=target_name,
+            ),
             pics=list(pic),
-            target_name=target_name,
             compress=True,
         )
 
@@ -413,12 +425,15 @@ class BilibiliBangumi(StatusChange):
         pic: list[str] = [lastest_episode["cover"]]
         target_name = detail_dict["result"]["season_title"]
         text = lastest_episode["share_copy"]
+
         return Post(
-            self.name,
-            text=text,
-            url=url,
+            PlainStem(
+                platform="bilibili-bangumi",
+                text=text,
+                url=url,
+                target_name=target_name,
+            ),
             pics=list(pic),
-            target_name=target_name,
             compress=True,
         )
 

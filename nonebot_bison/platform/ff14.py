@@ -5,6 +5,7 @@ from httpx import AsyncClient
 from ..post import Post
 from ..utils import scheduler
 from .platform import NewMessage
+from ..card.themes import PlainStem
 from ..types import Target, RawPost
 
 
@@ -42,4 +43,12 @@ class FF14(NewMessage):
     async def plain_parse(self, raw_post: RawPost) -> Post:
         text = f'{raw_post["Title"]}\n{raw_post["Summary"]}'
         url = raw_post["Author"]
-        return Post("ff14", text=text, url=url, target_name="最终幻想XIV官方公告")
+
+        return Post(
+            PlainStem(
+                platform="ff14",
+                text=text,
+                url=url,
+                target_name="最终幻想XIV官方公告",
+            ),
+        )

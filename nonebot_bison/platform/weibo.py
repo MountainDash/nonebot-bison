@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from .platform import NewMessage
+from ..card.themes import PlainStem
 from ..utils import SchedulerConfig, http_client
 from ..types import Tag, Target, RawPost, ApiError, Category
 
@@ -153,11 +154,13 @@ class Weibo(NewMessage):
                 res.raise_for_status()
                 pics.append(res.content)
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
-        # return parsed_text, detail_url, pic_urls
+
         return Post(
-            "weibo",
-            text=parsed_text,
-            url=detail_url,
+            PlainStem(
+                platform="weibo",
+                text=parsed_text,
+                url=detail_url,
+                target_name=info["user"]["screen_name"],
+            ),
             pics=pics,
-            target_name=info["user"]["screen_name"],
         )

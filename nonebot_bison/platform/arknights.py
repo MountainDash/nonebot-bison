@@ -1,11 +1,10 @@
 from typing import Any
-from pathlib import Path
 
 from httpx import AsyncClient
-from nonebot.plugin import require
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
+from ..card.themes import ArkStem, PlainStem
 from ..types import Target, RawPost, Category
 from ..utils.scheduler_config import SchedulerConfig
 from .platform import NewMessage, StatusChange, CategoryNotRecognize
@@ -51,50 +50,63 @@ class Arknights(NewMessage):
         raw_data = raw_data.json()["data"]
 
         announce_title = raw_data.get("header") if raw_data.get("header") != "" else raw_data.get("title")
-        text = ""
 
         pics = []
         if raw_data["bannerImageUrl"]:
             pics.append(raw_post["bannerImageUrl"])
-
-        elif raw_data["content"]:
-            require("nonebot_plugin_htmlrender")
-            from nonebot_plugin_htmlrender import template_to_pic
-
-            template_path = str(Path(__file__).parent.parent / "post/templates/ark_announce")
-            pic_data = await template_to_pic(
-                template_path=template_path,
-                template_name="index.html",
-                templates={
-                    "bannerImageUrl": raw_data["bannerImageUrl"],
-                    "announce_title": announce_title,
-                    "content": raw_data["content"],
-                },
-                pages={
-                    "viewport": {"width": 400, "height": 100},
-                    "base_url": f"file://{template_path}",
-                },
+            return Post(
+                PlainStem(
+                    platform="arknights",
+                    text=announce_title,
+                    target_name="明日方舟游戏内公告",
+                ),
+                pics=pics,
+                compress=True,
             )
-            # render = Render()
-            # viewport = {"width": 320, "height": 6400, "deviceScaleFactor": 3}
-            # pic_data = await render.render(
-            #     announce_url, viewport=viewport, target="div.main"
-            # )
-            if pic_data:
-                pics.append(pic_data)
-            else:
-                text = "图片渲染失败"
+
+        elif content := raw_data["content"]:
+            html = bs(content, "html.parser")
+            text = f"{announce_title}\n{html.get_text().strip()}"
+            return Post(
+                PlainStem(
+                    platform="arknights",
+                    text=text,
+                    target_name="明日方舟游戏内公告",
+                ),
+                pics=raw_post["bannerImageUrl"],
+                compress=True,
+            )
         else:
             raise CategoryNotRecognize("未找到可渲染部分")
-        return Post(
-            "arknights",
-            text=text,
-            url="",
-            target_name="明日方舟游戏内公告",
-            pics=pics,
-            compress=True,
-            override_use_pic=False,
+
+    async def arknights_parse(self, raw_post: RawPost) -> Post:
+        raw_data = await self.client.get(
+            f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
+        raw_data = raw_data.json()["data"]
+
+        announce_title = raw_data.get("header") if raw_data.get("header") != "" else raw_data.get("title")
+
+        pics = []
+        if raw_data["bannerImageUrl"]:
+            pics.append(raw_post["bannerImageUrl"])
+            return Post(
+                ArkStem(announce_title=announce_title, banner_image_url=raw_data["bannerImageUrl"], content=""),
+                pics=pics,
+                compress=True,
+            )
+
+        elif raw_data["content"]:
+            return Post(
+                ArkStem(
+                    announce_title=announce_title,
+                    banner_image_url=raw_data["bannerImageUrl"],
+                    content=raw_data["content"],
+                ),
+                pics=pics,
+            )
+        else:
+            raise CategoryNotRecognize("未找到可渲染部分")
 
 
 class AkVersion(StatusChange):
@@ -122,18 +134,15 @@ class AkVersion(StatusChange):
 
     def compare_status(self, _, old_status, new_status):
         res = []
+
         if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
-            res.append(
-                Post("arknights", text="登录界面维护公告上线（大概是开始维护了)", target_name="明日方舟更新信息")
-            )
+            res.append(self.post_maker("登录界面维护公告上线（大概是开始维护了)"))
         elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
-            res.append(
-                Post("arknights", text="登录界面维护公告下线（大概是开服了，冲！）", target_name="明日方舟更新信息")
-            )
+            res.append(self.post_maker("登录界面维护公告下线（大概是开服了，冲！）"))
         if old_status.get("clientVersion") != new_status.get("clientVersion"):
-            res.append(Post("arknights", text="游戏本体更新（大更新）", target_name="明日方舟更新信息"))
+            res.append(self.post_maker("游戏本体更新（大更新）"))
         if old_status.get("resVersion") != new_status.get("resVersion"):
-            res.append(Post("arknights", text="游戏资源更新（小更新）", target_name="明日方舟更新信息"))
+            res.append(self.post_maker("游戏资源更新（小更新）"))
         return res
 
     def get_category(self, _):
@@ -141,6 +150,16 @@ class AkVersion(StatusChange):
 
     async def plain_parse(self, raw_post):
         return raw_post
+
+    @staticmethod
+    def post_maker(text: str):
+        return Post(
+            PlainStem(
+                platform="arknights",
+                text=text,
+                target_name="明日方舟更新信息",
+            ),
+        )
 
 
 class MonsterSiren(NewMessage):
@@ -180,13 +199,14 @@ class MonsterSiren(NewMessage):
         imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return Post(
-            "monster-siren",
-            text=text,
+            PlainStem(
+                platform="monster-siren",
+                text=text,
+                url=url,
+                target_name="塞壬唱片新闻",
+            ),
             pics=imgs,
-            url=url,
-            target_name="塞壬唱片新闻",
             compress=True,
-            override_use_pic=False,
         )
 
 
@@ -220,11 +240,12 @@ class TerraHistoricusComic(NewMessage):
     async def plain_parse(self, raw_post: RawPost) -> Post:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
-            "terra-historicus",
-            text=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
+            PlainStem(
+                platform="terra-historicus",
+                text=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
+                url=url,
+                target_name="泰拉记事社漫画",
+            ),
             pics=[raw_post["coverUrl"]],
-            url=url,
-            target_name="泰拉记事社漫画",
             compress=True,
-            override_use_pic=False,
         )

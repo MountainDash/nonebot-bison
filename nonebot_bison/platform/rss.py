@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from .platform import NewMessage
+from ..card.themes import PlainStem
 from ..types import Target, RawPost
 from ..utils import SchedulerConfig, text_similarity
 
@@ -71,10 +72,13 @@ class Rss(NewMessage):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
+
         return Post(
-            "rss",
-            text=text,
-            url=raw_post.link,
+            PlainStem(
+                platform="rss",
+                text=text,
+                url=raw_post.get("link"),
+                target_name=raw_post["_target_name"],
+            ),
             pics=pics,
-            target_name=raw_post["_target_name"],
         )

@@ -10,7 +10,7 @@ CARD_DIR = Path(__file__).parent / "templates"
 TEMPLATE_NAME = "announce.html.jinja"
 
 
-class Card(BaseStem):
+class Stem(BaseStem):
     """Arknight 公告卡片
 
     announce_title: 公告标题

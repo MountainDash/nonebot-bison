@@ -7,7 +7,7 @@ from nonebot_plugin_saa import Image, MessageSegmentFactory
 
 from ..utils import http_client
 from .abstract_post import AbstractPost
-from ..card import BaseStem, ThemeMetadata, card_manager
+from ..card import BaseStem, ThemeMetadata, theme_manager
 
 
 @dataclass
@@ -28,7 +28,7 @@ class Post(AbstractPost):
     @property
     def card_meta(self):
         if not self._card_meta:
-            self._card_meta = card_manager[self.post_theme]
+            self._card_meta = theme_manager[self.post_theme]
 
         return self._card_meta
 

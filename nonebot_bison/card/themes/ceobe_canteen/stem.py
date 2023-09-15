@@ -41,7 +41,7 @@ class CeoboContent(BaseModel):
         return values
 
 
-class Card(BaseStem):
+class Stem(BaseStem):
     """卡片
 
     info: 卡片的信息部分

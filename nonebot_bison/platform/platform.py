@@ -1,12 +1,12 @@
 import ssl
 import json
 import time
-import typing
 from dataclasses import dataclass
+from typing_extensions import Self
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from inspect import ismethod, getmembers
-from typing import Any, TypeVar, ParamSpec
+from inspect import getmembers, iscoroutinefunction
+from typing import TYPE_CHECKING, Any, TypeVar, ParamSpec
 from collections.abc import Callable, Awaitable, Coroutine, Collection
 
 import httpx
@@ -15,7 +15,7 @@ from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
 from ..post import Post
-from ..card import card_manager
+from ..card import theme_manager
 from ..plugin_config import plugin_config
 from ..utils import ProcessContext, SchedulerConfig
 from ..types import Tag, Target, RawPost, SubUnit, Category
@@ -70,7 +70,7 @@ class PlatformMeta(RegistryMeta):
     categories: dict[Category, str]
     store: dict[Target, Any]
     supported_themes: tuple[str, ...]
-    _supported_theme_map: dict[str, Callable[[RawPost], Coroutine[Any, Any, Post]]]
+    _supported_theme_map: dict[str, Callable[[Self, RawPost], Coroutine[Any, Any, Post]]]
 
     def __init__(cls, name, bases, namespace, **kwargs):
         cls.reverse_category = {}
@@ -79,12 +79,16 @@ class PlatformMeta(RegistryMeta):
             for key, val in cls.categories.items():
                 cls.reverse_category[val] = key
 
+        if kwargs.get("base") or kwargs.get("abstract"):
+            super().__init__(name, bases, namespace, **kwargs)
+            return
+
         def is_theme_parse_method(x):
-            if not ismethod(x):
+            if not iscoroutinefunction(x):
                 return False
             func_name = x.__name__
             match func_name.split("_"):
-                case [theme_name, "parse"] if theme_name in card_manager:
+                case [theme_name, "parse"] if theme_name in theme_manager:
                     return True
                 case _:
                     return False
@@ -92,13 +96,15 @@ class PlatformMeta(RegistryMeta):
         # TODO: >=3.11 可以使用getmembers_static
         theme_parse_methods = getmembers(cls, is_theme_parse_method)
         if theme_parse_methods:
-            cls._supported_theme_map = dict(theme_parse_methods)
+            cls._supported_theme_map = {
+                theme.removesuffix("_parse"): parse_func for theme, parse_func in theme_parse_methods
+            }
             cls.supported_themes = tuple(cls._supported_theme_map.keys())
         else:
-            raise NotImplementedError(f"Platform {name} has no theme parse method")
+            raise NotImplementedError(f"Platform {name} has no theme parse method like `xxx_parse`")
 
         if "plain" not in cls.supported_themes:
-            raise NotImplementedError(f"Platform {name} MUST support plain theme")
+            raise NotImplementedError(f"Platform {name} MUST support plain theme, but now is {cls.supported_themes}")
 
         super().__init__(name, bases, namespace, **kwargs)
 
@@ -125,7 +131,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     default_theme: str = "plain"
 
     supported_themes: tuple[str, ...]
-    _supported_theme_map: dict[str, Callable[[RawPost], Coroutine[Any, Any, Post]]]
+    _supported_theme_map: dict[str, Callable[[Self, RawPost], Coroutine[Any, Any, Post]]]
 
     @classmethod
     @abstractmethod
@@ -153,11 +159,12 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     async def do_parse(self, raw_post: RawPost) -> Post:
         "actually function called"
         theme_parse = self.get_theme_parse()
-        return await theme_parse(raw_post)
+        return await theme_parse(self, raw_post)
 
     def get_theme_parse(self):
         """使用的主题由配置文件中的bison_platforms_theme指定，若未指定则使用默认主题"""
         using_theme = plugin_config.bison_platforms_theme[self.platform_name] or self.default_theme
+        logger.debug(f"{self.platform_name} support themes: {self.supported_themes}")
         if using_theme in self.supported_themes:
             return self._supported_theme_map[using_theme]
         raise NotImplementedError(
@@ -477,7 +484,7 @@ class SimplePost(NewMessage, abstract=True):
 
 
 def make_no_target_group(platform_list: list[type[Platform]]) -> type[Platform]:
-    if typing.TYPE_CHECKING:
+    if TYPE_CHECKING:
 
         class NoTargetGroup(Platform, abstract=True):
             platform_list: list[type[Platform]]

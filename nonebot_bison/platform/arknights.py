@@ -66,14 +66,15 @@ class Arknights(NewMessage):
 
         elif content := raw_data["content"]:
             html = bs(content, "html.parser")
-            text = f"{announce_title}\n{html.get_text().strip()}"
+            sep = "\n"
+            text = f"{announce_title}\n{html.get_text(separator=sep)}"
             return Post(
                 PlainStem(
                     platform="arknights",
                     text=text,
                     target_name="明日方舟游戏内公告",
                 ),
-                pics=raw_post["bannerImageUrl"],
+                pics=raw_post.get("bannerImageUrl", []),
                 compress=True,
             )
         else:
@@ -100,7 +101,7 @@ class Arknights(NewMessage):
             return Post(
                 ArkStem(
                     announce_title=announce_title,
-                    banner_image_url=raw_data["bannerImageUrl"],
+                    banner_image_url=raw_data.get("bannerImageUrl", []),
                     content=raw_data["content"],
                 ),
                 pics=pics,

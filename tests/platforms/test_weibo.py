@@ -118,7 +118,7 @@ async def test_rsshub_compare(weibo: "Weibo"):
     posts = []
     for raw_post in raw_posts:
         posts.append(await weibo.plain_parse(raw_post))
-    url_set = {x.url for x in posts}
+    url_set = {x.card_data.url for x in posts}
     feedres = feedparser.parse("https://rsshub.app/weibo/user/6279793937")
     for entry in feedres.entries[:5]:
         # print(entry)

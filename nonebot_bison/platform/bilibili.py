@@ -345,7 +345,7 @@ class Bilibililive(StatusChange):
 
         return Post(
             PlainStem(
-                platform="bilibili-live",
+                platform=self.name,
                 text=title,
                 url=url,
                 target_name=target_name,
@@ -428,7 +428,7 @@ class BilibiliBangumi(StatusChange):
 
         return Post(
             PlainStem(
-                platform="bilibili-bangumi",
+                platform=self.name,
                 text=text,
                 url=url,
                 target_name=target_name,

@@ -83,10 +83,9 @@ async def test_fetch_new(
     post2: Post = res2[0][1][0]
     assert isinstance(post2.card_data, PlainStem)
     assert post2.card_data.platform == "arknights"
-    assert post2.card_data.text == ""
-    assert post2.card_data.url == ""
+    assert post2.card_data.text == get_json("arknights_text.json")["text"]
+    assert post2.card_data.url is None
     assert post2.card_data.target_name == "明日方舟游戏内公告"
-    assert len(post2.pics) == 1
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
     await post2.generate_messages()
 
@@ -112,8 +111,14 @@ async def test_send_with_render(
     monster_siren_list_1,
 ):
     from nonebot_bison.post import Post
-    from nonebot_bison.card.themes import PlainStem
+    from nonebot_bison.card.themes import ArkStem
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.platform.arknights import Arknights
+
+    for platform in arknights.platform_list:
+        if issubclass(platform, Arknights):
+            platform.default_theme = "arknights"
+            break
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")
@@ -142,13 +147,12 @@ async def test_send_with_render(
     res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     assert detail_router.called
-    post2: Post = res2[0][1][0]
-    assert isinstance(post2.card_data, PlainStem)
-    assert post2.card_data.platform == "arknights"
-    assert post2.card_data.text == ""
-    assert post2.card_data.url == ""
-    assert post2.card_data.target_name == "明日方舟游戏内公告"
-    assert len(post2.pics) == 1
+    post2 = res2[0][1][0]
+    assert isinstance(post2, Post)
+    assert isinstance(post2.card_data, ArkStem)
+    assert post2.card_data.announce_title == "【公开招募】标签强制刷新通知"
+    assert post2.card_data.banner_image_url == ""
+    assert post2.card_data.content
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
     r = await post2.generate_messages()
-    assert r
+    assert len(r) == 1

@@ -356,7 +356,7 @@ async def test_new_message_target_without_cats_tags(mock_platform_without_cats_t
     assert len(res2) == 1
     posts_1 = res2[0][1]
     assert len(posts_1) == 3
-    id_set_1 = {x.text for x in posts_1}
+    id_set_1 = {x.card_data.text for x in posts_1}
     assert "p2" in id_set_1
     assert "p3" in id_set_1
     assert "p4" in id_set_1
@@ -388,9 +388,9 @@ async def test_new_message_target(mock_platform, user_info_factory):
     assert len(posts_1) == 2
     assert len(posts_2) == 1
     assert len(posts_3) == 1
-    id_set_1 = {x.text for x in posts_1}
-    id_set_2 = {x.text for x in posts_2}
-    id_set_3 = {x.text for x in posts_3}
+    id_set_1 = {x.card_data.text for x in posts_1}
+    id_set_2 = {x.card_data.text for x in posts_2}
+    id_set_3 = {x.card_data.text for x in posts_3}
     assert "p2" in id_set_1
     assert "p3" in id_set_1
     assert "p2" in id_set_2
@@ -423,9 +423,9 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert len(posts_1) == 2
     assert len(posts_2) == 1
     assert len(posts_3) == 1
-    id_set_1 = {x.text for x in posts_1}
-    id_set_2 = {x.text for x in posts_2}
-    id_set_3 = {x.text for x in posts_3}
+    id_set_1 = {x.card_data.text for x in posts_1}
+    id_set_2 = {x.card_data.text for x in posts_2}
+    id_set_3 = {x.card_data.text for x in posts_3}
     assert "p2" in id_set_1
     assert "p3" in id_set_1
     assert "p2" in id_set_2
@@ -451,7 +451,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 1
-    assert posts[0].text == "on"
+    assert posts[0].card_data.text == "on"
     res3 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
         SubUnit(
             Target("dummy"),
@@ -463,7 +463,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     )
     assert len(res3) == 2
     assert len(res3[0][1]) == 1
-    assert res3[0][1][0].text == "off"
+    assert res3[0][1][0].card_data.text == "off"
     assert len(res3[1][1]) == 0
     res4 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -500,6 +500,7 @@ async def test_group(
     assert len(res3) == 0
 
 
+@pytest.mark.asyncio
 async def test_batch_fetch_new_message(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -590,6 +591,7 @@ async def test_batch_fetch_new_message(app: App):
     assert (TargetQQGroup(group_id=234), "p4") in send_set
 
 
+@pytest.mark.asyncio
 async def test_batch_fetch_compare_status(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -607,7 +609,7 @@ async def test_batch_fetch_compare_status(app: App):
         enable_tag = False
         schedule_type = "interval"
         schedule_kw = {"seconds": 10}
-        has_target = False
+        has_target = True
         categories = {
             Category(1): "转发",
             Category(2): "视频",

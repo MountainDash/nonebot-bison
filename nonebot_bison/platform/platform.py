@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from typing_extensions import Self
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from inspect import getmembers, iscoroutinefunction
-from typing import TYPE_CHECKING, Any, TypeVar, ParamSpec
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, ParamSpec
 from collections.abc import Callable, Awaitable, Coroutine, Collection
 
 import httpx
@@ -15,10 +14,9 @@ from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
 from ..post import Post
-from ..card import theme_manager
 from ..plugin_config import plugin_config
+from ..types import Tag, Target, SubUnit, Category
 from ..utils import ProcessContext, SchedulerConfig
-from ..types import Tag, Target, RawPost, SubUnit, Category
 
 
 class CategoryNotSupport(Exception):
@@ -48,6 +46,7 @@ class RegistryMeta(type):
 
 P = ParamSpec("P")
 R = TypeVar("R")
+T = TypeVar("T")
 
 
 async def catch_network_error(func: Callable[P, Awaitable[R]], *args: P.args, **kwargs: P.kwargs) -> R | None:
@@ -69,8 +68,6 @@ async def catch_network_error(func: Callable[P, Awaitable[R]], *args: P.args, **
 class PlatformMeta(RegistryMeta):
     categories: dict[Category, str]
     store: dict[Target, Any]
-    supported_themes: tuple[str, ...]
-    _supported_theme_map: dict[str, Callable[[Self, RawPost], Coroutine[Any, Any, Post]]]
 
     def __init__(cls, name, bases, namespace, **kwargs):
         cls.reverse_category = {}
@@ -83,29 +80,6 @@ class PlatformMeta(RegistryMeta):
             super().__init__(name, bases, namespace, **kwargs)
             return
 
-        def is_theme_parse_method(x):
-            if not iscoroutinefunction(x):
-                return False
-            func_name = x.__name__
-            match func_name.split("_"):
-                case [theme_name, "parse"] if theme_name in theme_manager:
-                    return True
-                case _:
-                    return False
-
-        # TODO: >=3.11 可以使用getmembers_static
-        theme_parse_methods = getmembers(cls, is_theme_parse_method)
-        if theme_parse_methods:
-            cls._supported_theme_map = {
-                theme.removesuffix("_parse"): parse_func for theme, parse_func in theme_parse_methods
-            }
-            cls.supported_themes = tuple(cls._supported_theme_map.keys())
-        else:
-            raise NotImplementedError(f"Platform {name} has no theme parse method like `xxx_parse`")
-
-        if "plain" not in cls.supported_themes:
-            raise NotImplementedError(f"Platform {name} MUST support plain theme, but now is {cls.supported_themes}")
-
         super().__init__(name, bases, namespace, **kwargs)
 
 
@@ -113,7 +87,7 @@ class PlatformABCMeta(PlatformMeta, ABC):
     ...
 
 
-class Platform(metaclass=PlatformABCMeta, base=True):
+class Platform(Generic[T], metaclass=PlatformABCMeta, base=True):
     scheduler: type[SchedulerConfig]
     ctx: ProcessContext
     is_common: bool
@@ -131,7 +105,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     default_theme: str = "plain"
 
     supported_themes: tuple[str, ...]
-    _supported_theme_map: dict[str, Callable[[Self, RawPost], Coroutine[Any, Any, Post]]]
+    _supported_theme_map: dict[str, Callable[[Self, T], Coroutine[Any, Any, Post]]]
 
     @classmethod
     @abstractmethod
@@ -153,10 +127,10 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return await catch_network_error(self.batch_fetch_new_post, sub_units) or []
 
     @abstractmethod
-    async def plain_parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: T) -> Post:
         ...
 
-    async def do_parse(self, raw_post: RawPost) -> Post:
+    async def do_parse(self, raw_post: T) -> Post:
         "actually function called"
         theme_parse = self.get_theme_parse()
         return await theme_parse(self, raw_post)
@@ -184,8 +158,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return Target(target_string)
 
     @abstractmethod
-    def get_tags(self, raw_post: RawPost) -> Collection[Tag] | None:
-        "Return Tag list of given RawPost"
+    def get_tags(self, raw_post: T) -> Collection[Tag] | None:
+        "Return Tag list of given T"
 
     @classmethod
     def get_stored_data(cls, target: Target) -> Any:
@@ -232,10 +206,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         else:
             return False
 
-    async def filter_user_custom(
-        self, raw_post_list: list[RawPost], cats: list[Category], tags: list[Tag]
-    ) -> list[RawPost]:
-        res: list[RawPost] = []
+    async def filter_user_custom(self, raw_post_list: list[T], cats: list[Category], tags: list[Tag]) -> list[T]:
+        res: list[T] = []
         for raw_post in raw_post_list:
             if self.categories:
                 cat = self.get_category(raw_post)
@@ -251,7 +223,7 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return res
 
     async def dispatch_user_post(
-        self, new_posts: list[RawPost], sub_unit: SubUnit
+        self, new_posts: list[T], sub_unit: SubUnit
     ) -> list[tuple[PlatformTarget, list[Post]]]:
         res: list[tuple[PlatformTarget, list[Post]]] = []
         for user, cats, required_tags in sub_unit.user_sub_infos:
@@ -263,12 +235,12 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         return res
 
     @abstractmethod
-    def get_category(self, post: RawPost) -> Category | None:
-        "Return category of given Rawpost"
+    def get_category(self, post: T) -> Category | None:
+        "Return category of given T"
         raise NotImplementedError()
 
 
-class MessageProcess(Platform, abstract=True):
+class MessageProcess(Platform[T], abstract=True):
     "General message process fetch, parse, filter progress"
 
     def __init__(self, ctx: ProcessContext, client: AsyncClient):
@@ -276,10 +248,10 @@ class MessageProcess(Platform, abstract=True):
         self.parse_cache: dict[Any, Post] = {}
 
     @abstractmethod
-    def get_id(self, post: RawPost) -> Any:
-        "Get post id of given RawPost"
+    def get_id(self, post: T) -> Any:
+        "Get post id of given T"
 
-    async def do_parse(self, raw_post: RawPost) -> Post:
+    async def do_parse(self, raw_post: T) -> Post:
         post_id = self.get_id(raw_post)
         if post_id not in self.parse_cache:
             retry_times = 3
@@ -294,20 +266,20 @@ class MessageProcess(Platform, abstract=True):
         return self.parse_cache[post_id]
 
     @abstractmethod
-    async def get_sub_list(self, target: Target) -> list[RawPost]:
+    async def get_sub_list(self, target: Target) -> list[T]:
         "Get post list of the given target"
         raise NotImplementedError()
 
     @abstractmethod
-    async def batch_get_sub_list(self, targets: list[Target]) -> list[list[RawPost]]:
+    async def batch_get_sub_list(self, targets: list[Target]) -> list[list[T]]:
         "Get post list of the given targets"
         raise NotImplementedError()
 
     @abstractmethod
-    def get_date(self, post: RawPost) -> int | None:
+    def get_date(self, post: T) -> int | None:
         "Get post timestamp and return, return None if can't get the time"
 
-    async def filter_common(self, raw_post_list: list[RawPost]) -> list[RawPost]:
+    async def filter_common(self, raw_post_list: list[T]) -> list[T]:
         res = []
         for raw_post in raw_post_list:
             # post_id = self.get_id(raw_post)
@@ -336,7 +308,7 @@ class MessageProcess(Platform, abstract=True):
         return res
 
 
-class NewMessage(MessageProcess, abstract=True):
+class NewMessage(MessageProcess[T], abstract=True):
     "Fetch a list of messages, filter the new messages, dispatch it to different users"
 
     @dataclass
@@ -344,7 +316,7 @@ class NewMessage(MessageProcess, abstract=True):
         inited: bool
         exists_posts: set[Any]
 
-    async def filter_common_with_diff(self, target: Target, raw_post_list: list[RawPost]) -> list[RawPost]:
+    async def filter_common_with_diff(self, target: Target, raw_post_list: list[T]) -> list[T]:
         filtered_post = await self.filter_common(raw_post_list)
         store = self.get_stored_data(target) or self.MessageStorage(False, set())
         res = []
@@ -367,7 +339,7 @@ class NewMessage(MessageProcess, abstract=True):
 
     async def _handle_new_post(
         self,
-        post_list: list[RawPost],
+        post_list: list[T],
         sub_unit: SubUnit,
     ) -> list[tuple[PlatformTarget, list[Post]]]:
         new_posts = await self.filter_common_with_diff(sub_unit.sub_target, post_list)
@@ -400,7 +372,7 @@ class NewMessage(MessageProcess, abstract=True):
         return res
 
 
-class StatusChange(Platform, abstract=True):
+class StatusChange(Platform[T], abstract=True):
     "Watch a status, and fire a post when status changes"
 
     class FetchError(RuntimeError):
@@ -415,11 +387,11 @@ class StatusChange(Platform, abstract=True):
         ...
 
     @abstractmethod
-    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
+    def compare_status(self, target: Target, old_status, new_status) -> list[T]:
         ...
 
     @abstractmethod
-    async def plain_parse(self, raw_post: RawPost) -> Post:
+    async def plain_parse(self, raw_post: T) -> Post:
         ...
 
     async def _handle_status_change(
@@ -459,12 +431,12 @@ class StatusChange(Platform, abstract=True):
         return res
 
 
-class SimplePost(NewMessage, abstract=True):
+class SimplePost(NewMessage[T], abstract=True):
     "Fetch a list of messages, dispatch it to different users"
 
     async def _handle_new_post(
         self,
-        new_posts: list[RawPost],
+        new_posts: list[T],
         sub_unit: SubUnit,
     ) -> list[tuple[PlatformTarget, list[Post]]]:
         if not new_posts:

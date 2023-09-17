@@ -6,7 +6,6 @@ from httpx import URL
 from pydantic import BaseModel
 from nonebot_plugin_saa import PlatformTarget as SendTarget
 
-RawPost = Any
 Target = NewType("Target", str)
 Category = int
 Tag = str

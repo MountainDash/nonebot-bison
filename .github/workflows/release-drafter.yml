@@ -18,7 +18,7 @@ jobs:
       group: pull-request-changelog
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: release-drafter/release-drafter@v5
         id: release-drafter

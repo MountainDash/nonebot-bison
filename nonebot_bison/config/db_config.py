@@ -22,8 +22,7 @@ def _get_time():
     return cur_time
 
 
-class SubscribeDupException(Exception):
-    ...
+class SubscribeDupException(Exception): ...
 
 
 class DBConfig:

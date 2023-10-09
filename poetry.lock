@@ -1499,13 +1499,13 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "nonebot-plugin-send-anything-anywhere"
-version = "0.3.0"
+version = "0.3.1"
 description = "An adaptor for nonebot2 adaptors"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "nonebot_plugin_send_anything_anywhere-0.3.0-py3-none-any.whl", hash = "sha256:30ed3346e9acd0b80f7be5306b70f581d6a20f90388e46ccc984303d4c4449be"},
-    {file = "nonebot_plugin_send_anything_anywhere-0.3.0.tar.gz", hash = "sha256:1ec98b48c842cdc656fbc9d90ee44a60eb77761d94843cf03cc1327f1b04773c"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.3.1-py3-none-any.whl", hash = "sha256:213a11729bea7b9f0db68703801b2f9ad08e2d345f1d5b10a70df8ded20e52fc"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.3.1.tar.gz", hash = "sha256:b054095f279f6cdfd73636ee934d10ef3b182176e5d79d2e5782033a05ad2218"},
 ]
 
 [package.dependencies]

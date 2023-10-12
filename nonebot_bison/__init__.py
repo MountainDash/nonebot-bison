@@ -6,6 +6,7 @@ require("nonebot_plugin_saa")
 
 import nonebot_plugin_saa
 
+from .config import migrations
 from .plugin_config import PlugConfig, plugin_config
 from . import post, send, types, utils, config, platform, bootstrap, scheduler, admin_page, sub_manager
 
@@ -29,7 +30,11 @@ __plugin_meta__ = PluginMetadata(
     homepage="https://github.com/felinae98/nonebot-bison",
     config=PlugConfig,
     supported_adapters=__supported_adapters__,
-    extra={"version": __help__version__, "docs": "https://nonebot-bison.netlify.app/"},
+    extra={
+        "version": __help__version__,
+        "docs": "https://nonebot-bison.netlify.app/",
+        "orm_version_location": migrations,
+    },
 )
 
 __all__ = [

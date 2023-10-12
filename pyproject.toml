@@ -25,10 +25,10 @@ bs4 = "^0.0.1"
 expiringdict = "^1.2.1"
 feedparser = "^6.0.2"
 httpx = ">=0.16.1"
-nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
+nonebot2 = { version = "^2.0.0", extras = ["fastapi"] }
 nonebot-adapter-onebot = "^2.0.0"
 nonebot-plugin-htmlrender = ">=0.2.0"
-nonebot-plugin-datastore = ">=0.6.2,<2.0.0"
+nonebot-plugin-orm = "^0.1.2"
 nonebot-plugin-apscheduler = ">=0.2,<0.4"
 nonebot-plugin-send-anything-anywhere = "^0.3.0"
 pillow = ">=8.1,<11.0"
@@ -44,11 +44,12 @@ nonemoji = "^0.1.4"
 nb-cli = "^1.0.5"
 pre-commit = "^3.3.0"
 ruff = ">=0.0.278,<0.0.293"
+nonebot-plugin-orm = { extras = ["default"], version = "^0.1.2" }
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
 nonebug = "^0.3.4"
-nonebug-saa = {git = "https://github.com/MountainDash/nonebug-saa.git"}
+nonebug-saa = { git = "https://github.com/MountainDash/nonebug-saa.git" }
 pytest = "^7.0.1"
 pytest-asyncio = ">=0.18.1,<0.22.0"
 pytest-cov = ">=3,<5"
@@ -108,6 +109,8 @@ reportShadowedImports = false
 pythonVersion = "3.10"
 pythonPlatform = "All"
 executionEnvironments = [
-  { root = "./tests", extraPaths = ["./"] },
+  { root = "./tests", extraPaths = [
+    "./",
+  ] },
   { root = "./" },
 ]

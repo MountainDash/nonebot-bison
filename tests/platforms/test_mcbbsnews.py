@@ -25,24 +25,29 @@ def raw_post_list():
 @respx.mock
 @flaky(max_runs=3, min_passes=1)
 async def test_fetch_new(mcbbsnews, dummy_user_subinfo, raw_post_list):
+    from nonebot_bison.post import Post
+
     news_router = respx.get("https://www.mcbbs.net/forum-news-1.html")
     news_router.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_post_list_html-0.html")))
     new_post = respx.get("https://www.mcbbs.net/thread-1340927-1-1.html")
     new_post.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_new_post_html.html")))
+
     target = ""
     res = await mcbbsnews.fetch_new_post(target, [dummy_user_subinfo])
     assert news_router.called
     assert len(res) == 0
+
     news_router.mock(return_value=Response(200, text=get_file("mcbbsnews/mock/mcbbsnews_post_list_html-1.html")))
-    res = await mcbbsnews.fetch_new_post(target, [dummy_user_subinfo])
+    res1 = await mcbbsnews.fetch_new_post(target, [dummy_user_subinfo])
     assert news_router.called
-    post = res[0][1][0]
+    post: Post = res1[0][1][0]
     raw_post = raw_post_list[0]
-    assert post.target_type == "MCBBS幻翼块讯"
-    assert post.text == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
+    assert post.platform.name == "MCBBS幻翼块讯"
+    assert post.content == "{}\n│\n└由 {} 发表".format(raw_post["title"], raw_post["author"])
     assert post.url == "https://www.mcbbs.net/{}".format(raw_post["url"])
-    assert post.target_name == raw_post["category"]
-    assert len(post.pics) == 1
+    assert post.nickname == raw_post["category"]
+    assert post.images
+    assert len(post.images) == 1
 
 
 @pytest.mark.asyncio

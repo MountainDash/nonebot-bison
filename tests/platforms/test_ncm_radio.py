@@ -41,6 +41,7 @@ def ncm_radio_1(ncm_radio_raw: dict):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     ncm_router = respx.post("http://music.163.com/api/dj/program/byradio")
@@ -51,12 +52,12 @@ async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo
     assert len(res) == 0
     ncm_router.mock(return_value=Response(200, json=ncm_radio_1))
     res2 = await ncm_radio.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
-    post = res2[0][1][0]
-    assert post.target_type == "ncm-radio"
-    assert post.text == "网易云电台更新：「松烟行动」灰齐山麓"
+    post: Post = res2[0][1][0]
+    assert post.platform.platform_name == "ncm-radio"
+    assert post.content == "网易云电台更新：「松烟行动」灰齐山麓"
     assert post.url == "https://music.163.com/#/program/2494997688"
-    assert post.pics == ["http://p1.music.126.net/H5em5xUNIYXcjJhOmeaSqQ==/109951166647436789.jpg"]
-    assert post.target_name == "《明日方舟》游戏原声OST"
+    assert post.images == ["http://p1.music.126.net/H5em5xUNIYXcjJhOmeaSqQ==/109951166647436789.jpg"]
+    assert post.nickname == "《明日方舟》游戏原声OST"
 
 
 async def test_parse_target(ncm_radio: "NcmRadio"):

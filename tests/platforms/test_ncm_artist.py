@@ -52,8 +52,8 @@ async def test_fetch_new(ncm_artist, ncm_artist_0, ncm_artist_1, dummy_user_subi
     ncm_router.mock(return_value=Response(200, json=ncm_artist_1))
     res2 = await ncm_artist.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     post = res2[0][1][0]
-    assert post.target_type == "ncm-artist"
-    assert post.text == "新专辑发布：Y1K"
+    assert post.platform.platform_name == "ncm-artist"
+    assert post.content == "新专辑发布：Y1K"
     assert post.url == "https://music.163.com/#/album?id=131074504"
 
 

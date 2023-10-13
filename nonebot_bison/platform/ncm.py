@@ -68,7 +68,7 @@ class NcmArtist(NewMessage):
         target_name = raw_post["artist"]["name"]
         pics = [raw_post["picUrl"]]
         url = "https://music.163.com/#/album?id={}".format(raw_post["id"])
-        return Post("ncm-artist", text=text, url=url, pics=pics, target_name=target_name)
+        return Post(self, text, url=url, images=pics, nickname=target_name)
 
 
 class NcmRadio(NewMessage):
@@ -126,4 +126,4 @@ class NcmRadio(NewMessage):
         target_name = raw_post["radio"]["name"]
         pics = [raw_post["coverUrl"]]
         url = "https://music.163.com/#/program/{}".format(raw_post["id"])
-        return Post("ncm-radio", text=text, url=url, pics=pics, target_name=target_name)
+        return Post(self, text, url=url, images=pics, nickname=target_name)

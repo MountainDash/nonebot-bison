@@ -108,10 +108,9 @@ async def test_get_current_weight(init_scheduler, mocker: MockerFixture):
 
 
 async def test_get_platform_target(app: App, init_scheduler):
+    from nonebot_plugin_orm import get_session
     from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.sql.expression import select
-    from nonebot_plugin_datastore.db import get_engine
-    from sqlalchemy.ext.asyncio.session import AsyncSession
 
     from nonebot_bison.config.db_model import Target
     from nonebot_bison.config.db_config import config
@@ -150,7 +149,7 @@ async def test_get_platform_target(app: App, init_scheduler):
     res = await config.get_platform_target("weibo")
     assert len(res) == 1
 
-    async with AsyncSession(get_engine()) as sess:
+    async with get_session() as sess:
         res = await sess.scalars(select(Target).where(Target.platform_name == "weibo"))
         assert len(res.all()) == 2
 

@@ -13,10 +13,11 @@ from .utils import AppReq
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
-        "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+        "sqlalchemy_database_url": "sqlite+aiosqlite:///:memory:",
         "superusers": {"10001"},
         "command_start": {""},
         "log_level": "TRACE",
+        "alembic_startup_check": False,
     }
 
 
@@ -32,9 +33,8 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
+    from nonebot_plugin_orm import init_orm, get_session
     from nonebot_plugin_htmlrender.browser import shutdown_browser
-    from nonebot_plugin_datastore.db import init_db, create_session
-    from nonebot_plugin_datastore.config import plugin_config as datastore_config
 
     from nonebot_bison import plugin_config
     from nonebot_bison.config.db_model import User, Target, Subscribe, ScheduleTimeWeight
@@ -42,14 +42,10 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
 
-    datastore_config.datastore_config_dir = tmp_path / "config"
-    datastore_config.datastore_cache_dir = tmp_path / "cache"
-    datastore_config.datastore_data_dir = tmp_path / "data"
-
     param: AppReq = getattr(request, "param", AppReq())
 
     if not param.get("no_init_db"):
-        await init_db()
+        await init_orm()
     # if not param.get("refresh_bot"):
     #     import nonebot_bison.utils.get_bot
     #
@@ -58,7 +54,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     yield App()
 
     # cleanup
-    async with create_session() as session, session.begin():
+    async with get_session() as session, session.begin():
         await session.execute(delete(User))
         await session.execute(delete(Subscribe))
         await session.execute(delete(Target))

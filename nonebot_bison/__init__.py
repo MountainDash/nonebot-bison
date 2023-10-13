@@ -7,7 +7,7 @@ require("nonebot_plugin_saa")
 import nonebot_plugin_saa
 
 from .plugin_config import PlugConfig, plugin_config
-from . import post, send, types, utils, config, platform, bootstrap, scheduler, admin_page, sub_manager
+from . import post, send, theme, types, utils, config, platform, bootstrap, scheduler, admin_page, sub_manager
 
 __help__version__ = "0.8.2"
 nonebot_plugin_saa.enable_auto_select_bot()
@@ -43,4 +43,5 @@ __all__ = [
     "platform",
     "types",
     "utils",
+    "theme",
 ]

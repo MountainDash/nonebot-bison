@@ -101,3 +101,6 @@ def text_similarity(str1, str2) -> float:
     matcher = difflib.SequenceMatcher(None, str1, str2)
     t = sum(temp.size for temp in matcher.get_matching_blocks())
     return t / min(len(str1), len(str2))
+
+
+# TODO: pic_merge func

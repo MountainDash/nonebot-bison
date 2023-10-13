@@ -8,7 +8,6 @@ import nonebot_plugin_saa as saa
 from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..theme import theme_manager
-from ..platform import platform_manager
 from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
@@ -39,19 +38,25 @@ class Post(AbstractPost):
     """发布者昵称"""
     description: str | None = None
     """发布者个性签名等"""
-    repost: "Post" | None = None
+    repost: "Post | None" = None
     """转发的Post"""
 
     @property
     def platform(self):
         """获取来源平台"""
+        from ..platform import platform_manager
+
         return platform_manager[self.paltform_name]
+
+    def get_config_theme(self) -> str | None:
+        """获取用户指定的theme"""
+        return plugin_config.bison_platform_theme.get(self.paltform_name)
 
     def get_priority_themes(self) -> list[str]:
         """获取渲染所使用的theme名列表，按照优先级排序"""
         priority_themes: list[str] = []
         # 最先使用用户指定的theme
-        if user_theme := plugin_config.bison_platform_theme.get(self.paltform_name):
+        if user_theme := self.get_config_theme():
             priority_themes.append(user_theme)
         # 然后使用平台默认的theme
         if self.platform.default_theme not in priority_themes:

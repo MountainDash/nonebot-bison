@@ -49,6 +49,7 @@ async def test_fetch_new(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
@@ -65,32 +66,38 @@ async def test_fetch_new(
     preannouncement_router.mock(return_value=Response(200, json=get_json("arknights-pre-0.json")))
     monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_0))
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-0.json")))
+
     target = Target("")
-    res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+
+    res1 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert ak_list_router.called
-    assert len(res) == 0
+    assert len(res1) == 0
     assert not detail_router.called
+
     mock_data = arknights_list_0
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
-    assert len(res3[0][1]) == 1
+    res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert len(res2[0][1]) == 1
     assert detail_router.called
-    post = res3[0][1][0]
-    assert post.target_type == "arknights"
-    assert post.text == ""
-    assert post.url == ""
-    assert post.target_name == "明日方舟游戏内公告"
-    assert len(post.pics) == 1
+    post2: Post = res2[0][1][0]
+    assert post2.paltform_name == "arknights"
+    assert post2.content
+    assert post2.title
+    assert not post2.url
+    assert post2.nickname == "明日方舟游戏内公告"
+    assert post2.images
+    assert len(post2.images) == 1
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
-    await post.generate_messages()
+
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
-    res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
-    assert len(res) == 1
-    post = res[0][1][0]
-    assert post.target_type == "terra-historicus"
-    assert post.text == "123罗德岛！？ - 「掠风」篇"
-    assert post.url == "https://terra-historicus.hypergryph.com/comic/6253/episode/4938"
-    assert post.pics == ["https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png"]
+    res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert len(res3) == 1
+    post3: Post = res3[0][1][0]
+    assert post3.paltform_name == "arknights"
+    assert post3.nickname == "泰拉记事社漫画"
+    assert post3.content == "123罗德岛！？ - 「掠风」篇"
+    assert post3.url == "https://terra-historicus.hypergryph.com/comic/6253/episode/4938"
+    assert post3.images == ["https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png"]
 
 
 @pytest.mark.render()

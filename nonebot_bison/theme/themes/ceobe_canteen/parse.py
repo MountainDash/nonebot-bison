@@ -1,18 +1,20 @@
 from pathlib import Path
-from typing import Literal
 from datetime import datetime
+from typing import TYPE_CHECKING, Literal
 
 import jinja2
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from nonebot_bison.post import Post
 from nonebot_bison.theme import (
     AbstractTheme,
     ThemeRenderError,
     ThemeRenderUnsupportError,
     check_htmlrender_plugin_enable,
 )
+
+if TYPE_CHECKING:
+    from nonebot_bison.post import Post
 
 
 class CeobeInfo(BaseModel):
@@ -61,7 +63,7 @@ class CeobeCanteenTheme(AbstractTheme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    def parse(self, post: Post) -> CeobeCard:
+    def parse(self, post: "Post") -> CeobeCard:
         """解析 Post 为 CeobeCard"""
         if not post.nickname:
             raise ThemeRenderUnsupportError("post.nickname is None")
@@ -78,7 +80,7 @@ class CeobeCanteenTheme(AbstractTheme):
         content = CeoboContent(image=head_pic, text=post.content)
         return CeobeCard(info=info, content=content, qr=post.url)  # TODO： 这里需要链接转qr码图片，暂时先用链接代替
 
-    async def render(self, post: Post) -> list[MessageSegmentFactory]:
+    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         ceobe_card = self.parse(post)
         check_htmlrender_plugin_enable()
         from nonebot_plugin_htmlrender import get_new_page

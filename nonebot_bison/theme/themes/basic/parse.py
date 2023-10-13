@@ -1,9 +1,11 @@
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from nonebot_bison.post import Post
 from nonebot_bison.theme import AbstractTheme
+
+if TYPE_CHECKING:
+    from nonebot_bison.post import Post
 
 
 class BasicTheme(AbstractTheme):
@@ -14,7 +16,7 @@ class BasicTheme(AbstractTheme):
 
     name: Literal["basic"] = "basic"
 
-    async def render(self, post: Post) -> list[MessageSegmentFactory]:
+    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         text = ""
 
         if post.title:

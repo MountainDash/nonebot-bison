@@ -54,9 +54,9 @@ async def test_fetch_bilibili_bangumi_status(bili_bangumi: "BilibiliBangumi", du
     res2 = await bili_bangumi.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
 
     post = res2[0][1][0]
-    assert post.target_type == "Bilibili剧集"
-    assert post.text == "《汉化日记 第三季》第2话 什么是战区导弹防御系统工作日"
+    assert post.paltform_name == "Bilibili剧集"
+    assert post.content == "《汉化日记 第三季》第2话 什么是战区导弹防御系统工作日"
     assert post.url == "https://www.bilibili.com/bangumi/play/ep519207"
-    assert post.target_name == "汉化日记 第三季"
-    assert post.pics == ["http://i0.hdslb.com/bfs/archive/ea0a302c954f9dbc3d593e676486396c551529c9.jpg"]
+    assert post.nickname == "汉化日记 第三季"
+    assert post.images == ["http://i0.hdslb.com/bfs/archive/ea0a302c954f9dbc3d593e676486396c551529c9.jpg"]
     assert post.compress is True

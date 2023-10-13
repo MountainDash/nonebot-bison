@@ -95,6 +95,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     client: AsyncClient
     reverse_category: dict[str, Category]
     use_batch: bool = False
+    # TODO: 限定可使用的theme名称
+    default_theme: str = "basic"
 
     @classmethod
     @abstractmethod

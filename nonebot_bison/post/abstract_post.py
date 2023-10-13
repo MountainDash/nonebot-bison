@@ -1,52 +1,51 @@
-from functools import reduce
-from abc import abstractmethod
-from dataclasses import field, dataclass
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
-from nonebot_plugin_saa import MessageFactory, MessageSegmentFactory
+from nonebot_plugin_saa import Text, MessageFactory, MessageSegmentFactory
 
+from ..utils import text_to_image
 from ..plugin_config import plugin_config
 
 
-@dataclass
-class BasePost:
-    @abstractmethod
-    async def generate_text_messages(self) -> list[MessageSegmentFactory]:
-        "Generate MessageFactory list from this instance"
-        ...
-
-    @abstractmethod
-    async def generate_pic_messages(self) -> list[MessageSegmentFactory]:
-        "Generate MessageFactory list from this instance with `use_pic`"
-        ...
-
-
-@dataclass
-class OptionalMixin:
-    # Because of https://stackoverflow.com/questions/51575931/class-inheritance-in-python-3-7-dataclasses
-
-    override_use_pic: bool | None = None
+@dataclass(kw_only=True)
+class AbstractPost(ABC):
     compress: bool = False
-    extra_msg: list[MessageFactory] = field(default_factory=list)
+    extra_msg: list[MessageFactory] | None = None
 
-    def _use_pic(self):
-        if self.override_use_pic is not None:
-            return self.override_use_pic
-        return plugin_config.bison_use_pic
+    @abstractmethod
+    async def generate(self) -> list[MessageSegmentFactory]:
+        "Generate MessageSegmentFactory list from this instance"
+        ...
 
-
-@dataclass
-class AbstractPost(OptionalMixin, BasePost):
     async def generate_messages(self) -> list[MessageFactory]:
-        if self._use_pic():
-            msg_segments = await self.generate_pic_messages()
-        else:
-            msg_segments = await self.generate_text_messages()
-        if msg_segments:
-            if self.compress:
-                msgs = [reduce(lambda x, y: x.append(y), msg_segments, MessageFactory([]))]
+        "really call to generate messages"
+        msg_segments = await self.generate()
+        msg_segments = await self.message_segments_process(msg_segments)
+        msgs = await self.message_process(msg_segments)
+        return msgs
+
+    async def message_segments_process(self, msg_segments: list[MessageSegmentFactory]) -> list[MessageSegmentFactory]:
+        "generate message segments and process them"
+
+        async def convert(msg: MessageSegmentFactory) -> MessageSegmentFactory:
+            if isinstance(msg, Text):
+                return await text_to_image(msg)
             else:
-                msgs = [MessageFactory([msg_segment]) for msg_segment in msg_segments]
+                return msg
+
+        if plugin_config.bison_use_pic:
+            return [await convert(msg) for msg in msg_segments]
+
+        return msg_segments
+
+    async def message_process(self, msg_segments: list[MessageSegmentFactory]) -> list[MessageFactory]:
+        "generate messages and process them"
+        if self.compress:
+            msgs = [MessageFactory(msg_segments)]
         else:
-            msgs = []
-        msgs.extend(self.extra_msg)
+            msgs = [MessageFactory(msg_segment) for msg_segment in msg_segments]
+
+        if self.extra_msg:
+            msgs.extend(self.extra_msg)
+
         return msgs

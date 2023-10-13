@@ -41,6 +41,7 @@ async def test_get_name(weibo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(weibo, dummy_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
@@ -64,12 +65,13 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     res3 = await weibo.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3[0][1]) == 1
     assert not detail_router.called
-    post = res3[0][1][0]
-    assert post.target_type == "weibo"
-    assert post.text == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
+    post: Post = res3[0][1][0]
+    assert post.platform.platform_name == "weibo"
+    assert post.content == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
     assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
-    assert post.target_name == "明日方舟Arknights"
-    assert len(post.pics) == 1
+    assert post.nickname == "明日方舟Arknights"
+    assert post.images
+    assert len(post.images) == 1
 
 
 @pytest.mark.asyncio
@@ -93,7 +95,7 @@ async def test_parse_long(weibo):
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)
-    assert "全文" not in post.text
+    assert "全文" not in post.content
     assert detail_router.called
 
 

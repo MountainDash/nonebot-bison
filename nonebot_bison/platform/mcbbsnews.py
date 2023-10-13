@@ -155,11 +155,11 @@ class McbbsNews(NewMessage):
         pics = await self._news_render(post_url, f"#{post_id}")
 
         return Post(
-            self.name,
-            text="{}\n│\n└由 {} 发表".format(post["title"], post["author"]),
+            self,
+            "{}\n│\n└由 {} 发表".format(post["title"], post["author"]),
             url=post_url,
-            pics=list(pics),
-            target_name=post["category"],
+            images=list(pics),
+            nickname=post["category"],
         )
 
     async def _news_render(self, url: str, selector: str) -> list[bytes]:

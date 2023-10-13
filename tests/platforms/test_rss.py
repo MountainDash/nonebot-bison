@@ -46,7 +46,7 @@ def update_time_feed_1():
     root = ET.fromstring(file)
     item = root.find("channel/item")
     current_time = datetime.now(pytz.timezone("GMT")).strftime("%a, %d %b %Y %H:%M:%S %Z")
-    assert item
+    assert item is not None
     pubdate_elem = item.find("pubDate")
     assert pubdate_elem is not None
     pubdate_elem.text = current_time
@@ -85,8 +85,9 @@ async def test_fetch_new_1(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://twitter.com/ArknightsStaff/status/1659091539023282178"
+    assert post1.title is None
     assert (
-        post1.text
+        post1.content
         == "【#統合戦略】 引き続き新テーマ「ミヅキと紺碧の樹」の新要素及びシステムの変更点を一部ご紹介します！"
         " 今回は「灯火」、「ダイス」、「記号認識」、「鍵」についてです。詳細は添付の画像をご確認ください。"
         "#アークナイツ https://t.co/ARmptV0Zvu"
@@ -114,9 +115,8 @@ async def test_fetch_new_2(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "http://www.ruanyifeng.com/blog/2023/05/weekly-issue-255.html"
-    assert (
-        post1.text == "科技爱好者周刊（第 255 期）：对待 AI 的正确态度\n\n这里记录每周值得分享的科技内容，周五发布。..."
-    )
+    assert post1.title == "科技爱好者周刊（第 255 期）：对待 AI 的正确态度"
+    assert post1.content == "这里记录每周值得分享的科技内容，周五发布。..."
 
 
 @pytest.fixture()
@@ -150,7 +150,8 @@ async def test_fetch_new_3(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://github.com/R3nzTheCodeGOD/R3nzSkin/releases/tag/v3.0.9"
-    assert post1.text == "R3nzSkin\n\nNo content."
+    assert post1.title == "R3nzSkin"
+    assert post1.content == "No content."
 
 
 @pytest.mark.asyncio
@@ -173,7 +174,7 @@ async def test_fetch_new_4(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://wallhaven.cc/w/85rjej"
-    assert post1.text == "85rjej.jpg"
+    assert post1.content == "85rjej.jpg"
 
 
 def test_similar_text_process():

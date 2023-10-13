@@ -15,15 +15,15 @@
     <div class="main">
       <div class="container">
         <div class="standerd-container">
-          {% if bannerImageUrl %}
+          {% if data.banner_image_url %}
           <div class="banner-image-container">
-            <img class="banner-image" src="{{ bannerImageUrl }}" />
+            <img class="banner-image" src="{{ data.banner_image_url }}" />
           </div>
           {% endif %}
           <div class="head-title-container">
-            <span class="head-title">{{ announce_title }}</span>
+            <span class="head-title">{{ data.announce_title }}</span>
           </div>
-          <div class="content">{{ content }}</div>
+          <div class="content">{{ data.content }}</div>
         </div>
       </div>
     </div>

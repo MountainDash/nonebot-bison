@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import respx
 import pytest
@@ -6,6 +7,9 @@ from nonebug.app import App
 from httpx import Response, AsyncClient
 
 from .utils import get_json
+
+if TYPE_CHECKING:
+    from nonebot_bison.platform.bilibili import Bilibililive
 
 
 @pytest.fixture()
@@ -48,6 +52,7 @@ async def test_fetch_bililive_no_room(bili_live, dummy_only_open_user_subinfo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_first_live(bili_live, dummy_only_open_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     mock_bili_live_status = get_json("bili_live_status.json")
@@ -60,27 +65,31 @@ async def test_fetch_first_live(bili_live, dummy_only_open_user_subinfo):
     bilibili_main_page_router.mock(return_value=Response(200))
 
     target = Target("13164144")
-    res = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
+
+    res1 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
     assert bili_live_router.call_count == 1
-    assert len(res) == 0
+    assert len(res1) == 0
 
     mock_bili_live_status["data"][target]["live_status"] = 1
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res2 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
     assert bili_live_router.call_count == 2
     assert len(res2) == 1
-    post = res2[0][1][0]
-    assert post.target_type == "Bilibili直播"
-    assert post.text == "[开播] 【Zc】从0挑战到15肉鸽！目前10难度"
-    assert post.url == "https://live.bilibili.com/3044248"
-    assert post.target_name == "魔法Zc目录 其他单机"
-    assert post.pics == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
-    assert post.compress is True
+    post2: Post = res2[0][1][0]
+    assert post2.platform.name == "Bilibili直播"
+    assert post2.title == "[开播] 【Zc】从0挑战到15肉鸽！目前10难度"
+    assert post2.content == ""
+    assert post2.url == "https://live.bilibili.com/3044248"
+    assert post2.nickname == "魔法Zc目录 其他单机"
+    assert post2.images == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
+    assert post2.compress is True
+    assert "brief" == post2.get_priority_themes()[0]
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_subinfo):
+async def test_fetch_bililive_only_live_open(bili_live: "Bilibililive", dummy_only_open_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     mock_bili_live_status = get_json("bili_live_status.json")
@@ -92,20 +101,22 @@ async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_sub
     bilibili_main_page_router.mock(return_value=Response(200))
 
     target = Target("13164144")
-    res = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
+
+    bili_live.set_stored_data(target, None)
+    res1 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
     assert bili_live_router.call_count == 1
-    assert len(res[0][1]) == 0
+    assert len(res1) == 0
     # 直播状态更新-上播
     mock_bili_live_status["data"][target]["live_status"] = 1
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res2 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
-    post = res2[0][1][0]
-    assert post.target_type == "Bilibili直播"
-    assert post.text == "[开播] 【Zc】从0挑战到15肉鸽！目前10难度"
-    assert post.url == "https://live.bilibili.com/3044248"
-    assert post.target_name == "魔法Zc目录 其他单机"
-    assert post.pics == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
-    assert post.compress is True
+    post2: Post = res2[0][1][0]
+    assert post2.platform.name == "Bilibili直播"
+    assert post2.title == "[开播] 【Zc】从0挑战到15肉鸽！目前10难度"
+    assert post2.url == "https://live.bilibili.com/3044248"
+    assert post2.nickname == "魔法Zc目录 其他单机"
+    assert post2.images == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
+    assert post2.compress is True
     # 标题变更
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前11难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
@@ -133,6 +144,7 @@ def dummy_only_title_user_subinfo(app: App):
 @pytest.mark.asyncio()
 @respx.mock
 async def test_fetch_bililive_only_title_change(bili_live, dummy_only_title_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     mock_bili_live_status = get_json("bili_live_status.json")
@@ -163,13 +175,13 @@ async def test_fetch_bililive_only_title_change(bili_live, dummy_only_title_user
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前12难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res3 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_title_user_subinfo]))])
-    post = res3[0][1][0]
-    assert post.target_type == "Bilibili直播"
-    assert post.text == "[标题更新] 【Zc】从0挑战到15肉鸽！目前12难度"
-    assert post.url == "https://live.bilibili.com/3044248"
-    assert post.target_name == "魔法Zc目录 其他单机"
-    assert post.pics == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
-    assert post.compress is True
+    post3: Post = res3[0][1][0]
+    assert post3.platform.name == "Bilibili直播"
+    assert post3.title == "[标题更新] 【Zc】从0挑战到15肉鸽！目前12难度"
+    assert post3.url == "https://live.bilibili.com/3044248"
+    assert post3.nickname == "魔法Zc目录 其他单机"
+    assert post3.images == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
+    assert post3.compress is True
     # 直播状态更新-下播
     mock_bili_live_status["data"][target]["live_status"] = 0
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
@@ -191,6 +203,7 @@ def dummy_only_close_user_subinfo(app: App):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     mock_bili_live_status = get_json("bili_live_status.json")
@@ -228,13 +241,13 @@ async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinf
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res4 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_close_user_subinfo]))])
     assert bili_live_router.call_count == 5
-    post = res4[0][1][0]
-    assert post.target_type == "Bilibili直播"
-    assert post.text == "[下播] 【Zc】从0挑战到15肉鸽！目前12难度"
-    assert post.url == "https://live.bilibili.com/3044248"
-    assert post.target_name == "魔法Zc目录 其他单机"
-    assert post.pics == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
-    assert post.compress is True
+    post4: Post = res4[0][1][0]
+    assert post4.platform.name == "Bilibili直播"
+    assert post4.title == "[下播] 【Zc】从0挑战到15肉鸽！目前12难度"
+    assert post4.url == "https://live.bilibili.com/3044248"
+    assert post4.nickname == "魔法Zc目录 其他单机"
+    assert post4.images == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
+    assert post4.compress is True
 
 
 @pytest.fixture()
@@ -250,6 +263,7 @@ def dummy_bililive_user_subinfo(app: App):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bililive_combo(bili_live, dummy_bililive_user_subinfo):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     mock_bili_live_status = get_json("bili_live_status.json")
@@ -274,32 +288,32 @@ async def test_fetch_bililive_combo(bili_live, dummy_bililive_user_subinfo):
     mock_bili_live_status["data"][target]["live_status"] = 1
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res2 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_bililive_user_subinfo]))])
-    post2 = res2[0][1][0]
-    assert post2.target_type == "Bilibili直播"
-    assert post2.text == "[开播] 【Zc】从0挑战到15肉鸽！目前11难度"
+    post2: Post = res2[0][1][0]
+    assert post2.platform.name == "Bilibili直播"
+    assert post2.title == "[开播] 【Zc】从0挑战到15肉鸽！目前11难度"
     assert post2.url == "https://live.bilibili.com/3044248"
-    assert post2.target_name == "魔法Zc目录 其他单机"
-    assert post2.pics == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
+    assert post2.nickname == "魔法Zc目录 其他单机"
+    assert post2.images == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
     assert post2.compress is True
     # 标题变更
     mock_bili_live_status["data"][target]["title"] = "【Zc】从0挑战到15肉鸽！目前12难度"
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res3 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_bililive_user_subinfo]))])
-    post3 = res3[0][1][0]
-    assert post3.target_type == "Bilibili直播"
-    assert post3.text == "[标题更新] 【Zc】从0挑战到15肉鸽！目前12难度"
+    post3: Post = res3[0][1][0]
+    assert post3.platform.name == "Bilibili直播"
+    assert post3.title == "[标题更新] 【Zc】从0挑战到15肉鸽！目前12难度"
     assert post3.url == "https://live.bilibili.com/3044248"
-    assert post3.target_name == "魔法Zc目录 其他单机"
-    assert post3.pics == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
+    assert post3.nickname == "魔法Zc目录 其他单机"
+    assert post3.images == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
     assert post3.compress is True
     # 直播状态更新-下播
     mock_bili_live_status["data"][target]["live_status"] = 0
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))
     res4 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_bililive_user_subinfo]))])
-    post4 = res4[0][1][0]
-    assert post4.target_type == "Bilibili直播"
-    assert post4.text == "[下播] 【Zc】从0挑战到15肉鸽！目前12难度"
+    post4: Post = res4[0][1][0]
+    assert post4.platform.name == "Bilibili直播"
+    assert post4.title == "[下播] 【Zc】从0挑战到15肉鸽！目前12难度"
     assert post4.url == "https://live.bilibili.com/3044248"
-    assert post4.target_name == "魔法Zc目录 其他单机"
-    assert post4.pics == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
+    assert post4.nickname == "魔法Zc目录 其他单机"
+    assert post4.images == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
     assert post4.compress is True

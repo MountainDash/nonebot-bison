@@ -1,16 +1,18 @@
 from pathlib import Path
-from typing import Literal
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Image
 
-from nonebot_bison.post import Post
 from nonebot_bison.theme import (
     AbstractTheme,
     ThemeRenderError,
     ThemeRenderUnsupportError,
     check_htmlrender_plugin_enable,
 )
+
+if TYPE_CHECKING:
+    from nonebot_bison.post import Post
 
 
 @dataclass
@@ -31,7 +33,7 @@ class ArknightsTheme(AbstractTheme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    async def render(self, post: Post):
+    async def render(self, post: "Post"):
         check_htmlrender_plugin_enable()
         from nonebot_plugin_htmlrender import template_to_pic
 

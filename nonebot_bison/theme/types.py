@@ -1,9 +1,11 @@
+from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 from nonebot_plugin_saa import MessageSegmentFactory
 
-from ..post.abstract_post import AbstractPost
+if TYPE_CHECKING:
+    from ..post.abstract_post import AbstractPost
 
 
 class AbstractTheme(ABC, BaseModel):
@@ -13,7 +15,7 @@ class AbstractTheme(ABC, BaseModel):
     """theme名称"""
 
     @abstractmethod
-    async def render(self, post: AbstractPost) -> list[MessageSegmentFactory]:
+    async def render(self, post: "AbstractPost") -> list[MessageSegmentFactory]:
         """对多个Post的实例可以考虑使用@overload"""
         ...
 

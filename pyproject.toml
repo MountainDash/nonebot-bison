@@ -45,6 +45,7 @@ nb-cli = "^1.0.5"
 pre-commit = "^3.3.0"
 ruff = ">=0.0.278,<0.0.293"
 nonebot-plugin-orm = { extras = ["default"], version = "^0.1.2" }
+nonebot-plugin-datastore = "^1.1.2"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"

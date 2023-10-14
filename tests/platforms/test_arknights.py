@@ -87,6 +87,7 @@ async def test_fetch_new(
     assert post2.nickname == "明日方舟游戏内公告"
     assert post2.images
     assert len(post2.images) == 1
+    assert "arknights" in post2.get_priority_themes()
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
 
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
@@ -110,6 +111,7 @@ async def test_send_with_render(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
@@ -126,22 +128,26 @@ async def test_send_with_render(
     preannouncement_router.mock(return_value=Response(200, json=get_json("arknights-pre-0.json")))
     monster_siren_router.mock(return_value=Response(200, json=monster_siren_list_0))
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-0.json")))
+
     target = Target("")
-    res = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+
+    res1 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert ak_list_router.called
-    assert len(res) == 0
+    assert len(res1) == 0
     assert not detail_router.called
+
     mock_data = arknights_list_1
     ak_list_router.mock(return_value=Response(200, json=mock_data))
-    res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
-    assert len(res3[0][1]) == 1
+    res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert len(res2[0][1]) == 1
     assert detail_router.called
-    post = res3[0][1][0]
-    assert post.target_type == "arknights"
-    assert post.text == ""
-    assert post.url == ""
-    assert post.target_name == "明日方舟游戏内公告"
-    assert len(post.pics) == 1
+    post2: Post = res2[0][1][0]
+    assert post2.platform.platform_name == "arknights"
+    assert "《明日方舟》将于08月01日10:00 ~16:00的更新维护中对游戏内【公开招募】进行新增干员。" in post2.content
+    assert post2.title == "【公开招募】标签强制刷新通知"
+    assert post2.nickname == "明日方舟游戏内公告"
+    assert post2.images
+    assert len(post2.images) == 1
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
-    r = await post.generate_messages()
+    r = await post2.generate_messages()
     assert r

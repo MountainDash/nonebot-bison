@@ -193,7 +193,7 @@ class Bilibili(NewMessage):
             text += orig_text
         else:
             raise CategoryNotSupport(post_type)
-        return Post(self.platform_name, text, url=url, images=pic, nickname=target_name)
+        return Post(self, text, url=url, images=pic, nickname=target_name)
 
 
 class Bilibililive(StatusChange):
@@ -334,7 +334,7 @@ class Bilibililive(StatusChange):
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
-            self.platform_name,
+            self,
             title,
             url=url,
             images=list(pic),
@@ -414,7 +414,7 @@ class BilibiliBangumi(StatusChange):
         target_name = detail_dict["result"]["season_title"]
         text = lastest_episode["share_copy"]
         return Post(
-            self.platform_name,
+            self,
             text,
             url=url,
             images=list(pic),

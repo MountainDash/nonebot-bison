@@ -54,9 +54,8 @@ class Arknights(NewMessage):
         content = raw_data.get("content")
         banner_image_url = raw_data.get("bannerImageUrl")
 
-        # FIXME: 现有的theme选择机制可能会使NoTargetGroup使用同一个theme，这不符合期望
         return Post(
-            self.platform_name,
+            self,
             content,
             title=announce_title,
             nickname="明日方舟游戏内公告",
@@ -90,7 +89,7 @@ class AkVersion(StatusChange):
 
     def compare_status(self, _, old_status, new_status):
         res = []
-        ArkUpdatePost = partial(Post, self.platform_name, nickname="明日方舟更新信息")
+        ArkUpdatePost = partial(Post, self, nickname="明日方舟更新信息")
         if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
             res.append(ArkUpdatePost("登录界面维护公告上线（大概是开始维护了)"))
         elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
@@ -145,7 +144,7 @@ class MonsterSiren(NewMessage):
         imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return Post(
-            self.platform_name,
+            self,
             text,
             images=imgs,
             url=url,
@@ -184,7 +183,7 @@ class TerraHistoricusComic(NewMessage):
     async def parse(self, raw_post: RawPost) -> Post:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
-            self.platform_name,
+            self,
             f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
             images=[raw_post["coverUrl"]],
             url=url,

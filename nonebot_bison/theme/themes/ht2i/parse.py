@@ -34,7 +34,7 @@ class Ht2iTheme(AbstractTheme):
 
         _text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
 
-        _text += f"来源: {post.paltform_name} {post.nickname or ''}\n"
+        _text += f"来源: {post.platform.name} {post.nickname or ''}\n"
 
         msgs: list[MessageSegmentFactory] = [await self._text_render(_text)]
 

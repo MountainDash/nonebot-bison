@@ -80,7 +80,7 @@ async def test_fetch_new(
     assert len(res2[0][1]) == 1
     assert detail_router.called
     post2: Post = res2[0][1][0]
-    assert post2.paltform_name == "arknights"
+    assert post2.platform.platform_name == "arknights"
     assert post2.content
     assert post2.title
     assert not post2.url
@@ -93,7 +93,7 @@ async def test_fetch_new(
     res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3) == 1
     post3: Post = res3[0][1][0]
-    assert post3.paltform_name == "arknights"
+    assert post3.platform.platform_name == "arknights"
     assert post3.nickname == "泰拉记事社漫画"
     assert post3.content == "123罗德岛！？ - 「掠风」篇"
     assert post3.url == "https://terra-historicus.hypergryph.com/comic/6253/episode/4938"

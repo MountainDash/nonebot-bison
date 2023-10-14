@@ -155,7 +155,7 @@ class Weibo(NewMessage):
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
         # return parsed_text, detail_url, pic_urls
         return Post(
-            self.platform_name,
+            self,
             parsed_text,
             url=detail_url,
             images=pics,

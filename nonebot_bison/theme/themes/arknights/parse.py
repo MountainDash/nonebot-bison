@@ -28,7 +28,7 @@ class ArknightsTheme(AbstractTheme):
     需要安装`nonebot_plugin_htmlrender`插件
     """
 
-    name: Literal["Arknights"] = "Arknights"
+    name: Literal["arknights"] = "arknights"
 
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"

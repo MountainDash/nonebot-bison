@@ -72,7 +72,7 @@ class Rss(NewMessage):
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
         return Post(
-            self.platform_name,
+            self,
             text,
             url=raw_post.link,
             images=pics,

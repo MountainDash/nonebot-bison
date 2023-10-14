@@ -1,5 +1,6 @@
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from PIL import Image
@@ -12,6 +13,9 @@ from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
 
+if TYPE_CHECKING:
+    from ..platform import Platform
+
 
 @dataclass
 class Post(AbstractPost):
@@ -20,8 +24,8 @@ class Post(AbstractPost):
     对于更特殊的需要，可以考虑另外实现一个Post
     """
 
-    paltform_name: str
-    """来源平台名称，需要与platform里的`platform_name`相同"""
+    platform: "Platform"
+    """来源平台"""
     content: str
     """文本内容"""
     title: str | None = None
@@ -41,16 +45,9 @@ class Post(AbstractPost):
     repost: "Post | None" = None
     """转发的Post"""
 
-    @property
-    def platform(self):
-        """获取来源平台"""
-        from ..platform import platform_manager
-
-        return platform_manager[self.paltform_name]
-
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
-        return plugin_config.bison_platform_theme.get(self.paltform_name)
+        return plugin_config.bison_platform_theme.get(self.platform.platform_name)
 
     def get_priority_themes(self) -> list[str]:
         """获取渲染所使用的theme名列表，按照优先级排序"""
@@ -75,7 +72,9 @@ class Post(AbstractPost):
                 try:
                     return await theme.render(self)
                 except ThemeRenderUnsupportError as e:
-                    logger.warning(f"Theme {theme_name} does not support {self.__class__.__name__}: {e}")
+                    logger.warning(
+                        f"Theme {theme_name} does not support Post of {self.platform.__class__.__name__}: {e}"
+                    )
                     continue
                 except ThemeRenderError as e:
                     logger.exception(f"Theme {theme_name} render error: {e}")
@@ -84,4 +83,4 @@ class Post(AbstractPost):
                 logger.error(f"Theme {theme_name} not found")
                 continue
         else:
-            raise ThemeRenderError(f"No theme can render {self.__class__.__name__}: {self}")
+            raise ThemeRenderError(f"No theme can render Post of {self.platform.__class__.__name__}")

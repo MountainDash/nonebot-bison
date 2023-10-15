@@ -206,6 +206,7 @@ class Bilibililive(StatusChange):
     name = "Bilibili直播"
     has_target = True
     use_batch = True
+    default_theme = "brief"
 
     @unique
     class LiveStatus(Enum):
@@ -335,7 +336,8 @@ class Bilibililive(StatusChange):
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
             self,
-            title,
+            "",
+            title=title,
             url=url,
             images=list(pic),
             nickname=target_name,
@@ -353,6 +355,7 @@ class BilibiliBangumi(StatusChange):
     name = "Bilibili剧集"
     has_target = True
     parse_target_promot = "请输入剧集主页"
+    default_theme = "brief"
 
     _url = "https://api.bilibili.com/pgc/review/user"
 
@@ -412,10 +415,12 @@ class BilibiliBangumi(StatusChange):
         url = lastest_episode["link"]
         pic: list[str] = [lastest_episode["cover"]]
         target_name = detail_dict["result"]["season_title"]
-        text = lastest_episode["share_copy"]
+        content = raw_post["index_show"]
+        title = lastest_episode["share_copy"]
         return Post(
             self,
-            text,
+            content,
+            title=title,
             url=url,
             images=list(pic),
             nickname=target_name,

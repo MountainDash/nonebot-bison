@@ -25,7 +25,7 @@ class BasicTheme(AbstractTheme):
 
         text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
 
-        text += f"来源: {post.platform.name} {post.nickname or ''}\n"
+        text += f"\n来源: {post.platform.name} {post.nickname or ''}\n"
 
         if post.url:
             text += f"详情: {post.url}"

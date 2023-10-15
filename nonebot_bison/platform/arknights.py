@@ -73,6 +73,7 @@ class AkVersion(StatusChange):
     is_common = False
     scheduler = ArknightsSchedConf
     has_target = False
+    default_theme = "brief"
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
@@ -89,15 +90,15 @@ class AkVersion(StatusChange):
 
     def compare_status(self, _, old_status, new_status):
         res = []
-        ArkUpdatePost = partial(Post, self, nickname="明日方舟更新信息")
+        ArkUpdatePost = partial(Post, self, "", nickname="明日方舟更新信息")
         if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
-            res.append(ArkUpdatePost("登录界面维护公告上线（大概是开始维护了)"))
+            res.append(ArkUpdatePost(title="登录界面维护公告上线（大概是开始维护了)"))
         elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
-            res.append(ArkUpdatePost("登录界面维护公告下线（大概是开服了，冲！）"))
+            res.append(ArkUpdatePost(title="登录界面维护公告下线（大概是开服了，冲！）"))
         if old_status.get("clientVersion") != new_status.get("clientVersion"):
-            res.append(ArkUpdatePost("游戏本体更新（大更新）"))
+            res.append(ArkUpdatePost(title="游戏本体更新（大更新）"))
         if old_status.get("resVersion") != new_status.get("resVersion"):
-            res.append(ArkUpdatePost("游戏资源更新（小更新）"))
+            res.append(ArkUpdatePost(title="游戏资源更新（小更新）"))
         return res
 
     def get_category(self, _):
@@ -162,6 +163,7 @@ class TerraHistoricusComic(NewMessage):
     is_common = False
     scheduler = ArknightsSchedConf
     has_target = False
+    default_theme = "brief"
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
@@ -184,7 +186,8 @@ class TerraHistoricusComic(NewMessage):
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
             self,
-            f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
+            raw_post["subtitle"],
+            title=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
             images=[raw_post["coverUrl"]],
             url=url,
             nickname="泰拉记事社漫画",

@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme import AbstractTheme, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -19,7 +20,10 @@ class BriefTheme(AbstractTheme):
 
         msgs: list[MessageSegmentFactory] = [Text(post.title)]
         if post.images:
-            msgs.extend(map(Image, post.images))
+            pics = post.images
+            if is_pics_mergable(pics):
+                pics = await pic_merge(list(pics), post.platform.client)
+            msgs.append(Image(pics[0]))
         if post.url:
             msgs.append(Text(post.url))
 

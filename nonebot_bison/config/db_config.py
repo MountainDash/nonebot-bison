@@ -5,9 +5,9 @@ from collections.abc import Callable, Sequence, Awaitable
 
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
+from nonebot_plugin_orm import get_session
 from sqlalchemy import func, delete, select
 from nonebot_plugin_saa import PlatformTarget
-from nonebot_plugin_datastore import create_session
 
 from ..types import Tag
 from ..types import Target as T_Target
@@ -45,7 +45,7 @@ class DBConfig:
         cats: list[Category],
         tags: list[Tag],
     ):
-        async with create_session() as session:
+        async with get_session() as session:
             db_user_stmt = select(User).where(User.user_target == user.dict())
             db_user: User | None = await session.scalar(db_user_stmt)
             if not db_user:
@@ -73,7 +73,7 @@ class DBConfig:
                 raise e
 
     async def list_subscribe(self, user: PlatformTarget) -> Sequence[Subscribe]:
-        async with create_session() as session:
+        async with get_session() as session:
             query_stmt = (
                 select(Subscribe)
                 .where(User.user_target == user.dict())
@@ -85,7 +85,7 @@ class DBConfig:
 
     async def list_subs_with_all_info(self) -> Sequence[Subscribe]:
         """获取数据库中带有user、target信息的subscribe数据"""
-        async with create_session() as session:
+        async with get_session() as session:
             query_stmt = (
                 select(Subscribe).join(User).options(selectinload(Subscribe.target), selectinload(Subscribe.user))
             )
@@ -94,7 +94,7 @@ class DBConfig:
         return subs
 
     async def del_subscribe(self, user: PlatformTarget, target: str, platform_name: str):
-        async with create_session() as session:
+        async with get_session() as session:
             user_obj = await session.scalar(select(User).where(User.user_target == user.dict()))
             target_obj = await session.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
@@ -117,7 +117,7 @@ class DBConfig:
         cats: list,
         tags: list,
     ):
-        async with create_session() as sess:
+        async with get_session() as sess:
             subscribe_obj: Subscribe = await sess.scalar(
                 select(Subscribe)
                 .where(
@@ -135,13 +135,13 @@ class DBConfig:
             await sess.commit()
 
     async def get_platform_target(self, platform_name: str) -> Sequence[Target]:
-        async with create_session() as sess:
+        async with get_session() as sess:
             subq = select(Subscribe.target_id).distinct().subquery()
             query = select(Target).join(subq).where(Target.platform_name == platform_name)
             return (await sess.scalars(query)).all()
 
     async def get_time_weight_config(self, target: T_Target, platform_name: str) -> WeightConfig:
-        async with create_session() as sess:
+        async with get_session() as sess:
             time_weight_conf = (
                 await sess.scalars(
                     select(ScheduleTimeWeight)
@@ -166,7 +166,7 @@ class DBConfig:
             )
 
     async def update_time_weight_config(self, target: T_Target, platform_name: str, conf: WeightConfig):
-        async with create_session() as sess:
+        async with get_session() as sess:
             targetObj = await sess.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
@@ -190,7 +190,7 @@ class DBConfig:
     async def get_current_weight_val(self, platform_list: list[str]) -> dict[str, int]:
         res = {}
         cur_time = _get_time()
-        async with create_session() as sess:
+        async with get_session() as sess:
             targets = (
                 await sess.scalars(
                     select(Target)
@@ -209,7 +209,7 @@ class DBConfig:
         return res
 
     async def get_platform_target_subscribers(self, platform_name: str, target: T_Target) -> list[UserSubInfo]:
-        async with create_session() as sess:
+        async with get_session() as sess:
             query = (
                 select(Subscribe)
                 .join(Target)
@@ -230,7 +230,7 @@ class DBConfig:
         self,
     ) -> dict[str, dict[str, PlatformWeightConfigResp]]:
         res: dict[str, dict[str, PlatformWeightConfigResp]] = defaultdict(dict)
-        async with create_session() as sess:
+        async with get_session() as sess:
             query = select(Target)
             targets = (await sess.scalars(query)).all()
             query = select(ScheduleTimeWeight).options(selectinload(ScheduleTimeWeight.target))

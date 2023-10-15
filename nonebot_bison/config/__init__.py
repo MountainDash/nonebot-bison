@@ -1,3 +1,4 @@
+from . import migrations as migrations
 from .db_config import config as config
 from .utils import NoSuchUserException as NoSuchUserException
 from .utils import NoSuchTargetException as NoSuchTargetException

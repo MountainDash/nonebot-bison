@@ -65,7 +65,7 @@ def mock_platform_without_cats_tags(app: App):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
+                self,
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
@@ -127,7 +127,7 @@ def mock_platform(app: App):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
+                self,
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
@@ -194,7 +194,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
+                self,
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
@@ -250,7 +250,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform_2",
+                self,
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
@@ -314,7 +314,7 @@ def mock_status_change(app: App):
             return []
 
         async def parse(self, raw_post) -> "Post":
-            return Post("mock_status", raw_post["text"], "")
+            return Post(self, raw_post["text"], "")
 
         def get_category(self, raw_post):
             return raw_post["cat"]
@@ -512,7 +512,7 @@ async def test_batch_fetch_new_message(app: App):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                "mock_platform",
+                self,
                 raw_post["text"],
                 "http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
@@ -582,7 +582,7 @@ async def test_batch_fetch_compare_status(app: App):
         enable_tag = False
         schedule_type = "interval"
         schedule_kw = {"seconds": 10}
-        has_target = False
+        has_target = True
         categories = {
             Category(1): "转发",
             Category(2): "视频",
@@ -607,7 +607,7 @@ async def test_batch_fetch_compare_status(app: App):
             return []
 
         async def parse(self, raw_post) -> "Post":
-            return Post("mock_status", raw_post["text"], "")
+            return Post(self, raw_post["text"], "")
 
         def get_category(self, raw_post):
             return raw_post["cat"]

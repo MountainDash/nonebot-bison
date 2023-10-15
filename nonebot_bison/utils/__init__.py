@@ -11,6 +11,7 @@ from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 from .http import http_client
 from .context import ProcessContext
 from ..plugin_config import plugin_config
+from .image import pic_merge, pic_url_to_image
 from .scheduler_config import SchedulerConfig, scheduler
 
 __all__ = [
@@ -21,6 +22,8 @@ __all__ = [
     "html_to_text",
     "SchedulerConfig",
     "scheduler",
+    "pic_merge",
+    "pic_url_to_image",
 ]
 
 

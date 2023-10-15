@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme import AbstractTheme, ThemeRenderError, check_htmlrender_plugin_enable
 
 if TYPE_CHECKING:
@@ -41,6 +42,9 @@ class Ht2iTheme(AbstractTheme):
         if post.url:
             msgs.append(Text(f"详情: {post.url}"))
         if post.images:
-            msgs.extend(map(Image, post.images))
+            pics = post.images
+            if is_pics_mergable(pics):
+                pics = await pic_merge(list(pics), post.platform.client)
+            msgs.extend(map(Image, pics))
 
         return msgs

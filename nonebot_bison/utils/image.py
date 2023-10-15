@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import TypeGuard
 from functools import partial
 
 from PIL import Image
@@ -88,3 +89,7 @@ async def pic_merge(pics: list[str | bytes], http_client: AsyncClient) -> list[s
     pics.insert(0, target_io.getvalue())
 
     return pics
+
+
+def is_pics_mergable(imgs: list) -> TypeGuard[list[str | bytes]]:
+    return all(isinstance(img, str | bytes) for img in imgs)

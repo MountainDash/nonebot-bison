@@ -27,6 +27,7 @@ def ff14_newdata_json_1():
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_newdata_json_1):
+    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
     newdata = respx.get(
@@ -40,8 +41,9 @@ async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_new
     newdata.mock(return_value=Response(200, json=ff14_newdata_json_1))
     res = await ff14.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert newdata.called
-    post = res[0][1][0]
-    assert post.target_type == "ff14"
-    assert post.text == "最终幻想XIV 银质坠饰 ＜友谊永存＞预售开启！\n最终幻想XIV 银质坠饰 ＜友谊永存＞现已开启预售！"
+    post: Post = res[0][1][0]
+    assert post.platform.name == "最终幻想XIV官方公告"
+    assert post.title == "最终幻想XIV 银质坠饰 ＜友谊永存＞预售开启！"
+    assert post.content == "最终幻想XIV 银质坠饰 ＜友谊永存＞现已开启预售！"
     assert post.url == "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/336870"
-    assert post.target_name == "最终幻想XIV官方公告"
+    assert post.nickname == "最终幻想XIV官方公告"

@@ -17,14 +17,16 @@ class BriefTheme(AbstractTheme):
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         if not post.title:
             raise ThemeRenderUnsupportError("Post has no title")
+        text = f"{post.title}\n\n"
+        text += f"来源: {post.platform.name} {post.nickname or ''}\n"
+        if post.url:
+            text += f"详情: {post.url}"
 
-        msgs: list[MessageSegmentFactory] = [Text(post.title)]
+        msgs: list[MessageSegmentFactory] = [Text(text)]
         if post.images:
             pics = post.images
             if is_pics_mergable(pics):
                 pics = await pic_merge(list(pics), post.platform.client)
             msgs.append(Image(pics[0]))
-        if post.url:
-            msgs.append(Text(post.url))
 
         return msgs

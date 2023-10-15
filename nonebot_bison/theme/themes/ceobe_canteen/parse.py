@@ -61,7 +61,7 @@ class CeobeCanteenTheme(AbstractTheme):
     name: Literal["ceobecanteen"] = "ceobecanteen"
 
     template_path: Path = Path(__file__).parent / "templates"
-    template_name: str = "announce.html.jinja"
+    template_name: str = "ceobe_canteen.html.jinja"
 
     def parse(self, post: "Post") -> CeobeCard:
         """解析 Post 为 CeobeCard"""
@@ -106,8 +106,12 @@ class CeobeCanteenTheme(AbstractTheme):
         except Exception as e:
             raise ThemeRenderError(f"Render error: {e}") from e
         msgs: list[MessageSegmentFactory] = [Image(img_raw)]
+
+        text = f"来源: {post.platform.name} {post.nickname or ''}\n"
+        if post.url:
+            text += f"详情: {post.url}"
+        msgs.append(Text(text))
+
         if post.images:
             msgs.extend(map(Image, post.images))
-        if post.url:
-            msgs.append(Text(post.url))
         return msgs

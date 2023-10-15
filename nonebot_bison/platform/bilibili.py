@@ -387,7 +387,7 @@ class BilibiliBangumi(StatusChange):
         if res_dict["code"] == 0:
             return {
                 "index": res_dict["result"]["media"]["new_ep"]["index"],
-                "index_show": res_dict["result"]["media"]["new_ep"]["index"],
+                "index_show": res_dict["result"]["media"]["new_ep"]["index_show"],
                 "season_id": res_dict["result"]["media"]["season_id"],
             }
         else:

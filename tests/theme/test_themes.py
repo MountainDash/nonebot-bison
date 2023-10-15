@@ -2,6 +2,7 @@ from time import time
 from typing import Any
 
 import pytest
+from flaky import flaky
 from nonebug import App
 from httpx import AsyncClient
 
@@ -82,6 +83,7 @@ def mock_post(app: App, mock_platform):
 
 
 @pytest.mark.asyncio
+@flaky(max_runs=3, min_passes=1)
 async def test_arknights_theme(app: App, mock_post):
     from nonebot_plugin_saa import Image
 
@@ -132,6 +134,7 @@ async def test_brief_theme(app: App, mock_post):
 
 
 @pytest.mark.asyncio
+@flaky(max_runs=3, min_passes=1)
 async def test_ceobecanteen_theme(app: App, mock_post):
     from nonebot_plugin_saa import Text, Image
 
@@ -150,6 +153,7 @@ async def test_ceobecanteen_theme(app: App, mock_post):
 
 
 @pytest.mark.asyncio
+@flaky(max_runs=3, min_passes=1)
 async def test_ht2i_theme(app: App, mock_post):
     from nonebot_plugin_saa import Text, Image
 

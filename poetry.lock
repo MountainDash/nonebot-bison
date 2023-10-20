@@ -3090,8 +3090,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-<<<<<<< HEAD
-content-hash = "42cc6e26c67cfdb30f00021b3f77432f33df26b140b1902dba91f24f360596df"
-=======
 content-hash = "14e4ea4c547785a96327fc35e44e6592d0083eb1056211819717cd40fa543999"
->>>>>>> 05d01aee6c11cb1edc10d029fc879da1ae387b0e

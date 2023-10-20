@@ -10,7 +10,7 @@ jobs:
     name: Build Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build Frontend
         uses: ./.github/actions/build-frontend
@@ -30,7 +30,7 @@ jobs:
       # otherwise, read permission is required at least
       pull-requests: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download frontend files
         uses: actions/download-artifact@v3

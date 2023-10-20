@@ -77,8 +77,7 @@ class PlatformMeta(RegistryMeta):
         super().__init__(name, bases, namespace, **kwargs)
 
 
-class PlatformABCMeta(PlatformMeta, ABC):
-    ...
+class PlatformABCMeta(PlatformMeta, ABC): ...
 
 
 class Platform(metaclass=PlatformABCMeta, base=True):
@@ -99,26 +98,22 @@ class Platform(metaclass=PlatformABCMeta, base=True):
 
     @classmethod
     @abstractmethod
-    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
-        ...
+    async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None: ...
 
     @abstractmethod
-    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]:
-        ...
+    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]: ...
 
     async def do_fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]:
         return await catch_network_error(self.fetch_new_post, sub_unit) or []
 
     @abstractmethod
-    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
-        ...
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]: ...
 
     async def do_batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
         return await catch_network_error(self.batch_fetch_new_post, sub_units) or []
 
     @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post:
-        ...
+    async def parse(self, raw_post: RawPost) -> Post: ...
 
     async def do_parse(self, raw_post: RawPost) -> Post:
         "actually function called"
@@ -360,20 +355,16 @@ class StatusChange(Platform, abstract=True):
         pass
 
     @abstractmethod
-    async def get_status(self, target: Target) -> Any:
-        ...
+    async def get_status(self, target: Target) -> Any: ...
 
     @abstractmethod
-    async def batch_get_status(self, targets: list[Target]) -> list[Any]:
-        ...
+    async def batch_get_status(self, targets: list[Target]) -> list[Any]: ...
 
     @abstractmethod
-    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]:
-        ...
+    def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]: ...
 
     @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post:
-        ...
+    async def parse(self, raw_post: RawPost) -> Post: ...
 
     async def _handle_status_change(
         self, new_status: Any, sub_unit: SubUnit

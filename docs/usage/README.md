@@ -32,22 +32,22 @@ next: /usage/easy-use
 - `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`False`会在用到浏览器时自动下载，
   默认`True`
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，不设置或为空时默认值为 `http://localhost:<Bot运行在的端口>/bison/`
-::: warning
-请注意，该网址**并不能直接访问**Bison 的后台管理网页，正确的访问方法请参见[私聊机器人获取后台地址](#私聊机器人获取后台地址)
-:::
-::: tip 配置建议
+  ::: warning
+  请注意，该网址**并不能直接访问**Bison 的后台管理网页，正确的访问方法请参见[私聊机器人获取后台地址](#私聊机器人获取后台地址)
+  :::
+  ::: tip 配置建议
   请选择你的部署情况：
-    <div class="outer_url_help">
-        <input type="checkbox" id="docker" v-model="docker"/>
-        <label for="docker">使用容器部署</label>
-        <input type="checkbox" id="server" v-model="server"/>
-        <label for="server">部署在服务器上</label>
-        <input type="checkbox" id="reverse-proxy" v-model="reverseProxy"/>
-        <label for="reverse-proxy">启用反代</label>
-    </div>
-    下面是配置建议：<br>
-    <div v-html="outerUrlHelp"></div>
-:::
+  <div class="outer_url_help">
+  <input type="checkbox" id="docker" v-model="docker"/>
+  <label for="docker">使用容器部署</label>
+  <input type="checkbox" id="server" v-model="server"/>
+  <label for="server">部署在服务器上</label>
+  <input type="checkbox" id="reverse-proxy" v-model="reverseProxy"/>
+  <label for="reverse-proxy">启用反代</label>
+  </div>
+  下面是配置建议：<br>
+  <div v-html="outerUrlHelp"></div>
+  :::
 
 - `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的 warning 级以下的 log，如果你的 bot 只运行了这个插件可以考虑
   开启，默认关

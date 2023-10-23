@@ -144,7 +144,7 @@ Bison 提供了一个网页管理订阅的功能，你可以在网页上查看�
 ::: tip Bison 给出的链接无效？
 Bison 所给的链接中的 ip 和 port 是`BISON_OUTER_URL`配置决定的，也就是说 Bison 本身不能获取服务器的 ip 与自身的 port，所以 Bison 给出的链接可能是无效的。你可以在`BISON_OUTER_URL`中设置你的服务器 ip 与 port，或者直接修改 Bison 给出的链接为正确的`http://<ip>:<port>/bison/...`来进入网页管理订阅的界面。
 
-参见[详细介绍-配置](usage/#配置)的`BISON_OUTER_URL`部分
+参见[详细介绍-配置](/usage/#配置)的`BISON_OUTER_URL`部分
 :::
 ::: tip 认证失败？
 :bug:

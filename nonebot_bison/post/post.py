@@ -31,8 +31,8 @@ class Post(AbstractPost):
     """标题"""
     images: list[str | bytes | Path | BytesIO] | None = None
     """图片列表"""
-    timestamp: int | None = None
-    """发布/获取时间戳"""
+    timestamp: float | None = None
+    """发布/获取时间戳, 秒"""
     url: str | None = None
     """来源链接"""
     avatar: str | bytes | Path | BytesIO | None = None

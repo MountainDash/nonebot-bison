@@ -1,11 +1,11 @@
-from datetime import datetime
-from typing import Literal, cast
 from collections import defaultdict
+from typing import Literal, TypeVar, cast
 
-from httpx import AsyncClient
 from nonebot.log import logger
 from pydantic import BaseModel
+from hishel import AsyncCacheClient
 from expiringdict import ExpiringDict
+from httpx import Response, AsyncClient
 
 from ..post import Post
 from .platform import NewMessage
@@ -20,6 +20,9 @@ class CeobeCanteenSchedConf(SchedulerConfig):
     schedule_type = "interval"
     # lwt の 推荐间隔
     schedule_setting = {"seconds": 15}
+
+    def __init__(self):
+        self.default_http_client = AsyncCacheClient()
 
 
 class CeobeTarget(BaseModel):
@@ -120,6 +123,20 @@ class CookiesResponse(BaseModel):
     data: list[CeobeCookie]
 
 
+class CombIdResponse(BaseModel):
+    code: int
+    message: str
+    data: dict[Literal["datasource_comb_id"], str]
+
+
+class CookieIdResponse(BaseModel):
+    cookie_id: str
+    update_cookie_id: str
+
+
+ResponseModel = TypeVar("ResponseModel", bound=CookiesResponse | CombIdResponse | CookieIdResponse)
+
+
 class CeobeCanteen(NewMessage):
     enable_tag: bool = False
     platform_name: str = "ceobecanteen"
@@ -128,6 +145,7 @@ class CeobeCanteen(NewMessage):
     is_common: bool = False
     scheduler = CeobeCanteenSchedConf
     has_target: bool = True
+    use_batch: bool = True
 
     categories: dict[int, str] = {1: "普通", 2: "转发"}
 
@@ -135,7 +153,6 @@ class CeobeCanteen(NewMessage):
     cached_cookie_id: str | None = None
     cached_cookies: list[CeobeCookie] = []
     cached_targets: list[Target] = []
-    last_modified: str | None = None
 
     async def is_target_changed(self, targets: list[Target]) -> bool:
         """判断target列表是否发生变化"""
@@ -147,67 +164,69 @@ class CeobeCanteen(NewMessage):
 
         return set(targets) != set(self.cached_targets)
 
+    def process_response(self, response: Response, parse_model: type[ResponseModel]) -> ResponseModel:
+        response.raise_for_status()
+        data = parse_model.parse_obj(response.json())
+        if not isinstance(data, CookieIdResponse) and data.code != 0:
+            raise self.ParseTargetException(f"获取饼数据失败: {data.message}")
+        return data
+
     async def get_comb_id(self, targets: list[Target]):
         if not await self.is_target_changed(targets) and self.cached_comb_id is not None:
+            logger.trace(f"小刻食堂组合Id未发生变化, 使用缓存: {self.cached_comb_id}")
             return self.cached_comb_id
 
         payload = {"datasource_push": targets}
+        logger.trace(f"请求: {payload}")
+        logger.trace(f"client type: {type(self.client)}")
         comb_res = await self.client.post(
-            "https://server.ceobecanteen.top/api/v1/canteen/user/getDatasourceComb", data=payload
+            "https://server.ceobecanteen.top/api/v1/canteen/user/getDatasourceComb", json=payload
         )
-        comb_res.raise_for_status()
-        comb_id: str = comb_res.json()["data"].get("datasource_comb_id", "<err>")
-        if comb_id == "<err>":
+
+        comb_id = self.process_response(comb_res, CombIdResponse).data["datasource_comb_id"]
+        if not comb_id:
             raise self.ParseTargetException(f"未找到对应组合Id: {targets}")
         self.cached_targets = targets
+        logger.trace(f"更新comb_id: {self.cached_comb_id} -> {comb_id}")
         self.cached_comb_id = comb_id
         return self.cached_comb_id
 
     async def get_cookie_id(self, comb_id: str):
         if self.cached_comb_id == comb_id and self.cached_cookie_id is not None:
+            logger.trace(f"小刻食堂饼Id未发生变化, 使用缓存: {self.cached_cookie_id}")
             return self.cached_cookie_id
 
-        cookie_res = await self.client.get(f"http://cdn-dev.ceobecanteen.top/datasource-comb/{comb_id}")
-        cookie_res.raise_for_status()
-        if "error" in cookie_res.json():
-            raise self.ParseTargetException(f"未找到对应饼Id: {comb_id}")
-        cookie_id = cookie_res.json()["cookie_id"]
+        cookie_res = await self.client.get(f"http://cdn.ceobecanteen.top/datasource-comb/{comb_id}")
+
+        cookie_id = self.process_response(cookie_res, CookieIdResponse).cookie_id
+        logger.trace(f"更新cookie_id: {self.cached_cookie_id} -> {cookie_id}")
         self.cached_cookie_id = cookie_id
         return self.cached_cookie_id
 
     async def get_cookies(self, comb_id: str, cookie_id: str):
         if self.cached_comb_id == comb_id and self.cached_cookie_id == cookie_id:
+            logger.trace(f"小刻食堂饼未发生变化, 使用缓存: {self.cached_cookies}")
             return self.cached_cookies
 
         params = {
             "datasource_comb_id": comb_id,
             "cookie_id": cookie_id,
         }
-        # 添加缓存头
-        since_time = self.last_modified or datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
-        headers = {
-            "If-Modified-Since": since_time,
-        }
         data_res = await self.client.get(
-            "https://server.ceobecanteen.top/api/v1/cdn/cookie/mainList/cookieList", params=params, headers=headers
+            "https://server.ceobecanteen.top/api/v1/cdn/cookie/mainList/cookieList", params=params
         )
-        if data_res.status_code == 304:
-            self.last_modified = data_res.headers.get("Last-Modified")
-            return self.cached_cookies
-        data_res.raise_for_status()
-        data = CookiesResponse.parse_obj(data_res.json())
-        if data.code != "00000":
-            raise self.ParseTargetException(f"获取饼数据失败: {data_res.json()}")
-        self.cached_cookies = data.data
-        self.last_modified = data_res.headers.get("Last-Modified")
+
+        cookies = self.process_response(data_res, CookiesResponse).data
+        self.cached_cookies = cookies
         return self.cached_cookies
 
     @classmethod
     async def _refresh_datasource_cache(cls):
-        res = await http_client.get("https://server.ceobecanteen.top/api/v1/canteen/config/datasource/list")
+        res = await http_client().get("https://server.ceobecanteen.top/api/v1/canteen/config/datasource/list")
         res.raise_for_status()
         data = DataSourceResponse.parse_obj(res.json())
-        if data.code != "00000":
+        logger.debug(f"小刻食堂获取数据源列表: {data}")
+        if data.code != 0:
             logger.warning(f"小刻食堂获取数据源列表失败: {data.message}")
             raise RuntimeError(f"小刻食堂获取数据源列表失败: {data.message}")
         for item in data.data:
@@ -222,15 +241,17 @@ class CeobeCanteen(NewMessage):
 
     @classmethod
     async def get_datasource_by_name(cls, target_name: str) -> CeobeTarget | None:
-        for target in await cls.datasource_cache():
+        datasources = await cls.datasource_cache()
+        for uuid, target in datasources.items():
+            logger.debug(f"小刻食堂target: {target}")
             assert isinstance(target, CeobeTarget)
             if target.nickname == target_name:
-                return cast(CeobeTarget, _datasource_cache[target])
+                return cast(CeobeTarget, _datasource_cache[uuid])
 
-        for target in await cls.datasource_cache(force_refresh=True):
+        for uuid, target in await cls.datasource_cache(force_refresh=True):
             assert isinstance(target, CeobeTarget)
             if target.nickname == target_name:
-                return cast(CeobeTarget, _datasource_cache[target])
+                return cast(CeobeTarget, _datasource_cache[uuid])
         return None
 
     @classmethod
@@ -247,11 +268,11 @@ class CeobeCanteen(NewMessage):
         return ceobe_target.nickname if ceobe_target else None
 
     @classmethod
-    async def parse_target(cls, target_string: str) -> Target:
-        datasource = await cls.get_datasource_by_name(target_string)
+    async def parse_target(cls, target_nickname: str) -> Target:
+        datasource = await cls.get_datasource_by_name(target_nickname)
         if datasource is None:
-            logger.warning(f"小刻食堂未找到数据源: {target_string}")
-            raise cls.ParseTargetException(f"小刻食堂未找到数据源: {target_string}")
+            logger.warning(f"小刻食堂未找到数据源: {target_nickname}")
+            raise cls.ParseTargetException(f"小刻食堂未找到数据源: {target_nickname}")
         return Target(datasource.unique_id)
 
     async def get_uuid_by_cookie_source(self, source: CeobeSource):
@@ -262,6 +283,7 @@ class CeobeCanteen(NewMessage):
 
     async def batch_get_sub_list(self, targets: list[Target]) -> list[list[CeobeCookie]]:
         cookies = await self._get_cookies_by_targets(targets)
+        logger.trace(f"获取小刻食堂饼列表: {cookies}")
         dispatch_cookies: defaultdict[Target, list[CeobeCookie]] = defaultdict(list)
         for cookie in cookies:
             uuid = await self.get_uuid_by_cookie_source(cookie.source)
@@ -274,9 +296,11 @@ class CeobeCanteen(NewMessage):
 
         return [dispatch_cookies[target] for target in targets]
 
-    async def _get_cookies_by_targets(self, targets: list[Target]):
+    async def _get_cookies_by_targets(self, targets: list[Target]) -> list[CeobeCookie]:
         comb_id = await self.get_comb_id(targets)
         cookie_id = await self.get_cookie_id(comb_id)
+        if not cookie_id:
+            return []
         return await self.get_cookies(comb_id, cookie_id)
 
     def get_tags(self, _: CeobeCookie) -> None:

@@ -1,12 +1,13 @@
 import random
 import string
+from datetime import timedelta
 
-from expiringdict import ExpiringDict
+from expiringdictx import ExpiringDict
 
 
 class TokenManager:
     def __init__(self):
-        self.token_manager = ExpiringDict(max_len=100, max_age_seconds=60 * 10)
+        self.token_manager = ExpiringDict[str, tuple](capacity=100, default_age=timedelta(minutes=10))
 
     def get_user(self, token: str) -> tuple | None:
         res = self.token_manager.get(token)

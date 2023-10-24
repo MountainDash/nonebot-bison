@@ -159,3 +159,32 @@ async def test_send_with_render(
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
     r = await post2.generate_messages()
     assert r
+
+
+@pytest.mark.render()
+@respx.mock
+async def test_parse_title(
+    app: App,
+):
+    from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.platform.arknights import Arknights, BulletinListItem
+
+    detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")
+
+    ark = Arknights(ProcessContext(), AsyncClient())
+
+    mock_detail = get_json("arknights-detail-805")
+    mock_detail["data"]["header"] = ""
+
+    detail_router.mock(return_value=Response(200, json=mock_detail))
+
+    mock_raw_post = BulletinListItem(
+        cid="8397",
+        title="【公开招募】\n标签刷新通知",
+        category=1,
+        displayTime="07-30 10:00:00",
+        updatedAt=1627582800,
+        sticky=False,
+    )
+    post = await ark.parse(mock_raw_post)
+    assert post.title == "【公开招募】 - 标签刷新通知"

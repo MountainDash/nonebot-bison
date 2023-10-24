@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup as bs
 from pydantic import Field, BaseModel
 
 from ..post import Post
+from ..utils import text_fletten
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
 from ..utils.scheduler_config import SchedulerConfig
@@ -93,17 +94,14 @@ class Arknights(NewMessage):
         )
         data = ArkBulletinResponse.parse_obj(raw_data.json()).data
 
-        def title_escape(text: str) -> str:
-            return text.replace("\n", " - ")
-
         # gen title, content
         if data.header:
             # header是title的更详细版本
             # header会和content一起出现
-            title = data.header
+            title = text_fletten(data.header, replace=" - ")
         else:
             # 只有一张图片
-            title = title_escape(data.title)
+            title = text_fletten(data.title, replace=" - ")
 
         return Post(
             self,

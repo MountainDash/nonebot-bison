@@ -134,7 +134,7 @@ async def test_theme_no_enable_use_browser(app: App, mock_post):
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_arknights_theme(app: App, mock_post):
-    from nonebot_plugin_saa import Image
+    from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.theme import theme_manager
     from nonebot_bison.theme.themes.arknights import ArknightsTheme
@@ -144,8 +144,9 @@ async def test_arknights_theme(app: App, mock_post):
     assert isinstance(arknights_theme, ArknightsTheme)
     assert arknights_theme.name == "arknights"
     res = await arknights_theme.render(mock_post)
-    assert len(res) == 1
+    assert len(res) == 2
     assert isinstance(res[0], Image)
+    assert res[1] == Text("前往:http://t.tt/1")
 
 
 @pytest.mark.asyncio

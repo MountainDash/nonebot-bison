@@ -20,7 +20,7 @@ async def _do_send(send_target: PlatformTarget, msg: Sendable):
         await msg.send_to(send_target)
     except ActionFailed:  # TODO: catch exception of other adapters
         await refresh_bots()
-        logger.warning("send msg failed, refresh bots")
+        logger.warning(f"send msg {id(msg)} failed, refresh bots")
 
 
 async def do_send_msgs():
@@ -34,6 +34,7 @@ async def do_send_msgs():
         # So, read from queue first then pop from it
         send_target, msg_factory, retry_time = QUEUE[0]
         try:
+            logger.debug(f"send msg {id(msg_factory)}")
             await _do_send(send_target, msg_factory)
         except Exception as e:
             await asyncio.sleep(MESSGE_SEND_INTERVAL)
@@ -44,7 +45,7 @@ async def do_send_msgs():
                 msg_str = str(msg_factory)
                 if len(msg_str) > 50:
                     msg_str = msg_str[:50] + "..."
-                logger.warning(f"send msg err {e} {msg_str}")
+                logger.warning(f"send msg {id(msg_factory)} err {e} {msg_str}")
         else:
             # sleeping after popping may also cause re-execution error like above mentioned
             await asyncio.sleep(MESSGE_SEND_INTERVAL)

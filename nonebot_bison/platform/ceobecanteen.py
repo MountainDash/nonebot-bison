@@ -321,10 +321,14 @@ class CeobeCanteen(NewMessage):
     async def parse(self, raw_post: CeobeCookie) -> Post:
         raw_pics = raw_post.default_cookie.images or []
         pics = [image.origin_url for image in raw_pics]
+        target = await self.get_datasource_by_uuid(raw_post.source.data)
         return Post(
             self,
             raw_post.default_cookie.text,
             url=raw_post.item.url,
             nickname=raw_post.datasource,
             images=list(pics),
+            timestamp=raw_post.timestamp.platform or raw_post.timestamp.fetcher,
+            avatar=target.avatar if target else None,
+            description=target.platform if target else None,
         )

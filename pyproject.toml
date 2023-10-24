@@ -37,6 +37,7 @@ pyjwt = "^2.1.0"
 python-socketio = "^5.4.0"
 tinydb = "^4.3.0"
 qrcode = "^7.4.2"
+hishel = "^0.0.14"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

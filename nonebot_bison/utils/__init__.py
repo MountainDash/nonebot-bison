@@ -108,3 +108,8 @@ def decode_unicode_escapes(s: str):
 
     regex = re.compile(r"\\[rnt]|\\u[0-9a-fA-F]{4}")
     return regex.sub(decode_match, s)
+
+
+def text_fletten(text: str, *, banned: str = "\n\r\t", replace: str = " ") -> str:
+    """将文本中的格式化字符去除"""
+    return "".join(c if c not in banned else replace for c in text)

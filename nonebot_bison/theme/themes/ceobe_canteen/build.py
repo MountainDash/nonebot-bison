@@ -4,12 +4,18 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 import jinja2
+from httpx import AsyncClient
 from pydantic import BaseModel
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.compat import model_validator
+<<<<<<< HEAD
 from nonebot_bison.theme.utils import convert_to_qr
 from nonebot_bison.utils.image import pic_merge, is_pics_mergable
+=======
+from nonebot_bison.utils import pic_merge, is_pics_mergable
+from nonebot_bison.theme.utils import convert_to_qr, web_embed_image
+>>>>>>> 3c438a4 (:sparkles: 适配ceobecanteen平台)
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -45,10 +51,30 @@ class CeoboContent(BaseModel):
         return values
 
 
+class CeoboRetweet(BaseModel):
+    """卡片的转发部分
+
+    author: 原作者
+    image: 图片链接
+    content: 文字内容
+    """
+
+    image: str | None
+    content: str | None
+    author: str
+
+    @model_validator(mode="before")
+    def check(cls, values):
+        if values["image"] is None and values["content"] is None:
+            raise ValueError("image and content cannot be both None")
+        return values
+
+
 class CeobeCard(BaseModel):
     info: CeobeInfo
     content: CeoboContent
     qr: str | None
+    retweet: CeoboRetweet | None
 
 
 class CeobeCanteenTheme(Theme):
@@ -63,8 +89,8 @@ class CeobeCanteenTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "ceobe_canteen.html.jinja"
 
-    def parse(self, post: "Post") -> CeobeCard:
-        """解析 Post 为 CeobeCard"""
+    async def parse(self, post: "Post") -> tuple[CeobeCard, list[str | bytes | Path | BytesIO]]:
+        """解析 Post 为 CeobeCard与处理好的图片列表"""
         if not post.nickname:
             raise ThemeRenderUnsupportError("post.nickname is None")
         if not post.timestamp:
@@ -73,15 +99,49 @@ class CeobeCanteenTheme(Theme):
             datasource=post.nickname, time=datetime.fromtimestamp(post.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         )
 
-        head_pic = post.images[0] if post.images else None
-        if head_pic is not None and not isinstance(head_pic, str):
-            raise ThemeRenderUnsupportError("post.images[0] is not str")
+        async def merge_and_extract_head_pic(
+            images: list[str | bytes | Path | BytesIO], client: AsyncClient
+        ) -> tuple[list[str | bytes | Path | BytesIO], str]:
+            if is_pics_mergable(images):
+                pics = await pic_merge(images, client)
+            else:
+                pics = images
+
+            head_pic = web_embed_image(pics[0]) if not isinstance(pics[0], str) else pics[0]
+
+            return list(pics), head_pic
+
+        images: list[str | bytes | Path | BytesIO] = []
+        head_pic: str | bytes | None = None
+        if post.images:
+            images, head_pic = await merge_and_extract_head_pic(post.images, post.platform.client)
 
         content = CeoboContent(image=head_pic, text=post.content)
-        return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))
+
+        retweet: CeoboRetweet | None = None
+        if post.repost:
+            repost_head_pic: str | None = None
+            if post.repost.images:
+                repost_images, repost_head_pic = await merge_and_extract_head_pic(
+                    post.repost.images, post.platform.client
+                )
+                images.extend(repost_images)
+
+            repost_nickname = f"@{post.repost.nickname}:" if post.repost.nickname else ""
+            retweet = CeoboRetweet(image=repost_head_pic, content=post.repost.content, author=repost_nickname)
+
+        return (
+            CeobeCard(
+                info=info,
+                content=content,
+                qr=web_embed_image(convert_to_qr(post.url or "No URL", back_color=(240, 236, 233))),
+                retweet=retweet,
+            ),
+            images,
+        )
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        ceobe_card = self.parse(post)
+        ceobe_card, merged_images = await self.parse(post)
         from nonebot_plugin_htmlrender import get_new_page
 
         template_env = jinja2.Environment(

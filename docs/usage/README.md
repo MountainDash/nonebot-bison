@@ -45,8 +45,8 @@ next: /usage/easy-use
   <input type="checkbox" id="reverse-proxy" v-model="reverseProxy"/>
   <label for="reverse-proxy">启用反代</label>
   </div>
-  下面是配置建议：<br>
-  <div v-html="outerUrlHelp"></div>
+  下面是配置建议：
+  <div class="outer_url_help" v-html="outerUrlHelp"></div>
   :::
 
 - `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的 warning 级以下的 log，如果你的 bot 只运行了这个插件可以考虑
@@ -244,7 +244,12 @@ const outerUrlHelp = computed(() => {
 </script>
 
 <style>
-.outer_url_help input {
-  margin-left: 10px;
+.outer_url_help {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.outer_url_help label {
+  margin-right: 15px;
 }
 </style>

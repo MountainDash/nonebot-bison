@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import respx
 import pytest
@@ -6,6 +7,9 @@ from nonebug.app import App
 from httpx import Response, AsyncClient
 
 from .utils import get_json
+
+if TYPE_CHECKING:
+    from nonebot_bison.platform.bilibili import Bilibililive
 
 
 @pytest.fixture()
@@ -84,7 +88,7 @@ async def test_fetch_first_live(bili_live, dummy_only_open_user_subinfo):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_subinfo):
+async def test_fetch_bililive_only_live_open(bili_live: "Bilibililive", dummy_only_open_user_subinfo):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
 
@@ -98,9 +102,10 @@ async def test_fetch_bililive_only_live_open(bili_live, dummy_only_open_user_sub
 
     target = Target("13164144")
 
+    bili_live.set_stored_data(target, None)
     res1 = await bili_live.batch_fetch_new_post([(SubUnit(target, [dummy_only_open_user_subinfo]))])
     assert bili_live_router.call_count == 1
-    assert len(res1[0][1]) == 0
+    assert len(res1) == 0
     # 直播状态更新-上播
     mock_bili_live_status["data"][target]["live_status"] = 1
     bili_live_router.mock(return_value=Response(200, json=mock_bili_live_status))

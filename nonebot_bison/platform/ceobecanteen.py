@@ -22,7 +22,7 @@ class CeobeCanteenSchedConf(SchedulerConfig):
     schedule_setting = {"seconds": 15}
 
     def __init__(self):
-        self.default_http_client = AsyncCacheClient()
+        self.default_http_client = AsyncCacheClient(headers={"Bot": "Nonebot-Bison"})
 
 
 class CeobeTarget(BaseModel):
@@ -117,10 +117,15 @@ class CeobeCookie(BaseModel):
     """数据源"""
 
 
+class CeobeData(BaseModel):
+    cookies: list[CeobeCookie]
+    next_page_id: str | None = None
+
+
 class CookiesResponse(BaseModel):
     code: int
     message: str
-    data: list[CeobeCookie]
+    data: CeobeData
 
 
 class CombIdResponse(BaseModel):
@@ -146,6 +151,7 @@ class CeobeCanteen(NewMessage):
     scheduler = CeobeCanteenSchedConf
     has_target: bool = True
     use_batch: bool = True
+    default_theme: str = "ceobecanteen"
 
     categories: dict[int, str] = {1: "普通", 2: "转发"}
 
@@ -166,6 +172,7 @@ class CeobeCanteen(NewMessage):
 
     def process_response(self, response: Response, parse_model: type[ResponseModel]) -> ResponseModel:
         response.raise_for_status()
+        logger.trace(f"小刻食堂请求结果: {response.json().get('message')} {parse_model=}")
         data = parse_model.parse_obj(response.json())
         if not isinstance(data, CookieIdResponse) and data.code != 0:
             raise self.ParseTargetException(f"获取饼数据失败: {data.message}")
@@ -177,8 +184,7 @@ class CeobeCanteen(NewMessage):
             return self.cached_comb_id
 
         payload = {"datasource_push": targets}
-        logger.trace(f"请求: {payload}")
-        logger.trace(f"client type: {type(self.client)}")
+        logger.trace(f"请求comb_id: {payload}")
         comb_res = await self.client.post(
             "https://server.ceobecanteen.top/api/v1/canteen/user/getDatasourceComb", json=payload
         )
@@ -187,45 +193,31 @@ class CeobeCanteen(NewMessage):
         if not comb_id:
             raise self.ParseTargetException(f"未找到对应组合Id: {targets}")
         self.cached_targets = targets
-        logger.trace(f"更新comb_id: {self.cached_comb_id} -> {comb_id}")
-        self.cached_comb_id = comb_id
-        return self.cached_comb_id
+        return comb_id
 
     async def get_cookie_id(self, comb_id: str):
-        if self.cached_comb_id == comb_id and self.cached_cookie_id is not None:
-            logger.trace(f"小刻食堂饼Id未发生变化, 使用缓存: {self.cached_cookie_id}")
-            return self.cached_cookie_id
-
         cookie_res = await self.client.get(f"http://cdn.ceobecanteen.top/datasource-comb/{comb_id}")
-
         cookie_id = self.process_response(cookie_res, CookieIdResponse).cookie_id
-        logger.trace(f"更新cookie_id: {self.cached_cookie_id} -> {cookie_id}")
-        self.cached_cookie_id = cookie_id
-        return self.cached_cookie_id
+        return cookie_id
 
     async def get_cookies(self, comb_id: str, cookie_id: str):
-        if self.cached_comb_id == comb_id and self.cached_cookie_id == cookie_id:
-            logger.trace(f"小刻食堂饼未发生变化, 使用缓存: {self.cached_cookies}")
-            return self.cached_cookies
-
         params = {
             "datasource_comb_id": comb_id,
             "cookie_id": cookie_id,
         }
         data_res = await self.client.get(
-            "https://server.ceobecanteen.top/api/v1/cdn/cookie/mainList/cookieList", params=params
+            "https://server-cdn.ceobecanteen.top/api/v1/cdn/cookie/mainList/cookieList", params=params
         )
 
-        cookies = self.process_response(data_res, CookiesResponse).data
-        self.cached_cookies = cookies
-        return self.cached_cookies
+        cookies = self.process_response(data_res, CookiesResponse).data.cookies
+        return cookies
 
     @classmethod
     async def _refresh_datasource_cache(cls):
         res = await http_client().get("https://server.ceobecanteen.top/api/v1/canteen/config/datasource/list")
         res.raise_for_status()
         data = DataSourceResponse.parse_obj(res.json())
-        logger.debug(f"小刻食堂获取数据源列表: {data}")
+        logger.debug(f"小刻食堂获取数据源列表: {len(data.data)}")
         if data.code != 0:
             logger.warning(f"小刻食堂获取数据源列表失败: {data.message}")
             raise RuntimeError(f"小刻食堂获取数据源列表失败: {data.message}")
@@ -276,14 +268,19 @@ class CeobeCanteen(NewMessage):
         return Target(datasource.unique_id)
 
     async def get_uuid_by_cookie_source(self, source: CeobeSource):
-        for target in await self.datasource_cache():
+        for target_uuid in await self.datasource_cache():
+            assert isinstance(target_uuid, str)
+            target = _datasource_cache[target_uuid]
             assert isinstance(target, CeobeTarget)
             if target.db_unique_key == source.data and target.datasource == source.type:
                 return target.unique_id
 
     async def batch_get_sub_list(self, targets: list[Target]) -> list[list[CeobeCookie]]:
+        if not isinstance(self.client, AsyncCacheClient):
+            logger.warning("小刻食堂缓存客户端不是AsyncCacheClient, 无法使用缓存，请反馈")
+
         cookies = await self._get_cookies_by_targets(targets)
-        logger.trace(f"获取小刻食堂饼列表: {cookies}")
+        logger.trace(f"获取小刻食堂饼列表: {len(cookies)}")
         dispatch_cookies: defaultdict[Target, list[CeobeCookie]] = defaultdict(list)
         for cookie in cookies:
             uuid = await self.get_uuid_by_cookie_source(cookie.source)
@@ -297,11 +294,21 @@ class CeobeCanteen(NewMessage):
         return [dispatch_cookies[target] for target in targets]
 
     async def _get_cookies_by_targets(self, targets: list[Target]) -> list[CeobeCookie]:
+        logger.trace(f"小刻食堂缓存: {self.cached_comb_id=} {self.cached_cookie_id=} {len(self.cached_cookies)=}")
         comb_id = await self.get_comb_id(targets)
         cookie_id = await self.get_cookie_id(comb_id)
-        if not cookie_id:
-            return []
-        return await self.get_cookies(comb_id, cookie_id)
+        if self.cached_cookie_id == cookie_id:
+            logger.trace(f"小刻食堂cookie_id未发生变化, 使用缓存: {cookie_id}")
+            return self.cached_cookies
+
+        cookies = await self.get_cookies(comb_id, cookie_id)
+
+        self.cached_comb_id = comb_id
+        self.cached_cookie_id = cookie_id
+        self.cached_cookies = cookies
+        logger.trace(f"获取后小刻食堂缓存: {self.cached_comb_id=} {self.cached_cookie_id=} {len(self.cached_cookies)=}")
+
+        return cookies
 
     def get_tags(self, _: CeobeCookie) -> None:
         return None
@@ -321,7 +328,8 @@ class CeobeCanteen(NewMessage):
     async def parse(self, raw_post: CeobeCookie) -> Post:
         raw_pics = raw_post.default_cookie.images or []
         pics = [image.origin_url for image in raw_pics]
-        target = await self.get_datasource_by_uuid(raw_post.source.data)
+        uuid = await self.get_uuid_by_cookie_source(raw_post.source)
+        target = await self.get_datasource_by_uuid(uuid) if uuid else None
         return Post(
             self,
             raw_post.default_cookie.text,

@@ -133,6 +133,7 @@ async def test_brief_theme(app: App, mock_post):
     assert isinstance(res[1], Image)
 
 
+@pytest.mark.render
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_ceobecanteen_theme(app: App, mock_post):
@@ -152,6 +153,7 @@ async def test_ceobecanteen_theme(app: App, mock_post):
     assert res[1] == Text("来源: Mock Platform Mock\n详情: http://t.tt/1")
 
 
+@pytest.mark.render
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_ht2i_theme(app: App, mock_post):

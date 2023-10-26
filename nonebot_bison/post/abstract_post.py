@@ -12,7 +12,7 @@ class AbstractPost(ABC):
 
     @abstractmethod
     async def generate(self) -> list[MessageSegmentFactory]:
-        "Generate MessageFactory list from this instance"
+        "Generate MessageSegmentFactory list from this instance"
         ...
 
     async def generate_messages(self) -> list[MessageFactory]:

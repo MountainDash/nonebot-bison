@@ -1,0 +1,145 @@
+from typing import cast
+from datetime import timedelta
+
+from nonebot import logger
+from hishel import AsyncCacheClient
+
+from ...post import Post
+from ..platform import NewMessage
+from .utils import process_response
+from ...utils import SchedulerConfig
+from ...types import Target, RawPost, Category
+from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
+from .cache import CeobeClient, SimpleCache, CeobeDataSourceCache
+from .models import CeobeCookie, CombIdResponse, CookiesResponse, CookieIdResponse
+
+
+class CeobeCanteenSchedConf(SchedulerConfig):
+    name = "ceobe_canteen"
+    schedule_type = "interval"
+    # lwt の 推荐间隔
+    schedule_setting = {"seconds": 15}
+
+    def __init__(self):
+        super().__init__()
+        self.default_http_client = CeobeClient(headers={"Bot": "Nonebot-Bison"})
+
+
+class CeobeCanteen(NewMessage):
+    enable_tag: bool = False
+    platform_name: str = "ceobecanteen"
+    name: str = "小刻食堂"
+    enabled: bool = True
+    is_common: bool = False
+    scheduler = CeobeCanteenSchedConf
+    has_target: bool = True
+    use_batch: bool = True
+    default_theme: str = "ceobecanteen"
+
+    categories: dict[Category, str] = {1: "普通", 2: "转发"}
+
+    data_source_cache = CeobeDataSourceCache()
+    cache_store = SimpleCache()
+
+    async def get_comb_id(self, targets: list[Target] | None = None, force_refresh: bool = False) -> str | None:
+        """获取数据源的组合id
+
+        如果不传入targets, 则请求所有数据源的组合id
+        """
+        if self.cache_store["comb_id"] is None or force_refresh:
+            target_uuids = targets or (await self.data_source_cache.get_all()).keys()
+            payload = {"datasource_push": list(target_uuids)}
+            logger.trace(payload)
+            resp = await self.client.post(
+                COMB_ID_URL,
+                json=payload,
+            )
+            comb_id = process_response(resp, CombIdResponse).data["datasource_comb_id"]
+            self.cache_store["comb_id"] = (comb_id, timedelta(hours=12))
+
+        return self.cache_store["comb_id"]
+
+    async def get_cookie_id(self, comb_id: str):
+        """根据comb_id获取cookie_id"""
+        resp = await self.client.get(f"{COOKIE_ID_URL}/{comb_id}")
+        cookie_id = process_response(resp, CookieIdResponse).cookie_id
+        return cookie_id
+
+    async def get_cookie(self, cookie_id: str, comb_id: str | None = None, force_refresh: bool = False):
+        """获取cookies"""
+
+        async def request():
+            parmas = {
+                "datasource_comb_id": comb_id or self.cache_store["comb_id"],
+                "cookie_id": cookie_id,
+            }
+            resp = await self.client.get(COOKIES_URL, params=parmas)
+            cookies = process_response(resp, CookiesResponse).data.cookies
+            return cookies
+
+        if cookie_id != self.cache_store["cookie_id"] or force_refresh:
+            cookies = await request()
+            self.cache_store["cookie_id"] = (cookie_id, timedelta(hours=1))
+            self.cache_store["cookies"] = (cookies, timedelta(hours=1))
+        elif self.cache_store["cookies"] is None:
+            cookies = await request()
+            self.cache_store["cookies"] = (cookies, timedelta(hours=1))
+
+        return cast(list[CeobeCookie] | None, self.cache_store["cookies"])
+
+    async def fetch_ceobe_cookies(self) -> list[CeobeCookie]:
+        comb_id = await self.get_comb_id()
+        if not comb_id:
+            return []
+        cookie_id = await self.get_cookie_id(comb_id)
+        cookies = await self.get_cookie(cookie_id)
+        if not cookies:
+            return []
+        return cookies
+
+    async def batch_get_sub_list(self, targets: list[Target]) -> list[list[CeobeCookie]]:
+        if not isinstance(self.client, AsyncCacheClient):
+            logger.warning("小刻食堂请求未使用AsyncCacheClient, 无法使用缓存，请反馈")
+
+        cookies = await self.fetch_ceobe_cookies()
+
+        dispatched_cookies: dict[Target, list[CeobeCookie]] = {}
+        for cookie in cookies:
+            ceobe_target = await self.data_source_cache.get_by_source(cookie.source)
+            if not ceobe_target:
+                continue
+            target = Target(ceobe_target.unique_id)
+            if target not in dispatched_cookies:
+                dispatched_cookies[target] = []
+            dispatched_cookies[target].append(cookie)
+
+        return [dispatched_cookies.get(target, []) for target in targets]
+
+    def get_tags(self, _: RawPost) -> None:
+        return
+
+    def get_category(self, post: CeobeCookie) -> Category:
+        if post.item.is_retweeted:
+            return Category(2)
+        return Category(1)
+
+    def get_id(self, post: CeobeCookie) -> str:
+        return post.item.id
+
+    def get_date(self, post: CeobeCookie) -> int:
+        return post.timestamp.fetcher
+
+    async def parse(self, raw_post: CeobeCookie) -> Post:
+        raw_pics = raw_post.default_cookie.images or []
+        pics = [image.origin_url for image in raw_pics]
+        target = await self.data_source_cache.get_by_source(raw_post.source)
+        return Post(
+            self,
+            raw_post.default_cookie.text,
+            url=raw_post.item.url,
+            nickname=raw_post.datasource,
+            images=list(pics),
+            timestamp=raw_post.timestamp.platform or raw_post.timestamp.fetcher,
+            avatar=target.avatar if target else None,
+            description=target.platform if target else None,
+        )

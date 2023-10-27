@@ -115,6 +115,18 @@ class CeobeCanteen(NewMessage):
 
         return [dispatched_cookies.get(target, []) for target in targets]
 
+    @classmethod
+    async def get_target_name(cls, _, uuid_target: Target) -> str:
+        ceobe_target = await cls.data_source_cache.get_by_unique_id(uuid_target)
+        return ceobe_target.nickname if ceobe_target else "UNKNOWN"
+
+    @classmethod
+    async def parse_target(cls, nickname: str) -> Target:
+        ceobe_target = await cls.data_source_cache.get_by_nickname(nickname)
+        if not ceobe_target:
+            raise cls.ParseTargetException(f"未找到小刻食堂数据源: {nickname}")
+        return Target(ceobe_target.unique_id)
+
     def get_tags(self, _: RawPost) -> None:
         return
 

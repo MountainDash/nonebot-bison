@@ -145,13 +145,16 @@ class CeobeCanteen(NewMessage):
         raw_pics = raw_post.default_cookie.images or []
         pics = [image.origin_url for image in raw_pics]
         target = await self.data_source_cache.get_by_source(raw_post.source)
+        timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
+        if timestamp:
+            timestamp /= 1000  # 从毫秒级转换到秒级
         return Post(
             self,
             raw_post.default_cookie.text,
             url=raw_post.item.url,
             nickname=raw_post.datasource,
             images=list(pics),
-            timestamp=raw_post.timestamp.platform or raw_post.timestamp.fetcher,
+            timestamp=timestamp,
             avatar=target.avatar if target else None,
             description=target.platform if target else None,
         )

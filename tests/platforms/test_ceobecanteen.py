@@ -153,3 +153,6 @@ async def test_batch_fetch_new_with_single(
     assert post3.avatar
     assert post3.nickname == "明日方舟-B站"
     assert post3.description
+    assert post3.platform.platform_name == "ceobecanteen"
+
+    await post3.generate_messages()

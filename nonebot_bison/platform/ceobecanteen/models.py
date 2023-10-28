@@ -73,11 +73,11 @@ class CeobeSource(BaseModel):
 
 class CeobeTimestamp(BaseModel):
     fetcher: int
-    """蹲饼时间"""
+    """蹲饼时间，毫秒"""
     platform_precision: Literal["none", "day", "hour", "minute", "second", "ms"]
     """平台时间精度"""
     platform: int | None = None
-    """平台时间戳"""
+    """平台时间戳，毫秒"""
 
 
 class CeobeCookie(BaseModel):

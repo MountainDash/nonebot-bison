@@ -1,3 +1,4 @@
+from asyncio import sleep
 from typing import TYPE_CHECKING
 
 import respx
@@ -27,6 +28,11 @@ def ceobecanteen(app: App):
     from nonebot_bison.platform import platform_manager
 
     return platform_manager["ceobecanteen"](ProcessContext(), AsyncClient())
+
+
+@pytest.fixture(scope="module")
+def dummy_target() -> str:
+    return "7d23708b-e424-418b-b4c4-43c370c3b6d0"
 
 
 @pytest.fixture(scope="module")
@@ -66,7 +72,28 @@ def ceobecanteen_cookies_1() -> dict:
 
 @pytest.mark.asyncio()
 @respx.mock
+async def test_simple_cache(app: App):
+    from datetime import timedelta
+
+    from nonebot_bison.platform.ceobecanteen.cache import SimpleCache
+
+    cache = SimpleCache()
+    cache["key"] = (1, timedelta(seconds=1))
+
+    assert cache["key"] == 1
+    assert cache.get("key", value_convert_func=str) == "1"
+    await sleep(1)
+    assert not cache["key"]
+
+    cache.set("key2", 2, timedelta(seconds=1))
+    assert cache["key2"] == 2
+
+
+@pytest.mark.asyncio()
+@respx.mock
 async def test_batch_fetch_new_with_single(
+    app: App,
+    dummy_target,
     dummy_only_open_user_subinfo,
     ceobecanteen: "CeobeCanteen",
     ceobecanteen_targets,
@@ -77,7 +104,7 @@ async def test_batch_fetch_new_with_single(
     ceobecanteen_cookies_1,
 ):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit
 
     targets_router = respx.get("https://server.ceobecanteen.top/api/v1/canteen/config/datasource/list")
     comb_id_router = respx.post("https://server.ceobecanteen.top/api/v1/canteen/user/getDatasourceComb")
@@ -89,15 +116,16 @@ async def test_batch_fetch_new_with_single(
     cookie_id_router.mock(return_value=Response(200, json=ceobecanteen_cookie_id_0))
     cookies_router.mock(return_value=Response(200, json=ceobecanteen_cookies_0))
 
-    target = Target("7d23708b-e424-418b-b4c4-43c370c3b6d0")
+    assert await ceobecanteen.get_target_name(None, dummy_target) == "明日方舟-B站"
+    assert await ceobecanteen.parse_target("明日方舟-B站") == dummy_target
 
-    res1 = await ceobecanteen.batch_fetch_new_post([SubUnit(target, [dummy_only_open_user_subinfo])])
+    res1 = await ceobecanteen.batch_fetch_new_post([SubUnit(dummy_target, [dummy_only_open_user_subinfo])])
     assert comb_id_router.called
     assert cookie_id_router.called
     assert cookies_router.called
     assert res1 == []
 
-    res2 = await ceobecanteen.batch_fetch_new_post([SubUnit(target, [dummy_only_open_user_subinfo])])
+    res2 = await ceobecanteen.batch_fetch_new_post([SubUnit(dummy_target, [dummy_only_open_user_subinfo])])
     assert comb_id_router.call_count == 1
     assert cookie_id_router.call_count == 2
     assert cookies_router.call_count == 1
@@ -105,7 +133,7 @@ async def test_batch_fetch_new_with_single(
 
     cookie_id_router.mock(return_value=Response(200, json=ceobecanteen_cookie_id_1))
     cookies_router.mock(return_value=Response(200, json=ceobecanteen_cookies_1))
-    res3 = await ceobecanteen.batch_fetch_new_post([SubUnit(target, [dummy_only_open_user_subinfo])])
+    res3 = await ceobecanteen.batch_fetch_new_post([SubUnit(dummy_target, [dummy_only_open_user_subinfo])])
     assert comb_id_router.call_count == 1
     assert cookie_id_router.call_count == 3
     assert cookies_router.call_count == 2
@@ -123,5 +151,5 @@ async def test_batch_fetch_new_with_single(
     assert post3.timestamp
     assert post3.url
     assert post3.avatar
-    assert post3.nickname
+    assert post3.nickname == "明日方舟-B站"
     assert post3.description

@@ -66,7 +66,7 @@ def register_get_token_handler():
     @get_token.handle()
     async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):
         token = tm.get_user_token((event.get_user_id(), event.sender.nickname))
-        await get_token.finish(f"请访问: {plugin_config.bison_outer_url}auth/{token}")
+        await get_token.finish(f"请访问: {plugin_config.outer_url}auth/{token}")
 
     get_token.__help__name__ = "获取后台管理地址"  # type: ignore
     get_token.__help__info__ = "获取管理bot后台的地址，该地址会在一段时间过后过期，请不要泄漏该地址"  # type: ignore

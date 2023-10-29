@@ -31,14 +31,24 @@ next: /usage/easy-use
     :::
 - `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`False`会在用到浏览器时自动下载，
   默认`True`
-- `BISON_OUTER_URL`: 从外部访问服务器的地址，默认为`http://localhost:8080/bison/`，如果你的插件部署
-  在服务器上，建议配置为`http://<你的服务器ip>:8080/bison/`
+- `BISON_OUTER_URL`: 从外部访问服务器的地址，不设置或为空时默认值为 `http://localhost:<Bot运行在的端口>/bison/`
   ::: warning
   请注意，该网址**并不能直接访问**Bison 的后台管理网页，正确的访问方法请参见[私聊机器人获取后台地址](#私聊机器人获取后台地址)
   :::
-  ::: tip
-  如果需要从外网或者 Docker 容器外访问后台页面，请确保`HOST=0.0.0.0`
+  ::: tip 配置建议
+  请选择你的部署情况：
+  <div class="outer_url_help">
+  <input type="checkbox" id="docker" v-model="docker"/>
+  <label for="docker">使用容器部署</label>
+  <input type="checkbox" id="server" v-model="server"/>
+  <label for="server">部署在服务器上</label>
+  <input type="checkbox" id="reverse-proxy" v-model="reverseProxy"/>
+  <label for="reverse-proxy">启用反代</label>
+  </div>
+  下面是配置建议：
+  <div class="outer_url_help" v-html="outerUrlHelp"></div>
   :::
+
 - `BISON_FILTER_LOG`: 是否过滤来自`nonebot`的 warning 级以下的 log，如果你的 bot 只运行了这个插件可以考虑
   开启，默认关
 - `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
@@ -190,3 +200,56 @@ Bison 在处理每条推送时，会按照以下规则检查推送中的 Tag：
 - 如果推送中含有任何已记录的**需订阅 Tag**，Bison 会将该推送发送到群中，不管是否有其他 Tag。
 - 如果**没有记录**任何需订阅 Tag，Bison 会将所有通过第一条规则检查的推送发送到群中。
 - 如果记录了至少一个需订阅 Tag，Bison 会**丢弃所有**不含任何需订阅 Tag 的推送，即使通过了第一条规则检查。
+
+<script setup>
+import { ref, computed } from 'vue';
+
+const docker = ref(false);
+const server = ref(false);
+const reverseProxy = ref(false);
+
+const outerUrlHelp = computed(() => {
+  let helpText = '';
+
+  if ((docker.value || server.value) && !reverseProxy.value) 
+    helpText += '将Bot配置中的 <code>HOST</code> 部分设置为 <code>0.0.0.0</code><br>';
+
+  if (docker.value && !server.value && !reverseProxy.value)
+    helpText += '将 <code>BISON_OUTER_URL</code> 设置为 <code>http://localhost:[Docker映射到主机的端口]/bison/</code><br>';
+
+  if (server.value && !reverseProxy.value){
+    if (docker.value)
+      helpText += '将 <code>BISON_OUTER_URL</code> 设置为 <code>http://[你的服务器ip]:[Docker映射到主机的端口]/bison/</code><br>';
+    else
+      helpText += '将 <code>BISON_OUTER_URL</code> 设置为 <code>http://[你的服务器ip]:[Bot运行的端口]/bison/</code><br>';
+  }
+
+  if (reverseProxy.value){
+    if (server.value){
+      helpText += '将 <code>BISON_OUTER_URL</code> 设置为 <code>http://[你的服务器ip]:[反代端口]/bison/</code><br>';
+      if (docker.value)
+        helpText += '请注意反代端口应该指向Docker映射到主机的端口<br>';
+      else
+        helpText += '请注意反代端口应该指向Bot运行的端口<br>';
+    }
+    else
+      helpText += '谁没事在自己电脑上起反代啊（<br>';
+  }
+      
+  if (!docker.value && !server.value && !reverseProxy.value)
+    helpText += '你无需设置此项<br>';
+
+  return helpText;
+});
+</script>
+
+<style>
+.outer_url_help {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.outer_url_help label {
+  margin-right: 15px;
+}
+</style>

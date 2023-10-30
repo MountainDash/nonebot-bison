@@ -4,14 +4,18 @@ from collections.abc import Callable
 from typing import Any, TypeVar, cast
 from datetime import datetime, timedelta
 
-from hishel import AsyncCacheClient
 from expiringdict import ExpiringDict
+from hishel import Controller, AsyncCacheClient
 
 from .const import DATASOURCE_URL
 from .utils import process_response
 from .models import CeobeSource, CeobeTarget, DataSourceResponse
 
-CeobeClient = partial(AsyncCacheClient, headers={"Bot": "Nonebot-Bison"})
+CeobeClient = partial(
+    AsyncCacheClient,
+    headers={"Bot": "Nonebot-Bison", "Cache-Control": "max-age=0"},
+    controller=Controller(),
+)
 
 StoreType = TypeVar("StoreType")
 

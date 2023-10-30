@@ -22,7 +22,7 @@ class CeobeCanteenSchedConf(SchedulerConfig):
 
     def __init__(self):
         super().__init__()
-        self.default_http_client = CeobeClient(headers={"Bot": "Nonebot-Bison"})
+        self.default_http_client = CeobeClient()
 
 
 class CeobeCanteen(NewMessage):

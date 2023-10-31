@@ -5,7 +5,7 @@ from typing import Any, TypeVar, cast
 from datetime import datetime, timedelta
 
 from expiringdict import ExpiringDict
-from hishel import Controller, AsyncCacheClient
+from hishel import Controller, AsyncCacheClient, AsyncFileStorage
 
 from .const import DATASOURCE_URL
 from .utils import process_response
@@ -15,6 +15,7 @@ CeobeClient = partial(
     AsyncCacheClient,
     headers={"Bot": "Nonebot-Bison", "Cache-Control": "max-age=0"},
     controller=Controller(),
+    storage=AsyncFileStorage(ttl=300),
 )
 
 StoreType = TypeVar("StoreType")

@@ -71,6 +71,14 @@ def ceobecanteen_cookies_1() -> dict:
 
 
 @pytest.mark.asyncio()
+async def test_parse_retweet(app: App):
+    from nonebot_bison.platform.ceobecanteen.models import CookiesResponse
+
+    cookie_with_retweet = CookiesResponse.parse_obj(get_json("ceobecanteen_cookies_with_retweet.json"))
+    assert cookie_with_retweet.data.cookies[0].item.retweeted
+
+
+@pytest.mark.asyncio()
 @respx.mock
 async def test_simple_cache(app: App):
     from datetime import timedelta

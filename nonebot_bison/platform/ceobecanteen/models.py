@@ -52,7 +52,7 @@ class CeobeItem(BaseModel):
     """单条id"""
     url: str
     """跳转链接"""
-    type: str = "MISSING"
+    type: str | None
     """类型"""
     is_long_text: bool | None = None
     """是否长文"""

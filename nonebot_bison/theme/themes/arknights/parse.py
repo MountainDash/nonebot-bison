@@ -4,12 +4,7 @@ from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Image
 
-from nonebot_bison.theme import (
-    AbstractTheme,
-    ThemeRenderError,
-    ThemeRenderUnsupportError,
-    check_htmlrender_plugin_enable,
-)
+from nonebot_bison.theme import AbstractTheme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -29,12 +24,12 @@ class ArknightsTheme(AbstractTheme):
     """
 
     name: Literal["arknights"] = "arknights"
+    need_browser: bool = True
 
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
     async def render(self, post: "Post"):
-        check_htmlrender_plugin_enable()
         from nonebot_plugin_htmlrender import template_to_pic
 
         if not post.title:

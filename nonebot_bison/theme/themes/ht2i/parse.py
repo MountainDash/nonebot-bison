@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.utils import pic_merge, is_pics_mergable
-from nonebot_bison.theme import AbstractTheme, ThemeRenderError, check_htmlrender_plugin_enable
+from nonebot_bison.theme import AbstractTheme, ThemeRenderError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -17,9 +17,9 @@ class Ht2iTheme(AbstractTheme):
     """
 
     name: Literal["ht2i"] = "ht2i"
+    need_browser: bool = True
 
     async def _text_render(self, text: str):
-        check_htmlrender_plugin_enable()
         from nonebot_plugin_htmlrender import text_to_pic
 
         try:

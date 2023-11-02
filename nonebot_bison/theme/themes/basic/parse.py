@@ -2,14 +2,14 @@ from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from nonebot_bison.theme import AbstractTheme
+from nonebot_bison.theme import Theme
 from nonebot_bison.utils import pic_merge, is_pics_mergable
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
 
 
-class BasicTheme(AbstractTheme):
+class BasicTheme(Theme):
     """最基本的主题
 
     纯文本，应为每个Post必定支持的Theme

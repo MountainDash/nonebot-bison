@@ -2,7 +2,7 @@ from pathlib import Path
 from pkgutil import iter_modules
 from importlib import import_module
 
-from .types import AbstractTheme
+from .types import Theme
 from .registry import theme_manager
 from .types import ThemeRegistrationError
 from .types import ThemeRenderError as ThemeRenderError
@@ -16,7 +16,7 @@ for _, theme, _ in iter_modules([_theme_dir]):
     if not hasattr(theme_module, "__theme_meta__"):
         raise ThemeRegistrationError(f"{theme} has no __theme_meta__")
 
-    if not isinstance(theme_module.__theme_meta__, AbstractTheme):
+    if not isinstance(theme_module.__theme_meta__, Theme):
         raise ThemeRegistrationError(f"{theme}'s __theme_meta__ is not a AbstractTheme instance")
 
     theme_manager.register(theme_module.__theme_meta__)

@@ -6,7 +6,7 @@ import jinja2
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from nonebot_bison.theme import AbstractTheme, ThemeRenderError, ThemeRenderUnsupportError
+from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -47,7 +47,7 @@ class CeobeCard(BaseModel):
     qr: str | None
 
 
-class CeobeCanteenTheme(AbstractTheme):
+class CeobeCanteenTheme(Theme):
     """小刻食堂 分享卡片风格主题
 
     需要安装`nonebot_plugin_htmlrender`插件

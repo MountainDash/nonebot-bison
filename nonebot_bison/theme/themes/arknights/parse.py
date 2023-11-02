@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Image
 
-from nonebot_bison.theme import AbstractTheme, ThemeRenderError, ThemeRenderUnsupportError
+from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -17,7 +17,7 @@ class ArkData:
     banner_image_url: str | Path | None
 
 
-class ArknightsTheme(AbstractTheme):
+class ArknightsTheme(Theme):
     """Arknights 公告风格主题
 
     需要安装`nonebot_plugin_htmlrender`插件

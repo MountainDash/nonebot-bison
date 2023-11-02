@@ -83,6 +83,55 @@ def mock_post(app: App, mock_platform):
 
 
 @pytest.mark.asyncio
+async def test_theme_need_browser(app: App, mock_post):
+    from nonebot_bison.theme import Theme, theme_manager
+
+    class MockTheme(Theme):
+        name: str = "mock_theme"
+        need_browser: bool = False
+
+        async def render(self, post):
+            return []
+
+    theme = MockTheme()
+    theme_manager.register(theme)
+    mock_post.platform.default_theme = theme.name
+
+    await theme.do_render(mock_post)
+    assert not theme._browser_checked
+    theme.need_browser = True
+    await theme.do_render(mock_post)
+    assert theme._browser_checked
+
+    theme_manager.unregister(theme.name)
+
+
+@pytest.mark.asyncio
+async def test_theme_no_enable_use_browser(app: App, mock_post):
+    from nonebot_bison.plugin_config import plugin_config
+
+    plugin_config.bison_theme_use_browser = False
+
+    from nonebot_bison.theme import Theme, ThemeRenderUnsupportError, theme_manager
+
+    class MockTheme(Theme):
+        name: str = "mock_theme"
+        need_browser: bool = True
+
+        async def render(self, post):
+            return []
+
+    theme = MockTheme()
+    theme_manager.register(theme)
+    mock_post.platform.default_theme = theme.name
+    with pytest.raises(ThemeRenderUnsupportError, match="not support render"):
+        await theme.do_render(mock_post)
+
+    theme_manager.unregister(theme.name)
+    plugin_config.bison_theme_use_browser = True
+
+
+@pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_arknights_theme(app: App, mock_post):
     from nonebot_plugin_saa import Image

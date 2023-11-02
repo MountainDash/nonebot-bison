@@ -66,10 +66,11 @@ def mock_platform(app: App):
 
 @pytest.mark.asyncio
 async def test_generate_msg(mock_platform):
-    from nonebot_plugin_saa import Text
+    from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.post import Post
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.plugin_config import plugin_config
 
     post: Post = await mock_platform(ProcessContext(), AsyncClient()).parse(raw_post_list_1[0])
     assert post.platform.default_theme == "basic"
@@ -80,3 +81,13 @@ async def test_generate_msg(mock_platform):
     assert post.get_config_theme() is None
     assert set(post.get_priority_themes()) == {"basic", "ht2i"}
     assert post.get_priority_themes()[0] == "ht2i"
+    res1 = await post.generate()
+    assert isinstance(res1[0], Image)
+
+    plugin_config.bison_theme_use_browser = False
+
+    res3 = await post.generate()
+    assert res3[0]
+    assert isinstance(res3[0], Text)
+
+    plugin_config.bison_theme_use_browser = True

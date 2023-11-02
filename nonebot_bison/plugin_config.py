@@ -1,5 +1,5 @@
 import nonebot
-from pydantic import BaseSettings
+from pydantic import Field, BaseSettings
 
 global_config = nonebot.get_driver().config
 PlatformName = str
@@ -9,6 +9,7 @@ ThemeName = str
 class PlugConfig(BaseSettings):
     bison_config_path: str = ""
     bison_use_pic: bool = False
+    bison_theme_use_browser: bool = Field(default=False, description="是否允许主题使用浏览器")
     bison_init_filter: bool = True
     bison_use_queue: bool = True
     bison_outer_url: str = ""

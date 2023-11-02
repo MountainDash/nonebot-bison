@@ -6,12 +6,7 @@ import jinja2
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from nonebot_bison.theme import (
-    AbstractTheme,
-    ThemeRenderError,
-    ThemeRenderUnsupportError,
-    check_htmlrender_plugin_enable,
-)
+from nonebot_bison.theme import AbstractTheme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -59,6 +54,7 @@ class CeobeCanteenTheme(AbstractTheme):
     """
 
     name: Literal["ceobecanteen"] = "ceobecanteen"
+    need_browser: bool = True
 
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "ceobe_canteen.html.jinja"
@@ -82,7 +78,6 @@ class CeobeCanteenTheme(AbstractTheme):
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         ceobe_card = self.parse(post)
-        check_htmlrender_plugin_enable()
         from nonebot_plugin_htmlrender import get_new_page
 
         template_env = jinja2.Environment(

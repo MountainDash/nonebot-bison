@@ -7,7 +7,6 @@ from .registry import theme_manager
 from .types import ThemeRegistrationError
 from .types import ThemeRenderError as ThemeRenderError
 from .types import ThemeRenderUnsupportError as ThemeRenderUnsupportError
-from .utils import check_htmlrender_plugin_enable as check_htmlrender_plugin_enable
 
 _theme_dir = str((Path(__file__).parent / "themes").resolve())
 

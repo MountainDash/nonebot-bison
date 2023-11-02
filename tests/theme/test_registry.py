@@ -27,5 +27,7 @@ async def test_registry_new_theme(app: App):
     assert "mock_theme" in theme_manager
 
     # duplicated registration
-    with pytest.raises(ThemeRegistrationError):
+    with pytest.raises(ThemeRegistrationError, match="duplicate"):
         theme_manager.register(MockTheme())
+
+    theme_manager.unregister("mock_theme")

@@ -1,13 +1,13 @@
 from nonebot import logger
 
 from ..plugin_config import plugin_config
-from .types import AbstractTheme, ThemeRegistrationError
+from .types import Theme, ThemeRegistrationError
 
 
 class ThemeManager:
-    __themes: dict[str, AbstractTheme] = {}
+    __themes: dict[str, Theme] = {}
 
-    def register(self, theme: AbstractTheme):
+    def register(self, theme: Theme):
         logger.trace(f"Registering theme: {theme}")
         if theme.name in self.__themes:
             raise ThemeRegistrationError(f"Theme {theme.name} duplicated registration")

@@ -6,9 +6,9 @@ from nonebug import App
 
 @pytest.mark.asyncio
 async def test_registry_new_theme(app: App):
-    from nonebot_bison.theme import AbstractTheme, ThemeRegistrationError, theme_manager
+    from nonebot_bison.theme import Theme, ThemeRegistrationError, theme_manager
 
-    class MockTheme(AbstractTheme):
+    class MockTheme(Theme):
         name: Literal["mock_theme"] = "mock_theme"
 
         async def render(self, _):

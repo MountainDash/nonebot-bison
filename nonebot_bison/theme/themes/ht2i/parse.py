@@ -2,14 +2,14 @@ from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.theme import Theme, ThemeRenderError
 from nonebot_bison.utils import pic_merge, is_pics_mergable
-from nonebot_bison.theme import AbstractTheme, ThemeRenderError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
 
 
-class Ht2iTheme(AbstractTheme):
+class Ht2iTheme(Theme):
     """使用浏览器将文本渲染为图片
 
     HTML render Text To Image.

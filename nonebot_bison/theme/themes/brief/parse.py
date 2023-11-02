@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING, Literal
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.utils import pic_merge, is_pics_mergable
-from nonebot_bison.theme import AbstractTheme, ThemeRenderUnsupportError
+from nonebot_bison.theme import Theme, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
 
 
-class BriefTheme(AbstractTheme):
+class BriefTheme(Theme):
     """简报主题，只发送标题、头图（如果有）、URL（如果有）"""
 
     name: Literal["brief"] = "brief"

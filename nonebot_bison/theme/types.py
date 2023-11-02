@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from ..post.abstract_post import AbstractPost
 
 
-class AbstractTheme(ABC, BaseModel):
+class Theme(ABC, BaseModel):
     """theme基类"""
 
     name: str

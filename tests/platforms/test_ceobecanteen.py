@@ -155,7 +155,7 @@ async def test_batch_fetch_new_with_single(
         "阳光能照在这把犁上的时间总是太短了。但这样的事，那个春天之前的她还不明白。"
     )
     assert post3.images
-    assert len(post3.images) == 6
+    assert len(post3.images) == 2
     assert post3.timestamp
     assert post3.url
     assert post3.avatar
@@ -163,4 +163,8 @@ async def test_batch_fetch_new_with_single(
     assert post3.description
     assert post3.platform.platform_name == "ceobecanteen"
 
+    image1_router = respx.get("https://i0.hdslb.com/bfs/new_dyn/62e053ba7efc18f15bfd195e2d2de984161775300.jpg")
+    image2_router = respx.get("https://i0.hdslb.com/bfs/new_dyn/590a69665209ac220ea8a57f749d5267161775300.gif")
+    image1_router.mock(return_value=Response(200, content=b"image1"))
+    image2_router.mock(return_value=Response(200, content=b"image2"))
     await post3.generate_messages()

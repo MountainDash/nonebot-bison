@@ -34,7 +34,8 @@ class Theme(ABC, BaseModel):
 
     async def do_render(self, post: "AbstractPost") -> list[MessageSegmentFactory]:
         """真正调用的渲染函数，会对渲染过程进行一些处理"""
-        raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {post}")
+        if not await self.is_support_render(post):
+            raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {post} by support check")
 
         await self.prepare()
 

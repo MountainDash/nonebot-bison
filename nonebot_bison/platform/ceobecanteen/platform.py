@@ -156,8 +156,13 @@ class CeobeCanteen(NewMessage):
 
     async def parse(self, raw_post: CeobeCookie) -> Post:
         raw_pics = raw_post.default_cookie.images or []
-        pics = [image.origin_url for image in raw_pics]
         target = await self.data_source_cache.get_by_source(raw_post.source)
+        assert target, "target not found"
+
+        if raw_post.source.type.startswith("weibo"):
+            pics = await self.download_weibo_image([image.origin_url for image in raw_pics])
+        else:
+            pics = [image.origin_url for image in raw_pics]
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
         if timestamp:
             timestamp /= 1000  # 从毫秒级转换到秒级
@@ -168,6 +173,16 @@ class CeobeCanteen(NewMessage):
             nickname=raw_post.datasource,
             images=list(pics),
             timestamp=timestamp,
-            avatar=target.avatar if target else None,
-            description=target.platform if target else None,
+            avatar=target.avatar,
+            description=target.platform,
         )
+
+    async def download_weibo_image(self, image_urls: list[str]) -> list[bytes]:
+        headers = {"referer": "https://weibo.cn/"}
+        pics = []
+        async with CeobeClient(headers=headers) as client:
+            for url in image_urls:
+                resp = await client.get(url)
+                resp.raise_for_status()
+                pics.append(resp.content)
+        return pics

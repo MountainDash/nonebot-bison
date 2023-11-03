@@ -7,6 +7,7 @@ from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme.utils import convert_to_qr
+from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -109,5 +110,9 @@ class CeobeCanteenTheme(Theme):
         msgs.append(Text(text))
 
         if post.images:
-            msgs.extend(map(Image, post.images))
+            if is_pics_mergable(post.images):
+                pics = await pic_merge(list(post.images), post.platform.client)
+                msgs.extend(map(Image, pics))
+            else:
+                msgs.extend(map(Image, post.images))
         return msgs

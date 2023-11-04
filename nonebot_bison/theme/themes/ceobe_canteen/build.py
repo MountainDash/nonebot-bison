@@ -7,6 +7,7 @@ from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme.utils import convert_to_qr
+from nonebot_bison.theme.utils import web_embed_image
 from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
@@ -73,7 +74,7 @@ class CeobeCanteenTheme(Theme):
 
         head_pic = post.images[0] if post.images else None
         if head_pic is not None and not isinstance(head_pic, str):
-            raise ThemeRenderUnsupportError("post.images[0] is not str")
+            head_pic = web_embed_image(head_pic)
 
         content = CeoboContent(image=head_pic, text=post.content)
         return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))

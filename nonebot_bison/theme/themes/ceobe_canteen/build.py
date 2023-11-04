@@ -6,9 +6,8 @@ import jinja2
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
-from nonebot_bison.theme.utils import convert_to_qr
-from nonebot_bison.theme.utils import web_embed_image
 from nonebot_bison.utils import pic_merge, is_pics_mergable
+from nonebot_bison.theme.utils import convert_to_qr, web_embed_image
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:

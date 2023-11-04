@@ -1,4 +1,7 @@
-<<<<<<< HEAD
+from io import BytesIO
+from pathlib import Path
+from base64 import b64encode
+
 from qrcode import constants
 from qrcode.main import QRCode
 from qrcode.image.svg import SvgFragmentImage
@@ -21,10 +24,6 @@ def convert_to_qr(data: str) -> str:
     qr.add_data(data)
     qr.make(fit=True)
     return qr.make_image().to_string().decode("utf-8")
-=======
-from io import BytesIO
-from pathlib import Path
-from base64 import b64encode
 
 
 def web_embed_image(pic_data: bytes | Path | BytesIO, *, ext: str = "png"):
@@ -39,4 +38,3 @@ def web_embed_image(pic_data: bytes | Path | BytesIO, *, ext: str = "png"):
         case _:
             raise TypeError("pic_data must be bytes, Path or BytesIO")
     return f"data:image/{ext};base64,{b64encode(pic_bytes).decode()}"
->>>>>>> 5a3d9f3 (:bug: 嵌入bytes需要先转换为Base64)

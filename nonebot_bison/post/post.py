@@ -67,6 +67,7 @@ class Post(AbstractPost):
         for theme_name in themes:
             if theme := theme_manager[theme_name]:
                 try:
+                    logger.debug(f"Try to render Post with theme {theme_name}")
                     return await theme.do_render(self)
                 except ThemeRenderUnsupportError as e:
                     logger.warning(

@@ -6,6 +6,7 @@ import jinja2
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.theme.utils import convert_to_qr
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -74,7 +75,7 @@ class CeobeCanteenTheme(Theme):
             raise ThemeRenderUnsupportError("post.images[0] is not str")
 
         content = CeoboContent(image=head_pic, text=post.content)
-        return CeobeCard(info=info, content=content, qr=post.url)  # TODO： 这里需要链接转qr码图片，暂时先用链接代替
+        return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         ceobe_card = self.parse(post)

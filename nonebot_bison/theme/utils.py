@@ -4,10 +4,10 @@ from base64 import b64encode
 
 from qrcode import constants
 from qrcode.main import QRCode
-from qrcode.image.svg import SvgFragmentImage
+from qrcode.image.pil import PilImage
 
 
-def convert_to_qr(data: str) -> str:
+def convert_to_qr(data: str) -> bytes:
     """Convert data to QR code
     Args:
         data (str): data to be converted
@@ -19,11 +19,13 @@ def convert_to_qr(data: str) -> str:
         error_correction=constants.ERROR_CORRECT_L,
         box_size=10,
         border=2,
-        image_factory=SvgFragmentImage,
+        image_factory=PilImage,
     )
     qr.add_data(data)
     qr.make(fit=True)
-    return qr.make_image().to_string().decode("utf-8")
+    f = BytesIO()
+    qr.make_image().save(f)
+    return f.getvalue()
 
 
 def web_embed_image(pic_data: bytes | Path | BytesIO, *, ext: str = "png"):

@@ -76,7 +76,7 @@ class CeobeCanteenTheme(Theme):
             head_pic = web_embed_image(head_pic)
 
         content = CeoboContent(image=head_pic, text=post.content)
-        return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))
+        return CeobeCard(info=info, content=content, qr=web_embed_image(convert_to_qr(post.url or "No URL")))
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         ceobe_card = self.parse(post)

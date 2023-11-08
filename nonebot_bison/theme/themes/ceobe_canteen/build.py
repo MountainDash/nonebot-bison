@@ -61,7 +61,7 @@ class CeobeCanteenTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "ceobe_canteen.html.jinja"
 
-    def parse(self, post: "Post") -> CeobeCard:
+    async def parse(self, post: "Post") -> CeobeCard:
         """解析 Post 为 CeobeCard"""
         if not post.nickname:
             raise ThemeRenderUnsupportError("post.nickname is None")
@@ -70,16 +70,22 @@ class CeobeCanteenTheme(Theme):
         info = CeobeInfo(
             datasource=post.nickname, time=datetime.fromtimestamp(post.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         )
-
+        if post.images and is_pics_mergable(post.images):
+            merged_imgs = await pic_merge(list(post.images), post.platform.client)
+            post.images = list(merged_imgs)
         head_pic = post.images[0] if post.images else None
         if head_pic is not None and not isinstance(head_pic, str):
             head_pic = web_embed_image(head_pic)
 
         content = CeoboContent(image=head_pic, text=post.content)
-        return CeobeCard(info=info, content=content, qr=web_embed_image(convert_to_qr(post.url or "No URL")))
+        return CeobeCard(
+            info=info,
+            content=content,
+            qr=web_embed_image(convert_to_qr(post.url or "No URL", back_color=(240, 236, 233))),
+        )
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        ceobe_card = self.parse(post)
+        ceobe_card = await self.parse(post)
         from nonebot_plugin_htmlrender import get_new_page
 
         template_env = jinja2.Environment(
@@ -110,9 +116,6 @@ class CeobeCanteenTheme(Theme):
         msgs.append(Text(text))
 
         if post.images:
-            if is_pics_mergable(post.images):
-                pics = await pic_merge(list(post.images), post.platform.client)
-                msgs.extend(map(Image, pics))
-            else:
-                msgs.extend(map(Image, post.images))
+            msgs.extend(map(Image, post.images))
+
         return msgs

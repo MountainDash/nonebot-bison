@@ -7,7 +7,7 @@ from qrcode.main import QRCode
 from qrcode.image.pil import PilImage
 
 
-def convert_to_qr(data: str) -> bytes:
+def convert_to_qr(data: str, **kwarg) -> bytes:
     """Convert data to QR code
     Args:
         data (str): data to be converted
@@ -24,7 +24,7 @@ def convert_to_qr(data: str) -> bytes:
     qr.add_data(data)
     qr.make(fit=True)
     f = BytesIO()
-    qr.make_image().save(f)
+    qr.make_image(**kwarg).save(f)
     return f.getvalue()
 
 

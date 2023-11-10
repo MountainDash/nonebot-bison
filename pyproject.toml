@@ -37,7 +37,7 @@ python-socketio = "^5.4.0"
 tinydb = "^4.3.0"
 qrcode = "^7.4.2"
 hishel = "^0.0.14"
-expiringdictx = "^1.0.0"
+expiringdictx = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

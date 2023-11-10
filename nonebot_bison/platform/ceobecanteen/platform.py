@@ -3,14 +3,15 @@ from datetime import timedelta
 
 from nonebot import logger
 from hishel import AsyncCacheClient
+from expiringdictx import SimpleCache
 
 from ...post import Post
 from ..platform import NewMessage
 from .utils import process_response
 from ...utils import SchedulerConfig
 from ...types import Target, RawPost, Category
+from .cache import CeobeClient, CeobeDataSourceCache
 from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
-from .cache import CeobeClient, SimpleCache, CeobeDataSourceCache
 from .models import CeobeCookie, CombIdResponse, CookiesResponse, CookieIdResponse
 
 
@@ -57,7 +58,7 @@ class CeobeCanteen(NewMessage):
             )
             comb_id = process_response(resp, CombIdResponse).data["datasource_comb_id"]
             logger.trace(f"get comb_id: {comb_id}")
-            self.cache_store["comb_id"] = (comb_id, timedelta(hours=12))
+            self.cache_store["comb_id", timedelta(hours=12)] = comb_id
 
         return self.cache_store["comb_id"]
 
@@ -83,8 +84,8 @@ class CeobeCanteen(NewMessage):
 
         def update(cookie_id: str, cookies: list[CeobeCookie]):
             lifetime = timedelta(hours=1)
-            self.cache_store["cookie_id"] = (cookie_id, lifetime)
-            self.cache_store["cookies"] = (cookies, lifetime)
+            self.cache_store["cookie_id", lifetime] = cookie_id
+            self.cache_store["cookies", lifetime] = cookies
 
         if cookie_id != self.cache_store["cookie_id"] or force_refresh:
             logger.trace(f"cookie_id changed: {self.cache_store['cookie_id']} -> {cookie_id}, request cookies")

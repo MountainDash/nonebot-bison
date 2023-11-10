@@ -1,4 +1,3 @@
-from asyncio import sleep
 from typing import TYPE_CHECKING
 
 import respx
@@ -76,25 +75,6 @@ async def test_parse_retweet(app: App):
 
     cookie_with_retweet = CookiesResponse.parse_obj(get_json("ceobecanteen_cookies_with_retweet.json"))
     assert cookie_with_retweet.data.cookies[0].item.retweeted
-
-
-@pytest.mark.asyncio()
-@respx.mock
-async def test_simple_cache(app: App):
-    from datetime import timedelta
-
-    from nonebot_bison.platform.ceobecanteen.cache import SimpleCache
-
-    cache = SimpleCache()
-    cache["key"] = (1, timedelta(seconds=1))
-
-    assert cache["key"] == 1
-    assert cache.get("key", value_convert_func=str) == "1"
-    await sleep(1)
-    assert not cache["key"]
-
-    cache.set("key2", 2, timedelta(seconds=1))
-    assert cache["key2"] == 2
 
 
 @pytest.mark.asyncio()

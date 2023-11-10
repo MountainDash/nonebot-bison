@@ -23,7 +23,6 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0.0"
 bs4 = "^0.0.1"
-expiringdict = "^1.2.1"
 feedparser = "^6.0.2"
 httpx = ">=0.16.1"
 nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
@@ -38,6 +37,7 @@ python-socketio = "^5.4.0"
 tinydb = "^4.3.0"
 qrcode = "^7.4.2"
 hishel = "^0.0.14"
+expiringdictx = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

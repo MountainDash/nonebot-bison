@@ -3,11 +3,54 @@ from functools import partial
 
 from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
+from pydantic import Field, BaseModel
 
 from ..post import Post
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
 from ..utils.scheduler_config import SchedulerConfig
+
+
+class ArkResponseBase(BaseModel):
+    code: int
+    msg: str
+
+
+class BulletinListItem(BaseModel):
+    cid: str
+    title: str
+    category: int
+    display_time: str = Field(alias="displayTime")
+    updated_at: int = Field(alias="updatedAt")
+    sticky: bool
+
+
+class BulletinList(BaseModel):
+    list: list[BulletinListItem]
+
+    class Config:
+        extra = "ignore"
+
+
+class BulletinData(BaseModel):
+    cid: str
+    display_type: int = Field(alias="displayType")
+    title: str
+    category: int
+    header: str
+    content: str
+    jump_link: str = Field(alias="jumpLink")
+    banner_image_url: str = Field(alias="bannerImageUrl")
+    display_time: str = Field(alias="displayTime")
+    updated_at: int = Field(alias="updatedAt")
+
+
+class ArkBulletinListResponse(ArkResponseBase):
+    data: BulletinList
+
+
+class ArkBulletinResponse(ArkResponseBase):
+    data: BulletinData
 
 
 class ArknightsSchedConf(SchedulerConfig):
@@ -31,35 +74,45 @@ class Arknights(NewMessage):
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         return "明日方舟游戏信息"
 
-    async def get_sub_list(self, _) -> list[RawPost]:
+    async def get_sub_list(self, _) -> list[BulletinListItem]:
         raw_data = await self.client.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
-        return raw_data.json()["data"]["list"]
+        return ArkBulletinListResponse.parse_obj(raw_data.json()).data.list
 
-    def get_id(self, post: RawPost) -> Any:
-        return post["cid"]
+    def get_id(self, post: BulletinListItem) -> Any:
+        return post.cid
 
-    def get_date(self, _: RawPost) -> Any:
-        return None
+    def get_date(self, post: BulletinListItem) -> Any:
+        return post.updated_at
 
     def get_category(self, _) -> Category:
         return Category(1)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: BulletinListItem) -> Post:
         raw_data = await self.client.get(
             f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
-        raw_data = raw_data.json()["data"]
+        data = ArkBulletinResponse.parse_obj(raw_data.json()).data
 
-        announce_title = raw_data.get("header") if raw_data.get("header") != "" else raw_data.get("title")
-        content = raw_data.get("content")
-        banner_image_url = raw_data.get("bannerImageUrl")
+        def title_escape(text: str) -> str:
+            return text.replace("\n", " - ")
+
+        # gen title, content
+        if data.header:
+            # header是title的更详细版本
+            # header会和content一起出现
+            title = data.header
+        else:
+            # 只有一张图片
+            title = title_escape(data.title)
 
         return Post(
             self,
-            content,
-            title=announce_title,
+            content=data.content,
+            title=title,
             nickname="明日方舟游戏内公告",
-            images=[banner_image_url],
+            images=[data.banner_image_url] if data.banner_image_url else None,
+            url=data.jump_link or None,
+            timestamp=data.updated_at,
             compress=True,
         )
 

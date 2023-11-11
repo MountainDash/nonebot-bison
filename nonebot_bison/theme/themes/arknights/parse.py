@@ -2,7 +2,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
-from nonebot_plugin_saa import Image
+from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
@@ -40,7 +40,7 @@ class ArknightsTheme(Theme):
         banner = post.images[0] if post.images else None
 
         if banner is not None and not isinstance(banner, str | Path):
-            raise ThemeRenderUnsupportError("图片类型错误, 期望 str 或 Path, 实际为 {type(banner)}")
+            raise ThemeRenderUnsupportError(f"图片类型错误, 期望 str 或 Path, 实际为 {type(banner)}")
 
         ark_data = ArkData(
             announce_title=post.title,
@@ -62,5 +62,8 @@ class ArknightsTheme(Theme):
             )
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")
-
+        msgs: list[MessageSegmentFactory] = []
+        msgs.append(Image(announce_pic))
+        if post.url:
+            msgs.append(Text(f"前往:{post.url}"))
         return [Image(announce_pic)]

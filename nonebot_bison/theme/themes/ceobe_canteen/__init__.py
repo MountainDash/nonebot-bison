@@ -1,3 +1,3 @@
-from .parse import CeobeCanteenTheme
+from .build import CeobeCanteenTheme
 
 __theme_meta__ = CeobeCanteenTheme()

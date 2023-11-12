@@ -3,9 +3,13 @@ from typing import TypeGuard
 from functools import partial
 
 from PIL import Image
-from nonebot import logger
 from httpx import AsyncClient
+from nonebot import logger, require
 from PIL.Image import Image as PILImage
+from nonebot_plugin_saa import Text as SaaText
+from nonebot_plugin_saa import Image as SaaImage
+
+from ..plugin_config import plugin_config
 
 
 async def pic_url_to_image(data: str | bytes, http_client: AsyncClient) -> PILImage:
@@ -93,3 +97,14 @@ async def pic_merge(pics: list[str | bytes], http_client: AsyncClient) -> list[s
 
 def is_pics_mergable(imgs: list) -> TypeGuard[list[str | bytes]]:
     return all(isinstance(img, str | bytes) for img in imgs)
+
+
+async def saa_text_to_image(saa_text: SaaText) -> SaaImage:
+    """使用 htmlrender 将 saa.Text 渲染为 saa.Image"""
+    if not plugin_config.bison_use_pic:
+        raise ValueError("请启用 bison_use_pic")
+    require("nonebot_plugin_htmlrender")
+    from nonebot_plugin_htmlrender import text_to_pic
+
+    render_data = await text_to_pic(str(saa_text))
+    return SaaImage(render_data)

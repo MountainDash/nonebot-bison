@@ -1,9 +1,12 @@
+from io import BytesIO
 from pathlib import Path
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.utils import text_fletten
+from nonebot_bison.theme.utils import web_embed_image
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -34,16 +37,21 @@ class ArknightsTheme(Theme):
 
         if not post.title:
             raise ThemeRenderUnsupportError("标题为空")
-        if post.images and len(post.images) > 1:
-            raise ThemeRenderUnsupportError("图片数量大于1")
 
         banner = post.images[0] if post.images else None
 
-        if banner is not None and not isinstance(banner, str | Path):
-            raise ThemeRenderUnsupportError(f"图片类型错误, 期望 str 或 Path, 实际为 {type(banner)}")
+        match banner:
+            case bytes() | BytesIO():
+                banner = web_embed_image(banner)
+            case str() | Path() | None:
+                pass
+            case _:
+                raise ThemeRenderUnsupportError(
+                    f"图片类型错误, 期望 str | Path | bytes | BytesIO | None, 实际为 {type(banner)}"
+                )
 
         ark_data = ArkData(
-            announce_title=post.title,
+            announce_title=text_fletten(post.title),
             content=post.content,
             banner_image_url=banner,
         )
@@ -64,6 +72,10 @@ class ArknightsTheme(Theme):
             raise ThemeRenderError(f"渲染文本失败: {e}")
         msgs: list[MessageSegmentFactory] = []
         msgs.append(Image(announce_pic))
+
         if post.url:
             msgs.append(Text(f"前往:{post.url}"))
-        return [Image(announce_pic)]
+        if post.images:
+            msgs.extend(Image(img) for img in post.images[1:])
+
+        return msgs

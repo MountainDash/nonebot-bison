@@ -77,6 +77,8 @@ async def test_generate_msg(mock_platform):
     res = await post.generate()
     assert len(res) == 1
     assert isinstance(res[0], Text)
+    assert str(res[0]) == "p1\n来源: Mock Platform Mock\n详情: http://t.tt/1"
+
     post.platform.default_theme = "ht2i"
     assert post.get_config_theme() is None
     assert set(post.get_priority_themes()) == {"basic", "ht2i"}
@@ -90,4 +92,20 @@ async def test_generate_msg(mock_platform):
     assert res3[0]
     assert isinstance(res3[0], Text)
 
-    plugin_config.bison_theme_use_browser = True
+
+@pytest.mark.asyncio
+@pytest.mark.render
+async def test_msg_segments_convert(mock_platform):
+    from nonebot_plugin_saa import Image
+
+    from nonebot_bison.post import Post
+    from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.plugin_config import plugin_config
+
+    plugin_config.bison_use_pic = True
+
+    post: Post = await mock_platform(ProcessContext(), AsyncClient()).parse(raw_post_list_1[0])
+    assert post.platform.default_theme == "basic"
+    res = await post.generate_messages()
+    assert len(res) == 1
+    assert isinstance(res[0][0], Image)

@@ -1,10 +1,9 @@
-from functools import reduce
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
 from nonebot_plugin_saa import Text, MessageFactory, MessageSegmentFactory
 
-from ..utils import saa_text_to_image
+from ..utils import text_to_image
 from ..plugin_config import plugin_config
 
 
@@ -30,7 +29,7 @@ class AbstractPost(ABC):
 
         async def convert(msg: MessageSegmentFactory) -> MessageSegmentFactory:
             if isinstance(msg, Text):
-                return await saa_text_to_image(msg)
+                return await text_to_image(msg)
             else:
                 return msg
 
@@ -42,9 +41,9 @@ class AbstractPost(ABC):
     async def message_process(self, msg_segments: list[MessageSegmentFactory]) -> list[MessageFactory]:
         "generate messages and process them"
         if self.compress:
-            msgs = [reduce(lambda x, y: x.append(y), msg_segments, MessageFactory([]))]
+            msgs = [MessageFactory(msg_segments)]
         else:
-            msgs = [MessageFactory([msg_segment]) for msg_segment in msg_segments]
+            msgs = [MessageFactory(msg_segment) for msg_segment in msg_segments]
 
         if self.extra_msg:
             msgs.extend(self.extra_msg)

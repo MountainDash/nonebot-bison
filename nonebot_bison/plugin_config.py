@@ -23,8 +23,9 @@ class PlugConfig(BaseSettings):
     # 0：不启用；1：首条消息单独发送，剩余照片合并转发；2以及以上：所有消息全部合并转发
     bison_resend_times: int = 0
     bison_proxy: str | None
-    bison_ua: (str) = (
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    bison_ua: str = Field(
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+        description="默认UA",
     )
     bison_show_network_warning: bool = True
     bison_platform_theme: dict[PlatformName, ThemeName] = {}

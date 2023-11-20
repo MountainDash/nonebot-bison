@@ -99,7 +99,7 @@ def is_pics_mergable(imgs: list) -> TypeGuard[list[str | bytes]]:
     return all(isinstance(img, str | bytes) for img in imgs)
 
 
-async def saa_text_to_image(saa_text: SaaText) -> SaaImage:
+async def text_to_image(saa_text: SaaText) -> SaaImage:
     """使用 htmlrender 将 saa.Text 渲染为 saa.Image"""
     if not plugin_config.bison_use_pic:
         raise ValueError("请启用 bison_use_pic")

@@ -51,20 +51,19 @@ class Post(AbstractPost):
 
     def get_priority_themes(self) -> list[str]:
         """获取渲染所使用的theme名列表，按照优先级排序"""
-        priority_themes: list[str] = []
+        themes_by_priority: list[str] = []
         # 最先使用用户指定的theme
         if user_theme := self.get_config_theme():
-            priority_themes.append(user_theme)
+            themes_by_priority.append(user_theme)
         # 然后使用平台默认的theme
-        if self.platform.default_theme not in priority_themes:
-            priority_themes.append(self.platform.default_theme)
+        if self.platform.default_theme not in themes_by_priority:
+            themes_by_priority.append(self.platform.default_theme)
         # 最后使用最基础的theme
-        if "basic" not in priority_themes:
-            priority_themes.append("basic")
-        logger.debug(f"priority_themes: {priority_themes}")
-        return priority_themes
+        if "basic" not in themes_by_priority:
+            themes_by_priority.append("basic")
+        return themes_by_priority
 
-    async def generate(self):
+    async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
         themes = self.get_priority_themes()
         for theme_name in themes:

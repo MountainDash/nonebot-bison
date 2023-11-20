@@ -20,3 +20,18 @@ async def test_render(app: App):
         "并将其转换成一个完整的单页应用（SPA），其他的页面则会只在用户浏览到的时候才按需加载。"
     )
     assert isinstance(res, Image)
+
+
+@pytest.mark.asyncio
+@pytest.mark.render
+async def test_convert(app: App):
+    from nonebot_plugin_saa import Text, Image
+
+    from nonebot_bison.utils import text_to_image
+    from nonebot_bison.plugin_config import plugin_config
+
+    plugin_config.bison_use_pic = True
+
+    text = Text("如果，生命的脚印终有一天会被时间的尘埃掩埋......那我们就永远不能——停下脚步")
+    res = await text_to_image(text)
+    assert isinstance(res, Image)

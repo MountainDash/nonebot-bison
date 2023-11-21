@@ -4,8 +4,8 @@ from fastapi.routing import APIRouter
 from fastapi.param_functions import Depends
 from fastapi.exceptions import HTTPException
 from nonebot_plugin_saa import TargetQQGroup
+from nonebot_plugin_saa.auto_select_bot import get_bot
 from fastapi.security.oauth2 import OAuth2PasswordBearer
-from nonebot_plugin_saa.utils.auto_select_bot import get_bot
 
 from ..types import WeightConfig
 from ..apis import check_sub_target

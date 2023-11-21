@@ -4,7 +4,7 @@ from dataclasses import field, dataclass
 from PIL import Image
 from nonebot.log import logger
 import nonebot_plugin_saa as saa
-from nonebot_plugin_saa.utils import MessageSegmentFactory
+from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..utils import parse_text, http_client
 from .abstract_post import BasePost, AbstractPost

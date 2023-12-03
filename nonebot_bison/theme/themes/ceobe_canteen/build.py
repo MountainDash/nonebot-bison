@@ -42,6 +42,7 @@ class CeoboContent(BaseModel):
             raise ValueError("image and text cannot be both None")
         return values
 
+
 class CeoboRetweet(BaseModel):
     """卡片的转发部分
 

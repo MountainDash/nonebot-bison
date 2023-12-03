@@ -11,6 +11,19 @@
         {% endif %}
         {% if card.content.text %}
         <div class="main-content">{{ card.content.text }}</div>
+        {% if card.content.retweet %}
+        <div class="retweet">
+            {% if card.retweet.author %}
+            <div class="origin-author">{{ card.retweet.author }}</div>
+            {% endif %}
+            {% if card.retweet.content %}
+            <div class="retweet-content">{{ card.retweet.content }}</div>
+            {% endif %}
+            {% if card.retweet.image %}
+            <img class='retweet-image' src="{{ card.retweet.image }}">
+            {% endif %}
+        </div>
+        {% endif %}
         {% endif %}
         <div class="footer">
             <div class="datasource">
@@ -45,6 +58,16 @@
 .main-content {
     padding: 30px;
     white-space: pre-line;
+}
+.retweet {
+    margin: -20px 30px 20px;
+    background-color: rgb(226, 223, 219);
+    border: solid 1px rgb(212, 210, 207);
+    border-radius: 3px;
+    padding: 5px;
+}
+.retweet .retweet-image {
+    width: 100%;
 }
 .footer {
     margin: 0 2%;

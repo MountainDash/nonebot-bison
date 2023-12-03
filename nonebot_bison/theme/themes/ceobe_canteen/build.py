@@ -42,11 +42,30 @@ class CeoboContent(BaseModel):
             raise ValueError("image and text cannot be both None")
         return values
 
+class CeoboRetweet(BaseModel):
+    """卡片的转发部分
+
+    author: 原作者
+    image: 图片链接
+    content: 文字内容
+    """
+
+    image: str | None
+    content: str | None
+    author: str | None
+
+    @root_validator
+    def check(cls, values):
+        if values["image"] is None and values["text"] is None:
+            raise ValueError("image and text cannot be both None")
+        return values
+
 
 class CeobeCard(BaseModel):
     info: CeobeInfo
     content: CeoboContent
     qr: str | None
+    retweet: CeoboRetweet | None
 
 
 class CeobeCanteenTheme(Theme):

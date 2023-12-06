@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
+from httpx import AsyncClient
 
 import jinja2
 from pydantic import BaseModel, root_validator

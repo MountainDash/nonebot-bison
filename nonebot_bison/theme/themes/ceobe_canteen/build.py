@@ -90,27 +90,27 @@ class CeobeCanteenTheme(Theme):
         info = CeobeInfo(
             datasource=post.nickname, time=datetime.fromtimestamp(post.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         )
-        if post.images and is_pics_mergable(post.images):
-            merged_imgs = await pic_merge(list(post.images), post.platform.client)
-            post.images = list(merged_imgs)
+
+        async def merge_pics(images: list[str | bytes] | None, client: AsyncClient) -> list[str | bytes] | None:
+            if images and is_pics_mergable(images):
+                pics =  await pic_merge(list(images), client)
+                return list(pics)
+            return images
+
+        post.images = merge_pics(post.images, post.platform.client)
         head_pic = post.images[0] if post.images else None
         if head_pic is not None and not isinstance(head_pic, str):
             head_pic = web_embed_image(head_pic)
 
         content = CeoboContent(image=head_pic, text=post.content)
 
-        retweet = None
+        retweet: CeoboRetweet | None = None
         if post.repost:
-            if post.repost.images and is_pics_mergable(post.repost.images):
-                merged_retweet_imgs = await pic_merge(list(post.repost.images), post.platform.client)
-                post.repost.images = list(merged_retweet_imgs)
-                head_retweet_pic = post.repost.images[0] if post.repost.images else None
+            post.repost.images = merge_pics(post.repost.images, post.platform.client)
+            head_retweet_pic = post.repost.images[0] if post.repost.images else None
             post.repost.nickname = "转发自 @" + post.repost.nickname + ":"
             retweet = CeoboRetweet(image=head_retweet_pic, content=post.repost.content, author=post.repost.nickname)
 
-        if post.images and is_pics_mergable(post.images):
-            merged_imgs = await pic_merge(list(post.images), post.platform.client)
-            post.images = list(merged_imgs)
         content = CeoboRetweet(image=head_pic, text=post.content)
         return CeobeCard(
             info=info,

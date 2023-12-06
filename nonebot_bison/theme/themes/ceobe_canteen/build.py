@@ -105,9 +105,9 @@ class CeobeCanteenTheme(Theme):
                 merged_retweet_imgs = await pic_merge(list(post.repost.images), post.platform.client)
                 post.repost.images = list(merged_retweet_imgs)
                 head_retweet_pic = post.repost.images[0] if post.repost.images else None
-            post.repost.nickname = '转发自 @'+ post.repost.nickname + ':'
+            post.repost.nickname = "转发自 @" + post.repost.nickname + ":"
             retweet = CeoboRetweet(image=head_retweet_pic, content=post.repost.content, author=post.repost.nickname)
-        
+
         if post.images and is_pics_mergable(post.images):
             merged_imgs = await pic_merge(list(post.images), post.platform.client)
             post.images = list(merged_imgs)

@@ -180,7 +180,7 @@ class CeobeCanteen(NewMessage):
                 nickname=raw_post.item.retweeted.author_name,
                 avatar=raw_post.item.retweeted.author_avatar,
                 images=list(retweet_pics),
-                content=raw_post.item.retweeted.text
+                content=raw_post.item.retweeted.text,
             )
 
         return Post(
@@ -192,7 +192,7 @@ class CeobeCanteen(NewMessage):
             timestamp=timestamp,
             avatar=target.avatar,
             description=target.platform,
-            repost=retweet
+            repost=retweet,
         )
 
     async def download_weibo_image(self, image_urls: list[str]) -> list[bytes]:

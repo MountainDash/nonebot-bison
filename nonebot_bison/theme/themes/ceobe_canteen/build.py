@@ -98,7 +98,7 @@ class CeobeCanteenTheme(Theme):
                 return list(pics)
             return images
 
-        post.images = merge_pics(post.images, post.platform.client)
+        post.images = await merge_pics(post.images, post.platform.client)
         head_pic = post.images[0] if post.images else None
         if head_pic is not None and not isinstance(head_pic, str):
             head_pic = web_embed_image(head_pic)
@@ -107,7 +107,7 @@ class CeobeCanteenTheme(Theme):
 
         retweet: CeoboRetweet | None = None
         if post.repost:
-            post.repost.images = merge_pics(post.repost.images, post.platform.client)
+            post.repost.images = await merge_pics(post.repost.images, post.platform.client)
             head_retweet_pic = post.repost.images[0] if post.repost.images else None
             post.repost.nickname = "转发自 @" + post.repost.nickname + ":"
             retweet = CeoboRetweet(image=head_retweet_pic, content=post.repost.content, author=post.repost.nickname)

@@ -12,7 +12,7 @@ from ...utils import SchedulerConfig
 from ...types import Target, RawPost, Category
 from .cache import CeobeClient, CeobeDataSourceCache
 from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
-from .models import CeobeCookie, CeobeImage, CombIdResponse, CookiesResponse, CookieIdResponse
+from .models import CeobeImage, CeobeCookie, CombIdResponse, CookiesResponse, CookieIdResponse
 
 
 class CeobeCanteenSchedConf(SchedulerConfig):
@@ -170,7 +170,7 @@ class CeobeCanteen(NewMessage):
         if raw_post.item.is_retweeted:
             raw_retweet_pics = raw_post.item.retweeted.images or []
             retweet_pics = await self.handle_images_list(raw_retweet_pics, raw_post.source.type)
-            
+
             retweet = Post(
                 self,
                 nickname=raw_post.item.retweeted.author_name,

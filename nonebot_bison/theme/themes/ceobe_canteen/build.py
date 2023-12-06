@@ -93,7 +93,7 @@ class CeobeCanteenTheme(Theme):
 
         async def merge_pics(images: list[str | bytes] | None, client: AsyncClient) -> list[str | bytes] | None:
             if images and is_pics_mergable(images):
-                pics =  await pic_merge(list(images), client)
+                pics = await pic_merge(list(images), client)
                 return list(pics)
             return images
 

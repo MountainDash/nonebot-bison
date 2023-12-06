@@ -1,9 +1,9 @@
 from pathlib import Path
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
-from httpx import AsyncClient
 
 import jinja2
+from httpx import AsyncClient
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 

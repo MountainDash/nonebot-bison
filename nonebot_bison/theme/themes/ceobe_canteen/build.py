@@ -97,10 +97,25 @@ class CeobeCanteenTheme(Theme):
             head_pic = web_embed_image(head_pic)
 
         content = CeoboContent(image=head_pic, text=post.content)
+
+        retweet = None
+        if post.repost:
+            if post.repost.images and is_pics_mergable(post.repost.images):
+                merged_retweet_imgs = await pic_merge(list(post.repost.images), post.platform.client)
+                post.repost.images = list(merged_retweet_imgs)
+                head_retweet_pic = post.repost.images[0] if post.repost.images else None
+            post.repost.nickname = '转发自 @'+ post.repost.nickname + ':'
+            retweet = CeoboRetweet(image=head_retweet_pic, content=post.repost.content, author=post.repost.nickname)
+        
+        if post.images and is_pics_mergable(post.images):
+            merged_imgs = await pic_merge(list(post.images), post.platform.client)
+            post.images = list(merged_imgs)
+        content = CeoboRetweet(image=head_pic, text=post.content)
         return CeobeCard(
             info=info,
             content=content,
             qr=web_embed_image(convert_to_qr(post.url or "No URL", back_color=(240, 236, 233))),
+            retweet=retweet,
         )
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:

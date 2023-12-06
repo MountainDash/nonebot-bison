@@ -167,6 +167,22 @@ class CeobeCanteen(NewMessage):
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
         if timestamp:
             timestamp /= 1000  # 从毫秒级转换到秒级
+
+        retweet = None
+        if raw_post.item.is_retweeted:
+            raw_retweet_pics = raw_post.item.retweeted.images or []
+            if raw_post.source.type.startswith("weibo"):
+                retweet_pics = await self.download_weibo_image([image.origin_url for image in raw_retweet_pics])
+            else:
+                retweet_pics = [image.origin_url for image in raw_retweet_pics]
+            retweet = Post(
+                self,
+                nickname=raw_post.item.retweeted.author_name,
+                avatar=raw_post.item.retweeted.author_avatar,
+                images=list(retweet_pics),
+                content=raw_post.item.retweeted.text
+            )
+
         return Post(
             self,
             raw_post.default_cookie.text,
@@ -176,6 +192,7 @@ class CeobeCanteen(NewMessage):
             timestamp=timestamp,
             avatar=target.avatar,
             description=target.platform,
+            repost=retweet
         )
 
     async def download_weibo_image(self, image_urls: list[str]) -> list[bytes]:

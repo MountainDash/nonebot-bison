@@ -3,9 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from PIL import Image
 from nonebot.log import logger
-import nonebot_plugin_saa as saa
 from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..theme import theme_manager

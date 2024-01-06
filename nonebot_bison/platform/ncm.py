@@ -3,10 +3,10 @@ from typing import Any
 
 from httpx import AsyncClient
 
-from ..post import Post
 from .platform import NewMessage
 from ..utils import SchedulerConfig
 from ..types import Target, RawPost, ApiError
+from ..post import Post, PostHeader, PostPayload
 
 
 class NcmSchedConf(SchedulerConfig):
@@ -68,7 +68,21 @@ class NcmArtist(NewMessage):
         target_name = raw_post["artist"]["name"]
         pics = [raw_post["picUrl"]]
         url = "https://music.163.com/#/album?id={}".format(raw_post["id"])
-        return Post(self, text, url=url, images=pics, nickname=target_name)
+        return Post(
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=text,
+                title=text,
+                url=url,
+                author=target_name,
+                images=pics,
+            ),
+        )
 
 
 class NcmRadio(NewMessage):
@@ -126,4 +140,18 @@ class NcmRadio(NewMessage):
         target_name = raw_post["radio"]["name"]
         pics = [raw_post["coverUrl"]]
         url = "https://music.163.com/#/program/{}".format(raw_post["id"])
-        return Post(self, text, url=url, images=pics, nickname=target_name)
+        return Post(
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=text,
+                title=text,
+                url=url,
+                author=target_name,
+                images=pics,
+            ),
+        )

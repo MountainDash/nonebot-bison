@@ -7,8 +7,8 @@ from nonebot.log import logger
 from bs4 import Tag, BeautifulSoup
 from nonebot.plugin import require
 
-from ..post import Post
 from ..types import Target, RawPost, Category
+from ..post import Post, PostHeader, PostPayload
 from ..utils import SchedulerConfig, http_client
 from .platform import NewMessage, CategoryNotSupport, CategoryNotRecognize
 
@@ -155,11 +155,18 @@ class McbbsNews(NewMessage):
         pics = await self._news_render(post_url, f"#{post_id}")
 
         return Post(
-            self,
-            "{}\n│\n└由 {} 发表".format(post["title"], post["author"]),
-            url=post_url,
-            images=list(pics),
-            nickname=post["category"],
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content="{}\n│\n└由 {} 发表".format(post["title"], post["author"]),
+                url=post_url,
+                images=list(pics),
+                author=post["category"],
+            ),
         )
 
     async def _news_render(self, url: str, selector: str) -> list[bytes]:

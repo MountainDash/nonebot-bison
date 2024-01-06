@@ -6,9 +6,9 @@ import feedparser
 from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 
-from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
+from ..post import Post, PostHeader, PostPayload
 from ..utils import SchedulerConfig, text_similarity
 
 
@@ -72,10 +72,17 @@ class Rss(NewMessage):
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
         return Post(
-            self,
-            desc,
-            title=title,
-            url=raw_post.link,
-            images=pics,
-            nickname=raw_post["_target_name"],
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=desc,
+                title=title,
+                url=raw_post.link,
+                author=raw_post["_target_name"],
+                images=pics,
+            ),
         )

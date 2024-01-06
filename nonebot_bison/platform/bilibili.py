@@ -10,7 +10,7 @@ from httpx import AsyncClient
 from nonebot.log import logger
 from pydantic import Field, BaseModel
 
-from ..post import Post
+from ..post import Post, PostHeader, PostPayload
 from ..utils import SchedulerConfig, text_similarity
 from ..types import Tag, Target, RawPost, ApiError, Category
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
@@ -193,7 +193,21 @@ class Bilibili(NewMessage):
             text += orig_text
         else:
             raise CategoryNotSupport(post_type)
-        return Post(self, text, url=url, images=pic, nickname=target_name)
+
+        return Post(
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=text,
+                images=pic,
+                url=url,
+                author=target_name,
+            ),
+        )
 
 
 class Bilibililive(StatusChange):
@@ -335,13 +349,19 @@ class Bilibililive(StatusChange):
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
-            self,
-            "",
-            title=title,
-            url=url,
-            images=list(pic),
-            nickname=target_name,
-            compress=True,
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content="",
+                title=title,
+                url=url,
+                images=list(pic),
+                author=target_name,
+            ),
         )
 
 
@@ -418,13 +438,19 @@ class BilibiliBangumi(StatusChange):
         content = raw_post["index_show"]
         title = lastest_episode["share_copy"]
         return Post(
-            self,
-            content,
-            title=title,
-            url=url,
-            images=list(pic),
-            nickname=target_name,
-            compress=True,
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=content,
+                title=title,
+                url=url,
+                images=list(pic),
+                author=target_name,
+            ),
         )
 
 

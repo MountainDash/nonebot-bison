@@ -28,23 +28,25 @@ class Ht2iTheme(Theme):
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
     async def render(self, post: "Post"):
+        header = post.header
+        payload = post.payload
         _text = ""
 
-        if post.title:
-            _text += f"{post.title}\n\n"
+        if payload.title:
+            _text += f"{payload.title}\n\n"
 
-        _text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        _text += payload.content if len(payload.content) < 500 else f"{payload.content[:500]}..."
 
-        _text += f"\n来源: {post.platform.name} {post.nickname or ''}\n"
+        _text += f"\n来源: {payload.platform} {payload.author or ''}\n"
 
         msgs: list[MessageSegmentFactory] = [await self._text_render(_text)]
 
-        if post.url:
-            msgs.append(Text(f"详情: {post.url}"))
-        if post.images:
-            pics = post.images
+        if payload.url:
+            msgs.append(Text(f"详情: {payload.url}"))
+        if payload.images:
+            pics = payload.images
             if is_pics_mergable(pics):
-                pics = await pic_merge(list(pics), post.platform.client)
+                pics = await pic_merge(list(pics), header.http_client)
             msgs.extend(map(Image, pics))
 
         return msgs

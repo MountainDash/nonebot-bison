@@ -15,18 +15,21 @@ class BriefTheme(Theme):
     name: Literal["brief"] = "brief"
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        if not post.title:
+        header = post.header
+        payload = post.payload
+
+        if not payload.title:
             raise ThemeRenderUnsupportError("Post has no title")
-        text = f"{post.title}\n\n"
-        text += f"来源: {post.platform.name} {post.nickname or ''}\n"
-        if post.url:
-            text += f"详情: {post.url}"
+        text = f"{payload.title}\n\n"
+        text += f"来源: {payload.platform} {payload.author or ''}\n"
+        if payload.url:
+            text += f"详情: {payload.url}"
 
         msgs: list[MessageSegmentFactory] = [Text(text)]
-        if post.images:
-            pics = post.images
+        if payload.images:
+            pics = payload.images
             if is_pics_mergable(pics):
-                pics = await pic_merge(list(pics), post.platform.client)
+                pics = await pic_merge(list(pics), header.http_client)
             msgs.append(Image(pics[0]))
 
         return msgs

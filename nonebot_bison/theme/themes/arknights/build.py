@@ -32,19 +32,21 @@ class ArknightsTheme(Theme):
     async def render(self, post: "Post"):
         from nonebot_plugin_htmlrender import template_to_pic
 
-        if not post.title:
+        payload = post.payload
+
+        if not payload.title:
             raise ThemeRenderUnsupportError("标题为空")
-        if post.images and len(post.images) > 1:
+        if payload.images and len(payload.images) > 1:
             raise ThemeRenderUnsupportError("图片数量大于1")
 
-        banner = post.images[0] if post.images else None
+        banner = payload.images[0] if payload.images else None
 
         if banner is not None and not isinstance(banner, str | Path):
             raise ThemeRenderUnsupportError(f"图片类型错误, 期望 str 或 Path, 实际为 {type(banner)}")
 
         ark_data = ArkData(
-            announce_title=post.title,
-            content=post.content,
+            announce_title=payload.title,
+            content=payload.content,
             banner_image_url=banner,
         )
 
@@ -64,6 +66,6 @@ class ArknightsTheme(Theme):
             raise ThemeRenderError(f"渲染文本失败: {e}")
         msgs: list[MessageSegmentFactory] = []
         msgs.append(Image(announce_pic))
-        if post.url:
-            msgs.append(Text(f"前往:{post.url}"))
+        if payload.url:
+            msgs.append(Text(f"前往:{payload.url}"))
         return [Image(announce_pic)]

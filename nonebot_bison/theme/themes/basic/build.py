@@ -18,23 +18,25 @@ class BasicTheme(Theme):
     name: Literal["basic"] = "basic"
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
+        header = post.header
+        payload = post.payload
         text = ""
 
-        if post.title:
-            text += f"{post.title}\n\n"
+        if payload.title:
+            text += f"{payload.title}\n\n"
 
-        text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        text += payload.content if len(payload.content) < 500 else f"{payload.content[:500]}..."
 
-        text += f"\n来源: {post.platform.name} {post.nickname or ''}\n"
+        text += f"\n来源: {payload.platform} {payload.author or ''}\n"
 
-        if post.url:
-            text += f"详情: {post.url}"
+        if payload.url:
+            text += f"详情: {payload.url}"
 
         msgs: list[MessageSegmentFactory] = [Text(text)]
-        if post.images:
-            pics = post.images
+        if payload.images:
+            pics = payload.images
             if is_pics_mergable(pics):
-                pics = await pic_merge(list(pics), post.platform.client)
+                pics = await pic_merge(list(pics), header.http_client)
             msgs.extend(map(Image, pics))
 
         return msgs

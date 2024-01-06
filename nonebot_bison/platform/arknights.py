@@ -1,13 +1,12 @@
 from typing import Any
-from functools import partial
 
 from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 from pydantic import Field, BaseModel
 
-from ..post import Post
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
+from ..post import Post, PostHeader, PostPayload
 from ..utils.scheduler_config import SchedulerConfig
 
 
@@ -106,14 +105,20 @@ class Arknights(NewMessage):
             title = title_escape(data.title)
 
         return Post(
-            self,
-            content=data.content,
-            title=title,
-            nickname="明日方舟游戏内公告",
-            images=[data.banner_image_url] if data.banner_image_url else None,
-            url=data.jump_link or None,
-            timestamp=data.updated_at,
-            compress=True,
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=data.content,
+                title=title,
+                author="明日方舟游戏内公告",
+                images=[data.banner_image_url] if data.banner_image_url else None,
+                url=data.jump_link or None,
+                timestamp=data.updated_at,
+            ),
         )
 
 
@@ -143,15 +148,30 @@ class AkVersion(StatusChange):
 
     def compare_status(self, _, old_status, new_status):
         res = []
-        ArkUpdatePost = partial(Post, self, "", nickname="明日方舟更新信息")
+
+        def make_ark_update_post(title: str):
+            return Post(
+                PostHeader(
+                    platform_code=self.platform_name,
+                    http_client=self.client,
+                    recommend_theme=self.default_theme,
+                    compress=True,
+                ),
+                PostPayload(
+                    content="",
+                    title=title,
+                    author="明日方舟游戏信息",
+                ),
+            )
+
         if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
-            res.append(ArkUpdatePost(title="登录界面维护公告上线（大概是开始维护了)"))
+            res.append(make_ark_update_post(title="登录界面维护公告上线（大概是开始维护了)"))
         elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
-            res.append(ArkUpdatePost(title="登录界面维护公告下线（大概是开服了，冲！）"))
+            res.append(make_ark_update_post(title="登录界面维护公告下线（大概是开服了，冲！）"))
         if old_status.get("clientVersion") != new_status.get("clientVersion"):
-            res.append(ArkUpdatePost(title="游戏本体更新（大更新）"))
+            res.append(make_ark_update_post(title="游戏本体更新（大更新）"))
         if old_status.get("resVersion") != new_status.get("resVersion"):
-            res.append(ArkUpdatePost(title="游戏资源更新（小更新）"))
+            res.append(make_ark_update_post(title="游戏资源更新（小更新）"))
         return res
 
     def get_category(self, _):
@@ -198,12 +218,18 @@ class MonsterSiren(NewMessage):
         imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return Post(
-            self,
-            text,
-            images=imgs,
-            url=url,
-            nickname="塞壬唱片新闻",
-            compress=True,
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=text,
+                images=imgs,
+                url=url,
+                author="塞壬唱片新闻",
+            ),
         )
 
 
@@ -238,11 +264,17 @@ class TerraHistoricusComic(NewMessage):
     async def parse(self, raw_post: RawPost) -> Post:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
-            self,
-            raw_post["subtitle"],
-            title=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
-            images=[raw_post["coverUrl"]],
-            url=url,
-            nickname="泰拉记事社漫画",
-            compress=True,
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=raw_post["subtitle"],
+                title=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
+                images=[raw_post["coverUrl"]],
+                url=url,
+                author="泰拉记事社漫画",
+            ),
         )

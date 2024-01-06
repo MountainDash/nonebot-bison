@@ -10,7 +10,7 @@ from nonebot_bison.theme.utils import convert_to_qr
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
-    from nonebot_bison.post import Post
+    from nonebot_bison.post import Post, PostPayload
 
 
 class CeobeInfo(BaseModel):
@@ -60,25 +60,26 @@ class CeobeCanteenTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "ceobe_canteen.html.jinja"
 
-    def parse(self, post: "Post") -> CeobeCard:
+    def parse(self, payload: "PostPayload") -> CeobeCard:
         """解析 Post 为 CeobeCard"""
-        if not post.nickname:
+        if not payload.author:
             raise ThemeRenderUnsupportError("post.nickname is None")
-        if not post.timestamp:
+        if not payload.timestamp:
             raise ThemeRenderUnsupportError("post.timestamp is None")
         info = CeobeInfo(
-            datasource=post.nickname, time=datetime.fromtimestamp(post.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+            datasource=payload.author, time=datetime.fromtimestamp(payload.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         )
 
-        head_pic = post.images[0] if post.images else None
+        head_pic = payload.images[0] if payload.images else None
         if head_pic is not None and not isinstance(head_pic, str):
             raise ThemeRenderUnsupportError("post.images[0] is not str")
 
-        content = CeoboContent(image=head_pic, text=post.content)
-        return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))
+        content = CeoboContent(image=head_pic, text=payload.content)
+        return CeobeCard(info=info, content=content, qr=convert_to_qr(payload.url or "No URL"))
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        ceobe_card = self.parse(post)
+        payload = post.payload
+        ceobe_card = self.parse(payload)
         from nonebot_plugin_htmlrender import get_new_page
 
         template_env = jinja2.Environment(
@@ -103,11 +104,11 @@ class CeobeCanteenTheme(Theme):
             raise ThemeRenderError(f"Render error: {e}") from e
         msgs: list[MessageSegmentFactory] = [Image(img_raw)]
 
-        text = f"来源: {post.platform.name} {post.nickname or ''}\n"
-        if post.url:
-            text += f"详情: {post.url}"
+        text = f"来源: {payload.platform} {payload.author or ''}\n"
+        if payload.url:
+            text += f"详情: {payload.url}"
         msgs.append(Text(text))
 
-        if post.images:
-            msgs.extend(map(Image, post.images))
+        if payload.images:
+            msgs.extend(map(Image, payload.images))
         return msgs

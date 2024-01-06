@@ -7,8 +7,8 @@ from httpx import AsyncClient
 from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
 
-from ..post import Post
 from .platform import NewMessage
+from ..post import Post, PostHeader, PostPayload
 from ..utils import SchedulerConfig, http_client
 from ..types import Tag, Target, RawPost, ApiError, Category
 
@@ -153,11 +153,17 @@ class Weibo(NewMessage):
                 res.raise_for_status()
                 pics.append(res.content)
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
-        # return parsed_text, detail_url, pic_urls
         return Post(
-            self,
-            parsed_text,
-            url=detail_url,
-            images=pics,
-            nickname=info["user"]["screen_name"],
+            PostHeader(
+                platform_code=self.platform_name,
+                http_client=self.client,
+                recommend_theme=self.default_theme,
+                compress=True,
+            ),
+            PostPayload(
+                content=parsed_text,
+                url=detail_url,
+                images=pics,
+                author=info["user"]["screen_name"],
+            ),
         )

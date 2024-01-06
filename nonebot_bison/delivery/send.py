@@ -6,7 +6,7 @@ from nonebot_plugin_saa.auto_select_bot import refresh_bots
 from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
 
-from .plugin_config import plugin_config
+from ..plugin_config import plugin_config
 
 Sendable = MessageFactory | AggregatedMessageFactory
 

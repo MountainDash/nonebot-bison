@@ -104,7 +104,12 @@ src_paths = ["nonebot_bison", "tests"]
 extra_standard_library = ["typing_extensions"]
 
 [tool.nonebot]
-plugins = ["nonebot_bison"]
+adapters = [
+    { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+]
+plugins = ["nonebot_bison", "nonebot_plugin_saa"]
+plugin_dirs = ["extra_plugins"]
+builtin_plugins = ["echo"]
 
 [tool.pyright]
 reportShadowedImports = false

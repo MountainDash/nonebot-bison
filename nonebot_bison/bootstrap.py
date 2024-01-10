@@ -2,6 +2,7 @@ from nonebot.log import logger
 from sqlalchemy import text, inspect
 from nonebot_plugin_datastore.db import get_engine, pre_db_init, post_db_init
 
+from .delivery import init_delivery
 from .config.db_migration import data_migrate
 from .scheduler.manager import init_scheduler
 from .config.config_legacy import start_up as legacy_db_startup
@@ -47,3 +48,6 @@ async def post():
     # init scheduler
     await init_scheduler()
     logger.info("nonebot-bison bootstrap done")
+
+    await init_delivery()
+    logger.info("nonebot-bison delivery init done")

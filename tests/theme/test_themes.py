@@ -19,9 +19,9 @@ raw_post_list_2 = raw_post_list_1 + [
 
 @pytest.fixture()
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post, PostHeader, PostPayload
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -47,10 +47,17 @@ def mock_platform(app: App):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                self,
-                raw_post["text"],
-                url="http://t.tt/" + str(self.get_id(raw_post)),
-                nickname="Mock",
+                PostHeader(
+                    platform_code=self.platform_name,
+                    http_client=AsyncClient(),
+                    recommend_theme=self.default_theme,
+                ),
+                PostPayload(
+                    platform=self.name,
+                    content=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    author="Mock",
+                ),
             )
 
         @classmethod
@@ -66,19 +73,22 @@ def mock_platform(app: App):
 
 @pytest.fixture()
 def mock_post(app: App, mock_platform):
-    from nonebot_bison.post import Post
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.post import Post, PostHeader, PostPayload
 
+    _mock_platform = mock_platform(ProcessContext(), AsyncClient())
     return Post(
-        mock_platform(ProcessContext(), AsyncClient()),
-        "text",
-        title="title",
-        images=["http://t.tt/1.jpg"],
-        timestamp=1234567890,
-        url="http://t.tt/1",
-        avatar="http://t.tt/avatar.jpg",
-        nickname="Mock",
-        description="description",
+        PostHeader(
+            platform_code=_mock_platform.platform_name,
+            http_client=_mock_platform.client,
+            recommend_theme=_mock_platform.default_theme,
+        ),
+        PostPayload(
+            platform=_mock_platform.name,
+            content="text",
+            url="http://t.tt/1",
+            author="Mock",
+        ),
     )
 
 

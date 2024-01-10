@@ -3,12 +3,11 @@ from collections import defaultdict
 
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
-from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
 from ..config import config
 from ..types import Target, SubUnit
+from ..delivery import render_dispatch
 from ..platform import platform_manager
-from ..delivery import send_msgs, render_dispatch
 from ..utils import ProcessContext, SchedulerConfig
 
 
@@ -115,12 +114,8 @@ class Scheduler:
         if not to_send:
             return
 
-        parcels = await render_dispatch(to_send)
-        for parcel in parcels:
-            try:
-                await send_msgs(*parcel.gen_sendable())
-            except NoBotFound:
-                logger.warning("no bot connected")
+        # add to render queue
+        render_dispatch(to_send)
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

@@ -19,9 +19,9 @@ raw_post_list_2 = raw_post_list_1 + [
 
 @pytest.fixture()
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post, PostHeader, PostPayload
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -47,10 +47,17 @@ def mock_platform(app: App):
 
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
-                self,
-                raw_post["text"],
-                url="http://t.tt/" + str(self.get_id(raw_post)),
-                nickname="Mock",
+                PostHeader(
+                    platform_code=self.platform_name,
+                    http_client=AsyncClient(),
+                    recommend_theme=self.default_theme,
+                ),
+                PostPayload(
+                    platform=self.name,
+                    content=raw_post["text"],
+                    url="http://t.tt/" + str(self.get_id(raw_post)),
+                    author="Mock",
+                ),
             )
 
         @classmethod

@@ -3,13 +3,13 @@ ADD . /app
 WORKDIR /app/admin-frontend
 RUN yarn && yarn build
 
-FROM python:3.9
+FROM python:3.11
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false
 WORKDIR /app
-COPY ./pyproject.toml ./poetry.lock* /app/
-RUN poetry install --no-root --no-dev
+COPY ./README.md ./pyproject.toml ./poetry.lock* /app/
+RUN poetry install --only=main,docker
 ADD src /app/src
 ADD bot.py /app/
 COPY --from=frontend /app/nonebot_bison/admin_page/dist /app/nonebot_bison/admin_page/dist
 ENV HOST=0.0.0.0
-CMD ["python", "bot.py"]
+CMD ["nb", "run"]

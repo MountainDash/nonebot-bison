@@ -1473,13 +1473,13 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "nonebot-plugin-send-anything-anywhere"
-version = "0.4.0"
+version = "0.5.0"
 description = "An adaptor for nonebot2 adaptors"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "nonebot_plugin_send_anything_anywhere-0.4.0-py3-none-any.whl", hash = "sha256:d089729458e247d4717db195fe679ca2d47b86394f1dc20ce9f06eea300c2227"},
-    {file = "nonebot_plugin_send_anything_anywhere-0.4.0.tar.gz", hash = "sha256:c72d4cfbed963ba07a9e29cb40fd0174dce01a49f6f9944f4bbfda0bb8322630"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.5.0-py3-none-any.whl", hash = "sha256:bff64f5f337643ba34b9ea0bdd8d86d3ee6285a29b9083d416a67d4815e83ddf"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.5.0.tar.gz", hash = "sha256:0230db94ca5654e2b0462b144db7ea74b763ee04fa7bc53deecacf32362e5268"},
 ]
 
 [package.dependencies]
@@ -3088,11 +3088,11 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [extras]
-all = []
-cli = []
+all = ["anyio"]
+cli = ["anyio"]
 yaml = []
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "18a213324f151b109e4036f59a74b692f1df06c8a8c2ce2b538fdf0e2538d252"
+content-hash = "2aff8737867554e645fd65ebb7fb1012daba8439b8353d6d564970a77425344a"

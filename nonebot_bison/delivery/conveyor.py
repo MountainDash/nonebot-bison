@@ -1,7 +1,22 @@
+import weakref
+
 import anyio
 
-from .model import Parcel
-from .meta import ConveyorMeta
+from nonebot_bison.types import Parcel
+
+
+class ConveyorMeta(type):
+    _conveyor_record: dict[str, weakref.ref["Conveyor"]] = {}
+
+    def __call__(cls, *args, **kwargs) -> "Conveyor":
+        instance = super().__call__(*args, **kwargs)
+        cls._conveyor_record[instance.name] = weakref.ref(instance)
+        return instance
+
+    @classmethod
+    def get_conveyor_ref(cls, name: str) -> weakref.ref["Conveyor"] | None:
+        """获取传送带的弱引用"""
+        return cls._conveyor_record.get(name)
 
 
 class Conveyor(metaclass=ConveyorMeta):
@@ -29,3 +44,13 @@ class Conveyor(metaclass=ConveyorMeta):
 
     def statistics(self):
         return self._send_channel.statistics(), self._receive_channel.statistics()
+
+    @classmethod
+    async def put_to(cls, name: str, parcel: Parcel):
+        if conveyor_ref := cls.get_conveyor_ref(name):
+            conveyor = conveyor_ref()
+            if not conveyor:
+                raise RuntimeError(f"conveyor {name} not found")
+            await conveyor.put(parcel)
+        else:
+            raise RuntimeError(f"conveyor {name} not found")

@@ -1,12 +1,10 @@
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.types import PostHeader, PostPayload
 from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme import Theme, ThemeRenderUnsupportError
-
-if TYPE_CHECKING:
-    from nonebot_bison.post import Post
 
 
 class BriefTheme(Theme):
@@ -14,10 +12,7 @@ class BriefTheme(Theme):
 
     name: Literal["brief"] = "brief"
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        header = post.header
-        payload = post.payload
-
+    async def render(self, header: PostHeader, payload: PostPayload) -> list[MessageSegmentFactory]:
         if not payload.title:
             raise ThemeRenderUnsupportError("Post has no title")
         text = f"{payload.title}\n\n"

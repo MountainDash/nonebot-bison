@@ -4,10 +4,9 @@ from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 from pydantic import Field, BaseModel
 
-from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
-from ..post import Post, PostHeader, PostPayload
 from ..utils.scheduler_config import SchedulerConfig
+from ..types import Parcel, Target, RawPost, Category, PostHeader, PostPayload
 
 
 class ArkResponseBase(BaseModel):
@@ -86,7 +85,7 @@ class Arknights(NewMessage):
     def get_category(self, _) -> Category:
         return Category(1)
 
-    async def parse(self, raw_post: BulletinListItem) -> Post:
+    async def parse(self, raw_post: BulletinListItem) -> Parcel:
         raw_data = await self.client.get(
             f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
@@ -104,7 +103,7 @@ class Arknights(NewMessage):
             # 只有一张图片
             title = title_escape(data.title)
 
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,
@@ -150,7 +149,7 @@ class AkVersion(StatusChange):
         res = []
 
         def make_ark_update_post(title: str):
-            return Post(
+            return Parcel(
                 PostHeader(
                     platform_code=self.platform_name,
                     http_client=self.client,
@@ -208,7 +207,7 @@ class MonsterSiren(NewMessage):
     def get_category(self, _) -> Category:
         return Category(3)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
         res = await self.client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
         raw_data = res.json()
@@ -217,7 +216,7 @@ class MonsterSiren(NewMessage):
         soup = bs(content, "html.parser")
         imgs = [x["src"] for x in soup("img")]
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,
@@ -261,9 +260,9 @@ class TerraHistoricusComic(NewMessage):
     def get_category(self, _) -> Category:
         return Category(4)
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,

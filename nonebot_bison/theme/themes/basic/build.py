@@ -1,12 +1,10 @@
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme
+from nonebot_bison.types import PostHeader, PostPayload
 from nonebot_bison.utils import pic_merge, is_pics_mergable
-
-if TYPE_CHECKING:
-    from nonebot_bison.post import Post
 
 
 class BasicTheme(Theme):
@@ -17,9 +15,7 @@ class BasicTheme(Theme):
 
     name: Literal["basic"] = "basic"
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        header = post.header
-        payload = post.payload
+    async def render(self, header: PostHeader, payload: PostPayload) -> list[MessageSegmentFactory]:
         text = ""
 
         if payload.title:

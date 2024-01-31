@@ -1,16 +1,14 @@
 from pathlib import Path
+from typing import Literal
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
 
 import jinja2
 from pydantic import BaseModel, root_validator
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme.utils import convert_to_qr
+from nonebot_bison.types import PostHeader, PostPayload
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
-
-if TYPE_CHECKING:
-    from nonebot_bison.post import Post, PostPayload
 
 
 class CeobeInfo(BaseModel):
@@ -77,8 +75,7 @@ class CeobeCanteenTheme(Theme):
         content = CeoboContent(image=head_pic, text=payload.content)
         return CeobeCard(info=info, content=content, qr=convert_to_qr(payload.url or "No URL"))
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        payload = post.payload
+    async def render(self, header: PostHeader, payload: PostPayload) -> list[MessageSegmentFactory]:
         ceobe_card = self.parse(payload)
         from nonebot_plugin_htmlrender import get_new_page
 

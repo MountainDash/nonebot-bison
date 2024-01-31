@@ -1,12 +1,10 @@
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme, ThemeRenderError
+from nonebot_bison.types import PostHeader, PostPayload
 from nonebot_bison.utils import pic_merge, is_pics_mergable
-
-if TYPE_CHECKING:
-    from nonebot_bison.post import Post
 
 
 class Ht2iTheme(Theme):
@@ -27,9 +25,7 @@ class Ht2iTheme(Theme):
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
-    async def render(self, post: "Post"):
-        header = post.header
-        payload = post.payload
+    async def render(self, header: PostHeader, payload: PostPayload):
         _text = ""
 
         if payload.title:

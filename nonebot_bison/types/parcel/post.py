@@ -1,14 +1,19 @@
 from io import BytesIO
-from typing import Any
 from pathlib import Path
-from dataclasses import field, dataclass
+from typing import Any, Literal
+from dataclasses import dataclass
+from typing_extensions import Self
 
 from httpx import AsyncClient
-from nonebot_plugin_saa import MessageFactory
+from nonebot_plugin_saa import MessageFactory, PlatformTarget
+
+from nonebot_bison.delivery.registry import DefaultConveyor
+
+from .base import ParcelLabel, ParcelHeader, ParcelPayload
 
 
-@dataclass
-class PostHeader:
+@dataclass(kw_only=True)
+class PostHeader(ParcelHeader):
     """Post的头部信息, 是不会被渲染的部分"""
 
     platform_code: str
@@ -21,9 +26,25 @@ class PostHeader:
     compress: bool = False
     """是否将 Post 压缩为一条消息"""
 
+    send_target: PlatformTarget | None = None
+    """Post 的发送目标, 自动获得不需要手动填写"""
+
+    label: Literal[ParcelLabel.POST] = ParcelLabel.POST
+    conveyor: Literal[DefaultConveyor.RENDER] = DefaultConveyor.RENDER
+
 
 @dataclass
-class PostPayload:
+class PostExtra:
+    """Post的额外信息, 是不会被渲染的部分"""
+
+    messsage: list[MessageFactory] | None = None
+    """额外的消息, 一般用于发送附加消息"""
+    others: dict[str, Any] | None = None
+    """其他信息, 一般用于存储一些额外信息"""
+
+
+@dataclass
+class PostPayload(ParcelPayload):
     """Post的内容信息, 是会被渲染的部分"""
 
     content: str
@@ -44,22 +65,7 @@ class PostPayload:
     """发布者个性签名等"""
     platform: str | None = None
     """来源平台名称, 一般为 Platform.name"""
-    repost: "Post | None" = None
+    repost: Self | None = None
     """转发的Post"""
-
-
-@dataclass
-class PostExtra:
-    """Post的额外信息, 是不会被渲染的部分"""
-
-    messsage: list[MessageFactory] | None = None
-    """额外的消息, 一般用于发送附加消息"""
-    others: dict[str, Any] | None = None
-    """其他信息, 一般用于存储一些额外信息"""
-
-
-@dataclass
-class Post:
-    header: PostHeader
-    payload: PostPayload
-    extra: PostExtra = field(default_factory=PostExtra)
+    extra: PostExtra | None = None
+    """额外信息"""

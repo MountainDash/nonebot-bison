@@ -1,14 +1,16 @@
+from typing import cast
 from dataclasses import dataclass
 from collections import defaultdict
 
 from nonebot.log import logger
+from nonebot_plugin_saa import PlatformTarget
 from nonebot_plugin_apscheduler import scheduler
 
 from ..config import config
-from ..types import Target, SubUnit
-from ..delivery import render_dispatch
 from ..platform import platform_manager
+from ..delivery import Conveyor, DefaultConveyor
 from ..utils import ProcessContext, SchedulerConfig
+from ..types import Parcel, Target, SubUnit, PostHeader
 
 
 @dataclass
@@ -114,8 +116,15 @@ class Scheduler:
         if not to_send:
             return
 
-        # add to render queue
-        render_dispatch(to_send)
+        for target, posts in to_send:
+            for post in posts:
+                await self.send_parcel(target, post)
+
+    async def send_parcel(self, target: PlatformTarget, post: Parcel):
+        post_header = cast(PostHeader, post.header)
+        post_header.send_target = target
+
+        await Conveyor.put_to(DefaultConveyor.RENDER, post)
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

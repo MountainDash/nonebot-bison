@@ -5,8 +5,7 @@ from httpx import AsyncClient
 
 from .platform import NewMessage
 from ..utils import SchedulerConfig
-from ..types import Target, RawPost, ApiError
-from ..post import Post, PostHeader, PostPayload
+from ..types import Parcel, Target, RawPost, ApiError, PostHeader, PostPayload
 
 
 class NcmSchedConf(SchedulerConfig):
@@ -63,12 +62,12 @@ class NcmArtist(NewMessage):
     def get_date(self, post: RawPost) -> int:
         return post["publishTime"] // 1000
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         text = "新专辑发布：{}".format(raw_post["name"])
         target_name = raw_post["artist"]["name"]
         pics = [raw_post["picUrl"]]
         url = "https://music.163.com/#/album?id={}".format(raw_post["id"])
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,
@@ -135,12 +134,12 @@ class NcmRadio(NewMessage):
     def get_date(self, post: RawPost) -> int:
         return post["createTime"] // 1000
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         text = "网易云电台更新：{}".format(raw_post["name"])
         target_name = raw_post["radio"]["name"]
         pics = [raw_post["coverUrl"]]
         url = "https://music.163.com/#/program/{}".format(raw_post["id"])
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,

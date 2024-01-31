@@ -1,7 +1,8 @@
 import anyio
 from nonebot import logger
 
-from .model import Parcel
+from nonebot_bison.types import Parcel
+
 from .conveyor import Conveyor
 from .registry import CONVEYOR_DISPATCH_RECORD, DefaultConveyor
 
@@ -18,14 +19,13 @@ def get_default_conveyor(conveyor_name: DefaultConveyor) -> Conveyor:
     return __default_conveyor_record[conveyor_name]
 
 
-async def _create_default_conveyor():
+def _create_default_conveyor():
     """创建默认的传送带"""
     logger.info("create default conveyor")
-    # conveyor = Conveyor(DefaultConveyor.MAIN, max_buffer=10)
-    # __default_conveyor_record[DefaultConveyor.MAIN] = conveyor
 
     for _, member in DefaultConveyor.__members__.items():
         conveyor = Conveyor(member, max_buffer=10)
+        logger.success(f"created default conveyor |{member}|")
         __default_conveyor_record[member] = conveyor
 
 
@@ -49,15 +49,19 @@ async def _parcel_dispatch(parcel: Parcel):
 
 async def init_delivery():
     logger.info("init delivery")
-    await _create_default_conveyor()
+    _create_default_conveyor()
 
     async def _create_default_conveyor_dispatch_tasks(conveyor_name):
+        logger.success(f"start dispatch task for conveyor {conveyor_name}")
         async for parcel in __default_conveyor_record[conveyor_name].get_forever():
+            logger.debug(f"dispatch parcel to conveyor {conveyor_name}")
             await _parcel_dispatch(parcel)
 
     async with anyio.create_task_group() as tg:
         for conveyor_name in __default_conveyor_record:
-            tg.start_soon(_create_default_conveyor_dispatch_tasks, conveyor_name)
+            await tg.spawn(_create_default_conveyor_dispatch_tasks, conveyor_name)
+
+    logger.success("delivery init done")
 
 
 __all__ = [

@@ -4,8 +4,7 @@ from httpx import AsyncClient
 
 from ..utils import scheduler
 from .platform import NewMessage
-from ..types import Target, RawPost
-from ..post import Post, PostHeader, PostPayload
+from ..types import Parcel, Target, RawPost, PostHeader, PostPayload
 
 
 class FF14(NewMessage):
@@ -39,11 +38,11 @@ class FF14(NewMessage):
     def get_date(self, _: RawPost) -> None:
         return None
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         title = raw_post["Title"]
         text = raw_post["Summary"]
         url = raw_post["Author"]
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,

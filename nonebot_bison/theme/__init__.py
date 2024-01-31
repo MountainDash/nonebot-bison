@@ -4,10 +4,7 @@ from importlib import import_module
 
 from .types import Theme
 from .registry import theme_manager
-from .schemas import Parcel as Parcel
 from .types import ThemeRegistrationError
-from .schemas import ParcelHeader as ParcelHeader
-from .schemas import ParcelPayload as ParcelPayload
 from .types import ThemeRenderError as ThemeRenderError
 from .types import ThemeRenderUnsupportError as ThemeRenderUnsupportError
 

@@ -1,13 +1,11 @@
 from pathlib import Path
+from typing import Literal
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.types import PostHeader, PostPayload
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
-
-if TYPE_CHECKING:
-    from nonebot_bison.post import Post
 
 
 @dataclass
@@ -29,10 +27,8 @@ class ArknightsTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    async def render(self, post: "Post"):
+    async def render(self, header: PostHeader, payload: PostPayload):
         from nonebot_plugin_htmlrender import template_to_pic
-
-        payload = post.payload
 
         if not payload.title:
             raise ThemeRenderUnsupportError("标题为空")

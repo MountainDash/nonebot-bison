@@ -7,9 +7,8 @@ from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 
 from .platform import NewMessage
-from ..types import Target, RawPost
-from ..post import Post, PostHeader, PostPayload
 from ..utils import SchedulerConfig, text_similarity
+from ..types import Parcel, Target, RawPost, PostHeader, PostPayload
 
 
 class RssSchedConf(SchedulerConfig):
@@ -61,7 +60,7 @@ class Rss(NewMessage):
 
         return title, desc
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
         desc = soup.text.strip()
@@ -71,7 +70,7 @@ class Rss(NewMessage):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,

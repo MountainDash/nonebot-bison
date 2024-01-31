@@ -8,6 +8,7 @@ from sqlalchemy.sql.selectable import Select
 from nonebot_plugin_saa import PlatformTarget
 from nonebot_plugin_datastore.db import create_session
 from sqlalchemy.orm.strategy_options import selectinload
+from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
 
 from .utils import NBESFVerMatchErr
 from ..db_model import User, Subscribe
@@ -43,7 +44,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v2.SubGroup
     for user in user_data:
         assert isinstance(user, User)
         sub_pack = v2.SubPack(
-            user_target=PlatformTarget.deserialize(user.user_target),
+            user_target=cast(AllSupportedPlatformTarget, PlatformTarget.deserialize(user.user_target)),  # FIXME: 有点丑
             subs=user_id_sub_dict[user.id],
         )
         groups.append(sub_pack)

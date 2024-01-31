@@ -8,9 +8,8 @@ from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
 
 from .platform import NewMessage
-from ..post import Post, PostHeader, PostPayload
 from ..utils import SchedulerConfig, http_client
-from ..types import Tag, Target, RawPost, ApiError, Category
+from ..types import Tag, Parcel, Target, RawPost, ApiError, Category, PostHeader, PostPayload
 
 
 class WeiboSchedConf(SchedulerConfig):
@@ -110,7 +109,7 @@ class Weibo(NewMessage):
         text = raw_text.replace("<br />", "\n")
         return bs(text, "html.parser").text
 
-    async def parse(self, raw_post: RawPost) -> Post:
+    async def parse(self, raw_post: RawPost) -> Parcel:
         header = {
             "accept": (
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,"
@@ -153,7 +152,7 @@ class Weibo(NewMessage):
                 res.raise_for_status()
                 pics.append(res.content)
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
-        return Post(
+        return Parcel(
             PostHeader(
                 platform_code=self.platform_name,
                 http_client=self.client,

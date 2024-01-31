@@ -13,10 +13,9 @@ from httpx import AsyncClient
 from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
-from ..post import Post
 from ..plugin_config import plugin_config
 from ..utils import ProcessContext, SchedulerConfig
-from ..types import Tag, Target, RawPost, SubUnit, Category
+from ..types import Tag, Parcel, Target, RawPost, SubUnit, Category
 
 
 class CategoryNotSupport(Exception):
@@ -103,21 +102,21 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None: ...
 
     @abstractmethod
-    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]: ...
+    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Parcel]]]: ...
 
-    async def do_fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def do_fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Parcel]]]:
         return await catch_network_error(self.fetch_new_post, sub_unit) or []
 
     @abstractmethod
-    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]: ...
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Parcel]]]: ...
 
-    async def do_batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def do_batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Parcel]]]:
         return await catch_network_error(self.batch_fetch_new_post, sub_units) or []
 
     @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post: ...
+    async def parse(self, raw_post: RawPost) -> Parcel: ...
 
-    async def do_parse(self, raw_post: RawPost) -> Post:
+    async def do_parse(self, raw_post: RawPost) -> Parcel:
         "actually function called"
         return await self.parse(raw_post)
 
@@ -202,11 +201,11 @@ class Platform(metaclass=PlatformABCMeta, base=True):
 
     async def dispatch_user_post(
         self, new_posts: list[RawPost], sub_unit: SubUnit
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
-        res: list[tuple[PlatformTarget, list[Post]]] = []
+    ) -> list[tuple[PlatformTarget, list[Parcel]]]:
+        res: list[tuple[PlatformTarget, list[Parcel]]] = []
         for user, cats, required_tags in sub_unit.user_sub_infos:
             user_raw_post = await self.filter_user_custom(new_posts, cats, required_tags)
-            user_post: list[Post] = []
+            user_post: list[Parcel] = []
             for raw_post in user_raw_post:
                 user_post.append(await self.do_parse(raw_post))
             res.append((user, user_post))
@@ -223,13 +222,13 @@ class MessageProcess(Platform, abstract=True):
 
     def __init__(self, ctx: ProcessContext, client: AsyncClient):
         super().__init__(ctx, client)
-        self.parse_cache: dict[Any, Post] = {}
+        self.parse_cache: dict[Any, Parcel] = {}
 
     @abstractmethod
     def get_id(self, post: RawPost) -> Any:
         "Get post id of given RawPost"
 
-    async def do_parse(self, raw_post: RawPost) -> Post:
+    async def do_parse(self, raw_post: RawPost) -> Parcel:
         post_id = self.get_id(raw_post)
         if post_id not in self.parse_cache:
             retry_times = 3
@@ -319,7 +318,7 @@ class NewMessage(MessageProcess, abstract=True):
         self,
         post_list: list[RawPost],
         sub_unit: SubUnit,
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Parcel]]]:
         new_posts = await self.filter_common_with_diff(sub_unit.sub_target, post_list)
         if not new_posts:
             return []
@@ -336,11 +335,11 @@ class NewMessage(MessageProcess, abstract=True):
         self.parse_cache = {}
         return res
 
-    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Parcel]]]:
         post_list = await self.get_sub_list(sub_unit.sub_target)
         return await self._handle_new_post(post_list, sub_unit)
 
-    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Parcel]]]:
         if not self.has_target:
             raise RuntimeError("Target without target should not use batch api")  # pragma: no cover
         posts_set = await self.batch_get_sub_list([x[0] for x in sub_units])
@@ -366,11 +365,11 @@ class StatusChange(Platform, abstract=True):
     def compare_status(self, target: Target, old_status, new_status) -> list[RawPost]: ...
 
     @abstractmethod
-    async def parse(self, raw_post: RawPost) -> Post: ...
+    async def parse(self, raw_post: RawPost) -> Parcel: ...
 
     async def _handle_status_change(
         self, new_status: Any, sub_unit: SubUnit
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Parcel]]]:
         res = []
         if old_status := self.get_stored_data(sub_unit.sub_target):
             diff = self.compare_status(sub_unit.sub_target, old_status, new_status)
@@ -387,7 +386,7 @@ class StatusChange(Platform, abstract=True):
         self.set_stored_data(sub_unit.sub_target, new_status)
         return res
 
-    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def fetch_new_post(self, sub_unit: SubUnit) -> list[tuple[PlatformTarget, list[Parcel]]]:
         try:
             new_status = await self.get_status(sub_unit.sub_target)
         except self.FetchError as err:
@@ -395,7 +394,7 @@ class StatusChange(Platform, abstract=True):
             raise
         return await self._handle_status_change(new_status, sub_unit)
 
-    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Post]]]:
+    async def batch_fetch_new_post(self, sub_units: list[SubUnit]) -> list[tuple[PlatformTarget, list[Parcel]]]:
         if not self.has_target:
             raise RuntimeError("Target without target should not use batch api")  # pragma: no cover
         new_statuses = await self.batch_get_status([x[0] for x in sub_units])
@@ -412,7 +411,7 @@ class SimplePost(NewMessage, abstract=True):
         self,
         new_posts: list[RawPost],
         sub_unit: SubUnit,
-    ) -> list[tuple[PlatformTarget, list[Post]]]:
+    ) -> list[tuple[PlatformTarget, list[Parcel]]]:
         if not new_posts:
             return []
         else:

@@ -4,8 +4,8 @@ from nonebot import logger, require
 from pydantic import BaseModel, PrivateAttr
 from nonebot_plugin_saa import MessageSegmentFactory
 
+from .parcel import Parcel
 from ..plugin_config import plugin_config
-from ..types import PostHeader, PostPayload
 
 
 class Theme(ABC, BaseModel):
@@ -18,7 +18,7 @@ class Theme(ABC, BaseModel):
 
     _browser_checked: bool = PrivateAttr(default=False)
 
-    async def is_support_render(self, header: PostHeader, payload: PostPayload) -> bool:
+    async def is_support_render(self, post: Parcel) -> bool:
         """是否支持渲染该类型的Post"""
         if self.need_browser and not plugin_config.bison_theme_use_browser:
             logger.warning(f"Theme {self.name} need browser, but `bison_theme_use_browser` is False")
@@ -29,14 +29,14 @@ class Theme(ABC, BaseModel):
         if self.need_browser:
             self.check_htmlrender_plugin_enable()
 
-    async def do_render(self, header: PostHeader, payload: PostPayload) -> list[MessageSegmentFactory]:
+    async def do_render(self, post: Parcel) -> list[MessageSegmentFactory]:
         """真正调用的渲染函数，会对渲染过程进行一些处理"""
-        if not await self.is_support_render(header, payload):
-            raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {payload} by support check")
+        if not await self.is_support_render(post):
+            raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {post} by support check")
 
         await self.prepare()
 
-        return await self.render(header, payload)
+        return await self.render(post)
 
     def check_htmlrender_plugin_enable(self):
         """根据`need_browser`检测渲染插件"""
@@ -52,7 +52,9 @@ class Theme(ABC, BaseModel):
                 raise e
 
     @abstractmethod
-    async def render(self, header: PostHeader, payload: PostPayload) -> list[MessageSegmentFactory]: ...
+    async def render(self, post: Parcel) -> list[MessageSegmentFactory]:
+        """对多种Post的实例可以考虑使用@overload"""
+        ...
 
 
 class ThemeRegistrationError(Exception):

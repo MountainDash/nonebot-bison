@@ -1,12 +1,10 @@
+from enum import Enum
 from functools import wraps
 from typing import TYPE_CHECKING
 from collections.abc import Callable, Coroutine
 
 if TYPE_CHECKING:
     from .model import Parcel
-
-MAIN_CONVEYOR = "main"
-"""主要的传送带"""
 
 
 CONVEYOR_DISPATCH_RECORD: dict[str, dict[str, Callable[[Parcel], Coroutine[None, None, None]]]] = {}
@@ -19,6 +17,12 @@ CONVEYOR_DISPATCH_RECORD: dict[str, dict[str, Callable[[Parcel], Coroutine[None,
     }
 }
 """
+
+
+class DefaultConveyor(Enum, str):
+    """默认传送带名称"""
+
+    MAIN = "main"
 
 
 def conveyor_dispatch(conveyor_name: str, parcel_label: str):

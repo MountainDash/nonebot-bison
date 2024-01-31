@@ -14,12 +14,6 @@ class ConveyorMeta(type):
         return instance
 
     @classmethod
-    def get_conveyor(cls, name: str) -> "Conveyor | None":
-        if conveyor_ref := cls._conveyor_record.get(name):
-            if c := conveyor_ref():
-                return c
-            else:
-                del cls._conveyor_record[name]
-                return None
-
-        return None
+    def get_conveyor_ref(cls, name: str) -> weakref.ref["Conveyor"] | None:
+        """获取传送带的弱引用"""
+        return cls._conveyor_record.get(name)

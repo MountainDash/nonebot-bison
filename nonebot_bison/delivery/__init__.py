@@ -1,5 +1,6 @@
-import anyio
-from nonebot import logger
+import asyncio
+
+from nonebot import logger, get_driver
 
 from nonebot_bison.types import Parcel
 
@@ -53,15 +54,30 @@ async def init_delivery():
 
     async def _create_default_conveyor_dispatch_tasks(conveyor_name):
         logger.success(f"start dispatch task for conveyor {conveyor_name}")
-        async for parcel in __default_conveyor_record[conveyor_name].get_forever():
-            logger.debug(f"dispatch parcel to conveyor {conveyor_name}")
-            await _parcel_dispatch(parcel)
+        logger.info(f"conveyor {conveyor_name} statistics: {__default_conveyor_record[conveyor_name].statistics()}")
+        async with __default_conveyor_record[conveyor_name].get_forever() as channel:
+            logger.info(f"conveyor {conveyor_name} statistics: {__default_conveyor_record[conveyor_name].statistics()}")
+            async for parcel in channel:
+                logger.debug(f"dispatch parcel to conveyor {conveyor_name}")
+                await _parcel_dispatch(parcel)
 
-    async with anyio.create_task_group() as tg:
-        for conveyor_name in __default_conveyor_record:
-            await tg.spawn(_create_default_conveyor_dispatch_tasks, conveyor_name)
+    # async with anyio.create_task_group() as tg:
+    #     for conveyor_name in __default_conveyor_record:
+    #         await tg.spawn(_create_default_conveyor_dispatch_tasks, conveyor_name)
+    for conveyor_name in __default_conveyor_record:
+        asyncio.create_task(_create_default_conveyor_dispatch_tasks(conveyor_name))
 
     logger.success("delivery init done")
+
+
+@get_driver().on_shutdown
+async def _shutdown_delivery():
+    logger.info("shutdown delivery")
+    for conveyor in __default_conveyor_record.values():
+        logger.info(conveyor.statistics())
+        await conveyor.ashutdown()
+        logger.info(conveyor.statistics())
+    logger.success("delivery shutdown done")
 
 
 __all__ = [

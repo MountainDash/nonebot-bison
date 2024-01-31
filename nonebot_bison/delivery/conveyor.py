@@ -33,14 +33,16 @@ class Conveyor(metaclass=ConveyorMeta):
     def get_nowait(self) -> Parcel:
         return self._receive_channel.receive_nowait()
 
-    async def get_forever(self):
-        async with self._receive_channel.clone() as receive_channel:
-            async for parcel in receive_channel:
-                yield parcel
+    def get_forever(self):
+        return self._receive_channel
 
-    async def shutdown(self):
+    async def ashutdown(self):
         await self._send_channel.aclose()
         await self._receive_channel.aclose()
+
+    def shutdown(self):
+        self._send_channel.close()
+        self._receive_channel.close()
 
     def statistics(self):
         return self._send_channel.statistics(), self._receive_channel.statistics()

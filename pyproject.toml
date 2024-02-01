@@ -22,7 +22,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0.0"
-bs4 = "^0.0.1"
+bs4 = ">=0.0.1,<0.0.3"
 expiringdict = "^1.2.1"
 feedparser = "^6.0.2"
 httpx = ">=0.16.1"
@@ -31,7 +31,7 @@ nonebot-adapter-onebot = "^2.0.0"
 nonebot-plugin-htmlrender = ">=0.2.0"
 nonebot-plugin-datastore = ">=0.6.2,<2.0.0"
 nonebot-plugin-apscheduler = ">=0.2,<0.4"
-nonebot-plugin-send-anything-anywhere = "^0.4.0"
+nonebot-plugin-send-anything-anywhere = ">=0.4,<0.6"
 pillow = ">=8.1,<11.0"
 pyjwt = "^2.1.0"
 python-socketio = "^5.4.0"

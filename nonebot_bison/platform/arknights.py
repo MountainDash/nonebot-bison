@@ -14,7 +14,7 @@ from .platform import NewMessage, StatusChange, CategoryNotRecognize
 class ArknightsSchedConf(SchedulerConfig):
     name = "arknights"
     schedule_type = "interval"
-    schedule_setting = {"seconds": 30}
+    schedule_setting = {"seconds": 120}
 
 
 class Arknights(NewMessage):

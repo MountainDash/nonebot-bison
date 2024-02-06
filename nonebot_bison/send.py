@@ -2,8 +2,8 @@ import asyncio
 from collections import deque
 
 from nonebot.log import logger
+from nonebot_plugin_saa.auto_select_bot import refresh_bots
 from nonebot.adapters.onebot.v11.exception import ActionFailed
-from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
 
 from .plugin_config import plugin_config

@@ -1,8 +1,8 @@
 import datetime
 from pathlib import Path
 
+from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy.dialects.postgresql import JSONB
-from nonebot_plugin_saa.utils import PlatformTarget
 from nonebot_plugin_datastore import get_plugin_data
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from sqlalchemy import JSON, String, ForeignKey, UniqueConstraint

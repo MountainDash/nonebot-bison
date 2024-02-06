@@ -37,7 +37,7 @@ _HEADER = {
 class WeiboSchedConf(SchedulerConfig):
     name = "weibo.com"
     schedule_type = "interval"
-    schedule_setting = {"seconds": 3}
+    schedule_setting = {"seconds": 300}
 
 
 class Weibo(NewMessage):

@@ -99,33 +99,27 @@ class Config(metaclass=Singleton):
             # update
             assert not isinstance(user_data, list)
             subs: list = user_data.get("subs", [])
-            subs.append(
-                {
+            subs.append({
+                "target": target,
+                "target_type": target_type,
+                "target_name": target_name,
+                "cats": cats,
+                "tags": tags,
+            })
+            self.user_target.update({"subs": subs}, query)
+        else:
+            # insert
+            self.user_target.insert({
+                "user": user,
+                "user_type": user_type,
+                "subs": [{
                     "target": target,
                     "target_type": target_type,
                     "target_name": target_name,
                     "cats": cats,
                     "tags": tags,
-                }
-            )
-            self.user_target.update({"subs": subs}, query)
-        else:
-            # insert
-            self.user_target.insert(
-                {
-                    "user": user,
-                    "user_type": user_type,
-                    "subs": [
-                        {
-                            "target": target,
-                            "target_type": target_type,
-                            "target_name": target_name,
-                            "cats": cats,
-                            "tags": tags,
-                        }
-                    ],
-                }
-            )
+                }],
+            })
         self.update_send_cache()
 
     def list_subscribe(self, user, user_type) -> list[SubscribeContent]:
@@ -186,14 +180,12 @@ class Config(metaclass=Singleton):
         for user in self.user_target.all():
             for sub in user.get("subs", []):
                 if sub.get("target_type") not in supported_target_type:
-                    to_del.append(
-                        {
-                            "user": user["user"],
-                            "user_type": user["user_type"],
-                            "target": sub["target"],
-                            "target_type": sub["target_type"],
-                        }
-                    )
+                    to_del.append({
+                        "user": user["user"],
+                        "user_type": user["user_type"],
+                        "target": sub["target"],
+                        "target_type": sub["target_type"],
+                    })
                     continue
                 res[sub["target_type"]][sub["target"]].append(User(user["user"], user["user_type"]))
                 cat_res[sub["target_type"]][sub["target"]]["{}-{}".format(user["user_type"], user["user"])] = sub[

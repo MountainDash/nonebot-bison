@@ -19,7 +19,7 @@ from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotR
 class BilibiliSchedConf(SchedulerConfig):
     name = "bilibili.com"
     schedule_type = "interval"
-    schedule_setting = {"seconds": 10}
+    schedule_setting = {"seconds": 60}
 
     _client_refresh_time: datetime
     cookie_expire_time = timedelta(hours=5)

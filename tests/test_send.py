@@ -34,8 +34,8 @@ async def test_send_no_queue(app: App, mocker: MockerFixture):
 async def test_send_queue(app: App, mocker: MockerFixture):
     import nonebot
     from nonebot.adapters.onebot.v11.bot import Bot
+    from nonebot_plugin_saa.auto_select_bot import refresh_bots
     from nonebot_plugin_saa import TargetQQGroup, MessageFactory
-    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.send import MESSGE_SEND_INTERVAL, send_msgs
@@ -63,7 +63,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
 @pytest.mark.asyncio
 async def test_send_merge_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
+    from nonebot_plugin_saa.auto_select_bot import refresh_bots
     from nonebot_plugin_saa import Text, Image, TargetQQGroup, MessageFactory, AggregatedMessageFactory
 
     from nonebot_bison.send import send_msgs
@@ -108,7 +108,7 @@ async def test_send_merge_no_queue(app: App):
 
 async def test_send_merge2_no_queue(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot_plugin_saa.utils.auto_select_bot import refresh_bots
+    from nonebot_plugin_saa.auto_select_bot import refresh_bots
     from nonebot_plugin_saa import Text, Image, TargetQQGroup, MessageFactory, AggregatedMessageFactory
 
     from nonebot_bison.send import send_msgs

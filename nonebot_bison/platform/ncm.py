@@ -12,7 +12,7 @@ from ..types import Target, RawPost, ApiError
 class NcmSchedConf(SchedulerConfig):
     name = "music.163.com"
     schedule_type = "interval"
-    schedule_setting = {"minutes": 1}
+    schedule_setting = {"minutes": 60}
 
 
 class NcmArtist(NewMessage):

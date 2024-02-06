@@ -2,7 +2,9 @@
 
 ## 最近更新
 
-* No changes
+### 新功能
+
+- BISON_OUTER_URL配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))
 
 ## v0.8.2
 

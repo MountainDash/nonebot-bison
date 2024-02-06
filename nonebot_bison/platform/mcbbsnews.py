@@ -16,7 +16,7 @@ from .platform import NewMessage, CategoryNotSupport, CategoryNotRecognize
 class McbbsnewsSchedConf(SchedulerConfig):
     name = "mcbbsnews"
     schedule_type = "interval"
-    schedule_setting = {"minutes": 30}
+    schedule_setting = {"minutes": 120}
 
 
 class McbbsNews(NewMessage):

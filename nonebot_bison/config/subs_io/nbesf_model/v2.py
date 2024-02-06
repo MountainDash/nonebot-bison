@@ -5,7 +5,7 @@ from functools import partial
 
 from nonebot.log import logger
 from pydantic import BaseModel
-from nonebot_plugin_saa.utils import AllSupportedPlatformTarget
+from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
 
 from ..utils import NBESFParseErr
 from ....types import Tag, Category

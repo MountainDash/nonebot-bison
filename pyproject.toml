@@ -38,20 +38,20 @@ python-socketio = "^5.4.0"
 tinydb = "^4.3.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.7.0"
+black = ">=23.7,<25.0"
 ipdb = "^0.13.4"
 isort = "^5.10.1"
 nonemoji = "^0.1.4"
 nb-cli = "^1.0.5"
 pre-commit = "^3.3.0"
-ruff = ">=0.0.278,<0.0.293"
+ruff = ">=0.0.278,<0.2.2"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
 nonebug = "^0.3.4"
 nonebug-saa = "^0.4.0"
 pytest = "^7.0.1"
-pytest-asyncio = ">=0.18.1,<0.22.0"
+pytest-asyncio = ">=0.18.1,<0.24.0"
 pytest-cov = ">=3,<5"
 pytest-mock = "^3.10.0"
 pytest-xdist = { extras = ["psutil"], version = "^3.1.0" }

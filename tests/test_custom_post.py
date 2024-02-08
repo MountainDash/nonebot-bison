@@ -4,11 +4,12 @@ import respx
 import pytest
 from httpx import Response
 from nonebug.app import App
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 
 @pytest.fixture()
 def ms_list():
+    from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+
     msg_segments: list[MessageSegmentFactory] = []
     msg_segments.append(Text("【Zc】每早合约日替攻略！"))
     msg_segments.append(

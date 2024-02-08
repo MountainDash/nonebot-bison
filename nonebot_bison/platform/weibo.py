@@ -160,4 +160,5 @@ class Weibo(NewMessage):
             url=detail_url,
             pics=pics,
             target_name=info["user"]["screen_name"],
+            category=self.categories[self.get_category(raw_post)],
         )

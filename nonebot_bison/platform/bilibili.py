@@ -165,35 +165,43 @@ class Bilibili(NewMessage):
 
     async def parse(self, raw_post: RawPost) -> Post:
         card_content = json.loads(raw_post["card"])
-        post_type = self.get_category(raw_post)
+        post_category = self.get_category(raw_post)
+        orig_category = Category(0)
         target_name = raw_post["desc"]["user_profile"]["info"]["uname"]
-        if post_type >= 1 and post_type < 5:
+        if post_category >= 1 and post_category < 5:
             url = ""
-            if post_type == 1:
+            if post_category == 1:
                 # 一般动态
                 url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
-            elif post_type == 2:
+            elif post_category == 2:
                 # 专栏文章
                 url = "https://www.bilibili.com/read/cv{}".format(raw_post["desc"]["rid"])
-            elif post_type == 3:
+            elif post_category == 3:
                 # 视频
                 url = "https://www.bilibili.com/video/{}".format(raw_post["desc"]["bvid"])
-            elif post_type == 4:
+            elif post_category == 4:
                 # 纯文字
                 url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
-            text, pic = self._get_info(post_type, card_content)
-        elif post_type == 5:
+            text, pic = self._get_info(post_category, card_content)
+        elif post_category == 5:
             # 转发
             url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
             text = card_content["item"]["content"]
-            orig_type = card_content["item"]["orig_type"]
+            orig_category = self._do_get_category(card_content["item"]["orig_type"])
             orig = json.loads(card_content["origin"])
-            orig_text, pic = self._get_info(self._do_get_category(orig_type), orig)
+            orig_text, pic = self._get_info(orig_category, orig)
             text += "\n--------------\n"
             text += orig_text
         else:
-            raise CategoryNotSupport(post_type)
-        return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
+            raise CategoryNotSupport(post_category)
+        return Post(
+            "bilibili",
+            text=text,
+            url=url,
+            pics=pic,
+            target_name=target_name,
+            category=self.categories[post_category] if not orig_category else f"转发自{self.categories[orig_category]}",
+        )
 
 
 class Bilibililive(StatusChange):
@@ -331,14 +339,14 @@ class Bilibililive(StatusChange):
     async def parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
         pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
-        title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
             self.name,
-            text=title,
+            text=raw_post.title,
             url=url,
             pics=list(pic),
             target_name=target_name,
+            category=self.categories[self.get_category(raw_post)].rstrip("提醒"),
             compress=True,
         )
 

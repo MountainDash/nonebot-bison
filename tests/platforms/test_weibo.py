@@ -70,6 +70,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
     assert post.target_name == "明日方舟Arknights"
     assert len(post.pics) == 1
+    assert post.category == "图文"
 
 
 @pytest.mark.asyncio

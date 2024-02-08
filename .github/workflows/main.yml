@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/build-frontend
 
       - name: Upload dist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend
           path: ./admin-frontend/build/
@@ -78,7 +78,7 @@ jobs:
         run: poetry run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare and not render' -n auto
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           flags: smoke-test
           env_vars: OS,PYTHON_VERSION
@@ -111,7 +111,7 @@ jobs:
         run: poetry run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare' -n auto
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           flags: all-test
           env_vars: OS,PYTHON_VERSION
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download frontend files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend
           path: ./src/plugins/nonebot_bison/admin_page/dist
@@ -185,7 +185,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download frontend files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend
           path: ./src/plugins/nonebot_bison/admin_page/dist

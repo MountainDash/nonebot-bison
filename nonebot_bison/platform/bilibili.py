@@ -51,6 +51,12 @@ class BilibiliSchedConf(SchedulerConfig):
         return await super().get_query_name_client()
 
 
+class BililiveSchedConf(SchedulerConfig):
+    name = "live.bilibili.com"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 3}
+
+
 class Bilibili(NewMessage):
     categories = {
         1: "一般动态",
@@ -205,7 +211,7 @@ class Bilibililive(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler = BilibiliSchedConf
+    scheduler = BililiveSchedConf
     name = "Bilibili直播"
     has_target = True
     use_batch = True

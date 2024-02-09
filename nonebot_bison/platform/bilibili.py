@@ -56,6 +56,32 @@ class BililiveSchedConf(SchedulerConfig):
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
 
+    _client_refresh_time: datetime
+    cookie_expire_time = timedelta(hours=5)
+
+    def __init__(self):
+        self._client_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
+        super().__init__()
+
+    async def _init_session(self):
+        res = await self.default_http_client.get("https://www.bilibili.com/")
+        if res.status_code != 200:
+            logger.warning("unable to refresh temp cookie")
+        else:
+            self._client_refresh_time = datetime.now()
+
+    async def _refresh_client(self):
+        if datetime.now() - self._client_refresh_time > self.cookie_expire_time:
+            await self._init_session()
+
+    async def get_client(self, target: Target) -> AsyncClient:
+        await self._refresh_client()
+        return await super().get_client(target)
+
+    async def get_query_name_client(self) -> AsyncClient:
+        await self._refresh_client()
+        return await super().get_query_name_client()
+
 
 class Bilibili(NewMessage):
     categories = {

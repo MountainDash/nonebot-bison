@@ -34,22 +34,22 @@ async def test_scheduler_without_time(init_scheduler):
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-live", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-bangumi", [], [])
 
     await config.update_time_weight_config(T_Target("t2"), "bilibili", WeightConfig(default=20, time_config=[]))
-    await config.update_time_weight_config(T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[]))
+    await config.update_time_weight_config(T_Target("t2"), "bilibili-bangumi", WeightConfig(default=30, time_config=[]))
 
     await init_scheduler()
 
     static_res = await get_schedule_times(BilibiliSchedConf, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-live-t2"] == 3
+    assert static_res["bilibili-bangumi-t2"] == 3
 
     static_res = await get_schedule_times(BilibiliSchedConf, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-live-t2"] == 3
+    assert static_res["bilibili-bangumi-t2"] == 3
 
 
 async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
@@ -60,12 +60,12 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
+    from nonebot_bison.platform.bilibili import BililiveSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
 
-    mocker.patch.object(BilibiliSchedConf, "get_client", return_value=AsyncClient())
+    mocker.patch.object(BililiveSchedConf, "get_client", return_value=AsyncClient())
 
     await init_scheduler()
 
@@ -81,7 +81,7 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
         {"bilibili-live": mocker.Mock(return_value=fake_platform_obj)},
     )
 
-    await scheduler_dict[BilibiliSchedConf].exec_fetch()
+    await scheduler_dict[BililiveSchedConf].exec_fetch()
 
     batch_fetch_mock.assert_called_once_with([
         (T_Target("t1"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
@@ -100,7 +100,7 @@ async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixtu
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-live", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-bangumi", [], [])
 
     await config.update_time_weight_config(
         T_Target("t2"),
@@ -110,7 +110,7 @@ async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixtu
             time_config=[TimeWeightConfig(start_time=time(10), end_time=time(11), weight=1000)],
         ),
     )
-    await config.update_time_weight_config(T_Target("t2"), "bilibili-live", WeightConfig(default=30, time_config=[]))
+    await config.update_time_weight_config(T_Target("t2"), "bilibili-bangumi", WeightConfig(default=30, time_config=[]))
 
     await init_scheduler()
 
@@ -119,12 +119,12 @@ async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixtu
     static_res = await get_schedule_times(BilibiliSchedConf, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-live-t2"] == 3
+    assert static_res["bilibili-bangumi-t2"] == 3
 
     static_res = await get_schedule_times(BilibiliSchedConf, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-live-t2"] == 3
+    assert static_res["bilibili-bangumi-t2"] == 3
 
     mocker.patch.object(db_config, "_get_time", return_value=time(10, 30))
 

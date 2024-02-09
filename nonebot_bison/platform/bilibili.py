@@ -105,18 +105,19 @@ class Bilibili(NewMessage):
         return post["desc"]["timestamp"]
 
     def _do_get_category(self, post_type: int) -> Category:
-        if post_type == 2:
-            return Category(1)
-        elif post_type == 64:
-            return Category(2)
-        elif post_type == 8:
-            return Category(3)
-        elif post_type == 4:
-            return Category(4)
-        elif post_type == 1:
-            # 转发
-            return Category(5)
-        raise CategoryNotRecognize(post_type)
+        match post_type:
+            case 2:
+                return Category(1)
+            case 64:
+                return Category(2)
+            case 8:
+                return Category(3)
+            case 4:
+                return Category(4)
+            case 1:
+                return Category(5)
+            case _:
+                raise CategoryNotRecognize(post_type)
 
     def get_category(self, post: RawPost) -> Category:
         post_type = post["desc"]["type"]
@@ -140,27 +141,28 @@ class Bilibili(NewMessage):
         return text
 
     def _get_info(self, post_type: Category, card) -> tuple[str, list]:
-        if post_type == 1:
-            # 一般动态
-            text = card["item"]["description"]
-            pic = [img["img_src"] for img in card["item"]["pictures"]]
-        elif post_type == 2:
-            # 专栏文章
-            text = "{} {}".format(card["title"], card["summary"])
-            pic = card["image_urls"]
-        elif post_type == 3:
-            # 视频
-            dynamic = card.get("dynamic", "")
-            title = card["title"]
-            desc = card.get("desc", "")
-            text = self._text_process(dynamic, desc, title)
-            pic = [card["pic"]]
-        elif post_type == 4:
-            # 纯文字
-            text = card["item"]["content"]
-            pic = []
-        else:
-            raise CategoryNotSupport(post_type)
+        match post_type:
+            case 1:
+                # 一般动态
+                text = card["item"]["description"]
+                pic = [img["img_src"] for img in card["item"]["pictures"]]
+            case 2:
+                # 专栏文章
+                text = "{} {}".format(card["title"], card["summary"])
+                pic = card["image_urls"]
+            case 3:
+                # 视频
+                dynamic = card.get("dynamic", "")
+                title = card["title"]
+                desc = card.get("desc", "")
+                text = self._text_process(dynamic, desc, title)
+                pic = [card["pic"]]
+            case 4:
+                # 纯文字
+                text = card["item"]["content"]
+                pic = []
+            case _:
+                raise CategoryNotSupport(post_type)
         return text, pic
 
     async def parse(self, raw_post: RawPost) -> Post:
@@ -168,32 +170,39 @@ class Bilibili(NewMessage):
         post_category = self.get_category(raw_post)
         orig_category = Category(0)
         target_name = raw_post["desc"]["user_profile"]["info"]["uname"]
-        if post_category >= 1 and post_category < 5:
-            url = ""
-            if post_category == 1:
+
+        if post_category not in range(1, 6):
+            raise CategoryNotSupport(post_category)
+
+        match post_category:
+            case 1:
                 # 一般动态
                 url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
-            elif post_category == 2:
+                text, pic = self._get_info(post_category, card_content)
+            case 2:
                 # 专栏文章
                 url = "https://www.bilibili.com/read/cv{}".format(raw_post["desc"]["rid"])
-            elif post_category == 3:
+                text, pic = self._get_info(post_category, card_content)
+            case 3:
                 # 视频
                 url = "https://www.bilibili.com/video/{}".format(raw_post["desc"]["bvid"])
-            elif post_category == 4:
+                text, pic = self._get_info(post_category, card_content)
+            case 4:
                 # 纯文字
                 url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
-            text, pic = self._get_info(post_category, card_content)
-        elif post_category == 5:
-            # 转发
-            url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
-            text = card_content["item"]["content"]
-            orig_category = self._do_get_category(card_content["item"]["orig_type"])
-            orig = json.loads(card_content["origin"])
-            orig_text, pic = self._get_info(orig_category, orig)
-            text += "\n--------------\n"
-            text += orig_text
-        else:
-            raise CategoryNotSupport(post_category)
+                text, pic = self._get_info(post_category, card_content)
+            case 5:
+                # 转发
+                url = "https://t.bilibili.com/{}".format(raw_post["desc"]["dynamic_id_str"])
+                text = card_content["item"]["content"]
+                orig_category = self._do_get_category(card_content["item"]["orig_type"])
+                orig = json.loads(card_content["origin"])
+                orig_text, pic = self._get_info(orig_category, orig)
+                text += "\n--------------\n"
+                text += orig_text
+            case _:
+                raise CategoryNotSupport(post_category)
+
         return Post(
             "bilibili",
             text=text,

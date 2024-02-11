@@ -16,3 +16,4 @@ docs
 .*
 
 !pyproject.toml
+!README.md

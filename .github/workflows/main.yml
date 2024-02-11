@@ -127,7 +127,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend
-          path: ./src/plugins/nonebot_bison/admin_page/dist
+          path: ./nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -188,7 +188,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend
-          path: ./src/plugins/nonebot_bison/admin_page/dist
+          path: ./nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

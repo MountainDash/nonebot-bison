@@ -1,7 +1,5 @@
-from typing import Any
-
 import nonebot
-from pydantic import BaseSettings, root_validator
+from pydantic import BaseSettings
 
 global_config = nonebot.get_driver().config
 
@@ -30,17 +28,6 @@ class PlugConfig(BaseSettings):
 
     class Config:
         extra = "ignore"
-
-    @root_validator(pre=True)
-    def replace_empty(cls, values: dict[str, Any]):
-        """当传入空字符串时，使用默认值
-
-        用于处理环境变量传入的空字符串
-        """
-        for key, value in values.items():
-            if value == "":
-                values[key] = cls.__fields__[key].default
-        return values
 
 
 plugin_config = PlugConfig(**global_config.dict())

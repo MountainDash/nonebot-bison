@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- 🔧 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))
+
 ### 新功能
 
 - BISON_OUTER_URL配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))

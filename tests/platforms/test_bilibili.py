@@ -80,6 +80,7 @@ async def test_video_forward(bilibili, bing_dy_list):
         " \n档案类型：可见 \n档案描述：今天请了病假在宿舍休息。很舒适。"
         " \n提供者：赫默\n=================\n《可露希尔的秘密档案》11话：来宿舍休息一下吧"
     )
+    assert post.category == "转发自视频"
 
 
 @pytest.mark.asyncio
@@ -115,6 +116,7 @@ async def test_article_forward(bilibili, bing_dy_list):
         "心狠手辣）前言感谢楪筱祈ぺ的动态-哔哩哔哩 (bilibili.com) 对饼学的贡献！后续排期：9.17【风暴瞭望】、"
         "10.01【玛莉娅·临光】复刻、10.1"
     )
+    assert post.category == "转发自专栏文章"
 
 
 @pytest.mark.asyncio
@@ -131,6 +133,7 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
         "星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n_____________\n谦逊留给观众，"
         "骄傲发自歌喉，此夜，唯我璀璨。 "
     )
+    assert post.category == "转发自一般动态"
 
 
 @pytest.mark.asyncio
@@ -178,6 +181,7 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
         " 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，"
         "我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
     )
+    assert post.category == "一般动态"
 
 
 async def test_parse_target(bilibili: "Bilibili"):

@@ -17,6 +17,8 @@ class _Post(BasePost):
     url: str | None = None
     target_name: str | None = None
     pics: list[str | bytes] = field(default_factory=list)
+    category: str | None = None
+    """展现在消息开头的分类信息，如“视频”、“转发”等。"""
 
     _message: list[MessageSegmentFactory] | None = None
     _pic_message: list[MessageSegmentFactory] | None = None
@@ -101,7 +103,7 @@ class _Post(BasePost):
         if self._message is None:
             await self._pic_merge()
             msg_segments: list[MessageSegmentFactory] = []
-            text = ""
+            text = f"[{self.category}] " if self.category else ""
             if self.text:
                 text += "{}".format(self.text if len(self.text) < 500 else self.text[:500] + "...")
             if text:
@@ -142,7 +144,7 @@ class _Post(BasePost):
             self.target_name,
             self.text if len(self.text) < 500 else self.text[:500] + "...",
             self.url,
-            ", ".join("b64img" if isinstance(x, bytes) or x.startswith("base64") else x for x in self.pics),
+            ", ".join("b64img" if not isinstance(x, str) or x.startswith("base64") else x for x in self.pics),
         )
 
 

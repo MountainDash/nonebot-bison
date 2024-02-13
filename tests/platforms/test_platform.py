@@ -578,7 +578,7 @@ async def test_batch_fetch_compare_status(app: App):
         enable_tag = False
         schedule_type = "interval"
         schedule_kw = {"seconds": 10}
-        has_target = False
+        has_target = True
         categories = {
             Category(1): "转发",
             Category(2): "视频",

@@ -160,6 +160,7 @@ class McbbsNews(NewMessage):
             url=post_url,
             pics=list(pics),
             target_name=post["category"],
+            category=self.categories[self.get_category(post)],
         )
 
     async def _news_render(self, url: str, selector: str) -> list[bytes]:

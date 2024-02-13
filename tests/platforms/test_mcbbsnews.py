@@ -43,6 +43,7 @@ async def test_fetch_new(mcbbsnews, dummy_user_subinfo, raw_post_list):
     assert post.url == "https://www.mcbbs.net/{}".format(raw_post["url"])
     assert post.target_name == raw_post["category"]
     assert len(post.pics) == 1
+    assert post.category == "Java版资讯"
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,8 @@
+import reprlib
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
-from dataclasses import dataclass
+from dataclasses import fields, dataclass
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
@@ -82,3 +83,27 @@ class Post(AbstractPost):
                 continue
         else:
             raise ThemeRenderError(f"No theme can render Post of {self.platform.__class__.__name__}")
+
+    def __str__(self) -> str:
+        aRepr = reprlib.Repr()
+        aRepr.maxstring = 100
+
+        post_format = f"""## Post: {id(self):X} ##
+
+{self.content if len(self.content) < 200 else self.content[:200] + '...'}
+
+来源: <Platform {self.platform.platform_name}>
+"""
+        post_format += "附加信息:\n"
+        for field in fields(self):
+            if field.name in ("content", "platform", "repost"):
+                continue
+            value = getattr(self, field.name)
+            if value is not None:
+                post_format += f"- {field.name}: {aRepr.repr(value)}\n"
+
+        if self.repost:
+            post_format += "\n转发:\n"
+            post_format += str(self.repost)
+
+        return post_format

@@ -29,7 +29,7 @@ footer: MIT Licensed
 
 <font size=4px>目前支持</font>
 
-• 微博 • 哔哩哔哩 • 哔哩哔哩直播 • 哔哩哔哩番剧 • 网易云歌手 • 网易云电台 • 明日方舟 • FF14 • MCBBS 幻翼块讯 • RSS •
+• 微博 • 哔哩哔哩 • 哔哩哔哩直播 • 哔哩哔哩番剧 • 网易云歌手 • 网易云电台 • 明日方舟 • FF14 • RSS •
 
 </div>
 </center>

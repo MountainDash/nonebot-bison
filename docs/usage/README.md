@@ -176,7 +176,6 @@ Bison 支持的平台如下：
 - bilibili-live: Bilibili直播
 - bilibili-bangumi: Bilibili剧集
 - ff14: 最终幻想XIV官方公告
-- mcbbsnews: MCBBS幻翼块讯
 - ncm-artist: 网易云-歌手
 - ncm-radio: 网易云-电台
 - rss: RSS

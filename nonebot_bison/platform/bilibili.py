@@ -22,13 +22,12 @@ from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotR
 
 class BaseSchedConf(ABC, SchedulerConfig):
     schedule_type = "interval"
-    _client_refresh_time: datetime
+    _client_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
     cookie_expire_time = timedelta(hours=5)
 
     bili_http_client = http_client()
 
     def __init__(self):
-        self._client_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
         super().__init__()
         self.default_http_client = self.bili_http_client
 

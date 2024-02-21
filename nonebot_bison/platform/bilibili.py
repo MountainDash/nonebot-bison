@@ -31,16 +31,18 @@ class BaseSchedConf(ABC, SchedulerConfig):
         super().__init__()
         self.default_http_client = self.bili_http_client
 
-    async def _init_session(self):
-        res = await self.default_http_client.get("https://www.bilibili.com/")
+    @classmethod
+    async def _init_session(cls):
+        res = await cls.bili_http_client.get("https://www.bilibili.com/")
         if res.status_code != 200:
             logger.warning("unable to refresh temp cookie")
         else:
-            self._client_refresh_time = datetime.now()
+            cls._client_refresh_time = datetime.now()
 
-    async def _refresh_client(self):
-        if datetime.now() - self._client_refresh_time > self.cookie_expire_time:
-            await self._init_session()
+    @classmethod
+    async def _refresh_client(cls):
+        if datetime.now() - cls._client_refresh_time > cls.cookie_expire_time:
+            await cls._init_session()
 
     async def get_client(self, target: Target) -> AsyncClient:
         await self._refresh_client()

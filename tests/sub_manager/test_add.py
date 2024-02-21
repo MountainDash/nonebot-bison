@@ -407,7 +407,9 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
             sender=fake_admin_user,
         )
         ctx.receive_event(bot, event_4_err1)
-        ctx.should_call_send(event_4_err1, BotReply.add_reply_on_target_parse_input_error, True)
+        ctx.should_call_send(
+            event_4_err1, BotReply.add_reply_on_target_parse_input_error + "\n无法从链接中解析出用户id", True
+        )
         ctx.should_rejected()
 
         event_4_err1 = fake_group_message_event(
@@ -417,7 +419,9 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
             sender=fake_admin_user,
         )
         ctx.receive_event(bot, event_4_err1)
-        ctx.should_call_send(event_4_err1, BotReply.add_reply_on_target_parse_input_error, True)
+        ctx.should_call_send(
+            event_4_err1, BotReply.add_reply_on_target_parse_input_error + "\n无法从链接中解析出用户id", True
+        )
         ctx.should_rejected()
 
         event_4_ok = fake_group_message_event(

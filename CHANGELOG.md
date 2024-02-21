@@ -4,6 +4,10 @@
 
 - ✨ Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
 
+### 破坏性变更
+
+- 移除 mcbbsnews platform [@AzideCupric](https://github.com/AzideCupric) ([#477](https://github.com/MountainDash/nonebot-bison/pull/477))
+
 ### 新功能
 
 - 🔧 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))

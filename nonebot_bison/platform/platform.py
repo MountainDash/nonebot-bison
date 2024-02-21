@@ -127,7 +127,11 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         self.ctx = context
 
     class ParseTargetException(Exception):
-        pass
+        def __init__(self, *args: object, prompt: str | None = None) -> None:
+            super().__init__(*args)
+
+            self.prompt = prompt
+            """用户输入提示信息"""
 
     @classmethod
     async def parse_target(cls, target_string: str) -> Target:

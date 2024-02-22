@@ -1,8 +1,9 @@
+import traceback
 from typing import cast
 from datetime import timedelta
 
 from expiringdictx import SimpleCache
-from nonebot import logger, get_driver
+from nonebot import logger, require, get_driver
 
 from ...post import Post
 from ..platform import NewMessage
@@ -165,9 +166,6 @@ class CeobeCanteen(NewMessage):
         target = await self.data_source_cache.get_by_source(raw_post.source)
         assert target, "target not found"
 
-        pics = await self.handle_images_list(raw_pics, raw_post.source.type)
-
-        content = raw_post.default_cookie.text
         match raw_post.source.type:
             case "arknights-website:official-website":
                 content = ""
@@ -177,6 +175,9 @@ class CeobeCanteen(NewMessage):
             case "arknights-game:bulletin-list":
                 content = ""
                 pics = await self._ceobecanteen_render(raw_post.item.url, "html")
+            case _:
+                pics = await self.handle_images_list(raw_pics, raw_post.source.type)
+                content = raw_post.default_cookie.text
 
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
         if timestamp:

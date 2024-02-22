@@ -64,6 +64,33 @@ async def test_get_date_in_bulletin(app: App):
 
 @pytest.mark.asyncio()
 @respx.mock
+async def test_parse_with_breakline(app: App):
+    from nonebot_bison.utils import ProcessContext, http_client
+    from nonebot_bison.platform.arknights import Arknights, BulletinListItem
+
+    detail = get_json("arknights-detail-805")
+    detail["data"]["header"] = ""
+
+    arknights = Arknights(ProcessContext(), http_client())
+
+    router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
+    router.mock(return_value=Response(200, json=detail))
+
+    post = await arknights.parse(
+        BulletinListItem(
+            cid="1",
+            title="【公开招募】\\n标签刷新通知",
+            category=1,
+            displayTime="",
+            updatedAt=1627036800,
+            sticky=False,
+        )
+    )
+    assert post.title == "【公开招募】 - 标签刷新通知"
+
+
+@pytest.mark.asyncio()
+@respx.mock
 async def test_fetch_new(
     arknights,
     dummy_user_subinfo,

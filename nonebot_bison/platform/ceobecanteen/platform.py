@@ -170,10 +170,12 @@ class CeobeCanteen(NewMessage):
         content = raw_post.default_cookie.text
         match raw_post.source.type:
             case "arknights-website:official-website":
-                content = ''
-                pics = await self._ceobecanteen_render(raw_post.item.url, "body > div.article-page > div.layout > div.layoutContent")
+                content = ""
+                pics = await self._ceobecanteen_render(
+                    raw_post.item.url, "body > div.article-page > div.layout > div.layoutContent"
+                )
             case "arknights-game:bulletin-list":
-                content = ''
+                content = ""
                 pics = await self._ceobecanteen_render(raw_post.item.url, "html")
 
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
@@ -204,7 +206,7 @@ class CeobeCanteen(NewMessage):
             description=target.platform,
             repost=retweet,
         )
-    
+
     async def _ceobecanteen_render(self, url: str, selector: str) -> list[bytes]:
         """
         将给定的url网页的指定CSS选择器部分渲染成图片

@@ -82,7 +82,11 @@ class Arknights(NewMessage):
         return post.cid
 
     def get_date(self, post: BulletinListItem) -> Any:
-        return post.updated_at
+        # 为什么不使用post.updated_at？
+        # update_at的时间是上传鹰角服务器的时间，而不是公告发布的时间
+        # 也就是说鹰角可能会在中午就把晚上的公告上传到服务器，但晚上公告才会显示，但是update_at就是中午的时间不会改变
+        # 如果指定了get_date，那么get_date会被优先使用, 并在获取到的值超过2小时时忽略这条post，导致其不会被发送
+        return None
 
     def get_category(self, _) -> Category:
         return Category(1)

@@ -42,6 +42,27 @@ def monster_siren_list_1():
 
 
 @pytest.mark.asyncio()
+async def test_get_date_in_bulletin(app: App):
+    from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.platform.arknights import Arknights, BulletinListItem
+
+    arknights = Arknights(ProcessContext(), AsyncClient())
+    assert (
+        arknights.get_date(
+            BulletinListItem(
+                cid="1",
+                title="",
+                category=1,
+                displayTime="",
+                updatedAt=1627036800,
+                sticky=False,
+            )
+        )
+        is None
+    )
+
+
+@pytest.mark.asyncio()
 @respx.mock
 async def test_fetch_new(
     arknights,

@@ -1,8 +1,9 @@
+import traceback
 from typing import cast
 from datetime import timedelta
 
 from expiringdictx import SimpleCache
-from nonebot import logger, get_driver
+from nonebot import logger, require, get_driver
 
 from ...post import Post
 from ..platform import NewMessage
@@ -165,7 +166,18 @@ class CeobeCanteen(NewMessage):
         target = await self.data_source_cache.get_by_source(raw_post.source)
         assert target, "target not found"
 
-        pics = await self.handle_images_list(raw_pics, raw_post.source.type)
+        match raw_post.source.type:
+            case "arknights-website:official-website":
+                content = ""
+                pics = await self._ceobecanteen_render(
+                    raw_post.item.url, "body > div.article-page > div.layout > div.layoutContent"
+                )
+            case "arknights-game:bulletin-list":
+                content = ""
+                pics = await self._ceobecanteen_render(raw_post.item.url, "html")
+            case _:
+                pics = await self.handle_images_list(raw_pics, raw_post.source.type)
+                content = raw_post.default_cookie.text
 
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
         if timestamp:
@@ -186,7 +198,7 @@ class CeobeCanteen(NewMessage):
 
         return Post(
             self,
-            raw_post.default_cookie.text,
+            content,
             url=raw_post.item.url,
             nickname=raw_post.datasource,
             images=list(pics),
@@ -195,6 +207,32 @@ class CeobeCanteen(NewMessage):
             description=target.platform,
             repost=retweet,
         )
+
+    async def _ceobecanteen_render(self, url: str, selector: str) -> list[bytes]:
+        """
+        将给定的url网页的指定CSS选择器部分渲染成图片
+        """
+        require("nonebot_plugin_htmlrender")
+        from nonebot_plugin_htmlrender import text_to_pic, capture_element
+
+        try:
+            assert url
+            pic_data = await capture_element(
+                url,
+                selector,
+                viewport={"width": 1024, "height": 6400},
+                device_scale_factor=3,
+            )
+            assert pic_data
+        except Exception:
+            err_info = traceback.format_exc()
+            logger.warning(f"渲染错误：{err_info}")
+
+            err_pic0 = await text_to_pic("错误发生！")
+            err_pic1 = await text_to_pic(err_info)
+            return [err_pic0, err_pic1]
+        else:
+            return [pic_data]
 
     async def handle_images_list(self, images: list[CeobeImage], source_type: str) -> list[bytes] | list[str]:
         if source_type.startswith("weibo"):

@@ -98,7 +98,7 @@ class Arknights(NewMessage):
         data = ArkBulletinResponse.parse_obj(raw_data.json()).data
 
         def title_escape(text: str) -> str:
-            return text.replace("\n", " - ")
+            return text.replace("\\n", " - ")
 
         # gen title, content
         if data.header:

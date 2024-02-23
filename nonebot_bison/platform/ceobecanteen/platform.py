@@ -8,8 +8,8 @@ from nonebot import logger, require, get_driver
 from ...post import Post
 from ..platform import NewMessage
 from .utils import process_response
-from ...utils import SchedulerConfig
 from ...types import Target, RawPost, Category
+from ...utils import SchedulerConfig, capture_html
 from .cache import CeobeClient, CeobeDataSourceCache
 from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
 from .models import CeobeImage, CeobeCookie, CombIdResponse, CookiesResponse, CookieIdResponse
@@ -170,11 +170,16 @@ class CeobeCanteen(NewMessage):
             case "arknights-website:official-website":
                 content = ""
                 pics = await self._ceobecanteen_render(
-                    raw_post.item.url, "body > div.article-page > div.layout > div.layoutContent"
+                    raw_post.item.url,
+                    "body > div.article-page > div.layout > div.layoutContent > div",
+                    viewport={"width": 1024, "height": 19990},
                 )
-            case "arknights-game:bulletin-list":
+            case "arknights-game:bulletin-list" if raw_post.item.display_type != 2:
                 content = ""
-                pics = await self._ceobecanteen_render(raw_post.item.url, "html")
+                pics = await self._ceobecanteen_render(
+                    raw_post.item.url,
+                    "body > div.main > div.container",
+                )
             case _:
                 pics = await self.handle_images_list(raw_pics, raw_post.source.type)
                 content = raw_post.default_cookie.text
@@ -208,20 +213,28 @@ class CeobeCanteen(NewMessage):
             repost=retweet,
         )
 
-    async def _ceobecanteen_render(self, url: str, selector: str) -> list[bytes]:
+    async def _ceobecanteen_render(
+        self,
+        url: str,
+        selector: str,
+        device_scale_factor: int = 2,
+        viewport: dict = {"width": 1024, "height": 512},
+    ) -> list[bytes]:
         """
         将给定的url网页的指定CSS选择器部分渲染成图片
         """
         require("nonebot_plugin_htmlrender")
-        from nonebot_plugin_htmlrender import text_to_pic, capture_element
+        from nonebot_plugin_htmlrender import text_to_pic
 
         try:
             assert url
-            pic_data = await capture_element(
+            pic_data = await capture_html(
                 url,
                 selector,
-                viewport={"width": 1024, "height": 6400},
-                device_scale_factor=3,
+                timeout=30000,
+                wait_until="networkidle",
+                viewport=viewport,
+                device_scale_factor=device_scale_factor,
             )
             assert pic_data
         except Exception:

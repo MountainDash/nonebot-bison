@@ -18,6 +18,7 @@ from .site import anonymous_site as anonymous_site
 from .context import ProcessContext as ProcessContext
 from .image import is_pics_mergable as is_pics_mergable
 from .image import pic_url_to_image as pic_url_to_image
+from .image import capture_html as capture_html
 from .site import DefaultClientManager as DefaultClientManager
 
 

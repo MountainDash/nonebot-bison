@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from nonebot.compat import type_validate_python
 
 import respx
 import pytest
@@ -73,8 +74,51 @@ def ceobecanteen_cookies_1() -> dict:
 async def test_parse_retweet(app: App):
     from nonebot_bison.platform.ceobecanteen.models import CookiesResponse
 
-    cookie_with_retweet = CookiesResponse.parse_obj(get_json("ceobecanteen_cookies_with_retweet.json"))
+    cookie_with_retweet = type_validate_python(CookiesResponse, get_json("ceobecanteen_cookies_with_retweet.json"))
     assert cookie_with_retweet.data.cookies[0].item.retweeted
+
+
+@pytest.mark.skip("极限测试, 不在CI中运行")
+@pytest.mark.asyncio()
+async def test_parse_crazy(app: App, ceobecanteen):
+    from nonebot_plugin_saa import Image
+
+    from nonebot_bison.platform.ceobecanteen import CeobeCanteen
+    from nonebot_bison.platform.ceobecanteen.models import CeobeCookie
+
+    def show(p: bytes):
+        import io
+
+        from PIL import Image
+
+        Image.open(io.BytesIO(p)).show()
+
+    def ext(m: Image):
+        d = m.data["image"]
+        assert isinstance(d, bytes)
+        return d
+
+    assert isinstance(ceobecanteen, CeobeCanteen)
+
+    sp_coolies = get_json("ceobe_special_cookies.json")
+
+    cookie_bulletin_type2 = type_validate_python(CeobeCookie, sp_coolies[0])
+    assert cookie_bulletin_type2.source.type == "arknights-game:bulletin-list"
+    post = await ceobecanteen.parse(cookie_bulletin_type2)
+    show(ext((await post.generate_messages())[0][0])) # type: ignore
+
+    cookie_bulletin_type1 = type_validate_python(CeobeCookie, sp_coolies[1])
+    post2 = await ceobecanteen.parse(cookie_bulletin_type1)
+    show(ext((await post2.generate_messages())[0][0])) # type: ignore
+
+    cookie_offical = type_validate_python(CeobeCookie, sp_coolies[2])
+    post3 = await ceobecanteen.parse(cookie_offical)
+    show(ext((await post3.generate_messages())[0][0])) # type: ignore
+
+    cookie_offical = type_validate_python(CeobeCookie, get_json("ceobe_looooong_bulletin.json"))
+    post4 = await ceobecanteen.parse(cookie_offical)
+    show(post4.images[0])  # type: ignore
+    show(ext((await post4.generate_messages())[0][0])) # type: ignore
 
 
 @pytest.mark.asyncio()

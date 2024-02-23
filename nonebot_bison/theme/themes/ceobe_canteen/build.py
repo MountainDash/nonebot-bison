@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Literal
 
 import jinja2
 from httpx import AsyncClient
+from PIL import Image as PILImage
 from pydantic import BaseModel
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
@@ -41,14 +42,8 @@ class CeoboContent(BaseModel):
     text: 文字内容
     """
 
-    image: str | None
-    text: str | None
-
-    @model_validator(mode="before")
-    def check(cls, values):
-        if values["image"] is None and values["text"] is None:
-            raise ValueError("image and text cannot be both None")
-        return values
+    image: str | None = None
+    text: str
 
 
 class CeoboRetweet(BaseModel):
@@ -99,32 +94,18 @@ class CeobeCanteenTheme(Theme):
             datasource=post.nickname, time=datetime.fromtimestamp(post.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         )
 
-        async def merge_and_extract_head_pic(
-            images: list[str | bytes | Path | BytesIO], client: AsyncClient
-        ) -> tuple[list[str | bytes | Path | BytesIO], str]:
-            if is_pics_mergable(images):
-                pics = await pic_merge(images, client)
-            else:
-                pics = images
-
-            head_pic = web_embed_image(pics[0]) if not isinstance(pics[0], str) else pics[0]
-
-            return list(pics), head_pic
-
         images: list[str | bytes | Path | BytesIO] = []
-        head_pic: str | bytes | None = None
         if post.images:
-            images, head_pic = await merge_and_extract_head_pic(post.images, post.platform.client)
+            images = await self.merge_pics(post.images, post.platform.client)
 
-        content = CeoboContent(image=head_pic, text=post.content)
+        content = CeoboContent(text=post.content)
 
         retweet: CeoboRetweet | None = None
         if post.repost:
             repost_head_pic: str | None = None
             if post.repost.images:
-                repost_images, repost_head_pic = await merge_and_extract_head_pic(
-                    post.repost.images, post.platform.client
-                )
+                repost_images = await self.merge_pics(post.repost.images, post.platform.client)
+                repost_head_pic = self.extract_head_pic(repost_images)
                 images.extend(repost_images)
 
             repost_nickname = f"@{post.repost.nickname}:" if post.repost.nickname else ""
@@ -140,8 +121,64 @@ class CeobeCanteenTheme(Theme):
             images,
         )
 
+    @staticmethod
+    async def merge_pics(
+        images: list[str | bytes | Path | BytesIO],
+        client: AsyncClient,
+    ) -> list[str | bytes | Path | BytesIO]:
+        if is_pics_mergable(images):
+            pics = await pic_merge(images, client)
+        else:
+            pics = images
+        return list(pics)
+
+    @staticmethod
+    def extract_head_pic(pics: list[str | bytes | Path | BytesIO]) -> str:
+        head_pic = web_embed_image(pics[0]) if not isinstance(pics[0], str) else pics[0]
+        return head_pic
+
+    @staticmethod
+    def card_link(head_pic: PILImage.Image, card_body: PILImage.Image) -> PILImage.Image:
+        """将头像与卡片合并"""
+
+        def resize_image(img: PILImage.Image, size: tuple[int, int]) -> PILImage.Image:
+            return img.resize(size)
+
+        # 统一图片宽度
+        head_pic_w, head_pic_h = head_pic.size
+        card_body_w, card_body_h = card_body.size
+
+        if head_pic_w > card_body_w:
+            head_pic = resize_image(head_pic, (card_body_w, int(head_pic_h * card_body_w / head_pic_w)))
+        else:
+            card_body = resize_image(card_body, (head_pic_w, int(card_body_h * head_pic_w / card_body_w)))
+
+        # 合并图片
+        card = PILImage.new("RGBA", (head_pic.width, head_pic.height + card_body.height))
+        card.paste(head_pic, (0, 0))
+        card.paste(card_body, (0, head_pic.height))
+        return card
+
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         ceobe_card, merged_images = await self.parse(post)
+
+        need_card_link: bool = True
+        head_pic = None
+        if merged_images:
+            match merged_images[0]:
+                case bytes():
+                    head_pic = merged_images[0]
+                    merged_images = merged_images[1:]
+                case BytesIO():
+                    head_pic = merged_images[0].getvalue()
+                    merged_images = merged_images[1:]
+                case str():
+                    ceobe_card.content.image = merged_images[0]
+                    need_card_link = False
+                case Path():
+                    ceobe_card.content.image = merged_images[0].as_uri()
+                    need_card_link = False
+
         from nonebot_plugin_htmlrender import get_new_page
 
         template_env = jinja2.Environment(
@@ -151,7 +188,8 @@ class CeobeCanteenTheme(Theme):
         template = template_env.get_template(self.template_name)
         html = await template.render_async(card=ceobe_card)
         pages = {
-            "viewport": {"width": 1000, "height": 3000},
+            "device_scale_factor": 2,
+            "viewport": {"width": 512, "height": 455},
             "base_url": self.template_path.as_uri(),
         }
         try:
@@ -159,12 +197,24 @@ class CeobeCanteenTheme(Theme):
                 await page.goto(self.template_path.as_uri())
                 await page.set_content(html)
                 await page.wait_for_timeout(1)
-                img_raw = await page.locator("#ceobecanteen-card").screenshot(
-                    type="png",
+                card_body = await page.locator("#ceobecanteen-card").screenshot(
+                    type="jpeg",
+                    quality=90,
                 )
         except Exception as e:
             raise ThemeRenderError(f"Render error: {e}") from e
-        msgs: list[MessageSegmentFactory] = [Image(img_raw)]
+
+        msgs: list[MessageSegmentFactory] = []
+        if need_card_link and head_pic:
+            card_pil = self.card_link(
+                head_pic=PILImage.open(BytesIO(head_pic)),
+                card_body=PILImage.open(BytesIO(card_body)),
+            )
+            card_data = BytesIO()
+            card_pil.save(card_data, format="PNG")
+            msgs.append(Image(card_data.getvalue()))
+        else:
+            msgs.append(Image(card_body))
 
         text = f"来源: {post.platform.name} {post.nickname or ''}\n"
         if post.url:

@@ -59,6 +59,8 @@ class CeobeItem(BaseModel):
     is_retweeted: bool = False
     """是否转发"""
     retweeted: CeobeRetweeted | None = None
+    """展示类型，公告类型的数据源有这个字段"""
+    display_type: int | None = None
 
     class Config:
         extra = "allow"

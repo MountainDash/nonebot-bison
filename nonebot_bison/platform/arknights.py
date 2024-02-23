@@ -96,7 +96,6 @@ class Arknights(NewMessage):
         data = type_validate_python(ArkBulletinResponse, raw_data.json()).data
 
         def title_escape(text: str) -> str:
-            return text.replace("\n", " - ")
             return text.replace("\\n", " - ")
 
         # gen title, content
@@ -121,7 +120,6 @@ class Arknights(NewMessage):
             timestamp=data.updated_at,
             compress=True,
         )
-
 
 
 class AkVersion(StatusChange):

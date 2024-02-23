@@ -12,7 +12,7 @@ from .http import http_client
 from .context import ProcessContext
 from ..plugin_config import plugin_config
 from .scheduler_config import SchedulerConfig, scheduler
-from .image import pic_merge, text_to_image, is_pics_mergable, pic_url_to_image
+from .image import pic_merge, capture_html, text_to_image, is_pics_mergable, pic_url_to_image
 
 __all__ = [
     "http_client",
@@ -26,6 +26,7 @@ __all__ = [
     "pic_url_to_image",
     "is_pics_mergable",
     "text_to_image",
+    "capture_html",
 ]
 
 

@@ -1,6 +1,6 @@
 from io import BytesIO
-from typing import TypeGuard
 from functools import partial
+from typing import Literal, TypeGuard
 
 from PIL import Image
 from httpx import AsyncClient
@@ -108,3 +108,36 @@ async def text_to_image(saa_text: SaaText) -> SaaImage:
 
     render_data = await text_to_pic(str(saa_text))
     return SaaImage(render_data)
+
+
+async def capture_html(
+    url: str,
+    selector: str,
+    timeout: float = 0,
+    type: Literal["jpeg", "png"] = "png",
+    quality: int | None = None,
+    wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,
+    viewport: dict = {"width": 1024, "height": 990},
+    device_scale_factor: int = 2,
+    **page_kwargs,
+) -> bytes | None:
+    """
+    将给定的url网页的指定CSS选择器部分渲染成图片
+
+    timeout: 超时时间，单位毫秒
+    """
+    require("nonebot_plugin_htmlrender")
+    from nonebot_plugin_htmlrender import get_new_page
+
+    try:
+        assert url
+        async with get_new_page(device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs) as page:
+            await page.goto(url, timeout=timeout, wait_until=wait_until)
+            pic_data = await page.locator(selector).screenshot(
+                type=type,
+                quality=quality,
+            )
+            return pic_data
+    except Exception:
+        logger.exception("渲染错误")
+        return

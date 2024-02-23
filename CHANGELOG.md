@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- 🐛 修复 Arknights Platform 的时间判断和标题显示 [@AzideCupric](https://github.com/AzideCupric) ([#481](https://github.com/MountainDash/nonebot-bison/pull/481))
 - ✨ Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
 
 ### 破坏性变更

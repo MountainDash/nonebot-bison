@@ -2,17 +2,19 @@
 
 ## 最近更新
 
-- 🐛 修复 Arknights Platform 的时间判断和标题显示 [@AzideCupric](https://github.com/AzideCupric) ([#481](https://github.com/MountainDash/nonebot-bison/pull/481))
-- ✨ Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
-
 ### 破坏性变更
 
 - 移除 mcbbsnews platform [@AzideCupric](https://github.com/AzideCupric) ([#477](https://github.com/MountainDash/nonebot-bison/pull/477))
 
 ### 新功能
 
-- 🔧 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))
+- Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
+- 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))
 - BISON_OUTER_URL配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))
+
+### Bug 修复
+
+- 修复 Arknights Platform 的时间判断和标题显示 [@AzideCupric](https://github.com/AzideCupric) ([#481](https://github.com/MountainDash/nonebot-bison/pull/481))
 
 ## v0.8.2
 

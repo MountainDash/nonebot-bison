@@ -78,7 +78,7 @@ class SubGroup(
     结构参见`nbesf_model`下的对应版本
     """
 
-    version = NBESF_VERSION
+    version: int = NBESF_VERSION
     groups: list[SubPack]
 
 

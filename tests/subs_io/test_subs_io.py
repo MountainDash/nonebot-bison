@@ -49,7 +49,7 @@ async def test_subs_export(app: App, init_scheduler):
     )
     assert len(nbesf_data_user_234.groups) == 1
     assert len(nbesf_data_user_234.groups[0].subs) == 2
-    assert nbesf_data_user_234.groups[0].user_target == {
+    assert model_dump(nbesf_data_user_234.groups[0].user_target) == {
         "group_id": 2342,
         "platform_type": "QQ Group",
     }

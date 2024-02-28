@@ -1,12 +1,13 @@
 import nonebot
-from pydantic import Field, BaseSettings
+from nonebot import get_plugin_config
+from pydantic import Field, BaseModel
 
 global_config = nonebot.get_driver().config
 PlatformName = str
 ThemeName = str
 
 
-class PlugConfig(BaseSettings):
+class PlugConfig(BaseModel):
     bison_config_path: str = ""
     bison_use_pic: bool = Field(
         default=False,
@@ -22,7 +23,7 @@ class PlugConfig(BaseSettings):
     bison_use_pic_merge: int = 0  # 多图片时启用图片合并转发（仅限群）
     # 0：不启用；1：首条消息单独发送，剩余照片合并转发；2以及以上：所有消息全部合并转发
     bison_resend_times: int = 0
-    bison_proxy: str | None
+    bison_proxy: str | None = None
     bison_ua: str = Field(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
         description="默认UA",
@@ -34,8 +35,5 @@ class PlugConfig(BaseSettings):
     def outer_url(self) -> str:
         return self.bison_outer_url or f"http://localhost:{global_config.port}/bison/"
 
-    class Config:
-        extra = "ignore"
 
-
-plugin_config = PlugConfig(**global_config.dict())
+plugin_config = get_plugin_config(PlugConfig)

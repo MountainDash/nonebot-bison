@@ -4,6 +4,7 @@ from functools import partial
 from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 from pydantic import Field, BaseModel
+from nonebot.compat import type_validate_python
 
 from ..post import Post
 from ..types import Target, RawPost, Category
@@ -27,9 +28,6 @@ class BulletinListItem(BaseModel):
 
 class BulletinList(BaseModel):
     list: list[BulletinListItem]
-
-    class Config:
-        extra = "ignore"
 
 
 class BulletinData(BaseModel):
@@ -76,7 +74,7 @@ class Arknights(NewMessage):
 
     async def get_sub_list(self, _) -> list[BulletinListItem]:
         raw_data = await self.client.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
-        return ArkBulletinListResponse.parse_obj(raw_data.json()).data.list
+        return type_validate_python(ArkBulletinListResponse, raw_data.json()).data.list
 
     def get_id(self, post: BulletinListItem) -> Any:
         return post.cid
@@ -95,7 +93,7 @@ class Arknights(NewMessage):
         raw_data = await self.client.get(
             f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
         )
-        data = ArkBulletinResponse.parse_obj(raw_data.json()).data
+        data = type_validate_python(ArkBulletinResponse, raw_data.json()).data
 
         def title_escape(text: str) -> str:
             return text.replace("\\n", " - ")

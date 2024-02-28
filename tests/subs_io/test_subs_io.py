@@ -1,5 +1,6 @@
 import pytest
 from nonebug.app import App
+from nonebot.compat import model_dump
 
 from .utils import get_json
 
@@ -41,7 +42,7 @@ async def test_subs_export(app: App, init_scheduler):
     assert len(data) == 3
 
     nbesf_data = await subscribes_export(lambda x: x)
-    assert nbesf_data.dict() == get_json("v2/subs_export.json")
+    assert model_dump(nbesf_data) == get_json("v2/subs_export.json")
 
     nbesf_data_user_234 = await subscribes_export(
         lambda stmt: stmt.where(User.user_target == {"platform_type": "QQ Group", "group_id": 2342})

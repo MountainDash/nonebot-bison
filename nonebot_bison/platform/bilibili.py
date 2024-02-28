@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from httpx import AsyncClient
 from nonebot.log import logger
 from pydantic import Field, BaseModel
+from nonebot.compat import type_validate_python
+
+from nonebot_bison.compat import model_rebuild
 
 from ..post import Post
 from ..utils import SchedulerConfig, text_similarity
@@ -303,7 +306,7 @@ class Bilibililive(StatusChange):
         infos = []
         for target in targets:
             if target in data.keys():
-                infos.append(self.Info.parse_obj(data[target]))
+                infos.append(type_validate_python(self.Info, data[target]))
             else:
                 infos.append(self._gen_empty_info(int(target)))
         return infos
@@ -428,4 +431,4 @@ class BilibiliBangumi(StatusChange):
         )
 
 
-Bilibililive.Info.update_forward_refs()
+model_rebuild(Bilibililive.Info)

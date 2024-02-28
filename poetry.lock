@@ -2241,17 +2241,17 @@ reference = "offical-source"
 
 [[package]]
 name = "nonebot-adapter-red"
-version = "0.8.0"
+version = "0.9.0"
 description = "Red Protocol Adapter for Nonebot2"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "nonebot_adapter_red-0.8.0-py3-none-any.whl", hash = "sha256:9bce0810e67a2754ba68d8c942bec12deeacb55459329f8e7a4f0b6416641180"},
-    {file = "nonebot_adapter_red-0.8.0.tar.gz", hash = "sha256:577c0a286ed1f924339eb398ce1c5efd2cf727029116aff176b8715ab463c234"},
+    {file = "nonebot_adapter_red-0.9.0-py3-none-any.whl", hash = "sha256:8dd5cd0a5d964faa23823b7c37fa8c64fa3ed8f67fa66515fe44a2708ee438ec"},
+    {file = "nonebot_adapter_red-0.9.0.tar.gz", hash = "sha256:a657c5ffb071c91deb4109bb94ac8046dcbea5cbb584437995c30ffb2d184954"},
 ]
 
 [package.dependencies]
-nonebot2 = ">=2.0.1"
+nonebot2 = ">=2.2.0"
 packaging = ">=23.1"
 
 [package.extras]
@@ -4565,4 +4565,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "31950690140abf74773f46085220dc1cb3d370aa65c4035e16f6015c24dd8647"
+content-hash = "13ed3c2ef12bf2fec8ea959ad55d9cc6efb6287b0e584f4db0df98efb4418549"

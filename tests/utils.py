@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING, Literal, TypedDict
 
+from nonebot.compat import PYDANTIC_V2, ConfigDict
+
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
 
@@ -35,8 +37,12 @@ def fake_group_message_event(**field) -> "GroupMessageEvent":
         )
         to_me: bool = False
 
-        class Config:
-            extra = "forbid"
+        if PYDANTIC_V2:
+            model_config = ConfigDict(extra="forbid")
+        else:
+
+            class Config:
+                extra = "forbid"
 
     return FakeEvent(**field)
 
@@ -62,8 +68,12 @@ def fake_private_message_event(**field) -> "PrivateMessageEvent":
         sender: Sender = Sender(nickname="test")
         to_me: bool = False
 
-        class Config:
-            extra = "forbid"
+        if PYDANTIC_V2:
+            model_config = ConfigDict(extra="forbid")
+        else:
+
+            class Config:
+                extra = "forbid"
 
     return FakeEvent(**field)
 

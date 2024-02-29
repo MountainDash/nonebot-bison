@@ -8,6 +8,7 @@
 
 ### 新功能
 
+- 适配 Pydantic V2 [@he0119](https://github.com/he0119) ([#484](https://github.com/MountainDash/nonebot-bison/pull/484))
 - Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
 - 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))
 - BISON_OUTER_URL配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))

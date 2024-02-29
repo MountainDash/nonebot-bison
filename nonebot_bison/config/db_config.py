@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import time, datetime
 from collections.abc import Callable, Sequence, Awaitable
 
+from nonebot.compat import model_dump
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, delete, select
@@ -46,10 +47,10 @@ class DBConfig:
         tags: list[Tag],
     ):
         async with create_session() as session:
-            db_user_stmt = select(User).where(User.user_target == user.dict())
+            db_user_stmt = select(User).where(User.user_target == model_dump(user))
             db_user: User | None = await session.scalar(db_user_stmt)
             if not db_user:
-                db_user = User(user_target=user.dict())
+                db_user = User(user_target=model_dump(user))
                 session.add(db_user)
             db_target_stmt = select(Target).where(Target.platform_name == platform_name).where(Target.target == target)
             db_target: Target | None = await session.scalar(db_target_stmt)
@@ -76,7 +77,7 @@ class DBConfig:
         async with create_session() as session:
             query_stmt = (
                 select(Subscribe)
-                .where(User.user_target == user.dict())
+                .where(User.user_target == model_dump(user))
                 .join(User)
                 .options(selectinload(Subscribe.target))
             )
@@ -95,7 +96,7 @@ class DBConfig:
 
     async def del_subscribe(self, user: PlatformTarget, target: str, platform_name: str):
         async with create_session() as session:
-            user_obj = await session.scalar(select(User).where(User.user_target == user.dict()))
+            user_obj = await session.scalar(select(User).where(User.user_target == model_dump(user)))
             target_obj = await session.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
@@ -121,7 +122,7 @@ class DBConfig:
             subscribe_obj: Subscribe = await sess.scalar(
                 select(Subscribe)
                 .where(
-                    User.user_target == user.dict(),
+                    User.user_target == model_dump(user),
                     Target.target == target,
                     Target.platform_name == platform_name,
                 )

@@ -8,6 +8,7 @@ from functools import wraps, partial
 from collections.abc import Callable, Coroutine
 
 from nonebot.log import logger
+from nonebot.compat import model_dump
 
 from ..scheduler.manager import init_scheduler
 from ..config.subs_io.nbesf_model import v1, v2
@@ -95,14 +96,14 @@ async def subs_export(path: Path, format: str):
                 # If stream is None, it returns the produced stream.
                 # safe_dump produces only standard YAML tags and cannot represent an arbitrary Python object.
                 # 进行以下曲线救国方案
-                json_data = json.dumps(export_data.dict(), ensure_ascii=False)
+                json_data = json.dumps(model_dump(export_data), ensure_ascii=False)
                 yaml_data = pyyaml.safe_load(json_data)
                 pyyaml.safe_dump(yaml_data, f, sort_keys=False)
 
             case "json":
                 logger.info("正在导出为json...")
 
-                json.dump(export_data.dict(), f, indent=4, ensure_ascii=False)
+                json.dump(model_dump(export_data), f, indent=4, ensure_ascii=False)
 
             case _:
                 raise click.BadParameter(message=f"不支持的导出格式: {format}")

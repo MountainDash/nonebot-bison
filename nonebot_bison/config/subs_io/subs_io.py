@@ -6,6 +6,7 @@ from sqlalchemy import select
 from nonebot.log import logger
 from sqlalchemy.sql.selectable import Select
 from nonebot_plugin_saa import PlatformTarget
+from nonebot.compat import type_validate_python
 from nonebot_plugin_datastore.db import create_session
 from sqlalchemy.orm.strategy_options import selectinload
 
@@ -37,7 +38,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v2.SubGroup
     user_id_sub_dict: dict[int, list[v2.SubPayload]] = defaultdict(list)
 
     for sub in sub_data:
-        sub_paylaod = v2.SubPayload.from_orm(sub)
+        sub_paylaod = type_validate_python(v2.SubPayload, sub)
         user_id_sub_dict[sub.user_id].append(sub_paylaod)
 
     for user in user_data:

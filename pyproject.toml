@@ -26,17 +26,18 @@ beautifulsoup4 = ">=4.12.3"
 expiringdict = "^1.2.1"
 feedparser = "^6.0.2"
 httpx = ">=0.16.1"
-nonebot2 = {extras = ["fastapi"], version = "^2.1.3"}
+nonebot2 = { extras = ["fastapi"], version = "^2.2.1" }
 nonebot-adapter-onebot = "^2.0.0"
 nonebot-plugin-htmlrender = ">=0.2.0"
-nonebot-plugin-datastore = ">=0.6.2,<2.0.0"
-nonebot-plugin-apscheduler = ">=0.2,<0.4"
-nonebot-plugin-send-anything-anywhere = "^0.5.0"
+nonebot-plugin-datastore = ">=1.2.0,<2.0.0"
+nonebot-plugin-apscheduler = ">=0.4.0"
+nonebot-plugin-send-anything-anywhere = ">=0.5.0,<0.7.0"
 pillow = ">=8.1,<11.0"
 pyjwt = "^2.1.0"
 python-socketio = "^5.4.0"
 tinydb = "^4.3.0"
 qrcode = "^7.4.2"
+pydantic = ">=1.10.0,<3.0.0,!=2.5.0,!=2.5.1"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=23.7,<25.0"
@@ -62,10 +63,10 @@ respx = "^0.20.0"
 optional = true
 
 [tool.poetry.group.docker.dependencies]
-nb-cli = "^1.2.8"
-nonebot2 = {extras = ["fastapi", "aiohttp"], version = "^2.1.3"}
-nonebot-adapter-red = ">=0.7.4,<0.9.0"
-nonebot-adapter-qq = "^1.3.4"
+nb-cli = "^1.4.0"
+nonebot2 = { extras = ["fastapi", "aiohttp"], version = "^2.2.1" }
+nonebot-adapter-red = "^0.9.0"
+nonebot-adapter-qq = "^1.4.2"
 nonebot-adapter-telegram = "^0.1.0b14"
 poetry-core = "^1.8.1"
 
@@ -115,7 +116,7 @@ extra_standard_library = ["typing_extensions"]
 
 [tool.nonebot]
 adapters = [
-    { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
 plugins = ["nonebot_bison"]
 plugin_dirs = ["extra_plugins"]
@@ -131,6 +132,7 @@ executionEnvironments = [
   ] },
   { root = "./" },
 ]
+defineConstant = { PYDANTIC_V2 = true }
 
 [[tool.poetry.source]]
 name = "offical-source"

@@ -3,9 +3,10 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 import jinja2
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
+from nonebot_bison.compat import model_validator
 from nonebot_bison.theme.utils import convert_to_qr
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
@@ -35,7 +36,7 @@ class CeoboContent(BaseModel):
     image: str | None
     text: str | None
 
-    @root_validator
+    @model_validator(mode="before")
     def check(cls, values):
         if values["image"] is None and values["text"] is None:
             raise ValueError("image and text cannot be both None")

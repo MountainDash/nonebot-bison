@@ -6,6 +6,7 @@ from functools import partial
 from nonebot.log import logger
 from pydantic import BaseModel
 from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
+from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_json, type_validate_python
 
 from ..utils import NBESFParseErr
 from ....types import Tag, Category
@@ -16,7 +17,7 @@ from ...db_config import SubscribeDupException, config
 NBESF_VERSION = 2
 
 
-class Target(BaseModel, orm_mode=True):
+class Target(BaseModel):
     """Bsion快递包发货信息"""
 
     target_name: str
@@ -24,13 +25,27 @@ class Target(BaseModel, orm_mode=True):
     platform_name: str
     default_schedule_weight: int
 
+    if PYDANTIC_V2:
+        model_config = ConfigDict(from_attributes=True)
+    else:
 
-class SubPayload(BaseModel, orm_mode=True):
+        class Config:
+            orm_mode = True
+
+
+class SubPayload(BaseModel):
     """Bison快递包里的单件货物"""
 
     categories: list[Category]
     tags: list[Tag]
     target: Target
+
+    if PYDANTIC_V2:
+        model_config = ConfigDict(from_attributes=True)
+    else:
+
+        class Config:
+            orm_mode = True
 
 
 class SubPack(BaseModel):
@@ -68,7 +83,7 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
                 tags=sub.tags,
             )
             try:
-                await config.add_subscribe(receipt.user, **receipt.dict(exclude={"user"}))
+                await config.add_subscribe(receipt.user, **model_dump(receipt, exclude={"user"}))
             except SubscribeDupException:
                 logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
             except Exception as e:
@@ -80,9 +95,9 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
 def nbesf_parser(raw_data: Any) -> SubGroup:
     try:
         if isinstance(raw_data, str):
-            nbesf_data = SubGroup.parse_raw(raw_data)
+            nbesf_data = type_validate_json(SubGroup, raw_data)
         else:
-            nbesf_data = SubGroup.parse_obj(raw_data)
+            nbesf_data = type_validate_python(SubGroup, raw_data)
 
     except Exception as e:
         logger.error("数据解析失败，该数据格式可能不满足NBESF格式标准！")

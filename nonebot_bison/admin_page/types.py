@@ -36,7 +36,7 @@ class SubscribeGroupDetail(BaseModel):
     subscribes: list[SubscribeConfig]
 
 
-SubscribeResp = dict[str, SubscribeGroupDetail]
+SubscribeResp = dict[int, SubscribeGroupDetail]
 
 
 class AddSubscribeReq(BaseModel):

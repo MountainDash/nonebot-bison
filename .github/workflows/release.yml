@@ -44,7 +44,7 @@ jobs:
       - run: |
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - uses: release-drafter/release-drafter@v5
+      - uses: release-drafter/release-drafter@v6
         with:
           name: Release ${{ env.TAG_NAME }}
           tag: ${{ env.TAG_NAME }}

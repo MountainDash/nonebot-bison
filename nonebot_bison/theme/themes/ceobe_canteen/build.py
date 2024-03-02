@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Literal
 
 import jinja2
 from httpx import AsyncClient
-from PIL import Image as PILImage
 from pydantic import BaseModel
+from PIL import Image as PILImage
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.compat import model_validator
@@ -164,7 +164,9 @@ class CeobeCanteenTheme(Theme):
 
         need_card_link: bool = True
         head_pic = None
-        if merged_images:
+
+        # 如果没有 post.images，则全部都是转发里的图片，不需要头图
+        if post.images:
             match merged_images[0]:
                 case bytes():
                     head_pic = merged_images[0]

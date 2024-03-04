@@ -2,7 +2,9 @@
 
 ## 最近更新
 
-* No changes
+### Bug 修复
+
+- 修复后台管理界面无法获取群信息的问题 [@he0119](https://github.com/he0119) ([#486](https://github.com/MountainDash/nonebot-bison/pull/486))
 
 ## v0.9.0
 

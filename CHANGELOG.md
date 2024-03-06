@@ -6,6 +6,10 @@
 
 - 修复后台管理界面无法获取群信息的问题 [@he0119](https://github.com/he0119) ([#486](https://github.com/MountainDash/nonebot-bison/pull/486))
 
+### 文档
+
+- 更新文档以适配 pyd2 的用法 [@felinae98](https://github.com/felinae98) ([#485](https://github.com/MountainDash/nonebot-bison/pull/485))
+
 ## v0.9.0
 
 ### 破坏性变更

@@ -41,6 +41,73 @@ def monster_siren_list_1():
     return get_json("monster-siren_list_1.json")
 
 
+@respx.mock
+async def test_url_parse(app: App):
+    from httpx import AsyncClient
+
+    from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.platform.arknights import Arknights, BulletinData, BulletinListItem, ArkBulletinResponse
+
+    cid_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
+
+    def make_bulletin_obj(jump_link: str):
+        return BulletinData.model_validate({
+            "cid": "1",
+            "displayType": 1,
+            "title": "title",
+            "category": 1,
+            "header": "header",
+            "content": "content",
+            "jumpLink": jump_link,
+            "bannerImageUrl": "https://www.baidu.com",
+            "displayTime": "2021-08-01",
+            "updatedAt": 1627795200,
+        })
+
+    def make_bulletin_list_item_obj():
+        return BulletinListItem(
+            cid="1",
+            title="title",
+            category=1,
+            displayTime="2021-08-01",
+            updatedAt=1627795200,
+            sticky=False,
+        )
+
+    def make_response(b: BulletinData):
+        return Response(200, json=ArkBulletinResponse(code=0, msg="", data=b).model_dump(by_alias=True))
+
+    b1 = make_bulletin_obj("")
+    assert b1.jump_link == ""
+
+    b2 = make_bulletin_obj("uniwebview://move?target=shop&param1=SKINSHOP")
+    assert b2.jump_link == "uniwebview://move?target=shop&param1=SKINSHOP"
+
+    b3 = make_bulletin_obj("https://www.baidu.com")
+    assert b3.jump_link == "https://www.baidu.com"
+
+    b4 = make_bulletin_obj("http://www.baidu.com")
+    assert b4.jump_link == "http://www.baidu.com"
+
+    ark = Arknights(ProcessContext(), AsyncClient())
+
+    cid_router.mock(return_value=make_response(b1))
+    p1 = await ark.parse(make_bulletin_list_item_obj())
+    assert p1.url is None
+
+    cid_router.mock(return_value=make_response(b2))
+    p2 = await ark.parse(make_bulletin_list_item_obj())
+    assert p2.url is None
+
+    cid_router.mock(return_value=make_response(b3))
+    p3 = await ark.parse(make_bulletin_list_item_obj())
+    assert p3.url == "https://www.baidu.com/"
+
+    cid_router.mock(return_value=make_response(b4))
+    p4 = await ark.parse(make_bulletin_list_item_obj())
+    assert p4.url == "http://www.baidu.com/"
+
+
 @pytest.mark.asyncio()
 async def test_get_date_in_bulletin(app: App):
     from nonebot_bison.utils import ProcessContext

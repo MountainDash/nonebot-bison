@@ -1,4 +1,5 @@
 import nonebot
+from yarl import URL
 from nonebot import get_plugin_config
 from pydantic import Field, BaseModel
 
@@ -32,8 +33,11 @@ class PlugConfig(BaseModel):
     bison_platform_theme: dict[PlatformName, ThemeName] = {}
 
     @property
-    def outer_url(self) -> str:
-        return self.bison_outer_url or f"http://localhost:{global_config.port}/bison/"
+    def outer_url(self) -> URL:
+        if self.bison_outer_url:
+            return URL(self.bison_outer_url)
+        else:
+            return URL(f"http://localhost:{global_config.port}/bison/")
 
 
 plugin_config = get_plugin_config(PlugConfig)

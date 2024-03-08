@@ -28,12 +28,12 @@ async def test_command(app: App):
                 to_me=True,
             )
             ctx.receive_event(bot, event_1)
-            ctx.should_call_send(event_1, f"请访问: {plugin_config.outer_url}auth/test_token", True)
+            ctx.should_call_send(event_1, f"请访问: {plugin_config.outer_url / 'auth' / 'test_token'}", True)
             ctx.should_finished()
 
             event_2 = fake_private_message_event(message=Message("管理后台"), sender=fake_admin_user, to_me=True)
             ctx.receive_event(bot, event_2)
-            ctx.should_call_send(event_2, f"请访问: {plugin_config.outer_url}auth/test_token", True)
+            ctx.should_call_send(event_2, f"请访问: {plugin_config.outer_url / 'auth' / 'test_token'}", True)
             ctx.should_finished()
 
 

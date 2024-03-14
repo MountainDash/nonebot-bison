@@ -20,37 +20,47 @@ from ..utils import SchedulerConfig, http_client, text_similarity
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
 
-class BaseSchedConf(ABC, SchedulerConfig):
-    schedule_type = "interval"
-    _client_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
+class BilibiliClient:
+    _client: AsyncClient
+    _refresh_time: datetime
     cookie_expire_time = timedelta(hours=5)
 
-    bili_http_client = http_client()
+    def __init__(self) -> None:
+        self._client = http_client()
+        self._refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
 
-    def __init__(self):
-        super().__init__()
-        self.default_http_client = self.bili_http_client
-
-    @classmethod
-    async def _init_session(cls):
-        res = await cls.bili_http_client.get("https://www.bilibili.com/")
+    async def _init_session(self):
+        res = await self._client.get("https://www.bilibili.com/")
         if res.status_code != 200:
             logger.warning("unable to refresh temp cookie")
         else:
-            cls._client_refresh_time = datetime.now()
+            self._refresh_time = datetime.now()
 
-    @classmethod
-    async def _refresh_client(cls):
-        if datetime.now() - cls._client_refresh_time > cls.cookie_expire_time:
-            await cls._init_session()
+    async def _refresh_client(self):
+        if datetime.now() - self._refresh_time > self.cookie_expire_time:
+            await self._init_session()
 
-    async def get_client(self, target: Target) -> AsyncClient:
+    async def get_client(self) -> AsyncClient:
         await self._refresh_client()
-        return await super().get_client(target)
+        return self._client
+
+
+bilibili_client = BilibiliClient()
+
+
+class BaseSchedConf(ABC, SchedulerConfig):
+    schedule_type = "interval"
+    bilibili_client: BilibiliClient
+
+    def __init__(self):
+        super().__init__()
+        self.bilibili_client = bilibili_client
+
+    async def get_client(self, _: Target) -> AsyncClient:
+        return await self.bilibili_client.get_client()
 
     async def get_query_name_client(self) -> AsyncClient:
-        await self._refresh_client()
-        return await super().get_query_name_client()
+        return await self.bilibili_client.get_client()
 
 
 class BilibiliSchedConf(BaseSchedConf):

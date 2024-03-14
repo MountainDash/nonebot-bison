@@ -44,16 +44,11 @@ async def test_http_client_equal(app: App):
     bilibili_scheduler = bilibili.scheduler()
     bilibili_live_scheduler = bilibili_live.scheduler()
 
-    await bilibili_scheduler._init_session()  # type: ignore
-    await bilibili_live_scheduler._init_session()  # type: ignore
-
-    assert bilibili_scheduler.default_http_client == bilibili_live_scheduler.default_http_client
-
     assert await bilibili_scheduler.get_client(empty_target) == await bilibili_live_scheduler.get_client(empty_target)
-    assert await bilibili_live_scheduler.get_client(empty_target) == bilibili_live_scheduler.default_http_client
+    assert await bilibili_live_scheduler.get_client(empty_target) != bilibili_live_scheduler.default_http_client
 
     assert await bilibili_scheduler.get_query_name_client() == await bilibili_live_scheduler.get_query_name_client()
-    assert await bilibili_scheduler.get_query_name_client() == bilibili_live_scheduler.default_http_client
+    assert await bilibili_scheduler.get_query_name_client() != bilibili_live_scheduler.default_http_client
 
 
 @pytest.mark.asyncio

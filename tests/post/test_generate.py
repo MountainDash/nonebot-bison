@@ -86,7 +86,9 @@ async def test_display(mock_platform):
         nickname="Mock",
         description="Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.",
     )
-    assert str(post) == rf"""## Post: {id(post):X} ##
+    assert (
+        str(post)
+        == rf"""## Post: {id(post):X} ##
 
 Rebum delenit iusto augue in rebum sanctus diam stet clita voluptua amet tempor sea in.
 Vel ullamcorper dolore clita eos amet tempor velit amet in.
@@ -102,7 +104,8 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 - avatar: b'\x89PNG\r\n...f\x15\xc4\x89'
 - nickname: 'Mock'
 - description: 'Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.'
-"""  # noqa: E501
+"""
+    )  # noqa: E501
     post2 = Post(
         mock_platform,
         "Rebum delenit iusto augue in rebum sanctus diam stet clita voluptua amet tempor sea in.\n"
@@ -123,7 +126,9 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
         description="Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.",
         repost=post,
     )
-    assert str(post2) == rf"""## Post: {id(post2):X} ##
+    assert (
+        str(post2)
+        == rf"""## Post: {id(post2):X} ##
 
 Rebum delenit iusto augue in rebum sanctus diam stet clita voluptua amet tempor sea in.
 Vel ullamcorper dolore clita eos amet tempor velit amet in.
@@ -158,6 +163,7 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 - nickname: 'Mock'
 - description: 'Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.'
 """
+    )
 
 
 @pytest.mark.asyncio

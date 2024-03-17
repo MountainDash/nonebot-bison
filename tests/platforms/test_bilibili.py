@@ -106,7 +106,7 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
 async def test_article_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[4])
     assert (
-        post.text == "#明日方舟##饼学大厦#\n9.11专栏更新完毕，"
+        post.content == "#明日方舟##饼学大厦#\n9.11专栏更新完毕，"
         "这还塌了实属没跟新运营对上\n后边除了周日发饼和PV没提及的中文语音，"
         "稳了\n别忘了来参加#可露希尔的秘密档案#的主题投票\nhttps://t.bilibili.com/568093580488553786?tab=2"
         + "\n--------------\n"
@@ -124,7 +124,7 @@ async def test_article_forward(bilibili, bing_dy_list):
 async def test_dynamic_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[5])
     assert (
-        post.text == "饼组主线饼学预测——9.11版\n①今日结果\n9.11 殿堂上的游禽-星极(x，"
+        post.content == "饼组主线饼学预测——9.11版\n①今日结果\n9.11 殿堂上的游禽-星极(x，"
         "新运营实锤了)\n②后续预测\n9.12 #罗德岛相簿#+#可露希尔的秘密档案#11话\n9.13"
         " 六星先锋(执旗手)干员-琴柳\n9.14 宣传策略-空弦+家具\n9.15 轮换池（+中文语音前瞻）\n9.16"
         " 停机\n9.17 #罗德岛闲逛部#+新六星EP+EP09·风暴瞭望开启\n9.19 #罗德岛相簿#"
@@ -177,7 +177,7 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     assert len(res2[0][1]) == 1
     post = res2[0][1][0]
     assert (
-        post.text == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu"
+        post.content == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu"
         " 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，"
         "我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
     )

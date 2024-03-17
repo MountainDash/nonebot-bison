@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#465](https://github.com/MountainDash/nonebot-bison/pull/465))
+
 ### Bug 修复
 
 - Arknights 公告分类 过滤不可访问的 URL [@AzideCupric](https://github.com/AzideCupric) ([#495](https://github.com/MountainDash/nonebot-bison/pull/495))

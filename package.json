@@ -1,19 +1,19 @@
 {
   "name": "nonebot-bison-docs",
   "version": "1.0.0",
-  "description": "Docs for nonebot-bison",
-  "main": "index.js",
-  "repository": "git@github.com:felinae98/nonebot-bison-docs.git",
-  "author": "felinae98 <731499577@qq.com>",
+  "description": "Docs for Nonebot Bison",
   "license": "MIT",
-  "private": false,
-  "devDependencies": {
-    "@vuepress/client": "2.0.0-rc.2",
-    "vue": "^3.4.21",
-    "vuepress": "2.0.0-rc.8"
-  },
+  "type": "module",
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress-vite build docs",
+    "docs:clean-dev": "vuepress-vite dev docs --clean-cache",
+    "docs:dev": "vuepress-vite dev docs",
+    "docs:update-package": "pnpm dlx vp-update"
+  },
+  "devDependencies": {
+    "@vuepress/bundler-vite": "2.0.0-rc.8",
+    "vue": "^3.4.16",
+    "vuepress": "2.0.0-rc.8",
+    "vuepress-theme-hope": "2.0.0-rc.31"
   }
 }

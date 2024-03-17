@@ -1,6 +1,5 @@
 ---
-sidebar: auto
-prev: /usage
+prev: /usage/
 next: /usage/easy-use
 ---
 
@@ -79,22 +78,20 @@ next: /usage/easy-use
 2. 在目录中下载[docker-compose.yml](https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml)  
    将其中的`<your QQ>`改成自己的 QQ 号
 
-   :::: code-group
-   ::: code-group-item linux
+   ::: code-tabs#shell
+   @tab linux
 
    ```bash
    wget https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml
    ```
 
-   :::
-   ::: code-group-item windows
+   @tab windows
 
    ```powershell
    Invoke-WebRequest -Uri https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml -OutFile docker-compose.yml
    ```
 
    :::
-   ::::
 
    部分片断：
 

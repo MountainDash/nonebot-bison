@@ -1,7 +1,6 @@
 ---
-sidebar: auto
 prev: /usage/install
-next: /usage
+next: /usage/
 ---
 
 # :package: Bison 的第一个包裹

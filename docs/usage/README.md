@@ -1,5 +1,4 @@
 ---
-sidebar: auto
 prev: /usage/install
 next: /usage/easy-use
 ---
@@ -259,7 +258,7 @@ const reverseProxy = ref(false);
 const outerUrlHelp = computed(() => {
   let helpText = '';
 
-  if ((docker.value || server.value) && !reverseProxy.value) 
+  if ((docker.value || server.value) && !reverseProxy.value)
     helpText += '将Bot配置中的 <code>HOST</code> 部分设置为 <code>0.0.0.0</code><br>';
 
   if (docker.value && !server.value && !reverseProxy.value)
@@ -283,7 +282,7 @@ const outerUrlHelp = computed(() => {
     else
       helpText += '谁没事在自己电脑上起反代啊（<br>';
   }
-      
+
   if (!docker.value && !server.value && !reverseProxy.value)
     helpText += '你无需设置此项<br>';
 

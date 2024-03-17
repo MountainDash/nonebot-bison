@@ -1,4 +1,4 @@
-""" nbesf is Nonebot Bison Enchangable Subscribes File! ver.2"""
+"""nbesf is Nonebot Bison Enchangable Subscribes File! ver.2"""
 
 from typing import Any
 from functools import partial

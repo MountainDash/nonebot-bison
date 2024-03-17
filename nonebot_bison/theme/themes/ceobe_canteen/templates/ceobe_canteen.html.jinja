@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>小刻食堂分享卡片</title>
+</head>
+<body>
+    <div id="ceobecanteen-card">
+        {% if card.content.image %}
+        <img src="{{ card.content.image }}" class="cover-img">
+        {% endif %}
+        {% if card.content.text %}
+        <div class="main-content">{{ card.content.text }}</div>
+        {% endif %}
+        <div class="footer">
+            <div class="datasource">
+                <div class="datasource-text">
+                    <div class="datasource-name">{{ card.info.datasource }}</div>
+                    <div class="time">{{ card.info.time }}</div>
+                </div>
+                <img class='qr' src="{{ card.qr }}">
+            </div>
+            <div class="source">
+                <img class='bison-logo' src="bison_logo.jpg">
+                <div class="source-text">
+                    <div class="slogan">小刻吃到饼啦！</div>
+                    <div class="linkage">bison&amp;小刻食堂联动</div>
+                    <div class="description">来自小刻食堂再转发</div>
+                </div>
+                <img class='ceobe-logo' src="ceobecanteen_logo.png">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<style type="text/css">
+#ceobecanteen-card {
+    width: 700px;
+    background-color: rgb(240, 236, 233);
+}
+.cover-img {
+    width: 100%;
+}
+.main-content {
+    padding: 30px;
+    white-space: pre-line;
+}
+.footer {
+    margin: 0 2%;
+    height: 80px;
+    border-top: 1px solid rgb(185, 181, 177);
+    display: flex;
+    padding: 10px 0;
+}
+.footer .datasource {
+    width: 45%;
+    padding-right: 5px;
+    border-right: 1px solid rgb(185, 181, 177);
+    display: flex;
+    justify-content: space-around;
+}
+.footer .datasource .datasource-text {
+    align-self: center;
+}
+.footer .datasource .datasource-text .datasource-name {
+    font-weight: bold;
+    font-size: 24px;
+}
+.footer .datasource .datasource-text .time {
+    font-size: 13px;
+    color: rgb(138, 136, 134);
+}
+.footer .datasource .qr {
+    width: 80px;
+    object-fit: contain;
+}
+.source {
+    width: 55%;
+    display: flex;
+    justify-content: space-evenly;
+    color: rgb(138, 136, 134);
+    font-size: 13px;
+}
+.footer .source .source-text {
+    align-self: center;
+}
+.source .slogan {
+    font-weight: bold;
+    font-size: 24px;
+    color: black;
+}
+.source .bison-logo,
+.source .ceobe-logo {
+    width: 60px;
+    object-fit: contain;
+}
+</style>

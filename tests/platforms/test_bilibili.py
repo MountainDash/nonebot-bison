@@ -72,14 +72,17 @@ async def test_get_tag_without_topic_info(bilibili, bing_dy_list):
 
 @pytest.mark.asyncio
 async def test_video_forward(bilibili, bing_dy_list):
-    post = await bilibili.parse(bing_dy_list[1])
+    from nonebot_bison.post import Post
+
+    post: Post = await bilibili.parse(bing_dy_list[1])
     assert (
-        post.text
+        post.content
         == "答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786\n--------------\n#可露希尔的秘密档案#"
         " \n11：来宿舍休息一下吧 \n档案来源：lambda:\\罗德岛内务\\秘密档案 \n发布时间：9/12 1:00 P.M."
         " \n档案类型：可见 \n档案描述：今天请了病假在宿舍休息。很舒适。"
         " \n提供者：赫默\n=================\n《可露希尔的秘密档案》11话：来宿舍休息一下吧"
     )
+    assert post.get_priority_themes()[0] == "basic"
 
 
 @pytest.mark.asyncio
@@ -87,7 +90,7 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
     # 视频简介和动态文本其中一方为空的情况
     post = await bilibili.parse(bing_dy_list[2])
     assert (
-        post.text
+        post.content
         == "阿消的罗德岛闲谈直播#01:《女人最喜欢的女人，就是在战场上熠熠生辉的女人》"
         + "\n\n"
         + "本系列视频为饼组成员的有趣直播录播，主要内容为方舟相关，未来可能系列其他视频会包含部分饼组团建日常等。"
@@ -96,6 +99,7 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
         "包含慕夏对新PV的个人解读，风笛厨力疯狂放出，CP言论输出，9.16轮换池预测视频分析和理智规划杂谈内容。"
         "\n注意:内含大量个人性质对风笛的厨力观点，与多CP混乱发言，不适者请及时点击退出或跳到下一片段。"
     )
+    assert post.get_priority_themes()[0] == "basic"
 
 
 @pytest.mark.asyncio
@@ -159,7 +163,9 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     post_router.mock(return_value=Response(200, json=get_json("bilibili_strange_post-0.json")))
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")
     bilibili_main_page_router.mock(return_value=Response(200))
+
     target = Target("161775300")
+
     res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert post_router.called
     assert len(res) == 0

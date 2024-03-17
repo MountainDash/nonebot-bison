@@ -116,47 +116,7 @@ next: /usage/easy-use
    想要指定更多配置请参考[详细配置](/usage#配置)
    :::
 
-3. 运行配置 go-cqhttp
-
-   ```bash
-   docker-compose run go-cqhttp
-   ```
-
-   通信方式选择：`3: 反向 Websocket 通信`，选择完成后 go-cqhttp 会停止运行  
-   接着打开并编辑`bot-data/config.yml`，找到下面字段并更改：
-
-   ```yml
-   account: # 账号相关
-     uin: <填写Bot的QQ号> # QQ账号
-     password: "<填写Bot的QQ密码>" # 密码为空时使用扫码登录
-
-   message:
-     post-format: array
-
-   ............
-
-   servers:
-     - ws-reverse:
-         universal: ws://nonebot:8080/onebot/v11/ws/ # 更改为这个值
-   ```
-
-4. 再次登录 go-cqhttp
-
-   ```bash
-   docker-compose run go-cqhttp
-   ```
-
-   ::: tip
-   此时可能会需要进行扫码登陆等操作  
-   参考[go-cqhttp 文档](https://docs.go-cqhttp.org/faq/slider.html#%E6%96%B9%E6%A1%88a-%E8%87%AA%E8%A1%8C%E6%8A%93%E5%8C%85)
-   进行相应处理
-   :::
-
-5. 成功启动 go-cqhttp 并登录后，启动 bot：
-
-   ```bash
-   docker-compose up -d
-   ```
+3. 启动 Bot（这里请八仙过海）
 
 ### docker 部署
 
@@ -168,7 +128,7 @@ Bison 的 docker 镜像为[`felinae98/nonebot-bison`](https://hub.docker.com/r/f
 docker pull felinae98/nonebot-bison
 
 docker run -d --name nonebot-bison \
-  -e SUPERUSERS='[<your QQ>]' \
+  -e SUPERUSERS='["<your QQ>"]' \
   -e BISON_CONFIG_PATH='/data' \
   -e BISON_OUTER_URL='http://<your server ip>:8080/bison' \
   -e BISON_FILTER_LOG='true' \

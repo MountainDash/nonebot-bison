@@ -2,9 +2,36 @@
 
 ## 最近更新
 
+### Bug 修复
+
+- Arknights 公告分类 过滤不可访问的 URL [@AzideCupric](https://github.com/AzideCupric) ([#495](https://github.com/MountainDash/nonebot-bison/pull/495))
+
+## v0.9.1
+
+### Bug 修复
+
+- 修复后台管理界面无法获取群信息的问题 [@he0119](https://github.com/he0119) ([#486](https://github.com/MountainDash/nonebot-bison/pull/486))
+
+### 文档
+
+- 更新文档以适配 pyd2 的用法 [@felinae98](https://github.com/felinae98) ([#485](https://github.com/MountainDash/nonebot-bison/pull/485))
+
+## v0.9.0
+
+### 破坏性变更
+
+- 移除 mcbbsnews platform [@AzideCupric](https://github.com/AzideCupric) ([#477](https://github.com/MountainDash/nonebot-bison/pull/477))
+
 ### 新功能
 
+- 适配 Pydantic V2 [@he0119](https://github.com/he0119) ([#484](https://github.com/MountainDash/nonebot-bison/pull/484))
+- Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
+- 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))
 - BISON_OUTER_URL配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))
+
+### Bug 修复
+
+- 修复 Arknights Platform 的时间判断和标题显示 [@AzideCupric](https://github.com/AzideCupric) ([#481](https://github.com/MountainDash/nonebot-bison/pull/481))
 
 ## v0.8.2
 

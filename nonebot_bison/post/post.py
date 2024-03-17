@@ -1,151 +1,109 @@
+import reprlib
 from io import BytesIO
-from dataclasses import field, dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING
+from dataclasses import fields, dataclass
 
-from PIL import Image
 from nonebot.log import logger
-import nonebot_plugin_saa as saa
 from nonebot_plugin_saa import MessageSegmentFactory
 
-from ..utils import parse_text, http_client
-from .abstract_post import BasePost, AbstractPost
+from ..theme import theme_manager
+from .abstract_post import AbstractPost
+from ..plugin_config import plugin_config
+from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
+
+if TYPE_CHECKING:
+    from ..platform import Platform
 
 
 @dataclass
-class _Post(BasePost):
-    target_type: str
-    text: str
+class Post(AbstractPost):
+    """最通用的Post，理论上包含所有常用的数据
+
+    对于更特殊的需要，可以考虑另外实现一个Post
+    """
+
+    platform: "Platform"
+    """来源平台"""
+    content: str
+    """文本内容"""
+    title: str | None = None
+    """标题"""
+    images: list[str | bytes | Path | BytesIO] | None = None
+    """图片列表"""
+    timestamp: int | None = None
+    """发布/获取时间戳"""
     url: str | None = None
-    target_name: str | None = None
-    pics: list[str | bytes] = field(default_factory=list)
+    """来源链接"""
+    avatar: str | bytes | Path | BytesIO | None = None
+    """发布者头像"""
+    nickname: str | None = None
+    """发布者昵称"""
+    description: str | None = None
+    """发布者个性签名等"""
+    repost: "Post | None" = None
+    """转发的Post"""
 
-    _message: list[MessageSegmentFactory] | None = None
-    _pic_message: list[MessageSegmentFactory] | None = None
+    def get_config_theme(self) -> str | None:
+        """获取用户指定的theme"""
+        return plugin_config.bison_platform_theme.get(self.platform.platform_name)
 
-    async def _pic_url_to_image(self, data: str | bytes) -> Image.Image:
-        pic_buffer = BytesIO()
-        if isinstance(data, str):
-            async with http_client() as client:
-                res = await client.get(data)
-            pic_buffer.write(res.content)
+    def get_priority_themes(self) -> list[str]:
+        """获取渲染所使用的theme名列表，按照优先级排序"""
+        themes_by_priority: list[str] = []
+        # 最先使用用户指定的theme
+        if user_theme := self.get_config_theme():
+            themes_by_priority.append(user_theme)
+        # 然后使用平台默认的theme
+        if self.platform.default_theme not in themes_by_priority:
+            themes_by_priority.append(self.platform.default_theme)
+        # 最后使用最基础的theme
+        if "basic" not in themes_by_priority:
+            themes_by_priority.append("basic")
+        return themes_by_priority
+
+    async def generate(self) -> list[MessageSegmentFactory]:
+        """生成消息"""
+        themes = self.get_priority_themes()
+        for theme_name in themes:
+            if theme := theme_manager[theme_name]:
+                try:
+                    logger.debug(f"Try to render Post with theme {theme_name}")
+                    return await theme.do_render(self)
+                except ThemeRenderUnsupportError as e:
+                    logger.warning(
+                        f"Theme {theme_name} does not support Post of {self.platform.__class__.__name__}: {e}"
+                    )
+                    continue
+                except ThemeRenderError as e:
+                    logger.exception(f"Theme {theme_name} render error: {e}")
+                    continue
+            else:
+                logger.error(f"Theme {theme_name} not found")
+                continue
         else:
-            pic_buffer.write(data)
-        return Image.open(pic_buffer)
+            raise ThemeRenderError(f"No theme can render Post of {self.platform.__class__.__name__}")
 
-    def _check_image_square(self, size: tuple[int, int]) -> bool:
-        return abs(size[0] - size[1]) / size[0] < 0.05
+    def __str__(self) -> str:
+        aRepr = reprlib.Repr()
+        aRepr.maxstring = 100
 
-    async def _pic_merge(self) -> None:
-        if len(self.pics) < 3:
-            return
-        first_image = await self._pic_url_to_image(self.pics[0])
-        if not self._check_image_square(first_image.size):
-            return
-        images: list[Image.Image] = [first_image]
-        # first row
-        for i in range(1, 3):
-            cur_img = await self._pic_url_to_image(self.pics[i])
-            if not self._check_image_square(cur_img.size):
-                return
-            if cur_img.size[1] != images[0].size[1]:  # height not equal
-                return
-            images.append(cur_img)
-        _tmp = 0
-        x_coord = [0]
-        for i in range(3):
-            _tmp += images[i].size[0]
-            x_coord.append(_tmp)
-        y_coord = [0, first_image.size[1]]
+        post_format = f"""## Post: {id(self):X} ##
 
-        async def process_row(row: int) -> bool:
-            if len(self.pics) < (row + 1) * 3:
-                return False
-            row_first_img = await self._pic_url_to_image(self.pics[row * 3])
-            if not self._check_image_square(row_first_img.size):
-                return False
-            if row_first_img.size[0] != images[0].size[0]:
-                return False
-            image_row: list[Image.Image] = [row_first_img]
-            for i in range(row * 3 + 1, row * 3 + 3):
-                cur_img = await self._pic_url_to_image(self.pics[i])
-                if not self._check_image_square(cur_img.size):
-                    return False
-                if cur_img.size[1] != row_first_img.size[1]:
-                    return False
-                if cur_img.size[0] != images[i % 3].size[0]:
-                    return False
-                image_row.append(cur_img)
-            images.extend(image_row)
-            y_coord.append(y_coord[-1] + row_first_img.size[1])
-            return True
+{self.content if len(self.content) < 200 else self.content[:200] + '...'}
 
-        if await process_row(1):
-            matrix = (3, 2)
-        else:
-            matrix = (3, 1)
-        if await process_row(2):
-            matrix = (3, 3)
-        logger.info("trigger merge image")
-        target = Image.new("RGB", (x_coord[-1], y_coord[-1]))
-        for y in range(matrix[1]):
-            for x in range(matrix[0]):
-                target.paste(
-                    images[y * matrix[0] + x],
-                    (x_coord[x], y_coord[y], x_coord[x + 1], y_coord[y + 1]),
-                )
-        target_io = BytesIO()
-        target.save(target_io, "JPEG")
-        self.pics = self.pics[matrix[0] * matrix[1] :]
-        self.pics.insert(0, target_io.getvalue())
+来源: <Platform {self.platform.platform_name}>
+"""
+        post_format += "附加信息:\n"
+        for field in fields(self):
+            if field.name in ("content", "platform", "repost"):
+                continue
+            value = getattr(self, field.name)
+            if value is not None:
+                post_format += f"- {field.name}: {aRepr.repr(value)}\n"
 
-    async def generate_text_messages(self) -> list[MessageSegmentFactory]:
-        if self._message is None:
-            await self._pic_merge()
-            msg_segments: list[MessageSegmentFactory] = []
-            text = ""
-            if self.text:
-                text += "{}".format(self.text if len(self.text) < 500 else self.text[:500] + "...")
-            if text:
-                text += "\n"
-            text += f"来源: {self.target_type}"
-            if self.target_name:
-                text += f" {self.target_name}"
-            if self.url:
-                text += f" \n详情: {self.url}"
-            msg_segments.append(saa.Text(text))
-            for pic in self.pics:
-                msg_segments.append(saa.Image(pic))
-            self._message = msg_segments
-        return self._message
+        if self.repost:
+            post_format += "\n转发:\n"
+            post_format += str(self.repost)
 
-    async def generate_pic_messages(self) -> list[MessageSegmentFactory]:
-        if self._pic_message is None:
-            await self._pic_merge()
-            msg_segments: list[MessageSegmentFactory] = []
-            text = ""
-            if self.text:
-                text += f"{self.text}"
-                text += "\n"
-            text += f"来源: {self.target_type}"
-            if self.target_name:
-                text += f" {self.target_name}"
-            msg_segments.append(await parse_text(text))
-            if not self.target_type == "rss" and self.url:
-                msg_segments.append(saa.Text(self.url))
-            for pic in self.pics:
-                msg_segments.append(saa.Image(pic))
-            self._pic_message = msg_segments
-        return self._pic_message
-
-    def __str__(self):
-        return "type: {}\nfrom: {}\ntext: {}\nurl: {}\npic: {}".format(
-            self.target_type,
-            self.target_name,
-            self.text if len(self.text) < 500 else self.text[:500] + "...",
-            self.url,
-            ", ".join("b64img" if isinstance(x, bytes) or x.startswith("base64") else x for x in self.pics),
-        )
-
-
-@dataclass
-class Post(AbstractPost, _Post):
-    pass
+        return post_format

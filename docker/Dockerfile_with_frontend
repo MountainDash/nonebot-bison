@@ -14,16 +14,15 @@ ENV PYTHONFAULTHANDLER=1 \
   PATH="$PATH:/runtime/bin" \
   PYTHONPATH="$PYTHONPATH:/runtime/lib/python3.10/site-packages" \
   # Versions:
-  POETRY_VERSION=1.2.2
+  POETRY_VERSION=1.7.1
 RUN apt-get update && apt-get install -y build-essential unzip wget python-dev git
 RUN pip install "poetry==$POETRY_VERSION"
 
 WORKDIR /src
 
-COPY pyproject.toml poetry.lock /src/
+COPY README.md pyproject.toml poetry.lock /src/
 
-RUN poetry add "nonebot2[fastapi]" nonebot-adapter-red nonebot-adapter-qq nonebot-adapter-telegram && \
-    poetry export --without-hashes --no-interaction --no-ansi -f requirements.txt -o requirements.txt
+RUN poetry export --only=main,docker --without-hashes --no-interaction --no-ansi -f requirements.txt -o requirements.txt
 RUN pip install --prefix=/runtime --force-reinstall -r requirements.txt
 
 FROM base as runtime
@@ -37,13 +36,16 @@ RUN --mount=type=cache,target=/var/cache/apt \
     fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 \
     libcairo2 libcups2 libdbus-1-3 libdrm2 libegl1 libgbm1 libglib2.0-0 libgtk-3-0 \
     libnspr4 libnss3 libpango-1.0-0 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
-    libxdamage1 libxext6 libxfixes3 libxrandr2 libxshmfence1
+    libxdamage1 libxext6 libxfixes3 libxrandr2 libxshmfence1 nano
 
 COPY --from=builder /runtime /usr/local
-RUN playwright install chromium
 ADD . /app/
-RUN echo 'DATASTORE_DATA_DIR=/data' > .env
+RUN pip install -e . && playwright install chromium
+RUN mv docker.env.prod .env.prod && \
+    nb adapter install nonebot-adapter-red && \
+    nb adapter install nonebot-adapter-qq && \
+    nb adapter install nonebot-adapter-telegram
 ENV HOST=0.0.0.0
-CMD ["python", "bot.py"]
+CMD ["nb", "run"]
 
 # vim: ft=dockerfile

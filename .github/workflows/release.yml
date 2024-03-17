@@ -16,7 +16,7 @@ jobs:
         uses: ./.github/actions/build-frontend
 
       - name: Upload dist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend
           path: ./admin-frontend/build/
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download frontend files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend
           path: ./nonebot_bison/admin_page/dist
@@ -44,7 +44,7 @@ jobs:
       - run: |
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - uses: release-drafter/release-drafter@v5
+      - uses: release-drafter/release-drafter@v6
         with:
           name: Release ${{ env.TAG_NAME }}
           tag: ${{ env.TAG_NAME }}
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download frontend files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend
           path: ./nonebot_bison/admin_page/dist

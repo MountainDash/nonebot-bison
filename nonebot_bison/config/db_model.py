@@ -3,6 +3,7 @@ from pathlib import Path
 
 from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy.dialects.postgresql import JSONB
+from nonebot.compat import PYDANTIC_V2, ConfigDict
 from nonebot_plugin_datastore import get_plugin_data
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from sqlalchemy import JSON, String, ForeignKey, UniqueConstraint
@@ -46,8 +47,12 @@ class ScheduleTimeWeight(Model):
 
     target: Mapped[Target] = relationship(back_populates="time_weight")
 
-    class Config:
-        arbitrary_types_allowed = True
+    if PYDANTIC_V2:
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+    else:
+
+        class Config:
+            arbitrary_types_allowed = True
 
 
 class Subscribe(Model):

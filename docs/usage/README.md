@@ -74,6 +74,23 @@ next: /usage/easy-use
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
 - `BISON_UA`: 使用的 User-Agent，默认为 Chrome
 - `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认为`True`
+- `BISON_THEME_USE_BROWSER`: 是否使用浏览器渲染主题，某些主题可能需要浏览器渲染(htmlrender)，默认为`False`
+- `BISON_PLATFORM_THEME`: 为[平台](#平台)指定渲染用[主题](#主题)，用于渲染推送消息，默认为`{}`
+  ::: details BISON_PLATFORM_THEME 配置项示例
+
+  配置项使用`<platform>:<theme>`的形式来为某个平台指定其渲染主题，例如`"weibo":"basic"`，`"bilibili":"ht2i"`。
+  最外层使用`{}`包裹，多个配置项之间使用逗号`,`分隔。  
+  需要注意，`<platform>`所用内容是平台的**英文名**，`<theme>`所用内容是主题的**英文名**。并且不要忘记使用双引号`""`包裹内容。
+
+  例子:
+
+  ```env
+  BISON_PLATFORM_THEME={"weibo":"basic","bilibili":"ht2i"}
+  ```
+
+  所有支持的平台请参见[平台](#平台)一节  
+  所有支持的主题请参见[主题](#主题)一节
+  :::
 
 ## 使用
 
@@ -149,6 +166,37 @@ Command(命令):
         --format [json|yaml|yml]  指定导入格式[json, yaml]，默认为 json
         --help                    显示帮助
 ```
+
+### 平台
+
+Bison 支持的平台如下：
+
+- arknights: 明日方舟游戏信息
+- bilibili: B站
+- bilibili-live: Bilibili直播
+- bilibili-bangumi: Bilibili剧集
+- ff14: 最终幻想XIV官方公告
+- ncm-artist: 网易云-歌手
+- ncm-radio: 网易云-电台
+- rss: RSS
+- weibo: 新浪微博
+
+:::tip
+配置 `BISON_PLATFORM_THEME` 时，所用的 `<platform>` 是 `:` 左边的值
+:::
+
+### 主题
+
+Bison 支持的主题如下：
+
+- basic: 基础主题，是每个平台都会支持的主题
+- ht2i: 使用 `nonebot-plugin-htmlrender` 插件，将文本渲染成图片的主题
+- brief: 简报主题，仅发送标题、链接、图片
+- arknights: 明日方舟专用主题，渲染为明日方舟公告风格
+
+:::tip
+配置 `BISON_PLATFORM_THEME` 时，所用的 `<theme>` 是 `:` 左边的值
+:::
 
 ### 所支持平台的 uid
 

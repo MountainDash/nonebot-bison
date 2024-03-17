@@ -1,4 +1,5 @@
 from nonebot.log import logger
+from nonebot.compat import model_dump
 from nonebot_plugin_datastore.db import get_engine
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
@@ -21,7 +22,7 @@ async def data_migrate():
                     user_target = TargetQQGroup(group_id=user["user"])
                 else:
                     user_target = TargetQQPrivate(user_id=user["user"])
-                db_user = User(user_target=user_target.dict())
+                db_user = User(user_target=model_dump(user_target))
                 user_to_create.append(db_user)
                 user_sub_set = set()
                 for sub in user["subs"]:

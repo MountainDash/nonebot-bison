@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-bison"
-version = "0.8.2"
+version = "0.9.1"
 description = "Subscribe message from social medias"
 authors = ["felinae98 <felinae225@qq.com>"]
 license = "MIT"
@@ -22,40 +22,53 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0.0"
-bs4 = "^0.0.1"
+beautifulsoup4 = ">=4.12.3"
 expiringdict = "^1.2.1"
 feedparser = "^6.0.2"
 httpx = ">=0.16.1"
-nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
+nonebot2 = { extras = ["fastapi"], version = "^2.2.1" }
 nonebot-adapter-onebot = "^2.0.0"
 nonebot-plugin-htmlrender = ">=0.2.0"
-nonebot-plugin-datastore = ">=0.6.2,<2.0.0"
-nonebot-plugin-apscheduler = ">=0.2,<0.4"
-nonebot-plugin-send-anything-anywhere = "^0.4.0"
+nonebot-plugin-datastore = ">=1.2.0,<2.0.0"
+nonebot-plugin-apscheduler = ">=0.4.0"
+nonebot-plugin-send-anything-anywhere = ">=0.5.0,<0.7.0"
 pillow = ">=8.1,<11.0"
 pyjwt = "^2.1.0"
 python-socketio = "^5.4.0"
 tinydb = "^4.3.0"
+qrcode = "^7.4.2"
+pydantic = ">=1.10.0,<3.0.0,!=2.5.0,!=2.5.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.7.0"
+black = ">=23.7,<25.0"
 ipdb = "^0.13.4"
 isort = "^5.10.1"
 nonemoji = "^0.1.4"
-nb-cli = "^1.0.5"
+nb-cli = "^1.2.8"
 pre-commit = "^3.3.0"
-ruff = ">=0.0.278,<0.0.293"
+ruff = ">=0.0.278,<0.3.1"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
 nonebug = "^0.3.4"
-nonebug-saa = {git = "https://github.com/MountainDash/nonebug-saa.git"}
+nonebug-saa = "^0.4.0"
 pytest = "^7.0.1"
-pytest-asyncio = ">=0.18.1,<0.22.0"
+pytest-asyncio = ">=0.18.1,<0.24.0"
 pytest-cov = ">=3,<5"
 pytest-mock = "^3.10.0"
 pytest-xdist = { extras = ["psutil"], version = "^3.1.0" }
 respx = "^0.20.0"
+
+[tool.poetry.group.docker]
+optional = true
+
+[tool.poetry.group.docker.dependencies]
+nb-cli = "^1.4.0"
+nonebot2 = { extras = ["fastapi", "aiohttp"], version = "^2.2.1" }
+nonebot-adapter-red = "^0.9.0"
+nonebot-adapter-qq = "^1.4.2"
+nonebot-adapter-telegram = "^0.1.0b14"
+poetry-core = "^1.8.1"
 
 [tool.poetry.extras]
 cli = ["anyio", "click", "typing-extensions"]
@@ -66,8 +79,8 @@ all = ["anyio", "click", "typing-extensions", "pyyaml"]
 bison = "nonebot_bison.script.cli:main"
 
 [build-system]
-requires = ["poetry>=1.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.4.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 markers = [
@@ -102,13 +115,26 @@ src_paths = ["nonebot_bison", "tests"]
 extra_standard_library = ["typing_extensions"]
 
 [tool.nonebot]
+adapters = [
+  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+]
 plugins = ["nonebot_bison"]
+plugin_dirs = ["extra_plugins"]
+builtin_plugins = ["echo"]
 
 [tool.pyright]
 reportShadowedImports = false
 pythonVersion = "3.10"
 pythonPlatform = "All"
 executionEnvironments = [
-  { root = "./tests", extraPaths = ["./"] },
+  { root = "./tests", extraPaths = [
+    "./",
+  ] },
   { root = "./" },
 ]
+defineConstant = { PYDANTIC_V2 = true }
+
+[[tool.poetry.source]]
+name = "offical-source"
+url = "https://pypi.org/simple/"
+priority = "primary"

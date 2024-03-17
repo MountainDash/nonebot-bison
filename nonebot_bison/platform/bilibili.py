@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from httpx import AsyncClient
 from nonebot.log import logger
 from pydantic import Field, BaseModel
+from nonebot.compat import type_validate_python
+
+from nonebot_bison.compat import model_rebuild
 
 from ..post import Post
 from ..utils import SchedulerConfig, text_similarity
@@ -193,7 +196,7 @@ class Bilibili(NewMessage):
             text += orig_text
         else:
             raise CategoryNotSupport(post_type)
-        return Post("bilibili", text=text, url=url, pics=pic, target_name=target_name)
+        return Post(self, text, url=url, images=pic, nickname=target_name)
 
 
 class Bilibililive(StatusChange):
@@ -206,6 +209,7 @@ class Bilibililive(StatusChange):
     name = "Bilibili直播"
     has_target = True
     use_batch = True
+    default_theme = "brief"
 
     @unique
     class LiveStatus(Enum):
@@ -302,7 +306,7 @@ class Bilibililive(StatusChange):
         infos = []
         for target in targets:
             if target in data.keys():
-                infos.append(self.Info.parse_obj(data[target]))
+                infos.append(type_validate_python(self.Info, data[target]))
             else:
                 infos.append(self._gen_empty_info(int(target)))
         return infos
@@ -334,11 +338,12 @@ class Bilibililive(StatusChange):
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
-            self.name,
-            text=title,
+            self,
+            "",
+            title=title,
             url=url,
-            pics=list(pic),
-            target_name=target_name,
+            images=list(pic),
+            nickname=target_name,
             compress=True,
         )
 
@@ -353,6 +358,7 @@ class BilibiliBangumi(StatusChange):
     name = "Bilibili剧集"
     has_target = True
     parse_target_promot = "请输入剧集主页"
+    default_theme = "brief"
 
     _url = "https://api.bilibili.com/pgc/review/user"
 
@@ -384,7 +390,7 @@ class BilibiliBangumi(StatusChange):
         if res_dict["code"] == 0:
             return {
                 "index": res_dict["result"]["media"]["new_ep"]["index"],
-                "index_show": res_dict["result"]["media"]["new_ep"]["index"],
+                "index_show": res_dict["result"]["media"]["new_ep"]["index_show"],
                 "season_id": res_dict["result"]["media"]["season_id"],
             }
         else:
@@ -412,15 +418,17 @@ class BilibiliBangumi(StatusChange):
         url = lastest_episode["link"]
         pic: list[str] = [lastest_episode["cover"]]
         target_name = detail_dict["result"]["season_title"]
-        text = lastest_episode["share_copy"]
+        content = raw_post["index_show"]
+        title = lastest_episode["share_copy"]
         return Post(
-            self.name,
-            text=text,
+            self,
+            content,
+            title=title,
             url=url,
-            pics=list(pic),
-            target_name=target_name,
+            images=list(pic),
+            nickname=target_name,
             compress=True,
         )
 
 
-Bilibililive.Info.update_forward_refs()
+model_rebuild(Bilibililive.Info)

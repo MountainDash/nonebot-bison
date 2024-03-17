@@ -41,6 +41,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
+    plugin_config.bison_theme_use_browser = True
 
     datastore_config.datastore_config_dir = tmp_path / "config"
     datastore_config.datastore_cache_dir = tmp_path / "cache"

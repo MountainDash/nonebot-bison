@@ -34,11 +34,11 @@ repos:
         stages: [commit]
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.0.0-alpha.2
+    rev: v9.0.0-beta.1
     hooks:
       - id: eslint
         additional_dependencies:
-          - "eslint@8.2.0"
+          - "eslint@8.57.0"
           - "@typescript-eslint/eslint-plugin"
           - "@typescript-eslint/parser"
           - "eslint-config-airbnb"

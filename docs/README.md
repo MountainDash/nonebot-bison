@@ -51,7 +51,7 @@ highlights:
         link: https://live.bilibili.com
 
       - title: 哔哩哔哩番剧
-        details: 及时更新(?)的动漫新番
+        details: 及时更新 (?) 的动漫新番
         link: https://www.bilibili.com/anime
 
       - title: 网易云歌手
@@ -66,11 +66,11 @@ highlights:
         details: 博士，你还不能休息哦
         link: https://ak.hypergryph.com/
 
-      - title: 最终幻想14
+      - title: 最终幻想 14
         details: 一个由玩家创造的幻想世界
         link: https://adsrff.web.sdo.com/web1/
 
-      - title: 小刻食堂(即将支持)
+      - title: 小刻食堂 (即将支持)
         details: 实时获取鹰角发的动态
         link: https://www.ceobecanteen.top
 
@@ -85,9 +85,9 @@ highlights:
     highlights:
       - title: 游戏发饼没看到？
         icon: blog
-        details: 让Bison帮你蹲！新鲜的饼热乎送上！社交动态？网站更新？游戏开服？Bison的自行车24小时风雨无阻！
+        details: 让 Bison 帮你蹲！新鲜的饼热乎送上！社交动态？网站更新？游戏开服？Bison 的自行车 24 小时风雨无阻！
 
-      - title: Bison的自行车你做主！
+      - title: Bison 的自行车你做主！
         icon: wrench
         details: 自由组装自行车，想推送的平台找不到？不要紧！只需要简单的爬虫知识，就能为自行车装上新的配件派送你需要的信件！
         link: ./dev/

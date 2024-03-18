@@ -40,7 +40,7 @@ _✨ 通用订阅推送插件 ✨_
     <strong>🚀 快速开始</strong>
   </a>
   &nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="https://qm.qq.com/cgi-bin/qm/qr?k=pXYMGB_e8b6so3QTqgeV6lkKDtEeYE4f&jump_from=webapi" target="__blank">
+  <a href="https://qm.qq.com/q/7DH4H3hbaw" target="__blank">
     <strong>💬 讨论交流</strong>
   </a>
 
@@ -52,7 +52,7 @@ _✨ 通用订阅推送插件 ✨_
 基于 [`NoneBot2`](https://github.com/nonebot/nonebot2) 开发（诞生于明日方舟的蹲饼活动）
 
 <details>
-<summary>本项目原名原名nonebot-hk-reporter</summary>
+<summary>本项目原名原名 nonebot-hk-reporter</summary>
 
 寓意本 Bot 要做全世界跑的最快的搬运机器人，后因名字过于暴力改名
 
@@ -79,7 +79,7 @@ _✨ 通用订阅推送插件 ✨_
 
 ## 使用方法
 
-**!!注意，如果要使用后台管理功能请使用 pypi 版本或者 docker 版本，如果直接 clone 源代码
+**!! 注意，如果要使用后台管理功能请使用 pypi 版本或者 docker 版本，如果直接 clone 源代码
 需要按下面方式进行 build**
 
 ```bash
@@ -89,7 +89,7 @@ pnpm && pnpm run build
 
 可以使用 Docker，docker-compose，作为插件安装在 nonebot 中，或者直接运行
 
-在群里 at Bot 或者直接私聊 Bot “添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
+在群里 at Bot 或者直接私聊 Bot“添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
 
 参考[文档](https://nonebot-bison.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
 

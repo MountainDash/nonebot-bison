@@ -82,6 +82,7 @@ jobs:
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           flags: smoke-test
           env_vars: OS,PYTHON_VERSION
 
@@ -115,6 +116,7 @@ jobs:
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           flags: all-test
           env_vars: OS,PYTHON_VERSION
 

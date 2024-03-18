@@ -1,7 +1,6 @@
 ---
-sidebar: auto
 prev: /usage/install
-next: /usage
+next: /usage/
 ---
 
 # :package: Bison 的第一个包裹
@@ -22,25 +21,25 @@ next: /usage
    在本节中，我们假设`COMMAND_START`设置中包含`'/'`，也就是说，我们的命令前缀是`/`  
    例如：`COMMAND_START=['', '/']`
 2. `BISON_TO_ME`  
-   是否需要@Bot 或使用 Bot 的 Nickname 来触发 Bison，默认为`True`  
+   是否需要 @Bot 或使用 Bot 的 Nickname 来触发 Bison，默认为`True`  
    例如：
    - `BISON_TO_ME=True`  
      `@Bot /help`
    - `BISON_TO_ME=False`  
      `/help`
 3. `BISON_USE_PIC`  
-   将文字渲染成图片后进行发送，多用于规避风控, 默认为`False`
+   将文字渲染成图片后进行发送，多用于规避风控，默认为`False`
 4. `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
 
-   - `0`: 不启用(默认)
+   - `0`: 不启用 (默认)
    - `1`: 首条消息单独发送，剩余图片合并转发
    - `2`: 所有消息全部合并转发
 
    ::: details BISON_USE_PIC_MERGE 配置项示例
 
-   - 当`BISON_USE_PIC_MERGE=1`时:
+   - 当`BISON_USE_PIC_MERGE=1`时：
      ![simple1](/images/forward-msg-simple1.png)
-   - 当`BISON_USE_PIC_MERGE=2`时:
+   - 当`BISON_USE_PIC_MERGE=2`时：
      ![simple1](/images/forward-msg-simple2.png)
 
    :::
@@ -108,10 +107,10 @@ Bison 会要求你给出你想要订阅的目标，这个目标可以是一个 u
 ![choose category](/images/choose-category.png)
 这里选择订阅明日方舟微博的`视频 图文 文字`类别，当该账号在微博发送了视频、图文、文字时，Bison 会将其派送到你的群聊中
 
-## :bookmark: 选择需要特定订阅/屏蔽的话题(tag)
+## :bookmark: 选择需要特定订阅/屏蔽的话题 (tag)
 
-::: tip 什么是话题(tag)？
-Tag 是社交平台中一种常见的功能，它用井号(#)作为前缀，标记关键词，方便用户搜索相关内容。
+::: tip 什么是话题 (tag)？
+Tag 是社交平台中一种常见的功能，它用井号 (#) 作为前缀，标记关键词，方便用户搜索相关内容。
 例如：`#明日方舟# #每日打卡#（微博、哔哩哔哩） #baracamp（推特）`
 
 具体的过滤规则参见[Tag 的推送规则](/usage/#tag-的推送规则)
@@ -136,7 +135,7 @@ Tag 是社交平台中一种常见的功能，它用井号(#)作为前缀，标�
 
 ## :globe_with_meridians: 使用网页管理订阅
 
-Bison 提供了一个网页管理订阅的功能，你可以在网页上查看、添加、删除订阅  
+Bison 提供了一个网页管理订阅的功能，即 WebUI，你可以在网页上查看、添加、删除订阅  
 如果需要使用，请 **私聊** Bison 发送`后台管理`命令，Bison 会给你发送一个网页链接，在浏览器打开即可进入网页管理订阅的界面
 ::: tip 该命令无效？
 `后台管理`命令仅对`SUPERUSERS`的私聊有效
@@ -144,9 +143,9 @@ Bison 提供了一个网页管理订阅的功能，你可以在网页上查看�
 ::: tip Bison 给出的链接无效？
 Bison 所给的链接中的 ip 和 port 是`BISON_OUTER_URL`配置决定的，也就是说 Bison 本身不能获取服务器的 ip 与自身的 port，所以 Bison 给出的链接可能是无效的。你可以在`BISON_OUTER_URL`中设置你的服务器 ip 与 port，或者直接修改 Bison 给出的链接为正确的`http://<ip>:<port>/bison/...`来进入网页管理订阅的界面。
 
-参见[详细介绍-配置](/usage/#配置)的`BISON_OUTER_URL`部分
+参见[详细介绍 - 配置](/usage/#配置)的`BISON_OUTER_URL`部分
 :::
 ::: tip 认证失败？
 :bug:
-在浏览器输入网址进入网页时，第一次进入可能会出现 unauthorized，请再输入网址重新进入一次
+在浏览器输入网址进入网页时，第一次进入可能会出现 unauthorized，请再输入网址重新进入一次，而**不能**简单的刷新页面
 :::

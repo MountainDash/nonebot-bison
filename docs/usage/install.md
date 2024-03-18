@@ -1,17 +1,16 @@
 ---
-sidebar: auto
-prev: /usage
+prev: /usage/
 next: /usage/easy-use
 ---
 
 # 让拜松骑上自行车
 
-本节将教你部署 nonebot-bison 项目  
-想知道如何开始使用请看[简单使用](/usage/easy-use.md)或者[详细配置](/usage)
+本节将讲解如何部署 nonebot-bison 项目  
+使用部分介绍请看 [简单使用](/usage/easy-use.md) 或者 [详细配置](/usage)
 
 ## 如何选择？
 
-- 没有其他需要，只想使用 Nonebot-Bison？想在 Bison 的基础上再加入其他插件？  
+- 没有其他需要，只想使用 Nonebot-Bison？想以 Bison 的基础扩展其他插件？  
   试试[**作为 Bot 使用**](#作为-bot-使用)！
 - 已有项目，想要增加 Nonebot-Bison？  
   试试[**作为插件使用**](#作为插件使用)！
@@ -29,10 +28,10 @@ next: /usage/easy-use
 
 ### 使用 nb-cli 安装 <Badge type="tip" text="推荐" vertical="top" />
 
-1. 安装`nb-cli`
+1. 安装[`nb-cli`](https://cli.nonebot.dev/docs/guide/installation)
 
    ```bash
-   pip install nb-cli
+   pipx install nb-cli
    ```
 
 2. 使用`nb-cli`执行在**项目根目录**执行
@@ -41,13 +40,29 @@ next: /usage/easy-use
    nb plugin install nonebot-bison
    ```
 
+3. 在项目中添加依赖
+
+   ```bash
+   poetry add nonebot-bison
+   ```
+
 ### 手动安装
 
 1. 安装 pip 包`nonebot-bison`
+   ::: code-tabs
+   @tab poetry
+
+   ```bash
+   poetry add nonebot-bison
+   ```
+
+   @tab pip
 
    ```bash
    pip install nonebot-bison
    ```
+
+   :::
 
 2. 在`pyproject.toml`中导入插件`nonebot_bison`
    编辑项目根目录下的`pyproject.toml`文件，添加如下内容：
@@ -79,36 +94,34 @@ next: /usage/easy-use
 2. 在目录中下载[docker-compose.yml](https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml)  
    将其中的`<your QQ>`改成自己的 QQ 号
 
-   :::: code-group
-   ::: code-group-item linux
+   ::: code-tabs#shell
+   @tab linux
 
    ```bash
    wget https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml
    ```
 
-   :::
-   ::: code-group-item windows
+   @tab windows
 
    ```powershell
    Invoke-WebRequest -Uri https://raw.githubusercontent.com/felinae98/nonebot-bison/main/docker-compose.yml -OutFile docker-compose.yml
    ```
 
    :::
-   ::::
 
    部分片断：
 
    ```yml
        ...
-         HOST: 0.0.0.0 # 0.0.0.0代表监听所有地址
-         # SUPERUSERS: '[<your QQ>]' #取消该行注释，并将<your QQ>改为自己的QQ号
+         HOST: 0.0.0.0 # 0.0.0.0 代表监听所有地址
+         # SUPERUSERS: '[<your QQ>]' #取消该行注释，并将<your QQ>改为自己的 QQ 号
          BISON_CONFIG_PATH: /data
          # BISON_OUTER_URL: 'http://<your server ip>:8080/bison'
-         #取消上行注释，并将<your server ip>改为你的服务器ip，bison不会自动获取ip
+         #取消上行注释，并将<your server ip>改为你的服务器 ip，bison 不会自动获取 ip
          BISON_FILTER_LOG: 'true'
-         BISON_USE_PIC: 'false' # 如果需要将文字转为图片发送请改为true
+         BISON_USE_PIC: 'false' # 如果需要将文字转为图片发送请改为 true
        ports:
-         - 8080:8080 # 容器映射的端口，如果需要修改请同时修改上面的BISON_OUTER_URL
+         - 8080:8080 # 容器映射的端口，如果需要修改请同时修改上面的 BISON_OUTER_URL
        ...
    ```
 
@@ -116,7 +129,9 @@ next: /usage/easy-use
    想要指定更多配置请参考[详细配置](/usage#配置)
    :::
 
-3. 启动 Bot（这里请八仙过海）
+3. 启动项目
+   - 在目录中运行`docker-compose up -d`启动 Nonebot-Bison
+   - 启动 Bot 端（这里请八仙过海）
 
 ### docker 部署
 
@@ -141,10 +156,15 @@ docker run -d --name nonebot-bison \
 
 ### 直接运行 <Badge type="warning" text="不推荐" vertical="top" />
 
-可以参考[nonebot 的运行方法](https://docs.nonebot.dev/guide/getting-started.html)
+相当于进行了源码部署，或者说是开发模式的部署。
+
+可以参考[nonebot 的运行方法](https://nonebot.dev/docs/quick-start)
 ::: danger
-直接克隆源代码需要自行编译前端，否则会出现无法使用管理后台等情况。
+Bison 的 WebUI 是需要编译后才能使用的，直接克隆源代码需要自行编译前端，否则会出现无法使用管理后台等情况。
 :::
+
+#### 本体安装
+
 ::: danger
 本项目中使用了 Python 3.10 的语法，如果出现问题，请检查 Python 版本
 :::
@@ -158,24 +178,62 @@ docker run -d --name nonebot-bison \
    poetry install
    ```
 
-3. 安装 yarn，配置 yarn 源
+#### WebUI 安装
 
-   - 安装[`Node.js`](https://nodejs.org/en/download)
-   - 安装`yarn`
+1. 安装包管理器
+   Bison 仓库中使用了`pnpm`作为包管理器，如果没有安装请先安装`pnpm`  
+   当然如果你因为一些原因不想使用`pnpm`，可以使用`yarn`或者`npm`进行安装
 
-     ```bash
-     npm install -g yarn
-     ```
+   - pnpm
+     参见 [pnpm 安装](https://pnpm.io/zh/installation)
+   - yarn
+     - 安装[Node.js](https://nodejs.org/en/download)
+     - 安装 yarn: `npm install -g yarn`
 
-4. 在`admin-fronted`目录中运行`yarn && yarn build`编译前端
+2. 在`admin-fronted`目录中编译前端
 
    ```bash
    cd admin-frontend
+   ```
+
+   ::: code-tabs
+   @tab pnpm
+
+   ```shell
+   pnpm install
+   pnpm build
+   ```
+
+   @tab yarn
+
+   ```shell
    yarn && yarn build
    ```
 
-5. 编辑`.env.prod`配置各种环境变量，见[Nonebot2 配置](https://v2.nonebot.dev/docs/appendices/config)
-   :::tip 找不到 .env.prod ？
+   @tab npm
+
+   ```shell
+   npm i
+   npm build
+   ```
+
+   :::
+
+构建完毕后，dist 目录中生成的前端文件会自动移入`nonebot_bison/admin_page/dist`目录中，请前往检查
+
+#### 运行
+
+::: info 注意
+构建完前端后，请回到项目根目录
+:::
+
+1. 编辑`.env.prod`配置各种环境变量，见[Nonebot2 配置](https://v2.nonebot.dev/docs/appendices/config)
+   :::tip 找不到 .env.prod？
    `.env.prod`文件在项目根目录下，请确认当前目录为项目根目录
    :::
-6. 运行`poetry run python bot.py`启动 Bot
+
+2. 启动 Bot
+
+   ```bash
+   poetry run nb run
+   ```

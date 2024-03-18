@@ -8,6 +8,10 @@
 
 - Arknights 公告分类 过滤不可访问的 URL [@AzideCupric](https://github.com/AzideCupric) ([#495](https://github.com/MountainDash/nonebot-bison/pull/495))
 
+### 文档
+
+- ✨ 文档迁移到 vuepress hope 主题 [@dependabot](https://github.com/dependabot) ([#490](https://github.com/MountainDash/nonebot-bison/pull/490))
+
 ## v0.9.1
 
 ### Bug 修复

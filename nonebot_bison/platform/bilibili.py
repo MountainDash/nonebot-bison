@@ -1,5 +1,6 @@
 import re
 import json
+from abc import ABC
 from typing import Any
 from copy import deepcopy
 from enum import Enum, unique
@@ -14,41 +15,62 @@ from nonebot.compat import type_validate_python
 from nonebot_bison.compat import model_rebuild
 
 from ..post import Post
-from ..utils import SchedulerConfig, text_similarity
 from ..types import Tag, Target, RawPost, ApiError, Category
+from ..utils import SchedulerConfig, http_client, text_similarity
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
 
-class BilibiliSchedConf(SchedulerConfig):
-    name = "bilibili.com"
-    schedule_type = "interval"
-    schedule_setting = {"seconds": 10}
-
-    _client_refresh_time: datetime
+class BilibiliClient:
+    _client: AsyncClient
+    _refresh_time: datetime
     cookie_expire_time = timedelta(hours=5)
 
-    def __init__(self):
-        self._client_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
-        super().__init__()
+    def __init__(self) -> None:
+        self._client = http_client()
+        self._refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
 
     async def _init_session(self):
-        res = await self.default_http_client.get("https://www.bilibili.com/")
+        res = await self._client.get("https://www.bilibili.com/")
         if res.status_code != 200:
             logger.warning("unable to refresh temp cookie")
         else:
-            self._client_refresh_time = datetime.now()
+            self._refresh_time = datetime.now()
 
     async def _refresh_client(self):
-        if datetime.now() - self._client_refresh_time > self.cookie_expire_time:
+        if datetime.now() - self._refresh_time > self.cookie_expire_time:
             await self._init_session()
 
-    async def get_client(self, target: Target) -> AsyncClient:
+    async def get_client(self) -> AsyncClient:
         await self._refresh_client()
-        return await super().get_client(target)
+        return self._client
+
+
+bilibili_client = BilibiliClient()
+
+
+class BaseSchedConf(ABC, SchedulerConfig):
+    schedule_type = "interval"
+    bilibili_client: BilibiliClient
+
+    def __init__(self):
+        super().__init__()
+        self.bilibili_client = bilibili_client
+
+    async def get_client(self, _: Target) -> AsyncClient:
+        return await self.bilibili_client.get_client()
 
     async def get_query_name_client(self) -> AsyncClient:
-        await self._refresh_client()
-        return await super().get_query_name_client()
+        return await self.bilibili_client.get_client()
+
+
+class BilibiliSchedConf(BaseSchedConf):
+    name = "bilibili.com"
+    schedule_setting = {"seconds": 10}
+
+
+class BililiveSchedConf(BaseSchedConf):
+    name = "live.bilibili.com"
+    schedule_setting = {"seconds": 3}
 
 
 class Bilibili(NewMessage):
@@ -205,7 +227,7 @@ class Bilibililive(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler = BilibiliSchedConf
+    scheduler = BililiveSchedConf
     name = "Bilibili直播"
     has_target = True
     use_batch = True

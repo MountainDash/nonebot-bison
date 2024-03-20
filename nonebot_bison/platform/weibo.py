@@ -160,7 +160,7 @@ class Weibo(NewMessage):
         except (KeyError, TimeoutError):
             logger.info(f"detail message error: https://m.weibo.cn/detail/{weibo_id}")
         return {}
-    
+
     async def _parse_weibo(self, info: dict) -> Post:
         if info["isLongText"] or info["pic_num"] > 9:
             info["text"] = (await self._get_long_weibo(info["mid"]))["text"]

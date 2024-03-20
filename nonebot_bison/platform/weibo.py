@@ -160,27 +160,12 @@ class Weibo(NewMessage):
         except (KeyError, TimeoutError):
             logger.info(f"detail message error: https://m.weibo.cn/detail/{weibo_id}")
         return {}
-
-    async def parse(self, raw_post: RawPost) -> Post:
-        info = raw_post["mblog"]
-        retweeted = False
-        if info.get("retweeted_status"):
-            retweeted = True
+    
+    async def _parse_weibo(self, info: dict) -> Post:
         if info["isLongText"] or info["pic_num"] > 9:
             info["text"] = (await self._get_long_weibo(info["mid"]))["text"]
         parsed_text = self._get_text(info["text"])
         raw_pics_list = info.get("pics", [])
-        if retweeted:
-            retweeted_status = info["retweeted_status"]
-            text = retweeted_status["text"]
-            raw_pics_list = retweeted_status.get("pics", [])
-            if retweeted_status["isLongText"] or retweeted_status["pic_num"] > 9:
-                retweeted_weibo = await self._get_long_weibo(retweeted_status["mid"])
-                text = retweeted_weibo["text"]
-                raw_pics_list = retweeted_weibo.get("pics", [])
-            parsed_text += (
-                f"\n=========转发=========\n>>转发@{retweeted_status['user']['screen_name']}\n{self._get_text(text)}"
-            )
         pic_urls = [img["large"]["url"] for img in raw_pics_list]
         pics = []
         for pic_url in pic_urls:
@@ -189,11 +174,11 @@ class Weibo(NewMessage):
                 res.raise_for_status()
                 pics.append(res.content)
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
-        # return parsed_text, detail_url, pic_urls
-        return Post(
-            self,
-            parsed_text,
-            url=detail_url,
-            images=pics,
-            nickname=info["user"]["screen_name"],
-        )
+        return Post(self, parsed_text, url=detail_url, images=pics, nickname=info["user"]["screen_name"])
+
+    async def parse(self, raw_post: RawPost) -> Post:
+        info = raw_post["mblog"]
+        post = await self._parse_weibo(info)
+        if "retweeted_status" in info:
+            post.repost = await self._parse_weibo(info["retweeted_status"])
+        return post

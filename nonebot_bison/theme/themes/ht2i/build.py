@@ -35,12 +35,24 @@ class Ht2iTheme(Theme):
 
         _text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
 
+        if rp := post.repost:
+            _text += f"\n--------------\n转发自 {rp.nickname or ''}:\n"
+            _text += f"{rp.title}\n"
+            _text += rp.content if len(rp.content) < 500 else f"{rp.content[:500]}..."
+
         _text += f"\n来源: {post.platform.name} {post.nickname or ''}\n"
 
         msgs: list[MessageSegmentFactory] = [await self._text_render(_text)]
 
+        urls: list[str] = []
+        if rp and rp.url:
+            urls += f"转发详情：{rp.url}"
         if post.url:
-            msgs.append(Text(f"详情: {post.url}"))
+            urls += f"详情: {post.url}"
+
+        if urls:
+            msgs.append(Text("\n".join(urls)))
+
         if post.images:
             pics = post.images
             if is_pics_mergable(pics):

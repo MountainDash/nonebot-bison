@@ -18,7 +18,7 @@ class BriefTheme(Theme):
         if not post.title:
             raise ThemeRenderUnsupportError("Post has no title")
         text = f"{post.title}\n\n"
-        text += f"来源: {post.platform.name} {post.nickname or ''}\n"
+        text += f"来源: {post.platform.name} {post.nickname or ''}{' 的转发' if post.repost else ''}\n"
         if post.url:
             text += f"详情: {post.url}"
 

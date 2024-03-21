@@ -20,27 +20,39 @@ class Ht2iTheme(Theme):
     need_browser: bool = True
 
     async def _text_render(self, text: str):
-        from nonebot_plugin_htmlrender import text_to_pic
+        from nonebot_plugin_htmlrender import md_to_pic
 
         try:
-            return Image(await text_to_pic(text))
+            return Image(await md_to_pic(text, width=400))
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
     async def render(self, post: "Post"):
-        _text = ""
+        md_text = ""
 
-        if post.title:
-            _text += f"{post.title}\n\n"
+        md_text += f"## {post.title}\n\n" if post.title else ""
 
-        _text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        md_text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        md_text += "\n\n"
+        if rp := post.repost:
+            md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
+            md_text += f"> {rp.title}  \n" if rp.title else ""
+            md_text += ">  \n> " + rp.content if len(rp.content) < 500 else f"{rp.content[:500]}..." + "  \n"
+        md_text += "\n\n"
 
-        _text += f"\n来源: {post.platform.name} {post.nickname or ''}\n"
+        md_text += f"###### 来源: {post.platform.name} {post.nickname or ''}\n"
 
-        msgs: list[MessageSegmentFactory] = [await self._text_render(_text)]
+        msgs: list[MessageSegmentFactory] = [await self._text_render(md_text)]
 
+        urls: list[str] = []
+        if rp and rp.url:
+            urls.append(f"转发详情: {rp.url}")
         if post.url:
-            msgs.append(Text(f"详情: {post.url}"))
+            urls.append(f"详情: {post.url}")
+
+        if urls:
+            msgs.append(Text("\n".join(urls)))
+
         if post.images:
             pics = post.images
             if is_pics_mergable(pics):

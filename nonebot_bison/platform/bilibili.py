@@ -34,7 +34,6 @@ class APIBase(Base):
 
     code: int
     message: str
-    ttl: int
 
 
 class UserAPI(APIBase):

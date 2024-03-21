@@ -61,14 +61,14 @@ class PostAPI(APIBase):
         type: int
         user_profile: "PostAPI.UserProfile"
         rid: int
-        bvid: str
+        bvid: str | None = None
 
     class Card(Base):
         desc: "PostAPI.Desc"
         card: str
 
     class Data(Base):
-        cards: "list[PostAPI.Card]"
+        cards: "list[PostAPI.Card] | None"
 
     data: Data | None = None
 
@@ -173,9 +173,9 @@ class Bilibili(NewMessage):
             timeout=4.0,
         )
         res.raise_for_status()
-        res_dict = type_validate_json(PostAPI, res.content)
-        if res_dict.code == 0:
-            return res_dict.data.cards if res_dict.data else []
+        res_obj = type_validate_json(PostAPI, res.content)
+        if res_obj.code == 0:
+            return res_obj.data.cards if res_obj.data and res_obj.data.cards else []
         else:
             raise ApiError(res.request.url)
 
@@ -270,7 +270,7 @@ class Bilibili(NewMessage):
                 orig_post.desc.type = orig_type
 
                 orig_parsed_post = self._raw_post_parse(orig_post)
-                return ParsedPost(text, [], url, orig_parsed_post)
+                return ParsedPost(text, [], url, repost_owner=repost_owner, repost=orig_parsed_post)
             case unsupported_type:
                 raise CategoryNotSupport(unsupported_type)
 

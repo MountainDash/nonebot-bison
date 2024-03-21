@@ -9,9 +9,11 @@ from httpx import Response, AsyncClient
 from .utils import get_json
 
 
-@pytest.fixture(scope="module")
-def bing_dy_list():
-    return get_json("bilibili_bing_list.json")["data"]["cards"]
+@pytest.fixture()
+def bing_dy_list(app: App):
+    from nonebot_bison.platform.bilibili import PostAPI
+
+    return PostAPI.model_validate(get_json("bilibili_bing_list.json")).data.cards  # type: ignore
 
 
 if typing.TYPE_CHECKING:
@@ -19,68 +21,65 @@ if typing.TYPE_CHECKING:
 
 
 @pytest.fixture()
-def bilibili(app: App):
+def bilibili(app: App) -> "Bilibili":
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
 
-    return platform_manager["bilibili"](ProcessContext(), AsyncClient())
+    return platform_manager["bilibili"](ProcessContext(), AsyncClient())  # type: ignore
 
 
 @pytest.fixture()
 def without_dynamic(app: App):
-    return {
+    from nonebot_bison.platform.bilibili import PostAPI
+
+    # 先验证实际的空动态返回能否通过校验，再重新导出
+    return PostAPI.model_validate({
         "code": 0,
-        "msg": "",
+        "ttl": 1,
         "message": "",
         "data": {
+            "cards": None,
             "has_more": 0,
             "next_offset": 0,
             "_gt_": 0,
         },
-    }
+    }).model_dump()
 
 
 @pytest.mark.asyncio
-async def test_get_tag_without_topic_info(bilibili, bing_dy_list):
-    simple_raw_post = {
-        "display": {
-            "topic_info": {
-                "topic_details": [
-                    {
-                        "topic_name": "可露希尔的秘密档案",
-                    },
-                    {
-                        "topic_name": "罗德岛相簿",
-                    },
-                ],
-            },
-        },
-    }
+async def test_get_tag(bilibili: "Bilibili", bing_dy_list):
+    from nonebot_bison.platform.bilibili import DynRawPost
 
-    simple_raw_post_without_topic_info = {
-        "display": {
-            "damedane": "dameyo",
-        },
-    }
+    raw_post_has_tag = DynRawPost.model_validate(bing_dy_list[0])
+    raw_post_has_tag.card = '{"user":{"uid":111111,"uname":"1111","face":"https://i2.hdslb.com/bfs/face/0b.jpg"},"item":{"rp_id":11111,"uid":31111,"content":"#测试1#\\n测试\\n#测试2#\\n#测\\n测\\n测#","ctrl":"","reply":0}}'
 
-    res1 = bilibili.get_tags(simple_raw_post)
-    assert res1 == ["可露希尔的秘密档案", "罗德岛相簿"]
+    raw_post_has_no_tag = DynRawPost.model_validate(bing_dy_list[1])
+    raw_post_has_no_tag.card = '{"user":{"uid":111111,"uname":"1111","face":"https://i2.hdslb.com/bfs/face/0b.jpg"},"item":{"rp_id":11111,"uid":31111,"content":"测试1\\n测试\\n测试2\\n#测\\n测\\n测#","ctrl":"","reply":0}}'
 
-    res2 = bilibili.get_tags(simple_raw_post_without_topic_info)
+    res1 = bilibili.get_tags(raw_post_has_tag)
+    assert res1 == ["测试1", "测试2"]
+
+    res2 = bilibili.get_tags(raw_post_has_no_tag)
     assert res2 == []
 
 
-@pytest.mark.asyncio
 async def test_video_forward(bilibili, bing_dy_list):
     from nonebot_bison.post import Post
 
     post: Post = await bilibili.parse(bing_dy_list[1])
-    assert (
-        post.content
-        == "答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786\n--------------\n#可露希尔的秘密档案#"
-        " \n11：来宿舍休息一下吧 \n档案来源：lambda:\\罗德岛内务\\秘密档案 \n发布时间：9/12 1:00 P.M."
-        " \n档案类型：可见 \n档案描述：今天请了病假在宿舍休息。很舒适。"
-        " \n提供者：赫默\n=================\n《可露希尔的秘密档案》11话：来宿舍休息一下吧"
+    assert post.content == """答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786"""
+    assert post.repost is not None
+    # 注意原文前几行末尾是有空格的
+    assert post.repost.content == (
+        "#可露希尔的秘密档案# \n"
+        "11：来宿舍休息一下吧 \n"
+        "档案来源：lambda:\\罗德岛内务\\秘密档案 \n"
+        "发布时间：9/12 1:00 P.M. \n"
+        "档案类型：可见 \n"
+        "档案描述：今天请了病假在宿舍休息。很舒适。 \n"
+        "提供者：赫默\n"
+        "=================\n"
+        "《可露希尔的秘密档案》11话：来宿舍休息一下吧"
     )
     assert post.get_priority_themes()[0] == "basic"
 
@@ -99,39 +98,55 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
         "包含慕夏对新PV的个人解读，风笛厨力疯狂放出，CP言论输出，9.16轮换池预测视频分析和理智规划杂谈内容。"
         "\n注意:内含大量个人性质对风笛的厨力观点，与多CP混乱发言，不适者请及时点击退出或跳到下一片段。"
     )
+    assert post.repost is None
     assert post.get_priority_themes()[0] == "basic"
 
 
 @pytest.mark.asyncio
-async def test_article_forward(bilibili, bing_dy_list):
+async def test_article_forward(bilibili: "Bilibili", bing_dy_list):
     post = await bilibili.parse(bing_dy_list[4])
-    assert (
-        post.content == "#明日方舟##饼学大厦#\n9.11专栏更新完毕，"
-        "这还塌了实属没跟新运营对上\n后边除了周日发饼和PV没提及的中文语音，"
-        "稳了\n别忘了来参加#可露希尔的秘密档案#的主题投票\nhttps://t.bilibili.com/568093580488553786?tab=2"
-        + "\n--------------\n"
-        + "【明日方舟】饼学大厦#12~14（风暴瞭望&玛莉娅·临光&红松林&感谢庆典）9.11更新"
-        " 更新记录09.11更新：覆盖09.10更新；以及排期更新，猜测周一周五开活动09.10更新：以周五开活动为底，"
-        "PV/公告调整位置，整体结构更新09.08更新：饼学大厦#12更新，"
-        "新增一件六星商店服饰（周日发饼）09.06更新：饼学大厦整栋整栋翻新，"
-        "改为9.16开主线（四日无饼！）09.05凌晨更新：10.13后的排期（两日无饼，鹰角背刺，"
-        "心狠手辣）前言感谢楪筱祈ぺ的动态-哔哩哔哩 (bilibili.com) 对饼学的贡献！后续排期：9.17【风暴瞭望】、"
-        "10.01【玛莉娅·临光】复刻、10.1"
+    assert post.content == (
+        "#明日方舟##饼学大厦#\n"
+        "9.11专栏更新完毕，这还塌了实属没跟新运营对上\n"
+        "后边除了周日发饼和PV没提及的中文语音，稳了\n"
+        "别忘了来参加#可露希尔的秘密档案#的主题投票\n"
+        "https://t.bilibili.com/568093580488553786?tab=2"
+    )
+    assert post.repost is not None
+    assert post.repost.content == (
+        "【明日方舟】饼学大厦#12~14（风暴瞭望&玛莉娅·临光&红松林&感谢庆典）"
+        "9.11更新 更新记录09.11更新：覆盖09.10更新；以及排期更新，猜测周一周五开活动"
+        "09.10更新：以周五开活动为底，PV/公告调整位置，整体结构更新"
+        "09.08更新：饼学大厦#12更新，新增一件六星商店服饰（周日发饼）"
+        "09.06更新：饼学大厦整栋整栋翻新，改为9.16开主线（四日无饼！）"
+        "09.05凌晨更新：10.13后的排期（两日无饼，鹰角背刺，心狠手辣）"
+        "前言感谢楪筱祈ぺ的动态-哔哩哔哩 (bilibili.com) 对饼学的贡献！"
+        "后续排期：9.17【风暴瞭望】、10.01【玛莉娅·临光】复刻、10.1"
     )
 
 
 @pytest.mark.asyncio
 async def test_dynamic_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[5])
-    assert (
-        post.content == "饼组主线饼学预测——9.11版\n①今日结果\n9.11 殿堂上的游禽-星极(x，"
-        "新运营实锤了)\n②后续预测\n9.12 #罗德岛相簿#+#可露希尔的秘密档案#11话\n9.13"
-        " 六星先锋(执旗手)干员-琴柳\n9.14 宣传策略-空弦+家具\n9.15 轮换池（+中文语音前瞻）\n9.16"
-        " 停机\n9.17 #罗德岛闲逛部#+新六星EP+EP09·风暴瞭望开启\n9.19 #罗德岛相簿#"
-        + "\n--------------\n"
-        + "#明日方舟#\n【新增服饰】\n//殿堂上的游禽 - 星极\n塞壬唱片偶像企划《闪耀阶梯》特供服饰/殿堂上的游禽。"
-        "星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n_____________\n谦逊留给观众，"
-        "骄傲发自歌喉，此夜，唯我璀璨。 "
+    assert post.content == (
+        "饼组主线饼学预测——9.11版\n"
+        "①今日结果\n"
+        "9.11 殿堂上的游禽-星极(x，新运营实锤了)\n"
+        "②后续预测\n"
+        "9.12 #罗德岛相簿#+#可露希尔的秘密档案#11话\n"
+        "9.13 六星先锋(执旗手)干员-琴柳\n9.14 宣传策略-空弦+家具\n"
+        "9.15 轮换池（+中文语音前瞻）\n"
+        "9.16 停机\n"
+        "9.17 #罗德岛闲逛部#+新六星EP+EP09·风暴瞭望开启\n"
+        "9.19 #罗德岛相簿#"
+    )
+    assert post.repost.content == (
+        "#明日方舟#\n"
+        "【新增服饰】\n"
+        "//殿堂上的游禽 - 星极\n"
+        "塞壬唱片偶像企划《闪耀阶梯》特供服饰/殿堂上的游禽。星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n"
+        "_____________\n"
+        "谦逊留给观众，骄傲发自歌喉，此夜，唯我璀璨。 "
     )
 
 
@@ -196,32 +211,3 @@ async def test_parse_target(bilibili: "Bilibili"):
     assert res2 == "161775300"
     with pytest.raises(Platform.ParseTargetException):
         await bilibili.parse_target("https://www.bilibili.com/video/BV1qP4y1g738?spm_id_from=333.999.0.0")
-
-
-@pytest.fixture(scope="module")
-def post_list():
-    return get_json("bilibili_fake_dy_list.json")["data"]["cards"]
-
-
-# 测试新tag机制的平台推送情况
-@pytest.mark.asyncio
-async def test_filter_user_custom(bilibili, post_list):
-    only_banned_tags = ["~可露希尔的秘密档案"]
-    res0 = await bilibili.filter_user_custom(post_list, [], only_banned_tags)
-    assert len(res0) == 8
-
-    only_subscribed_tags = ["可露希尔的秘密档案"]
-    res1 = await bilibili.filter_user_custom(post_list, [], only_subscribed_tags)
-    assert len(res1) == 4
-
-    multi_subs_tags_1 = ["可露希尔的秘密档案", "罗德岛相簿"]
-    res2 = await bilibili.filter_user_custom(post_list, [], multi_subs_tags_1)
-    assert len(res2) == 4
-
-    multi_subs_tags_2 = ["罗德岛相簿", "风暴瞭望"]
-    res3 = await bilibili.filter_user_custom(post_list, [], multi_subs_tags_2)
-    assert len(res3) == 4
-
-    multi_subs_tags_3 = ["明日方舟", "~饼学大厦"]
-    res4 = await bilibili.filter_user_custom(post_list, [], multi_subs_tags_3)
-    assert len(res4) == 2

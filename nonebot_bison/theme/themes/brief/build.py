@@ -19,8 +19,15 @@ class BriefTheme(Theme):
             raise ThemeRenderUnsupportError("Post has no title")
         text = f"{post.title}\n\n"
         text += f"来源: {post.platform.name} {post.nickname or ''}{' 的转发' if post.repost else ''}\n"
+
+        urls: list[str] = []
+        if (rp := post.repost) and rp.url:
+            urls.append(f"转发详情: {rp.url}")
         if post.url:
-            text += f"详情: {post.url}"
+            urls.append(f"详情: {post.url}")
+
+        if urls:
+            text += "\n".join(urls)
 
         msgs: list[MessageSegmentFactory] = [Text(text)]
         if post.images:

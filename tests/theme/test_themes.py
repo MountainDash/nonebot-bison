@@ -1,5 +1,6 @@
 from time import time
 from typing import Any
+from inspect import cleandoc
 
 import pytest
 from flaky import flaky
@@ -70,7 +71,7 @@ def mock_post(app: App, mock_platform):
     from nonebot_bison.utils import ProcessContext
 
     return Post(
-        mock_platform(ProcessContext(), AsyncClient()),
+        m := mock_platform(ProcessContext(), AsyncClient()),
         "text",
         title="title",
         images=["http://t.tt/1.jpg"],
@@ -79,6 +80,17 @@ def mock_post(app: App, mock_platform):
         avatar="http://t.tt/avatar.jpg",
         nickname="Mock",
         description="description",
+        repost=Post(
+            m,
+            "repost",
+            title="repost-title",
+            images=["http://t.tt/2.jpg"],
+            timestamp=1234567891,
+            url="http://t.tt/2",
+            avatar="http://t.tt/avatar-re.jpg",
+            nickname="re-Mock",
+            description="re-description",
+        ),
     )
 
 
@@ -161,8 +173,39 @@ async def test_basic_theme(app: App, mock_post):
     assert basic_theme.name == "basic"
     res = await basic_theme.render(mock_post)
     assert len(res) == 2
-    assert res[0] == Text("title\n\ntext\n来源: Mock Platform Mock\n详情: http://t.tt/1")
+    assert res[0] == Text(
+        cleandoc(
+            """title
+
+            text
+            --------------
+            转发自 re-Mock:
+            repost-title
+
+            repost
+            --------------
+            来源: Mock Platform Mock
+            转发详情：http://t.tt/2
+            详情: http://t.tt/1"""
+        )
+    )
     assert isinstance(res[1], Image)
+
+    mock_post2 = mock_post
+    mock_post2.repost = None
+    mock_post2.images = []
+    res2 = await basic_theme.render(mock_post2)
+    assert len(res2) == 1
+    assert res2[0] == Text(
+        cleandoc(
+            """title
+
+            text
+            --------------
+            来源: Mock Platform Mock
+            详情: http://t.tt/1"""
+        )
+    )
 
 
 @pytest.mark.asyncio
@@ -178,8 +221,31 @@ async def test_brief_theme(app: App, mock_post):
     assert brief_theme.name == "brief"
     res = await brief_theme.render(mock_post)
     assert len(res) == 2
-    assert res[0] == Text("title\n\n来源: Mock Platform Mock\n详情: http://t.tt/1")
+    assert res[0] == Text(
+        cleandoc(
+            """title
+
+            来源: Mock Platform Mock 的转发
+            转发详情: http://t.tt/2
+            详情: http://t.tt/1
+            """
+        )
+    )
     assert isinstance(res[1], Image)
+
+    mock_post2 = mock_post
+    mock_post2.repost = None
+    mock_post2.images = []
+    res2 = await brief_theme.render(mock_post2)
+    assert len(res2) == 1
+    assert res2[0] == Text(
+        cleandoc(
+            """title
+
+            来源: Mock Platform Mock
+            详情: http://t.tt/1"""
+        )
+    )
 
 
 @pytest.mark.render
@@ -219,4 +285,13 @@ async def test_ht2i_theme(app: App, mock_post):
     assert len(res) == 3
     assert isinstance(res[0], Image)
     assert isinstance(res[2], Image)
-    assert res[1] == Text("详情: http://t.tt/1")
+    assert res[1] == Text("转发详情: http://t.tt/2\n详情: http://t.tt/1")
+
+    mock_post2 = mock_post
+    mock_post2.repost = None
+    mock_post2.images = []
+
+    res2 = await ht2i_theme.render(mock_post2)
+
+    assert len(res2) == 2
+    assert res2[1] == Text("详情: http://t.tt/1")

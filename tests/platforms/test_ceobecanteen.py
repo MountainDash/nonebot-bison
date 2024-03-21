@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
-from nonebot.compat import type_validate_python
 
 import respx
 import pytest
 from nonebug.app import App
 from httpx import Response, AsyncClient
+from nonebot.compat import type_validate_python
 
 from .utils import get_json
 
@@ -105,20 +105,20 @@ async def test_parse_crazy(app: App, ceobecanteen):
     cookie_bulletin_type2 = type_validate_python(CeobeCookie, sp_coolies[0])
     assert cookie_bulletin_type2.source.type == "arknights-game:bulletin-list"
     post = await ceobecanteen.parse(cookie_bulletin_type2)
-    show(ext((await post.generate_messages())[0][0])) # type: ignore
+    show(ext((await post.generate_messages())[0][0]))  # type: ignore
 
     cookie_bulletin_type1 = type_validate_python(CeobeCookie, sp_coolies[1])
     post2 = await ceobecanteen.parse(cookie_bulletin_type1)
-    show(ext((await post2.generate_messages())[0][0])) # type: ignore
+    show(ext((await post2.generate_messages())[0][0]))  # type: ignore
 
     cookie_offical = type_validate_python(CeobeCookie, sp_coolies[2])
     post3 = await ceobecanteen.parse(cookie_offical)
-    show(ext((await post3.generate_messages())[0][0])) # type: ignore
+    show(ext((await post3.generate_messages())[0][0]))  # type: ignore
 
     cookie_offical = type_validate_python(CeobeCookie, get_json("ceobe_looooong_bulletin.json"))
     post4 = await ceobecanteen.parse(cookie_offical)
     show(post4.images[0])  # type: ignore
-    show(ext((await post4.generate_messages())[0][0])) # type: ignore
+    show(ext((await post4.generate_messages())[0][0]))  # type: ignore
 
 
 @pytest.mark.asyncio()

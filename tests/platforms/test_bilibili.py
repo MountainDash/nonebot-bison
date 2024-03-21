@@ -81,6 +81,8 @@ async def test_video_forward(bilibili, bing_dy_list):
         "=================\n"
         "《可露希尔的秘密档案》11话：来宿舍休息一下吧"
     )
+    assert post.url == "https://t.bilibili.com/569448354910819194"
+    assert post.repost.url == "https://www.bilibili.com/video/BV1E3411q7nU"
     assert post.get_priority_themes()[0] == "basic"
 
 
@@ -99,6 +101,7 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
         "\n注意:内含大量个人性质对风笛的厨力观点，与多CP混乱发言，不适者请及时点击退出或跳到下一片段。"
     )
     assert post.repost is None
+    assert post.url == "https://www.bilibili.com/video/BV1K44y1h7Xg"
     assert post.get_priority_themes()[0] == "basic"
 
 
@@ -123,6 +126,8 @@ async def test_article_forward(bilibili: "Bilibili", bing_dy_list):
         "前言感谢楪筱祈ぺ的动态-哔哩哔哩 (bilibili.com) 对饼学的贡献！"
         "后续排期：9.17【风暴瞭望】、10.01【玛莉娅·临光】复刻、10.1"
     )
+    assert post.url == "https://t.bilibili.com/569189870889648693"
+    assert post.repost.url == "https://www.bilibili.com/read/cv12993752"
 
 
 @pytest.mark.asyncio
@@ -148,6 +153,8 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
         "_____________\n"
         "谦逊留给观众，骄傲发自歌喉，此夜，唯我璀璨。 "
     )
+    assert post.url == "https://t.bilibili.com/569107343093484983"
+    assert post.repost.url == "https://t.bilibili.com/569105539209306328"
 
 
 @pytest.mark.asyncio

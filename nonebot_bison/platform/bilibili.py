@@ -53,6 +53,15 @@ class PostAPI(APIBase):
     class UserProfile(Base):
         info: "PostAPI.Info"
 
+    class Origin(Base):
+        uid: int
+        dynamic_id: int
+        dynamic_id_str: str
+        timestamp: int
+        type: int
+        rid: int
+        bvid: str | None = None
+
     class Desc(Base):
         dynamic_id: int
         dynamic_id_str: str
@@ -61,6 +70,8 @@ class PostAPI(APIBase):
         user_profile: "PostAPI.UserProfile"
         rid: int
         bvid: str | None = None
+
+        origin: "PostAPI.Origin | None" = None
 
     class Card(Base):
         desc: "PostAPI.Desc"
@@ -220,7 +231,7 @@ class Bilibili(NewMessage):
             text = dynamic + "\n=================\n" + title + "\n\n" + desc
         return text
 
-    def _raw_post_parse(self, raw_post: DynRawPost):
+    def _raw_post_parse(self, raw_post: DynRawPost, in_repost: bool = False):
         class ParsedPost(NamedTuple):
             text: str
             pics: list[str]
@@ -231,22 +242,33 @@ class Bilibili(NewMessage):
         card_content: dict[str, Any] = json.loads(raw_post.card)
         repost_owner: str | None = ou["info"]["uname"] if (ou := card_content.get("origin_user")) else None
 
+        raw_origin = raw_post.desc.origin
+
         match self._do_get_category(raw_post.desc.type):
             case 1:
                 # 一般动态
-                url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
+                if in_repost and raw_origin:
+                    url = f"https://t.bilibili.com/{raw_origin.dynamic_id_str}"
+                else:
+                    url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
                 text: str = card_content["item"]["description"]
                 pic: list[str] = [img["img_src"] for img in card_content["item"]["pictures"]]
                 return ParsedPost(text, pic, url, repost_owner)
             case 2:
                 # 专栏文章
-                url = f"https://www.bilibili.com/read/cv{raw_post.desc.rid}"
+                if in_repost and raw_origin:
+                    url = f"https://www.bilibili.com/read/cv{raw_origin.rid}"
+                else:
+                    url = f"https://www.bilibili.com/read/cv{raw_post.desc.rid}"
                 text = "{} {}".format(card_content["title"], card_content["summary"])
                 pic = card_content["image_urls"]
                 return ParsedPost(text, pic, url, repost_owner)
             case 3:
                 # 视频
-                url = f"https://www.bilibili.com/video/{raw_post.desc.bvid}"
+                if in_repost and raw_origin:
+                    url = f"https://www.bilibili.com/video/{raw_origin.bvid}"
+                else:
+                    url = f"https://www.bilibili.com/video/{raw_post.desc.bvid}"
                 dynamic = card_content.get("dynamic", "")
                 title = card_content["title"]
                 desc = card_content.get("desc", "")
@@ -255,7 +277,10 @@ class Bilibili(NewMessage):
                 return ParsedPost(text, pic, url, repost_owner)
             case 4:
                 # 纯文字
-                url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
+                if in_repost and raw_origin:
+                    url = f"https://t.bilibili.com/{raw_origin.dynamic_id_str}"
+                else:
+                    url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
                 text = card_content["item"]["content"]
                 pic = []
                 return ParsedPost(text, pic, url, repost_owner)
@@ -268,8 +293,8 @@ class Bilibili(NewMessage):
                 orig_post = DynRawPost(desc=raw_post.desc, card=orig_card)
                 orig_post.desc.type = orig_type
 
-                orig_parsed_post = self._raw_post_parse(orig_post)
-                return ParsedPost(text, [], url, repost_owner=repost_owner, repost=orig_parsed_post)
+                orig_parsed_post = self._raw_post_parse(orig_post, in_repost=True)
+                return ParsedPost(text, [], url, repost_owner, orig_parsed_post)
             case unsupported_type:
                 raise CategoryNotSupport(unsupported_type)
 

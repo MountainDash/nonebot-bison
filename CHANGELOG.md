@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- :bug: 为各主题添加 repost 的渲染 [@AzideCupric](https://github.com/AzideCupric) ([#505](https://github.com/MountainDash/nonebot-bison/pull/505))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#465](https://github.com/MountainDash/nonebot-bison/pull/465))
 
 ### 新功能

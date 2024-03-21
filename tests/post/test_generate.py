@@ -179,7 +179,7 @@ async def test_generate_msg(mock_platform):
     res = await post.generate()
     assert len(res) == 1
     assert isinstance(res[0], Text)
-    assert str(res[0]) == "p1\n来源: Mock-Platform MockNick\n详情: http://t.tt/1"
+    assert str(res[0]) == "p1\n--------------\n来源: Mock-Platform MockNick\n详情: http://t.tt/1"
 
     post.platform.default_theme = "ht2i"
     assert post.get_config_theme() is None

@@ -51,7 +51,8 @@ class CeobeCanteen(NewMessage):
     async def get_comb_id(self, force_refresh: bool = False) -> str | None:
         """获取数据源的组合id
 
-        如果不传入targets, 则请求所有数据源的组合id
+        获取 "全部数据源" 的组合id，
+        获取到的comb_id会缓存12小时
         """
         if self.cache_store["comb_id"] is None or force_refresh:
             logger.trace("no comb_id, request")

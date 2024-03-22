@@ -128,12 +128,14 @@ class Scheduler:
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000
-        self.schedulable_list.append(Schedulable(platform_name, target, 1000))
+        new_schedulable = Schedulable(platform_name, target, 1000)
 
         if platform_manager[platform_name].use_batch:
+            new_schedulable.use_batch = True
             self.batch_platform_name_targets_cache[platform_name].append(target)
             self._refresh_batch_api_target_cache()
 
+        self.schedulable_list.append(new_schedulable)
         logger.info(f"insert [{platform_name}]{target} to Schduler({self.scheduler_config.name})")
 
     def delete_schedulable(self, platform_name, target: Target):

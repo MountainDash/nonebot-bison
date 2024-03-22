@@ -2,8 +2,8 @@ import asyncio
 from collections import deque
 
 from nonebot.log import logger
+from nonebot.exception import ActionFailed
 from nonebot_plugin_saa.auto_select_bot import refresh_bots
-from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
 
 from .plugin_config import plugin_config
@@ -18,7 +18,7 @@ MESSGE_SEND_INTERVAL = 1.5
 async def _do_send(send_target: PlatformTarget, msg: Sendable):
     try:
         await msg.send_to(send_target)
-    except ActionFailed:  # TODO: catch exception of other adapters
+    except ActionFailed:  # catch exception of sending message
         await refresh_bots()
         logger.warning(f"send msg {id(msg)} to {send_target} failed, refresh bots")
 

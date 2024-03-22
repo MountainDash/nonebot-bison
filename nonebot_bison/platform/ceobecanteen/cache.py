@@ -26,13 +26,12 @@ CeobeClient = partial(
 
 
 class CeobeDataSourceCache:
-    """数据源缓存"""
+    """数据源缓存, 以unique_id为key存储数据源"""
 
     def __init__(self):
-        self._cache = ExpiringDict[str, CeobeTarget](capacity=100, default_age=timedelta(days=7))
+        self._cache = ExpiringDict[str, CeobeTarget](capacity=100, default_age=timedelta(days=1))
         self.client = CeobeClient()
         self.url = DATASOURCE_URL
-        self.init_requested = False
 
     @property
     def cache(self) -> MappingProxyType[str, CeobeTarget]:
@@ -46,10 +45,10 @@ class CeobeDataSourceCache:
             self._cache[ds.unique_id] = ds
         return self.cache
 
-    async def get_all(self):
-        if not self.init_requested:
+    async def get_all(self, force_refresh: bool = False):
+        """获取所有数据源, 如果缓存为空则尝试刷新缓存"""
+        if not self.cache or force_refresh:
             await self.refresh_data_sources()
-            self.init_requested = True
         return self.cache
 
     def select_one(self, cond_func: Callable[[CeobeTarget], bool]) -> CeobeTarget | None:

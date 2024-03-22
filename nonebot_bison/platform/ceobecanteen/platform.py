@@ -48,25 +48,27 @@ class CeobeCanteen(NewMessage):
     data_source_cache = CeobeDataSourceCache()
     cache_store = SimpleCache()
 
-    async def get_comb_id(self, force_refresh: bool = False) -> str | None:
-        """获取数据源的组合id
+    async def get_comb_id(self, target_uuids: list[str]):
+        """获取数据源的组合id"""
+        payload = {"datasource_push": target_uuids}
+        logger.trace(payload)
+        resp = await self.client.post(
+            COMB_ID_URL,
+            json=payload,
+        )
+        comb_id = process_response(resp, CombIdResponse).data["datasource_comb_id"]
+        logger.trace(f"get comb_id: {comb_id}")
+        return comb_id
 
-        获取 "全部数据源" 的组合id，
-        获取到的comb_id会缓存12小时
-        """
+    async def get_comb_id_for_all(self, force_refresh: bool = False):
+        """获取 "全部数据源" 的组合id，获取到的comb_id会缓存12小时"""
         if self.cache_store["comb_id"] is None or force_refresh:
             logger.trace("no comb_id, request")
-            target_uuids = (await self.data_source_cache.get_all()).keys()
-            payload = {"datasource_push": list(target_uuids)}
-            logger.trace(payload)
-            resp = await self.client.post(
-                COMB_ID_URL,
-                json=payload,
-            )
-            comb_id = process_response(resp, CombIdResponse).data["datasource_comb_id"]
-            logger.trace(f"get comb_id: {comb_id}")
+            target_uuids = (await self.data_source_cache.get_all(force_refresh)).keys()
+            comb_id = await self.get_comb_id(list(target_uuids))
             self.cache_store["comb_id", timedelta(hours=12)] = comb_id
 
+        logger.debug(f"use comb_id: {self.cache_store['comb_id']}")
         return self.cache_store["comb_id"]
 
     async def get_cookie_id(self, comb_id: str):
@@ -109,7 +111,7 @@ class CeobeCanteen(NewMessage):
         return cast(list[CeobeCookie] | None, self.cache_store["cookies"])
 
     async def fetch_ceobe_cookies(self) -> list[CeobeCookie]:
-        comb_id = await self.get_comb_id()
+        comb_id = await self.get_comb_id_for_all()
         if not comb_id:
             return []
         cookie_id = await self.get_cookie_id(comb_id)

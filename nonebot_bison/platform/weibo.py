@@ -4,6 +4,7 @@ from typing import Any
 from datetime import datetime
 from urllib.parse import unquote
 
+from yarl import URL
 from lxml import etree
 from httpx import AsyncClient
 from nonebot.log import logger
@@ -143,7 +144,7 @@ class Weibo(NewMessage):
                 and (url.startswith("https://weibo.cn/sinaurl?u=") or url.startswith("https://video.weibo.com"))
             ):
                 url = unquote(url.replace("https://weibo.cn/sinaurl?u=", ""))
-                elem.text = f"{elem.text}({url} )"
+                elem.text = f"{elem.text}( {url} )"
         return selector.xpath("string(.)")
 
     async def _get_long_weibo(self, weibo_id: str) -> dict:
@@ -167,6 +168,12 @@ class Weibo(NewMessage):
         parsed_text = self._get_text(info["text"])
         raw_pics_list = info.get("pics", [])
         pic_urls = [img["large"]["url"] for img in raw_pics_list]
+        # 视频cover
+        if "page_info" in info and info["page_info"].get("type") == "video":
+            crop_url = info["page_info"]["page_pic"]["url"]
+            pic_urls.append(
+                f"{URL(crop_url).scheme}://{URL(crop_url).host}/large/{info['page_info']['page_pic']['pid']}"
+            )
         pics = []
         for pic_url in pic_urls:
             async with http_client(headers={"referer": "https://weibo.com"}) as client:

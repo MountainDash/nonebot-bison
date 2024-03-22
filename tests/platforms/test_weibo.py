@@ -79,6 +79,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
 async def test_fetch_repost(weibo):
     repost_detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
     repost_detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
+    image_cdn_router.mock(Response(200, content=b""))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][3]
     post = await weibo.parse(raw_post)
     # 正文
@@ -95,7 +96,7 @@ async def test_fetch_repost(weibo):
     assert repost.content == (
         "#明日方舟# #音律联觉#\n"
         "2021明日方舟音律联觉Ambience Synesthesia专场演出官方录播将于6月12日10:30正式上线，"
-        "本次录播为大会员专享，相关信息可关注 网页链接(http://mrfz.biligame.com/yllj/ )\n\n"
+        "本次录播为大会员专享，相关信息可关注 网页链接( http://mrfz.biligame.com/yllj/ )\n\n"
         "一、音律联觉原声EP将于2021年6月12日正式上架塞壬唱片官网及网易云音乐，敬请期待。\n"
         "【歌曲列表】\n"
         "1. CanNot Wait For\n"
@@ -107,7 +108,7 @@ async def test_fetch_repost(weibo):
         "关注并转发本条微博，我们将通过@微博抽奖平台 抽取十位博士送出"
         "【音律联觉主题黑胶礼盒各一套】，将于6月12日开奖。\n"
         "开奖后奖品会在出货后寄出。 明日方舟Arknights的"
-        "微博视频(https://video.weibo.com/show?fid=1034:4645779462357001 ) 抽奖详情"
+        "微博视频( https://video.weibo.com/show?fid=1034:4645779462357001 ) 抽奖详情"
     )
     assert repost.url == "https://weibo.com/6279793937/Kjc77D1jz"
     assert repost.nickname == "明日方舟Arknights"
@@ -115,6 +116,23 @@ async def test_fetch_repost(weibo):
     raw_post_1 = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post_1)
     assert post.repost is None
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_video_cover(weibo):
+    router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
+    router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
+    image_cdn_router.mock(Response(200, content=b""))
+    raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
+    post = await weibo.parse(raw_post)
+    assert len(post.images) == 1
+    raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][3]
+    post = await weibo.parse(raw_post)
+    assert len(post.repost.images) == 1
+    raw_post = get_json("weibo_ak_list_0.json")["data"]["cards"][0]
+    post = await weibo.parse(raw_post)
+    assert len(post.images) == 1
 
 
 @pytest.mark.asyncio

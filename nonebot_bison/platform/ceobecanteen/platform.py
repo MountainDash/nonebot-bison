@@ -2,8 +2,8 @@ import traceback
 from typing import cast
 from datetime import timedelta
 
+from nonebot import logger, require
 from expiringdictx import SimpleCache
-from nonebot import logger, require, get_driver
 
 from ...post import Post
 from ..platform import NewMessage
@@ -23,12 +23,9 @@ class CeobeCanteenSchedConf(SchedulerConfig):
 
     def __init__(self):
         super().__init__()
-        bot_nickname = None
-        if bot_nicknames := get_driver().config.nickname:
-            bot_nickname = list(bot_nicknames)[0]
 
+        # 仅用于方便小刻食堂统计，没有实际影响
         headers = {
-            "Bot": f"Nonebot-Bison{f'/{bot_nickname}' if bot_nickname else ''}",
             "User-Agent": "MountainDash/Nonebot-Bison",
         }
         self.default_http_client = CeobeClient()

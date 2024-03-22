@@ -48,14 +48,14 @@ class CeobeCanteen(NewMessage):
     data_source_cache = CeobeDataSourceCache()
     cache_store = SimpleCache()
 
-    async def get_comb_id(self, targets: list[Target] | None = None, force_refresh: bool = False) -> str | None:
+    async def get_comb_id(self, force_refresh: bool = False) -> str | None:
         """获取数据源的组合id
 
         如果不传入targets, 则请求所有数据源的组合id
         """
         if self.cache_store["comb_id"] is None or force_refresh:
             logger.trace("no comb_id, request")
-            target_uuids = targets or (await self.data_source_cache.get_all()).keys()
+            target_uuids = (await self.data_source_cache.get_all()).keys()
             payload = {"datasource_push": list(target_uuids)}
             logger.trace(payload)
             resp = await self.client.post(

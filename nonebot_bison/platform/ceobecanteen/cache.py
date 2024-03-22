@@ -76,13 +76,13 @@ class CeobeDataSourceCache:
         如果在缓存中找不到，会刷新缓存
         """
 
-        def cond_func(target: CeobeTarget):
+        def select_by_nickname(target: CeobeTarget):
             return target.nickname == nickname
 
-        if target := self.select_one(cond_func):
+        if target := self.select_one(select_by_nickname):
             return target
         await self.refresh_data_sources()
-        return self.select_one(cond_func)
+        return self.select_one(select_by_nickname)
 
     async def get_by_source(self, source: CeobeSource) -> CeobeTarget | None:
         """根据source获取数据源
@@ -90,10 +90,10 @@ class CeobeDataSourceCache:
         如果在缓存中找不到，会刷新缓存
         """
 
-        def cond_func(target: CeobeTarget):
+        def select_by_source(target: CeobeTarget):
             return target.db_unique_key == source.data and target.datasource == source.type
 
-        if target := self.select_one(cond_func):
+        if target := self.select_one(select_by_source):
             return target
         await self.refresh_data_sources()
-        return self.select_one(cond_func)
+        return self.select_one(select_by_source)

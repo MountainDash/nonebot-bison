@@ -7,6 +7,7 @@
 
 ### 新功能
 
+- 更详细的微博 [@LambdaYH](https://github.com/LambdaYH) ([#504](https://github.com/MountainDash/nonebot-bison/pull/504))
 - 独立 bilibili-live 的 SchedConf [@AzideCupric](https://github.com/AzideCupric) ([#473](https://github.com/MountainDash/nonebot-bison/pull/473))
 - 使用 yarl.URL 拼接 outer_url [@AzideCupric](https://github.com/AzideCupric) ([#496](https://github.com/MountainDash/nonebot-bison/pull/496))
 

@@ -45,7 +45,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
-    detail_router = respx.get("https://m.weibo.cn/detail/4649031014551911")
+    detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4649031014551911")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_list_0.json")))
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4649031014551911")))
     image_cdn_router.mock(Response(200, content=b""))
@@ -75,6 +75,67 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
 
 
 @pytest.mark.asyncio
+@respx.mock
+async def test_fetch_repost(weibo):
+    repost_detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
+    repost_detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
+    image_cdn_router.mock(Response(200, content=b""))
+    raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][3]
+    post = await weibo.parse(raw_post)
+    # 正文
+    assert post.content == (
+        "恭喜@黄防护服黄 等10名用户获得【音律联觉主题黑胶礼盒各一套】。微博官方唯一抽奖工具"
+        + "@微博抽奖平台 -高级版对本次抽奖进行监督，结果公正有效。公示链接：微博抽奖平台"
+    )
+    assert post.url == "https://weibo.com/6279793937/KktFEsjrO"
+    assert post.nickname == "明日方舟Arknights"
+    # 转发内容
+    assert post.repost is not None
+    repost = post.repost
+    assert repost_detail_router.called
+    assert repost.content == (
+        "#明日方舟# #音律联觉#\n"
+        "2021明日方舟音律联觉Ambience Synesthesia专场演出官方录播将于6月12日10:30正式上线，"
+        "本次录播为大会员专享，相关信息可关注 网页链接( http://mrfz.biligame.com/yllj/ )\n\n"
+        "一、音律联觉原声EP将于2021年6月12日正式上架塞壬唱片官网及网易云音乐，敬请期待。\n"
+        "【歌曲列表】\n"
+        "1. CanNot Wait For\n"
+        "2. ManiFesto:\n"
+        "3. 灯华梦踏\n"
+        "4. 前航远歌\n\n"
+        "二、【明日方舟·音律联觉】BILIBILI个性装扮套装即将上线，相关信息可关注明日方舟BILIBILI官方账号。\n\n"
+        "三、明日方舟音律联觉主题黑胶礼盒现已上架，详情可关注“明日方舟朝陇山”。\n\n"
+        "关注并转发本条微博，我们将通过@微博抽奖平台 抽取十位博士送出"
+        "【音律联觉主题黑胶礼盒各一套】，将于6月12日开奖。\n"
+        "开奖后奖品会在出货后寄出。 明日方舟Arknights的"
+        "微博视频( https://video.weibo.com/show?fid=1034:4645779462357001 ) 抽奖详情"
+    )
+    assert repost.url == "https://weibo.com/6279793937/Kjc77D1jz"
+    assert repost.nickname == "明日方舟Arknights"
+    # 无转发微博
+    raw_post_1 = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
+    post = await weibo.parse(raw_post_1)
+    assert post.repost is None
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_video_cover(weibo):
+    router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
+    router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
+    image_cdn_router.mock(Response(200, content=b""))
+    raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
+    post = await weibo.parse(raw_post)
+    assert len(post.images) == 1
+    raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][3]
+    post = await weibo.parse(raw_post)
+    assert len(post.repost.images) == 1
+    raw_post = get_json("weibo_ak_list_0.json")["data"]["cards"][0]
+    post = await weibo.parse(raw_post)
+    assert len(post.images) == 1
+
+
+@pytest.mark.asyncio
 async def test_classification(weibo):
     mock_data = get_json("weibo_ak_list_1.json")
     tuwen = mock_data["data"]["cards"][1]
@@ -91,7 +152,7 @@ async def test_classification(weibo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_parse_long(weibo):
-    detail_router = respx.get("https://m.weibo.cn/detail/4645748019299849")
+    detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)

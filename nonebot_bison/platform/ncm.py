@@ -44,7 +44,7 @@ class NcmArtist(NewMessage):
         elif match := re.match(r"(?:https?://)?music\.163\.com/#/artist\?id=(\d+)", target_text):
             return Target(match.group(1))
         else:
-            raise cls.ParseTargetException()
+            raise cls.ParseTargetException("无法从链接中解析出歌手id")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         res = await self.client.get(
@@ -101,7 +101,7 @@ class NcmRadio(NewMessage):
         elif match := re.match(r"(?:https?://)?music\.163\.com/#/djradio\?id=(\d+)", target_text):
             return Target(match.group(1))
         else:
-            raise cls.ParseTargetException()
+            raise cls.ParseTargetException(prompt="无法从链接中解析出电台id")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         res = await self.client.post(

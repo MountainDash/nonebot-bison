@@ -75,7 +75,7 @@ class Weibo(NewMessage):
             # 都2202年了应该不会有http了吧，不过还是防一手
             return Target(match.group(1))
         else:
-            raise cls.ParseTargetException()
+            raise cls.ParseTargetException(prompt="无法从链接中解析出用户id")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
         params = {"containerid": "107603" + target}

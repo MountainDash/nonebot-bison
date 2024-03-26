@@ -162,7 +162,7 @@ class Bilibili(NewMessage):
         res = await client.get("https://api.bilibili.com/x/web-interface/card", params={"mid": target})
         res.raise_for_status()
         res_data = type_validate_json(UserAPI, res.content)
-        if res_data.code:
+        if res_data.code != 0:
             return None
         return res_data.data.card.name if res_data.data else None
 
@@ -184,10 +184,12 @@ class Bilibili(NewMessage):
         )
         res.raise_for_status()
         res_obj = type_validate_json(PostAPI, res.content)
+
         if res_obj.code == 0:
-            return res_obj.data.cards if res_obj.data and res_obj.data.cards else []
-        else:
-            raise ApiError(res.request.url)
+            if (data := res_obj.data) and (card := data.cards):
+                return card
+            return []
+        raise ApiError(res.request.url)
 
     def get_id(self, post: DynRawPost) -> int:
         return post.desc.dynamic_id

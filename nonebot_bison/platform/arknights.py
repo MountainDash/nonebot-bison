@@ -1,9 +1,10 @@
 from typing import Any
 from functools import partial
 
+from yarl import URL
 from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
-from pydantic import Field, AnyUrl, BaseModel
+from pydantic import Field, BaseModel
 from nonebot.compat import type_validate_python
 
 from ..post import Post
@@ -113,11 +114,7 @@ class Arknights(NewMessage):
             title=title,
             nickname="明日方舟游戏内公告",
             images=[data.banner_image_url] if data.banner_image_url else None,
-            url=(
-                url.unicode_string()
-                if data.jump_link and (url := AnyUrl(data.jump_link)).scheme.startswith("http")
-                else None
-            ),
+            url=(url.human_repr() if (url := URL(data.jump_link)).scheme.startswith("http") else None),
             timestamp=data.updated_at,
             compress=True,
         )

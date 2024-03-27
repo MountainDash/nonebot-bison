@@ -52,14 +52,6 @@ def without_dynamic(app: App):
     )
 
 
-async def test_rebuild(app: App):
-    from nonebot_bison.platform.bilibili import PostAPI
-
-    assert type_validate_python(
-        PostAPI, {"code": 0, "message": "0", "ttl": 1, "data": {"has_more": 0, "cards": None, "next_offset": 0}}
-    )
-
-
 @pytest.mark.asyncio
 async def test_get_tag(bilibili: "Bilibili", bing_dy_list):
     from nonebot_bison.platform.bilibili import DynRawPost

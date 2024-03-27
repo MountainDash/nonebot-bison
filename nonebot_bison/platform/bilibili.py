@@ -255,40 +255,36 @@ class Bilibili(NewMessage):
         class ParsedPost(NamedTuple):
             text: str
             pics: list[str]
-            url: str
+            url: str | None
             repost_owner: str | None = None
             repost: "ParsedPost | None" = None
 
         card_content: dict[str, Any] = json.loads(raw_post.card)
         repost_owner: str | None = ou["info"]["uname"] if (ou := card_content.get("origin_user")) else None
 
-        raw_origin = raw_post.desc.origin
+        def extract_url_id(url_template: str, name: str) -> str | None:
+            if in_repost:
+                if origin := raw_post.desc.origin:
+                    return url_template.format(getattr(origin, name))
+                return None
+            return url_template.format(getattr(raw_post.desc, name))
 
         match self._do_get_category(raw_post.desc.type):
             case 1:
                 # 一般动态
-                if in_repost and raw_origin:
-                    url = f"https://t.bilibili.com/{raw_origin.dynamic_id_str}"
-                else:
-                    url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
+                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
                 text: str = card_content["item"]["description"]
                 pic: list[str] = [img["img_src"] for img in card_content["item"]["pictures"]]
                 return ParsedPost(text, pic, url, repost_owner)
             case 2:
                 # 专栏文章
-                if in_repost and raw_origin:
-                    url = f"https://www.bilibili.com/read/cv{raw_origin.rid}"
-                else:
-                    url = f"https://www.bilibili.com/read/cv{raw_post.desc.rid}"
+                url = extract_url_id("https://www.bilibili.com/read/cv{}", "rid")
                 text = "{} {}".format(card_content["title"], card_content["summary"])
                 pic = card_content["image_urls"]
                 return ParsedPost(text, pic, url, repost_owner)
             case 3:
                 # 视频
-                if in_repost and raw_origin:
-                    url = f"https://www.bilibili.com/video/{raw_origin.bvid}"
-                else:
-                    url = f"https://www.bilibili.com/video/{raw_post.desc.bvid}"
+                url = extract_url_id("https://www.bilibili.com/video/{}", "bvid")
                 dynamic = card_content.get("dynamic", "")
                 title = card_content["title"]
                 desc = card_content.get("desc", "")
@@ -297,16 +293,13 @@ class Bilibili(NewMessage):
                 return ParsedPost(text, pic, url, repost_owner)
             case 4:
                 # 纯文字
-                if in_repost and raw_origin:
-                    url = f"https://t.bilibili.com/{raw_origin.dynamic_id_str}"
-                else:
-                    url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
+                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
                 text = card_content["item"]["content"]
                 pic = []
                 return ParsedPost(text, pic, url, repost_owner)
             case 5:
                 # 转发
-                url = f"https://t.bilibili.com/{raw_post.desc.dynamic_id_str}"
+                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
                 text = card_content["item"]["content"]
                 orig_type: int = card_content["item"]["orig_type"]
                 orig_card: str = card_content["origin"]

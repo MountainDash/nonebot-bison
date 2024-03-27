@@ -4,6 +4,7 @@ import respx
 import pytest
 from nonebug.app import App
 from httpx import Response, AsyncClient
+from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_file, get_json
 
@@ -51,18 +52,21 @@ async def test_url_parse(app: App):
     cid_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
 
     def make_bulletin_obj(jump_link: str):
-        return BulletinData.model_validate({
-            "cid": "1",
-            "displayType": 1,
-            "title": "title",
-            "category": 1,
-            "header": "header",
-            "content": "content",
-            "jumpLink": jump_link,
-            "bannerImageUrl": "https://www.baidu.com",
-            "displayTime": "2021-08-01",
-            "updatedAt": 1627795200,
-        })
+        return type_validate_python(
+            BulletinData,
+            {
+                "cid": "1",
+                "displayType": 1,
+                "title": "title",
+                "category": 1,
+                "header": "header",
+                "content": "content",
+                "jumpLink": jump_link,
+                "bannerImageUrl": "https://www.baidu.com",
+                "displayTime": "2021-08-01",
+                "updatedAt": 1627795200,
+            },
+        )
 
     def make_bulletin_list_item_obj():
         return BulletinListItem(
@@ -75,7 +79,7 @@ async def test_url_parse(app: App):
         )
 
     def make_response(b: BulletinData):
-        return Response(200, json=ArkBulletinResponse(code=0, msg="", data=b).model_dump(by_alias=True))
+        return Response(200, json=model_dump(ArkBulletinResponse(code=0, msg="", data=b), by_alias=True))
 
     b1 = make_bulletin_obj("")
     assert b1.jump_link == ""

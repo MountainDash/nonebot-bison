@@ -5,6 +5,7 @@ import respx
 import pytest
 from nonebug.app import App
 from httpx import Response, AsyncClient
+from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_json
 
@@ -33,27 +34,32 @@ def without_dynamic(app: App):
     from nonebot_bison.platform.bilibili import PostAPI
 
     # 先验证实际的空动态返回能否通过校验，再重新导出
-    return PostAPI.model_validate({
-        "code": 0,
-        "ttl": 1,
-        "message": "",
-        "data": {
-            "cards": None,
-            "has_more": 0,
-            "next_offset": 0,
-            "_gt_": 0,
-        },
-    }).model_dump()
+    return model_dump(
+        type_validate_python(
+            PostAPI,
+            {
+                "code": 0,
+                "ttl": 1,
+                "message": "",
+                "data": {
+                    "cards": None,
+                    "has_more": 0,
+                    "next_offset": 0,
+                    "_gt_": 0,
+                },
+            },
+        )
+    )
 
 
 @pytest.mark.asyncio
 async def test_get_tag(bilibili: "Bilibili", bing_dy_list):
     from nonebot_bison.platform.bilibili import DynRawPost
 
-    raw_post_has_tag = DynRawPost.model_validate(bing_dy_list[0])
+    raw_post_has_tag = type_validate_python(DynRawPost, bing_dy_list[0])
     raw_post_has_tag.card = '{"user":{"uid":111111,"uname":"1111","face":"https://i2.hdslb.com/bfs/face/0b.jpg"},"item":{"rp_id":11111,"uid":31111,"content":"#测试1#\\n测试\\n#测试2#\\n#测\\n测\\n测#","ctrl":"","reply":0}}'
 
-    raw_post_has_no_tag = DynRawPost.model_validate(bing_dy_list[1])
+    raw_post_has_no_tag = type_validate_python(DynRawPost, bing_dy_list[1])
     raw_post_has_no_tag.card = '{"user":{"uid":111111,"uname":"1111","face":"https://i2.hdslb.com/bfs/face/0b.jpg"},"item":{"rp_id":11111,"uid":31111,"content":"测试1\\n测试\\n测试2\\n#测\\n测\\n测#","ctrl":"","reply":0}}'
 
     res1 = bilibili.get_tags(raw_post_has_tag)

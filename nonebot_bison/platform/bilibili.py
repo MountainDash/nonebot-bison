@@ -5,7 +5,7 @@ from copy import deepcopy
 from enum import Enum, unique
 from typing_extensions import Self
 from datetime import datetime, timedelta
-from typing import Any, TypeAlias, NamedTuple
+from typing import Any, TypeVar, TypeAlias, NamedTuple
 
 from httpx import AsyncClient
 from nonebot.log import logger
@@ -18,6 +18,21 @@ from ..post import Post
 from ..types import Tag, Target, RawPost, ApiError, Category
 from ..utils import SchedulerConfig, http_client, text_similarity
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
+
+TBaseModel = TypeVar("TBaseModel", bound=type[BaseModel])
+
+
+# 不能当成装饰器用
+# 当装饰器用时，global namespace 中还没有被装饰的类，会报错
+def model_rebuild_recurse(cls: TBaseModel) -> TBaseModel:
+    """Recursively rebuild all BaseModel subclasses in the class."""
+    if not PYDANTIC_V2:
+        from inspect import isclass, getmembers
+
+        for _, sub_cls in getmembers(cls, lambda x: isclass(x) and issubclass(x, BaseModel)):
+            model_rebuild_recurse(sub_cls)
+    model_rebuild(cls)
+    return cls
 
 
 class Base(BaseModel):
@@ -84,6 +99,9 @@ class PostAPI(APIBase):
 
 
 DynRawPost: TypeAlias = PostAPI.Card
+
+model_rebuild_recurse(UserAPI)
+model_rebuild_recurse(PostAPI)
 
 
 class BilibiliClient:
@@ -553,6 +571,4 @@ class BilibiliBangumi(StatusChange):
         )
 
 
-model_rebuild(UserAPI)
-model_rebuild(PostAPI)
 model_rebuild(Bilibililive.Info)

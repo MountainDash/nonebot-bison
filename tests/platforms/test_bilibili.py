@@ -14,7 +14,7 @@ from .utils import get_json
 def bing_dy_list(app: App):
     from nonebot_bison.platform.bilibili import PostAPI
 
-    return PostAPI.model_validate(get_json("bilibili_bing_list.json")).data.cards  # type: ignore
+    return type_validate_python(PostAPI, get_json("bilibili_bing_list.json")).data.cards  # type: ignore
 
 
 if typing.TYPE_CHECKING:
@@ -49,6 +49,14 @@ def without_dynamic(app: App):
                 },
             },
         )
+    )
+
+
+async def test_rebuild(app: App):
+    from nonebot_bison.platform.bilibili import PostAPI
+
+    assert type_validate_python(
+        PostAPI, {"code": 0, "message": "0", "ttl": 1, "data": {"has_more": 0, "cards": None, "next_offset": 0}}
     )
 
 

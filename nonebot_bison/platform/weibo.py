@@ -130,7 +130,7 @@ class Weibo(NewMessage):
 
     def _get_text(self, raw_text: str) -> str:
         text = raw_text.replace("<br/>", "\n").replace("<br />", "\n")
-        selector = etree.HTML(text)
+        selector = etree.HTML(text, parser=None)
         if selector is None:
             return text
         url_elems = selector.xpath("//a[@href]/span[@class='surl-text']")

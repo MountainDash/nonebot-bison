@@ -2,9 +2,6 @@
 
 ## v0.9.2
 
-- :bug: 为各主题添加 repost 的渲染 [@AzideCupric](https://github.com/AzideCupric) ([#505](https://github.com/MountainDash/nonebot-bison/pull/505))
-- :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#465](https://github.com/MountainDash/nonebot-bison/pull/465))
-
 ### 新功能
 
 - 更详细的微博 [@LambdaYH](https://github.com/LambdaYH) ([#504](https://github.com/MountainDash/nonebot-bison/pull/504))
@@ -15,10 +12,11 @@
 
 - 为B站动态API建立model，转发动态放入repost字段 [@AzideCupric](https://github.com/AzideCupric) ([#507](https://github.com/MountainDash/nonebot-bison/pull/507))
 - Arknights 公告分类 过滤不可访问的 URL [@AzideCupric](https://github.com/AzideCupric) ([#495](https://github.com/MountainDash/nonebot-bison/pull/495))
+- 为各主题补全 repost 的渲染 [@AzideCupric](https://github.com/AzideCupric) ([#505](https://github.com/MountainDash/nonebot-bison/pull/505))
 
 ### 文档
 
-- ✨ 文档迁移到 vuepress hope 主题 [@dependabot](https://github.com/dependabot) ([#490](https://github.com/MountainDash/nonebot-bison/pull/490))
+- 文档迁移到 vuepress hope 主题 [@dependabot](https://github.com/dependabot) ([#490](https://github.com/MountainDash/nonebot-bison/pull/490))
 
 ## v0.9.1
 
@@ -39,9 +37,9 @@
 ### 新功能
 
 - 适配 Pydantic V2 [@he0119](https://github.com/he0119) ([#484](https://github.com/MountainDash/nonebot-bison/pull/484))
-- Theme功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
+- Theme 功能添加 [@AzideCupric](https://github.com/AzideCupric) ([#400](https://github.com/MountainDash/nonebot-bison/pull/400))
 - 调整 Dockerfile 以及 Bison 的运行方式 [@AzideCupric](https://github.com/AzideCupric) ([#447](https://github.com/MountainDash/nonebot-bison/pull/447))
-- BISON_OUTER_URL配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))
+- BISON_OUTER_URL 配置改进 [@SherkeyXD](https://github.com/SherkeyXD) ([#405](https://github.com/MountainDash/nonebot-bison/pull/405))
 
 ### Bug 修复
 
@@ -56,11 +54,11 @@
 
 ### Bug 修复
 
-- :bug: 处理topic_info字段缺失的问题 [@AzideCupric](https://github.com/AzideCupric) ([#354](https://github.com/MountainDash/nonebot-bison/pull/354))
+- 处理topic_info字段缺失的问题 [@AzideCupric](https://github.com/AzideCupric) ([#354](https://github.com/MountainDash/nonebot-bison/pull/354))
 - 修复无法正常判断 FastAPI 是否存在的问题 [@KomoriDev](https://github.com/KomoriDev) ([#350](https://github.com/MountainDash/nonebot-bison/pull/350))
 - 适配 SAA 0.3 [@he0119](https://github.com/he0119) ([#349](https://github.com/MountainDash/nonebot-bison/pull/349))
 - 修复文本相似度函数除0报错 [@UKMeng](https://github.com/UKMeng) ([#302](https://github.com/MountainDash/nonebot-bison/pull/302))
-- :ambulance: 修正明日方舟游戏信息的模板与图片渲染 [@GuGuMur](https://github.com/GuGuMur) ([#306](https://github.com/MountainDash/nonebot-bison/pull/306))
+- 修正明日方舟游戏信息的模板与图片渲染 [@GuGuMur](https://github.com/GuGuMur) ([#306](https://github.com/MountainDash/nonebot-bison/pull/306))
 
 ## v0.8.0
 
@@ -70,22 +68,22 @@
 
 ### 新功能
 
-- 🎈优化RSS推送的内容 [@UKMeng](https://github.com/UKMeng) ([#259](https://github.com/felinae98/nonebot-bison/pull/259))
-- :arrow_up: 支持nb2.0.0并更新metadata [@AzideCupric](https://github.com/AzideCupric) ([#274](https://github.com/felinae98/nonebot-bison/pull/274))
-- 移除交互式管理中的ob11 [@felinae98](https://github.com/felinae98) ([#268](https://github.com/felinae98/nonebot-bison/pull/268))
+- 优化 RSS 推送的内容 [@UKMeng](https://github.com/UKMeng) ([#259](https://github.com/felinae98/nonebot-bison/pull/259))
+- 支持 nb2.0.0 并更新 metadata [@AzideCupric](https://github.com/AzideCupric) ([#274](https://github.com/felinae98/nonebot-bison/pull/274))
+- 移除交互式管理中的 ob11 [@felinae98](https://github.com/felinae98) ([#268](https://github.com/felinae98/nonebot-bison/pull/268))
 
 ### Bug 修复
 
-- 修复bilibili推送的一些格式错误 [@UKMeng](https://github.com/UKMeng) ([#263](https://github.com/felinae98/nonebot-bison/pull/263))
-- 🐛 修复B站订阅没有动态或者B站直播订阅没有直播间的用户时轮询报错的问题 [@AzideCupric](https://github.com/AzideCupric) ([#273](https://github.com/felinae98/nonebot-bison/pull/273))
-- 在Postgresql下，user_target字段使用jsonb代替json [@LambdaYH](https://github.com/LambdaYH) ([#271](https://github.com/felinae98/nonebot-bison/pull/271))
+- 修复 bilibili 推送的一些格式错误 [@UKMeng](https://github.com/UKMeng) ([#263](https://github.com/felinae98/nonebot-bison/pull/263))
+- 修复B站订阅没有动态或者B站直播订阅没有直播间的用户时轮询报错的问题 [@AzideCupric](https://github.com/AzideCupric) ([#273](https://github.com/felinae98/nonebot-bison/pull/273))
+- 在 Postgresql 下，user_target 字段使用 jsonb 代替 json [@LambdaYH](https://github.com/LambdaYH) ([#271](https://github.com/felinae98/nonebot-bison/pull/271))
 
 ## v0.7.3
 
 ### Bug 修复
 
-- 更换获取B站用户名的api [@UKMeng](https://github.com/UKMeng) ([#261](https://github.com/felinae98/nonebot-bison/pull/261))
-- 修复ff14公告链接 [@LambdaYH](https://github.com/LambdaYH) ([#257](https://github.com/felinae98/nonebot-bison/pull/257))
+- 更换获取B站用户名的 api [@UKMeng](https://github.com/UKMeng) ([#261](https://github.com/felinae98/nonebot-bison/pull/261))
+- 修复 ff14 公告链接 [@LambdaYH](https://github.com/LambdaYH) ([#257](https://github.com/felinae98/nonebot-bison/pull/257))
 
 ## v0.7.2
 
@@ -104,14 +102,11 @@
 
 ### 文档
 
-- :memo: 拆分部署与使用，添加简单使用章节 [@AzideCupric](https://github.com/AzideCupric) ([#252](https://github.com/felinae98/nonebot-bison/pull/252))
+- 拆分部署与使用，添加简单使用章节 [@AzideCupric](https://github.com/AzideCupric) ([#252](https://github.com/felinae98/nonebot-bison/pull/252))
 - 在文档和log中强调bison启动时和配置里的网站不能直接访问，并优化部分文档的表达 [@AzideCupric](https://github.com/AzideCupric) ([#235](https://github.com/felinae98/nonebot-bison/pull/235))
 - 修复文档中指向的nonebot2文档url [@SherkeyXD](https://github.com/SherkeyXD) ([#231](https://github.com/felinae98/nonebot-bison/pull/231))
 
 ## v0.7.1
-
-- 修改 nonebot_bison 项目结构 [@he0119](https://github.com/he0119) ([#211](https://github.com/felinae98/nonebot-bison/pull/211))
-- change: 又切换回 sqlalchemy，但是 2.0 [@felinae98](https://github.com/felinae98) ([#206](https://github.com/felinae98/nonebot-bison/pull/206))
 
 ### 新功能
 
@@ -123,13 +118,16 @@
 
 - 修复使用 PostgreSQL 时迁移脚本的报错 [@he0119](https://github.com/he0119) ([#200](https://github.com/felinae98/nonebot-bison/pull/200))
 
-## v0.7.0
+### 杂项
 
-- feat(workflow pytest): 添加打上test-render的标签后进行带render标记测试的功能 [@AzideCupric](https://github.com/AzideCupric) ([#176](https://github.com/felinae98/nonebot-bison/pull/176))
+- 又切换回 sqlalchemy，但是 2.0 [@felinae98](https://github.com/felinae98) ([#206](https://github.com/felinae98/nonebot-bison/pull/206))
+- 修改 nonebot_bison 项目结构 [@he0119](https://github.com/he0119) ([#211](https://github.com/felinae98/nonebot-bison/pull/211))
+
+## v0.7.0
 
 ### 破坏性变更
 
-- feat: 适配最新的 DataStore 插件，并切换模型为 SQLModel [@he0119](https://github.com/he0119) ([#178](https://github.com/felinae98/nonebot-bison/pull/178))
+- 适配最新的 DataStore 插件，并切换模型为 SQLModel [@he0119](https://github.com/he0119) ([#178](https://github.com/felinae98/nonebot-bison/pull/178))
 
 ### 新功能
 
@@ -138,7 +136,11 @@
 
 ### Bug 修复
 
-- 修复“订阅帐号可以被修改”的bug, 实际上不可以修改 [@felinae98](https://github.com/felinae98) ([#169](https://github.com/felinae98/nonebot-bison/pull/169))
+- 修复“订阅帐号可以被修改”的 bug , 实际上不可以修改 [@felinae98](https://github.com/felinae98) ([#169](https://github.com/felinae98/nonebot-bison/pull/169))
+
+### 杂项
+
+添加打上 test-render 的标签后进行带 render 标记测试的功能 [@AzideCupric](https://github.com/AzideCupric) ([#176](https://github.com/felinae98/nonebot-bison/pull/176))
 
 ## v0.6.3
 
@@ -150,7 +152,7 @@
 ### Bug 修复
 
 - 修复后台无法删除 RSS 订阅的问题 [@felinae98](https://github.com/felinae98) ([#154](https://github.com/felinae98/nonebot-bison/pull/154))
-- fix(bilibili-live): 修正一些错误的api [@AzideCupric](https://github.com/AzideCupric) ([#151](https://github.com/felinae98/nonebot-bison/pull/151))
+- 修正一些错误的api [@AzideCupric](https://github.com/AzideCupric) ([#151](https://github.com/felinae98/nonebot-bison/pull/151))
 
 ## v0.6.2
 
@@ -163,7 +165,7 @@
 
 ### Bug 修复
 
-- :bug: download weibo pics in `parse` [@felinae98](https://github.com/felinae98) ([#147](https://github.com/felinae98/nonebot-bison/pull/147))
+- download weibo pics in `parse` [@felinae98](https://github.com/felinae98) ([#147](https://github.com/felinae98/nonebot-bison/pull/147))
 - 修复前端两次点击编辑不能正确显示的问题 [@felinae98](https://github.com/felinae98) ([#131](https://github.com/felinae98/nonebot-bison/pull/131))
 
 ## v0.6.1
@@ -195,30 +197,30 @@
 
 ### 新功能
 
-- feat (issue #67 ):添加屏蔽特定tag的功能 [@AzideCupric](https://github.com/AzideCupric) ([#101](https://github.com/felinae98/nonebot-bison/pull/101))
-- feat: 临时解决 bilibili 的反爬机制 [@felinae98](https://github.com/felinae98) ([#110](https://github.com/felinae98/nonebot-bison/pull/110))
-- 在StatusChange中提供了如果api返回错误不更新status的方法 [@felinae98](https://github.com/felinae98) ([#96](https://github.com/felinae98/nonebot-bison/pull/96))
+- 添加屏蔽特定 tag 的功能 [@AzideCupric](https://github.com/AzideCupric) ([#101](https://github.com/felinae98/nonebot-bison/pull/101))
+- 临时解决 bilibili 的反爬机制 [@felinae98](https://github.com/felinae98) ([#110](https://github.com/felinae98/nonebot-bison/pull/110))
+- 在 StatusChange 中提供了如果 api 返回错误不更新 status 的方法 [@felinae98](https://github.com/felinae98) ([#96](https://github.com/felinae98/nonebot-bison/pull/96))
 - 添加 CustomPost [@felinae98](https://github.com/felinae98) ([#81](https://github.com/felinae98/nonebot-bison/pull/81))
 
 ### Bug 修复
 
-- fix: 修复 bilibili-live 中获取状态错误后产生的错误行为 [@felinae98](https://github.com/felinae98) ([#111](https://github.com/felinae98/nonebot-bison/pull/111))
+- 修复 bilibili-live 中获取状态错误后产生的错误行为 [@felinae98](https://github.com/felinae98) ([#111](https://github.com/felinae98/nonebot-bison/pull/111))
 
 ## v0.5.4
 
 ### 新功能
 
-- 增加rss对media_content中图片的支持 [@felinae98](https://github.com/felinae98) ([#87](https://github.com/felinae98/nonebot-bison/pull/87))
-- 添加新的订阅平台mcbbsnews [@AzideCupric](https://github.com/AzideCupric) ([#84](https://github.com/felinae98/nonebot-bison/pull/84))
-- 添加bilibili开播提醒 [@Sichongzou](https://github.com/Sichongzou) ([#60](https://github.com/felinae98/nonebot-bison/pull/60))
-- 添加User-Agent配置 [@felinae98](https://github.com/felinae98) ([#78](https://github.com/felinae98/nonebot-bison/pull/78))
+- 增加 rss 对 media_content 中图片的支持 [@felinae98](https://github.com/felinae98) ([#87](https://github.com/felinae98/nonebot-bison/pull/87))
+- 添加新的订阅平台 mcbbsnews [@AzideCupric](https://github.com/AzideCupric) ([#84](https://github.com/felinae98/nonebot-bison/pull/84))
+- 添加 bilibili 开播提醒 [@Sichongzou](https://github.com/Sichongzou) ([#60](https://github.com/felinae98/nonebot-bison/pull/60))
+- 添加 User-Agent 配置 [@felinae98](https://github.com/felinae98) ([#78](https://github.com/felinae98/nonebot-bison/pull/78))
 - 增加代理设置 [@felinae98](https://github.com/felinae98) ([#71](https://github.com/felinae98/nonebot-bison/pull/71))
-- 增加Parse Target功能 [@felinae98](https://github.com/felinae98) ([#72](https://github.com/felinae98/nonebot-bison/pull/72))
+- 增加 Parse Target 功能 [@felinae98](https://github.com/felinae98) ([#72](https://github.com/felinae98/nonebot-bison/pull/72))
 
 ### Bug 修复
 
 - 捕获 JSONDecodeError [@felinae98](https://github.com/felinae98) ([#82](https://github.com/felinae98/nonebot-bison/pull/82))
-- 捕获SSL异常 [@felinae98](https://github.com/felinae98) ([#75](https://github.com/felinae98/nonebot-bison/pull/75))
+- 捕获 SSL 异常 [@felinae98](https://github.com/felinae98) ([#75](https://github.com/felinae98/nonebot-bison/pull/75))
 
 ### 文档
 

@@ -13,6 +13,7 @@
 
 ### Bug 修复
 
+- 为B站动态API建立model，转发动态放入repost字段 [@AzideCupric](https://github.com/AzideCupric) ([#507](https://github.com/MountainDash/nonebot-bison/pull/507))
 - Arknights 公告分类 过滤不可访问的 URL [@AzideCupric](https://github.com/AzideCupric) ([#495](https://github.com/MountainDash/nonebot-bison/pull/495))
 
 ### 文档

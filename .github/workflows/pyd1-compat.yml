@@ -1,0 +1,61 @@
+name: pydantic1-compat-test
+
+on:
+  push:
+    branches:
+      - main
+      - next
+    paths:
+      - admin-frontend/**
+      - docker/**
+      - nonebot_bison/**
+      - tests/**
+      - pyproject.toml
+      - poetry.lock
+      - docker.env.prod
+      - .github/**
+  pull_request:
+    paths:
+      - admin-frontend/**
+      - docker/**
+      - nonebot_bison/**
+      - tests/**
+      - pyproject.toml
+      - poetry.lock
+      - docker.env.prod
+      - .github/**
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pydantic1 test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+      fail-fast: false
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install prerequisites
+        run: poetry add pydantic@^1.10 && poetry install
+
+      - name: Run Pytest
+        run: poetry run pytest -n auto

@@ -102,7 +102,7 @@ target-version = "py310"
 [tool.black]
 line-length = 120
 preview = true
-target-version = ["py310", "py311"]
+target-version = ["py310", "py311", "py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''

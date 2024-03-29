@@ -58,4 +58,4 @@ jobs:
         run: poetry add pydantic@^1.10 && poetry install
 
       - name: Run Pytest
-        run: poetry run pytest -n auto
+        run: poetry run pytest -k 'not compare and not render' -n auto

@@ -83,10 +83,12 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
 
     await scheduler_dict[BililiveSchedConf].exec_fetch()
 
-    batch_fetch_mock.assert_called_once_with([
-        (T_Target("t1"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
-        (T_Target("t2"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
-    ])
+    batch_fetch_mock.assert_called_once_with(
+        [
+            (T_Target("t1"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
+            (T_Target("t2"), [UserSubInfo(user=TargetQQGroup(group_id=123), categories=[], tags=[])]),
+        ]
+    )
 
 
 async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixture):

@@ -3,8 +3,8 @@ from datetime import timedelta
 from types import MappingProxyType
 from collections.abc import Callable
 
-from expiringdictx import ExpiringDict
 from httpx import AsyncClient, AsyncHTTPTransport
+from expiringdictx import SimpleCache, ExpiringDict
 from hishel import Controller, AsyncCacheTransport, AsyncInMemoryStorage
 
 from .const import DATASOURCE_URL
@@ -23,6 +23,26 @@ CeobeClient = partial(
     AsyncClient,
     transport=cache_transport,
 )
+
+
+class CeobeCache:
+    ceobeCache = SimpleCache()
+
+    def __init__(self, litetime: timedelta, store_key: str | None = None):
+        self.store_key = store_key
+        self.litetime = litetime
+
+    def __set_name__(self, owner, name: str):
+        if not self.store_key:
+            self.key = name
+        else:
+            self.key = self.store_key
+
+    def __get__(self, instance, owner):
+        return self.ceobeCache.get(self.key)
+
+    def __set__(self, instance, value):
+        self.ceobeCache[self.key, self.litetime] = value
 
 
 class CeobeDataSourceCache:

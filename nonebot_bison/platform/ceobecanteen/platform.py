@@ -1,17 +1,15 @@
 import traceback
-from typing import cast
 from datetime import timedelta
 
 from nonebot import logger, require
-from expiringdictx import SimpleCache
 
 from ...post import Post
 from ..platform import NewMessage
 from .utils import process_response
 from ...types import Target, RawPost, Category
 from ...utils import SchedulerConfig, capture_html
-from .cache import CeobeClient, CeobeDataSourceCache
 from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
+from .cache import CeobeCache, CeobeClient, CeobeDataSourceCache
 from .models import CeobeImage, CeobeCookie, CombIdResponse, CookiesResponse, CookieIdResponse
 
 
@@ -46,7 +44,10 @@ class CeobeCanteen(NewMessage):
     categories: dict[Category, str] = {1: "普通", 2: "转发"}
 
     data_source_cache = CeobeDataSourceCache()
-    cache_store = SimpleCache()
+
+    comb_id = CeobeCache(timedelta(hours=12))
+    cookie_id = CeobeCache(timedelta(hours=1))
+    cookies = CeobeCache(timedelta(hours=1))
 
     async def get_comb_id(self, target_uuids: list[str]):
         """获取数据源的组合id"""
@@ -60,16 +61,14 @@ class CeobeCanteen(NewMessage):
         logger.trace(f"get comb_id: {comb_id}")
         return comb_id
 
-    async def get_comb_id_for_all(self, force_refresh: bool = False):
+    async def get_comb_id_for_all(self):
         """获取 "全部数据源" 的组合id，获取到的comb_id会缓存12小时"""
-        if self.cache_store["comb_id"] is None or force_refresh:
-            logger.trace("no comb_id, request")
-            target_uuids = (await self.data_source_cache.get_all(force_refresh)).keys()
-            comb_id = await self.get_comb_id(list(target_uuids))
-            self.cache_store["comb_id", timedelta(hours=12)] = comb_id
+        logger.trace("no comb_id, request")
+        target_uuids = (await self.data_source_cache.get_all()).keys()
+        comb_id = await self.get_comb_id(list(target_uuids))
 
-        logger.debug(f"use comb_id: {self.cache_store['comb_id']}")
-        return self.cache_store["comb_id"]
+        logger.debug(f"use comb_id: {comb_id}")
+        return comb_id
 
     async def get_cookie_id(self, comb_id: str):
         """根据comb_id获取cookie_id"""
@@ -78,47 +77,34 @@ class CeobeCanteen(NewMessage):
         logger.trace(f"get cookie_id: {cookie_id}")
         return cookie_id
 
-    async def get_cookies(self, cookie_id: str, comb_id: str | None = None, force_refresh: bool = False):
+    async def get_cookies(self, cookie_id: str, comb_id: str | None = None):
         """获取cookies"""
-
-        async def request():
-            parmas = {
-                "datasource_comb_id": comb_id or self.cache_store["comb_id"],
-                "cookie_id": cookie_id,
-            }
-            logger.trace(f"will reuquest: {parmas}")
-            resp = await self.client.get(COOKIES_URL, params=parmas)
-            cookies = process_response(resp, CookiesResponse).data.cookies
-            return cookies
-
-        def update(cookie_id: str, cookies: list[CeobeCookie]):
-            lifetime = timedelta(hours=1)
-            self.cache_store["cookie_id", lifetime] = cookie_id
-            self.cache_store["cookies", lifetime] = cookies
-
-        if cookie_id != self.cache_store["cookie_id"] or force_refresh:
-            logger.trace(f"cookie_id changed: {self.cache_store['cookie_id']} -> {cookie_id}, request cookies")
-            cookies = await request()
-            update(cookie_id, cookies)
-        elif self.cache_store["cookies"] is None:
-            logger.trace("no cookie_id, update")
-            cookies = await request()
-            update(cookie_id, cookies)
-        else:
-            logger.trace(f"cookoe_id no change, {self.cache_store['cookie_id']}")
-
-        logger.trace(f"now cookie_id is {self.cache_store['cookie_id']}")
-        return cast(list[CeobeCookie] | None, self.cache_store["cookies"])
+        parmas = {
+            "datasource_comb_id": comb_id,
+            "cookie_id": cookie_id,
+        }
+        logger.trace(f"will reuquest: {parmas}")
+        resp = await self.client.get(COOKIES_URL, params=parmas)
+        cookies = process_response(resp, CookiesResponse).data.cookies
+        return cookies
 
     async def fetch_ceobe_cookies(self) -> list[CeobeCookie]:
-        comb_id = await self.get_comb_id_for_all()
-        if not comb_id:
+        if not self.comb_id:
+            comb_id = await self.get_comb_id_for_all()
+            self.comb_id = comb_id
+
+        cookie_id = await self.get_cookie_id(self.comb_id)
+        if not cookie_id:
             return []
-        cookie_id = await self.get_cookie_id(comb_id)
-        cookies = await self.get_cookies(cookie_id)
-        if not cookies:
+
+        if cookie_id != self.cookie_id:
+            cookies = await self.get_cookies(cookie_id, self.comb_id)
+            self.cookie_id = cookie_id
+            self.cookies = cookies
+
+        if not self.cookies:
             return []
-        return cookies
+        return self.cookies
 
     async def batch_get_sub_list(self, targets: list[Target]) -> list[list[CeobeCookie]]:
         cookies = await self.fetch_ceobe_cookies()

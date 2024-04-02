@@ -540,18 +540,22 @@ async def test_batch_fetch_new_message(app: App):
 
     platform_obj = BatchNewMessage(ProcessContext(), None)  # type:ignore
 
-    res1 = await platform_obj.batch_fetch_new_post([
-        SubUnit(Target("target1"), [user1]),
-        SubUnit(Target("target2"), [user1, user2]),
-        SubUnit(Target("target3"), [user2]),
-    ])
+    res1 = await platform_obj.batch_fetch_new_post(
+        [
+            SubUnit(Target("target1"), [user1]),
+            SubUnit(Target("target2"), [user1, user2]),
+            SubUnit(Target("target3"), [user2]),
+        ]
+    )
     assert len(res1) == 0
 
-    res2 = await platform_obj.batch_fetch_new_post([
-        SubUnit(Target("target1"), [user1]),
-        SubUnit(Target("target2"), [user1, user2]),
-        SubUnit(Target("target3"), [user2]),
-    ])
+    res2 = await platform_obj.batch_fetch_new_post(
+        [
+            SubUnit(Target("target1"), [user1]),
+            SubUnit(Target("target2"), [user1, user2]),
+            SubUnit(Target("target3"), [user2]),
+        ]
+    )
     assert len(res2) == 3
     send_set = set()
     for platform_target, posts in res2:
@@ -613,16 +617,20 @@ async def test_batch_fetch_compare_status(app: App):
     user1 = UserSubInfo(TargetQQGroup(group_id=123), [1, 2, 3], [])
     user2 = UserSubInfo(TargetQQGroup(group_id=234), [1, 2, 3], [])
 
-    res1 = await batch_status_change.batch_fetch_new_post([
-        SubUnit(Target("target1"), [user1]),
-        SubUnit(Target("target2"), [user1, user2]),
-    ])
+    res1 = await batch_status_change.batch_fetch_new_post(
+        [
+            SubUnit(Target("target1"), [user1]),
+            SubUnit(Target("target2"), [user1, user2]),
+        ]
+    )
     assert len(res1) == 0
 
-    res2 = await batch_status_change.batch_fetch_new_post([
-        SubUnit(Target("target1"), [user1]),
-        SubUnit(Target("target2"), [user1, user2]),
-    ])
+    res2 = await batch_status_change.batch_fetch_new_post(
+        [
+            SubUnit(Target("target1"), [user1]),
+            SubUnit(Target("target2"), [user1, user2]),
+        ]
+    )
 
     send_set = set()
     for platform_target, posts in res2:

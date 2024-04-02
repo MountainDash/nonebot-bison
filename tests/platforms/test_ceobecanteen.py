@@ -117,7 +117,6 @@ async def test_parse_crazy(app: App, ceobecanteen):
 
     cookie_offical = type_validate_python(CeobeCookie, get_json("ceobe_looooong_bulletin.json"))
     post4 = await ceobecanteen.parse(cookie_offical)
-    show(post4.images[0])  # type: ignore
     show(ext((await post4.generate_messages())[0][0]))  # type: ignore
 
 

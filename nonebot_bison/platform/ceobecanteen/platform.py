@@ -1,6 +1,7 @@
 import traceback
 from datetime import timedelta
 
+from yarl import URL
 from nonebot import logger, require
 
 from ...post import Post
@@ -155,17 +156,36 @@ class CeobeCanteen(NewMessage):
         match raw_post.source.type:
             case "arknights-website:official-website":
                 content = ""
-                pics = await self._ceobecanteen_render(
-                    raw_post.item.url,
-                    "body > div.article-page > div.layout > div.layoutContent > div",
-                    viewport={"width": 1024, "height": 19990},
-                )
+                pics = [
+                    (
+                        URL.build(
+                            scheme="snapshot",
+                        )
+                        % {
+                            "source": raw_post.item.url,
+                            "selector": "body > div.article-page > div.layout > div.layoutContent > div",
+                            "width": 1024,
+                            "height": 19990,
+                            "device_scale_factor": 2,
+                        }
+                    ).human_repr()
+                ]
             case "arknights-game:bulletin-list" if raw_post.item.display_type != 2:
                 content = ""
-                pics = await self._ceobecanteen_render(
-                    raw_post.item.url,
-                    "body > div.main > div.container",
-                )
+                pics = [
+                    (
+                        URL.build(
+                            scheme="snapshot",
+                        )
+                        % {
+                            "source": raw_post.item.url,
+                            "selector": "body > div.main > div.container",
+                            "width": 1024,
+                            "height": 19990,
+                            "device_scale_factor": 2,
+                        }
+                    ).human_repr()
+                ]
             case _:
                 pics = await self.handle_images_list(raw_pics, raw_post.source.type)
                 content = raw_post.default_cookie.text
@@ -199,7 +219,7 @@ class CeobeCanteen(NewMessage):
             repost=retweet,
         )
 
-    async def _ceobecanteen_render(
+    async def ceobecanteen_snapshot(
         self,
         url: str,
         selector: str,

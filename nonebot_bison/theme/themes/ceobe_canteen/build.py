@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 import jinja2
+from yarl import URL
 from httpx import AsyncClient
 from pydantic import BaseModel
 from PIL import Image as PILImage
@@ -21,6 +22,7 @@ from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportErr
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
+    from nonebot_bison.platform.ceobecanteen import CeobeCanteen
 
 
 class CeobeInfo(BaseModel):
@@ -174,9 +176,28 @@ class CeobeCanteenTheme(Theme):
                 case BytesIO():
                     head_pic = merged_images[0].getvalue()
                     merged_images = merged_images[1:]
-                case str():
+                case str(s) if URL(s).scheme in ("http", "https"):
                     ceobe_card.content.image = merged_images[0]
                     need_card_link = False
+                case str(s) if (u := URL(s)).scheme == "snapshot":
+                    platform = post.platform
+                    url = u.query.get("source")
+                    selector = u.query.get("selector")
+                    width = int(u.query.get("width", 1024))
+                    height = int(u.query.get("height", 512))
+                    device_scale_factor = int(u.query.get("device_scale_factor", 2))
+                    if not url or not selector:
+                        raise ThemeRenderError("Invalid snapshot url")
+                    if TYPE_CHECKING:
+                        assert isinstance(platform, CeobeCanteen)
+                    snapshot_img = await platform.ceobecanteen_snapshot(
+                        url=url,
+                        selector=selector,
+                        device_scale_factor=device_scale_factor,
+                        viewport={"width": width, "height": height},
+                    )
+                    head_pic = snapshot_img[0]
+                    merged_images = snapshot_img[1:]
                 case Path():
                     ceobe_card.content.image = merged_images[0].as_uri()
                     need_card_link = False

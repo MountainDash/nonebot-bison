@@ -2,6 +2,7 @@ from io import BytesIO
 from functools import partial
 from typing import Literal, TypeGuard
 
+from yarl import URL
 from PIL import Image
 from httpx import AsyncClient
 from nonebot import logger, require
@@ -96,7 +97,11 @@ async def pic_merge(pics: list[str | bytes], http_client: AsyncClient) -> list[s
 
 
 def is_pics_mergable(imgs: list) -> TypeGuard[list[str | bytes]]:
-    return all(isinstance(img, str | bytes) for img in imgs)
+    if any(not isinstance(img, str | bytes) for img in imgs):
+        return False
+
+    url = [URL(img) for img in imgs if isinstance(img, str)]
+    return all(u.scheme in ("http", "https") for u in url)
 
 
 async def text_to_image(saa_text: SaaText) -> SaaImage:

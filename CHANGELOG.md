@@ -1,5 +1,9 @@
 # Change Log
 
+## 最近更新
+
+- :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#521](https://github.com/MountainDash/nonebot-bison/pull/521))
+
 ## v0.9.2
 
 ### 新功能

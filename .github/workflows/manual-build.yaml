@@ -54,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./docker/Dockerfile_with_frontend
           push: true
           tags: felinae98/nonebot-bison:${{ inputs.dockerTag }}
@@ -89,6 +90,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./docker/Dockerfile_with_frontend_sentry
           tags: felinae98/nonebot-bison:${{ inputs.dockerTag }}-sentry
           cache-from: type=gha

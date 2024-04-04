@@ -144,6 +144,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./docker/Dockerfile_with_frontend
           push: false
           load: true
@@ -174,6 +175,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./docker/Dockerfile_with_frontend
           push: true
           tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}
@@ -215,6 +217,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./docker/Dockerfile_with_frontend_sentry
           push: ${{ github.event_name != 'pull_request' }}
           tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}-sentry

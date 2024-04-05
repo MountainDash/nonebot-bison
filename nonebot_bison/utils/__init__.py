@@ -91,7 +91,7 @@ if plugin_config.bison_filter_log:
     default_filter.level = ("DEBUG" if config.debug else "INFO") if config.log_level is None else config.log_level
 
 
-def text_similarity(str1, str2) -> float:
+def text_similarity(str1: str, str2: str) -> float:
     """利用最长公共子序列的算法判断两个字符串是否相似，并返回0到1.0的相似度"""
     if len(str1) == 0 or len(str2) == 0:
         raise ValueError("The length of string can not be 0")

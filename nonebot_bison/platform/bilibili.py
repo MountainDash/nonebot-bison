@@ -4,10 +4,11 @@ from copy import deepcopy
 from enum import Enum, unique
 from typing_extensions import Self
 from datetime import datetime, timedelta
-from typing import Any, TypeVar, TypeAlias, NamedTuple
+from typing import Any, Literal, TypeVar, TypeAlias, NamedTuple
 
+from yarl import URL
 from httpx import AsyncClient
-from nonebot.log import logger
+from nonebot import logger, require
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, type_validate_json, type_validate_python
 
@@ -16,6 +17,10 @@ from ..compat import model_rebuild
 from ..types import Tag, Target, RawPost, ApiError, Category
 from ..utils import Site, ClientManager, http_client, text_similarity
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
+
+require("nonebot_plugin_htmlrender")
+from playwright.async_api import Page, Cookie
+from nonebot_plugin_htmlrender import get_browser
 
 TBaseModel = TypeVar("TBaseModel", bound=type[BaseModel])
 
@@ -59,45 +64,262 @@ class UserAPI(APIBase):
     data: Data | None = None
 
 
+DynamicType = Literal[
+    "DYNAMIC_TYPE_ARTICLE",
+    "DYNAMIC_TYPE_AV",
+    "DYNAMIC_TYPE_WORD",
+    "DYNAMIC_TYPE_DRAW",
+    "DYNAMIC_TYPE_FORWARD",
+    "DYNAMIC_TYPE_LIVE",
+    "DYNAMIC_TYPE_LIVE_RCMD",
+    "DYNAMIC_TYPE_PGC",
+    "DYNAMIC_TYPE_PGC_UNION",
+    "DYNAMIC_TYPE_NONE",  # 已删除的动态，一般只会出现在转发动态的源动态被删除
+    "DYNAMIC_TYPE_COMMON_SQUARE",
+    "DYNAMIC_TYPE_COMMON_VERTICAL",
+    "DYNAMIC_TYPE_COURSES_SEASON",
+]
+
+
+# 参考 https://github.com/Yun-Shan/bilibili-dynamic
 class PostAPI(APIBase):
-    class Info(Base):
-        uname: str
+    class Basic(Base):
+        rid_str: str
+        """可能含义是referrer id，表示引用的对象的ID？
+        已知专栏动态时该ID与专栏ID一致，视频动态时与av号一致
+        """
 
-    class UserProfile(Base):
-        info: "PostAPI.Info"
+    class Modules(Base):
+        class Author(Base):
+            face: str
+            mid: int
+            name: str
+            jump_url: str
+            pub_ts: int
+            type: Literal["AUTHOR_TYPE_NORMAL", "AUTHOR_TYPE_PGC"]
+            """作者类型，一般情况下都是NORMAL，番剧推送是PGC"""
 
-    class Origin(Base):
-        uid: int
-        dynamic_id: int
-        dynamic_id_str: str
-        timestamp: int
-        type: int
-        rid: int
-        bvid: str | None = None
+        class Additional(Base):
+            type: str
+            """用户发视频时同步发布的动态带图片: ADDITIONAL_TYPE_UGC
+            显示相关游戏: ADDITIONAL_TYPE_COMMON
+            显示预约: ADDITIONAL_TYPE_RESERVE
+            显示投票: ADDITIONAL_TYPE_VOTE
+            显示包月充电专属抽奖: ADDITIONAL_TYPE_UPOWER_LOTTERY
+            显示赛事时(暂时只看到回放的，理论上直播时应该也是这个): ADDITIONAL_TYPE_MATCH
+            """
 
-    class Desc(Base):
-        dynamic_id: int
-        dynamic_id_str: str
-        timestamp: int
-        type: int
-        user_profile: "PostAPI.UserProfile"
-        rid: int
-        bvid: str | None = None
+        class Desc(Base):
+            rich_text_nodes: list[dict[str, Any]]
+            """描述的富文本节点，组成动态的各种内容"""
+            text: str
+            """描述的纯文本内容"""
 
-        origin: "PostAPI.Origin | None" = None
+        class Dynamic(Base):
+            additional: "PostAPI.Modules.Additional"
+            desc: "PostAPI.Modules.Desc | None" = None
+            """动态描述，可能为空"""
+            major: "Major | UnknownMajor | None" = None
+            """主要内容，可能为空"""
 
-    class Card(Base):
-        desc: "PostAPI.Desc"
-        card: str
+        module_author: "PostAPI.Modules.Author"
+        module_dynamic: "PostAPI.Modules.Dynamic"
+
+    class Topic(Base):
+        id: int
+        name: str
+        jump_url: str
+
+    class Item(Base):
+        basic: "PostAPI.Basic"
+        id_str: str
+        modules: "PostAPI.Modules"
+        orig: "PostAPI.Item | None" = None
+        topic: "PostAPI.Topic | None" = None
+        type: DynamicType
 
     class Data(Base):
-        cards: "list[PostAPI.Card] | None"
+        items: "list[PostAPI.Item] | None" = None
 
-    data: Data | None = None
+    data: "PostAPI.Data | None" = None
 
 
-DynRawPost: TypeAlias = PostAPI.Card
+class VideoMajor(Base):
+    class Archive(Base):
+        aid: str
+        bvid: str
+        title: str
+        desc: str
+        """视频简介，太长的话会被截断"""
+        cover: str
+        jump_url: str
 
+    type: Literal["MAJOR_TYPE_ARCHIVE"]
+    archive: "VideoMajor.Archive"
+
+
+class LiveRecommendMajor(Base):
+    class LiveRecommand(Base):
+        content: str
+        """直播卡片的内容，值为JSON文本"""
+
+    type: Literal["MAJOR_TYPE_LIVE_RCMD"]
+    live_rcmd: "LiveRecommendMajor.LiveRecommand"
+
+
+class LiveMajor(Base):
+    class Live(Base):
+        id: int
+        """直播间号"""
+        title: str
+        live_state: int
+        """直播状态，1为直播中，0为未开播"""
+        cover: str
+        desc_first: str
+        """直播信息的第一部分，用来显示分区"""
+        desc_second: str
+        """跳转链接，目前用的是相对协议(即//开头而不是https://开头)"""
+        jump_url: str
+
+    type: Literal["MAJOR_TYPE_LIVE"]
+    live: "LiveMajor.Live"
+
+
+class ArticleMajor(Base):
+    class Article(Base):
+        id: int
+        """专栏CID"""
+        title: str
+        desc: str
+        """专栏简介"""
+        covers: list[str]
+        """专栏封面，一般是一张图片"""
+        jump_url: str
+
+    type: Literal["MAJOR_TYPE_ARTICLE"]
+    article: "ArticleMajor.Article"
+
+
+class DrawMajor(Base):
+    class Item(Base):
+        width: int
+        height: int
+        size: int
+        """文件大小，KiB（1024）"""
+        src: str
+        """图片链接"""
+
+    class Draw(Base):
+        id: int
+        items: "list[DrawMajor.Item]"
+
+    type: Literal["MAJOR_TYPE_DRAW"]
+    draw: "DrawMajor.Draw"
+
+
+class PGCMajor(Base):
+    """番剧推送"""
+
+    class PGC(Base):
+        title: str
+        cover: str
+        jump_url: str
+        """通常https://www.bilibili.com/bangumi/play/ep{epid}"""
+        epid: int
+        season_id: int
+
+    type: Literal["MAJOR_TYPE_PGC"]
+    pgc: "PGCMajor.PGC"
+
+
+class OPUSMajor(Base):
+    """通用图文内容"""
+
+    class Summary(Base):
+        rich_text_nodes: list[dict[str, Any]]
+        """描述的富文本节点，组成动态的各种内容"""
+        text: str
+
+    class Pic(Base):
+        width: int
+        height: int
+        size: int
+        """文件大小，KiB（1024）"""
+        url: str
+        """图片链接"""
+
+    class Opus(Base):
+        jump_url: str
+        title: str
+        summary: "OPUSMajor.Summary"
+        pics: "list[OPUSMajor.Pic]"
+
+    type: Literal["MAJOR_TYPE_OPUS"]
+    opus: "OPUSMajor.Opus"
+
+
+class CommonMajor(Base):
+    """还是通用图文内容
+    主要跟特殊官方功能有关系，例如专属活动页、会员购、漫画、赛事中心、游戏中心、小黑屋、工房集市、装扮等
+    """
+
+    class Common(Base):
+        cover: str
+        """卡片左侧图片的URL"""
+        title: str
+        desc: str
+        """内容"""
+        jump_url: str
+
+    type: Literal["MAJOR_TYPE_COMMON"]
+    common: "CommonMajor.Common"
+
+
+class CoursesMajor(Base):
+    """课程推送"""
+
+    class Courses(Base):
+        title: str
+        sub_title: str
+        """副标题，一般是课程的简介"""
+        desc: str
+        """课时信息"""
+        cover: str
+        jump_url: str
+        id: int
+        """课程ID"""
+
+    type: Literal["MAJOR_TYPE_COURSES"]
+    courses: "CoursesMajor.Courses"
+
+
+class UnknownMajor(Base):
+    type: str
+
+
+Major = (
+    VideoMajor
+    | LiveRecommendMajor
+    | LiveMajor
+    | ArticleMajor
+    | DrawMajor
+    | PGCMajor
+    | OPUSMajor
+    | CommonMajor
+    | CoursesMajor
+)
+
+DynRawPost: TypeAlias = PostAPI.Item
+
+model_rebuild_recurse(VideoMajor)
+model_rebuild_recurse(LiveRecommendMajor)
+model_rebuild_recurse(LiveMajor)
+model_rebuild_recurse(ArticleMajor)
+model_rebuild_recurse(DrawMajor)
+model_rebuild_recurse(PGCMajor)
+model_rebuild_recurse(OPUSMajor)
+model_rebuild_recurse(CommonMajor)
+model_rebuild_recurse(CoursesMajor)
 model_rebuild_recurse(UserAPI)
 model_rebuild_recurse(PostAPI)
 
@@ -105,22 +327,46 @@ model_rebuild_recurse(PostAPI)
 class BilibiliClient(ClientManager):
     _client: AsyncClient
     _refresh_time: datetime
-    cookie_expire_time = timedelta(hours=5)
+    _pw_page: Page | None = None
+    _cookies: list[Cookie] = []
+    cookie_expire_time = timedelta(hours=1)
 
     def __init__(self) -> None:
         self._client = http_client()
         self._refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
 
-    async def _init_session(self):
-        res = await self._client.get("https://www.bilibili.com/")
-        if res.status_code != 200:
-            logger.warning("unable to refresh temp cookie")
-        else:
-            self._refresh_time = datetime.now()
+    async def _refresh_cookies(self, page: Page):
+        await page.context.clear_cookies()
+        await page.reload()
+        await page.goto("https://space.bilibili.com/1/dynamic")
+        self._cookies = await page.context.cookies()
+        self._refresh_time = datetime.now()
 
-    async def _refresh_client(self):
-        if datetime.now() - self._refresh_time > self.cookie_expire_time:
+    async def _init_session(self):
+        browser = await get_browser()
+        self._pw_page = await browser.new_page()
+        await self._refresh_cookies(self._pw_page)
+
+    async def refresh_client(self, force: bool = False):
+        if not self._pw_page:
             await self._init_session()
+        assert self._pw_page
+
+        if force:
+            await self._pw_page.close()
+            await self._init_session()
+            await self._refresh_cookies(self._pw_page)
+        elif datetime.now() - self._refresh_time > self.cookie_expire_time:
+            await self._pw_page.reload()
+            await self._refresh_cookies(self._pw_page)
+
+        for cookie in self._cookies:
+            self._client.cookies.set(
+                name=cookie.get("name", ""),
+                value=cookie.get("value", ""),
+                domain=cookie.get("domain", ""),
+                path=cookie.get("path", ""),
+            )
 
     async def get_client(self, target: Target | None) -> AsyncClient:
         await self._refresh_client()
@@ -152,6 +398,7 @@ class Bilibili(NewMessage):
         3: "视频",
         4: "纯文字",
         5: "转发",
+        6: "直播推送",
         # 5: "短视频"
     }
     platform_name = "bilibili"
@@ -196,131 +443,193 @@ class Bilibili(NewMessage):
         res.raise_for_status()
         res_obj = type_validate_json(PostAPI, res.content)
 
+        # 0: 成功
+        # -352: 需要cookie
         if res_obj.code == 0:
-            if (data := res_obj.data) and (card := data.cards):
-                return card
+            if (data := res_obj.data) and (items := data.items):
+                return items
             return []
+        elif res_obj.code == -352:
+            await self.client.refresh_client(force=True)  # type: ignore
+            return await self.get_sub_list(target)
         raise ApiError(res.request.url)
 
-    def get_id(self, post: DynRawPost) -> int:
-        return post.desc.dynamic_id
+    def get_id(self, post: DynRawPost) -> str:
+        return post.id_str
 
     def get_date(self, post: DynRawPost) -> int:
-        return post.desc.timestamp
+        return post.modules.module_author.pub_ts
 
-    def _do_get_category(self, post_type: int) -> Category:
+    def _do_get_category(self, post_type: DynamicType) -> Category:
         match post_type:
-            case 2:
+            case "DYNAMIC_TYPE_DRAW" | "DYNAMIC_TYPE_COMMON_VERTICAL" | "DYNAMIC_TYPE_COMMON_SQUARE":
                 return Category(1)
-            case 64:
+            case "DYNAMIC_TYPE_ARTICLE":
                 return Category(2)
-            case 8:
+            case "DYNAMIC_TYPE_AV":
                 return Category(3)
-            case 4:
+            case "DYNAMIC_TYPE_WORD":
                 return Category(4)
-            case 1:
+            case "DYNAMIC_TYPE_FORWARD":
                 # 转发
                 return Category(5)
+            case "DYNAMIC_TYPE_LIVE_RCMD" | "DYNAMIC_TYPE_LIVE":
+                return Category(6)
             case unknown_type:
                 raise CategoryNotRecognize(unknown_type)
 
     def get_category(self, post: DynRawPost) -> Category:
-        post_type = post.desc.type
+        post_type = post.type
         return self._do_get_category(post_type)
 
     def get_tags(self, raw_post: DynRawPost) -> list[Tag]:
-        card_content = json.loads(raw_post.card)
-        text: str = card_content["item"]["content"]
-        result: list[str] = re.findall(r"#(.*?)#", text)
-        return result
+        tags: list[Tag] = []
+        if raw_post.topic:
+            tags.append(raw_post.topic.name)
+        if desc := raw_post.modules.module_dynamic.desc:
+            # {
+            #    "jump_url": "//search.bilibili.com/all?keyword=鸣潮公测定档",
+            #    "orig_text": "#鸣潮公测定档#",
+            #    "text": "#鸣潮公测定档#",
+            #    "type": "RICH_TEXT_NODE_TYPE_TOPIC"
+            # }
+            for node in desc.rich_text_nodes:
+                if (node_type := node.get("type", None)) and node_type == "RICH_TEXT_NODE_TYPE_TOPIC":
+                    tags.append(node["text"].strip("#"))
+        return tags
 
-    def _text_process(self, dynamic: str, desc: str, title: str) -> str:
-        similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
-        if len(dynamic) == 0 and len(desc) == 0:
-            text = title
-        elif similarity > 0.8:
-            text = title + "\n\n" + desc if len(dynamic) < len(desc) else dynamic + "\n=================\n" + title
+    def _text_process(self, dynamic: str, desc: str, title: str):
+        class _ProcessedText(NamedTuple):
+            title: str
+            content: str
+
+        # 计算视频标题和视频描述相似度
+        title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
+        if title_similarity > 0.9:
+            desc = desc[len(title) :]
+        # 计算视频描述和动态描述相似度
+        content_similarity = 0.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
+        if content_similarity > 0.8:
+            return _ProcessedText(title, dynamic if len(dynamic) < len(desc) else desc)
         else:
-            text = dynamic + "\n=================\n" + title + "\n\n" + desc
-        return text
+            return _ProcessedText(title, f"{desc}\n=================\n{dynamic}")
 
-    def _raw_post_parse(self, raw_post: DynRawPost, in_repost: bool = False):
+    def _major_parser(self, raw_post: DynRawPost):
         class ParsedPost(NamedTuple):
-            text: str
+            title: str
+            content: str
             pics: list[str]
-            url: str | None
-            repost_owner: str | None = None
-            repost: "ParsedPost | None" = None
+            url: str | None = None
 
-        card_content: dict[str, Any] = json.loads(raw_post.card)
-        repost_owner: str | None = ou["info"]["uname"] if (ou := card_content.get("origin_user")) else None
+        def make_common_dynamic_url() -> str:
+            return f"https://t.bilibili.com/{raw_post.id_str}"
 
-        def extract_url_id(url_template: str, name: str) -> str | None:
-            if in_repost:
-                if origin := raw_post.desc.origin:
-                    return url_template.format(getattr(origin, name))
-                return None
-            return url_template.format(getattr(raw_post.desc, name))
+        def get_desc_text() -> str:
+            dyn = raw_post.modules.module_dynamic
+            return dyn.desc.text if dyn.desc else ""
 
-        match self._do_get_category(raw_post.desc.type):
-            case 1:
-                # 一般动态
-                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
-                text: str = card_content["item"]["description"]
-                pic: list[str] = [img["img_src"] for img in card_content["item"]["pictures"]]
-                return ParsedPost(text, pic, url, repost_owner)
-            case 2:
-                # 专栏文章
-                url = extract_url_id("https://www.bilibili.com/read/cv{}", "rid")
-                text = "{} {}".format(card_content["title"], card_content["summary"])
-                pic = card_content["image_urls"]
-                return ParsedPost(text, pic, url, repost_owner)
-            case 3:
-                # 视频
-                url = extract_url_id("https://www.bilibili.com/video/{}", "bvid")
-                dynamic = card_content.get("dynamic", "")
-                title = card_content["title"]
-                desc = card_content.get("desc", "")
-                text = self._text_process(dynamic, desc, title)
-                pic = [card_content["pic"]]
-                return ParsedPost(text, pic, url, repost_owner)
-            case 4:
-                # 纯文字
-                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
-                text = card_content["item"]["content"]
-                pic = []
-                return ParsedPost(text, pic, url, repost_owner)
-            case 5:
-                # 转发
-                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
-                text = card_content["item"]["content"]
-                orig_type: int = card_content["item"]["orig_type"]
-                orig_card: str = card_content["origin"]
-                orig_post = DynRawPost(desc=raw_post.desc, card=orig_card)
-                orig_post.desc.type = orig_type
-
-                orig_parsed_post = self._raw_post_parse(orig_post, in_repost=True)
-                return ParsedPost(text, [], url, repost_owner, orig_parsed_post)
-            case unsupported_type:
-                raise CategoryNotSupport(unsupported_type)
+        match raw_post.modules.module_dynamic.major:
+            case VideoMajor(archive=archive):
+                desc_text = get_desc_text()
+                parsed = self._text_process(desc_text, archive.desc, archive.title)
+                return ParsedPost(
+                    title=parsed.title,
+                    content=parsed.content,
+                    pics=[archive.cover],
+                    url=URL(archive.jump_url).with_scheme("https").human_repr(),
+                )
+            case LiveRecommendMajor(live_rcmd=live_rcmd):
+                return ParsedPost(
+                    title=get_desc_text(),
+                    content=live_rcmd.content,
+                    pics=[],
+                    url=make_common_dynamic_url(),
+                )
+            case LiveMajor(live=live):
+                return ParsedPost(
+                    title=live.title,
+                    content=f"{live.desc_first}\n{live.desc_second}",
+                    pics=[live.cover],
+                    url=URL(live.jump_url).with_scheme("https").human_repr(),
+                )
+            case ArticleMajor(article=article):
+                return ParsedPost(
+                    title=article.title,
+                    content=article.desc,
+                    pics=article.covers,
+                    url=URL(article.jump_url).with_scheme("https").human_repr(),
+                )
+            case DrawMajor(draw=draw):
+                return ParsedPost(
+                    title="",
+                    content=get_desc_text(),
+                    pics=[item.src for item in draw.items],
+                    url=make_common_dynamic_url(),
+                )
+            case PGCMajor(pgc=pgc):
+                return ParsedPost(
+                    title=pgc.title,
+                    content="",
+                    pics=[pgc.cover],
+                    url=URL(pgc.jump_url).with_scheme("https").human_repr(),
+                )
+            case OPUSMajor(opus=opus):
+                return ParsedPost(
+                    title=opus.title,
+                    content=opus.summary.text,
+                    pics=[pic.url for pic in opus.pics],
+                    url=URL(opus.jump_url).with_scheme("https").human_repr(),
+                )
+            case CommonMajor(common=common):
+                return ParsedPost(
+                    title=common.title,
+                    content=common.desc,
+                    pics=[common.cover],
+                    url=URL(common.jump_url).with_scheme("https").human_repr(),
+                )
+            case CoursesMajor(courses=courses):
+                return ParsedPost(
+                    title=courses.title,
+                    content=f"{courses.sub_title}\n{courses.desc}",
+                    pics=[courses.cover],
+                    url=URL(courses.jump_url).with_scheme("https").human_repr(),
+                )
+            case UnknownMajor(type=unknown_type):
+                raise CategoryNotSupport(unknown_type)
+            case _:
+                raise CategoryNotSupport(f"{raw_post.id_str=}")
 
     async def parse(self, raw_post: DynRawPost) -> Post:
-        parsed_raw_post = self._raw_post_parse(raw_post)
+        parsed_raw_post = self._major_parser(raw_post)
+        if self._do_get_category(raw_post.type) == Category(5):
+            if raw_post.orig:
+                parsed_raw_repost = self._major_parser(raw_post.orig)
+            else:
+                logger.warning(f"转发动态{raw_post.id_str}没有原动态")
+                parsed_raw_repost = None
 
         post = Post(
             self,
-            parsed_raw_post.text,
-            url=parsed_raw_post.url,
+            content=parsed_raw_post.content,
+            title=parsed_raw_post.title,
             images=list(parsed_raw_post.pics),
-            nickname=raw_post.desc.user_profile.info.uname,
+            timestamp=self.get_date(raw_post),
+            url=parsed_raw_post.url,
+            avatar=raw_post.modules.module_author.face,
+            nickname=raw_post.modules.module_author.name,
         )
-        if rp := parsed_raw_post.repost:
+        if parsed_raw_repost:
+            orig = raw_post.orig
+            assert orig
             post.repost = Post(
                 self,
-                rp.text,
-                url=rp.url,
-                images=list(rp.pics),
-                nickname=rp.repost_owner,
+                content=parsed_raw_repost.content,
+                title=parsed_raw_repost.title,
+                images=list(parsed_raw_repost.pics),
+                timestamp=self.get_date(orig),
+                url=parsed_raw_repost.url,
+                avatar=orig.modules.module_author.face,
+                nickname=orig.modules.module_author.name,
             )
         return post
 

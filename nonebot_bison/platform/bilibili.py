@@ -1,6 +1,7 @@
 import re
 import json
 from copy import deepcopy
+from random import randint
 from enum import Enum, unique
 from typing_extensions import Self
 from datetime import datetime, timedelta
@@ -338,27 +339,8 @@ class BilibiliClient(ClientManager):
     async def _refresh_cookies(self, page: Page):
         await page.context.clear_cookies()
         await page.reload()
-        await page.goto("https://space.bilibili.com/1/dynamic")
+        await page.goto(f"https://space.bilibili.com/{randint(1, 1000)}/dynamic")
         self._cookies = await page.context.cookies()
-        self._refresh_time = datetime.now()
-
-    async def _init_session(self):
-        browser = await get_browser()
-        self._pw_page = await browser.new_page()
-        await self._refresh_cookies(self._pw_page)
-
-    async def refresh_client(self, force: bool = False):
-        if not self._pw_page:
-            await self._init_session()
-        assert self._pw_page
-
-        if force:
-            await self._pw_page.close()
-            await self._init_session()
-            await self._refresh_cookies(self._pw_page)
-        elif datetime.now() - self._refresh_time > self.cookie_expire_time:
-            await self._pw_page.reload()
-            await self._refresh_cookies(self._pw_page)
 
         for cookie in self._cookies:
             self._client.cookies.set(
@@ -367,6 +349,30 @@ class BilibiliClient(ClientManager):
                 domain=cookie.get("domain", ""),
                 path=cookie.get("path", ""),
             )
+        self._refresh_time = datetime.now()
+        logger.debug("刷新B站客户端cookies完毕")
+
+    async def _init_session(self):
+        browser = await get_browser()
+        self._pw_page = await browser.new_page()
+        logger.debug("初始化B站客户端完毕")
+
+    async def refresh_client(self, force: bool = False):
+        logger.debug("尝试刷新B站客户端")
+        if not self._pw_page:
+            logger.debug("无打开页面，初始化B站客户端")
+            await self._init_session()
+        assert self._pw_page
+
+        if force:
+            await self._pw_page.close()
+            await self._init_session()
+            await self._refresh_cookies(self._pw_page)
+            logger.debug("强制刷新B站客户端完毕")
+        elif datetime.now() - self._refresh_time > self.cookie_expire_time:
+            await self._pw_page.reload()
+            await self._refresh_cookies(self._pw_page)
+            logger.debug("刷新B站客户端完毕")
 
     async def get_client(self, target: Target | None) -> AsyncClient:
         await self._refresh_client()
@@ -447,11 +453,13 @@ class Bilibili(NewMessage):
         # -352: 需要cookie
         if res_obj.code == 0:
             if (data := res_obj.data) and (items := data.items):
+                logger.debug(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
+                logger.debug(f"用户{target}的动态列表: {':'.join(x.id_str for x in items)}")
                 return items
+            logger.debug(f"获取用户{target}的动态列表成功，但是没有动态")
             return []
         elif res_obj.code == -352:
-            await self.client.refresh_client(force=True)  # type: ignore
-            return await self.get_sub_list(target)
+            await bilibili_client.refresh_client(force=True)
         raise ApiError(res.request.url)
 
     def get_id(self, post: DynRawPost) -> str:

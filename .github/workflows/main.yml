@@ -147,7 +147,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ./docker/Dockerfile_with_frontend
           push: false
-          load: true
+          load: false
           tags: felinae98/nonebot-bison:dummy
           cache-from: type=gha
           cache-to: type=gha,mode=max

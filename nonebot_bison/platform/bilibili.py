@@ -10,7 +10,7 @@ from typing import Any, Literal, TypeVar, TypeAlias, NamedTuple
 from yarl import URL
 from httpx import AsyncClient
 from nonebot import logger, require
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, ValidationError
 from nonebot.compat import PYDANTIC_V2, ConfigDict, type_validate_json, type_validate_python
 
 from ..post import Post
@@ -117,7 +117,7 @@ class PostAPI(APIBase):
             """描述的纯文本内容"""
 
         class Dynamic(Base):
-            additional: "PostAPI.Modules.Additional"
+            additional: "PostAPI.Modules.Additional | None" = None
             desc: "PostAPI.Modules.Desc | None" = None
             """动态描述，可能为空"""
             major: "Major | UnknownMajor | None" = None
@@ -139,8 +139,14 @@ class PostAPI(APIBase):
         topic: "PostAPI.Topic | None" = None
         type: DynamicType
 
+    class DeletedItem(Base):
+        basic: "PostAPI.Basic"
+        id_str: None
+        modules: "PostAPI.Modules"
+        type: Literal["DYNAMIC_TYPE_NONE"]
+
     class Data(Base):
-        items: "list[PostAPI.Item] | None" = None
+        items: "list[PostAPI.Item | PostAPI.DeletedItem] | None" = None
 
     data: "PostAPI.Data | None" = None
 
@@ -294,6 +300,14 @@ class CoursesMajor(Base):
     courses: "CoursesMajor.Courses"
 
 
+class DeletedMajor(Base):
+    class None_(Base):
+        tips: str
+
+    type: Literal["MAJOR_TYPE_NONE"]
+    none: "DeletedMajor.None_"
+
+
 class UnknownMajor(Base):
     type: str
 
@@ -308,6 +322,7 @@ Major = (
     | OPUSMajor
     | CommonMajor
     | CoursesMajor
+    | DeletedMajor
 )
 
 DynRawPost: TypeAlias = PostAPI.Item
@@ -327,52 +342,43 @@ model_rebuild_recurse(PostAPI)
 
 class BilibiliClient(ClientManager):
     _client: AsyncClient
-    _refresh_time: datetime
+    _cookie_refresh_time: datetime
     _pw_page: Page | None = None
-    _cookies: list[Cookie] = []
-    cookie_expire_time = timedelta(hours=1)
+    cookie_expire_time = timedelta(minutes=30)
 
     def __init__(self) -> None:
         self._client = http_client()
-        self._refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
+        self._cookie_refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
 
-    async def _refresh_cookies(self, page: Page):
-        await page.context.clear_cookies()
-        await page.reload()
+    async def _get_cookies(self) -> list[Cookie]:
+        if self._pw_page:
+            await self._pw_page.close()
+        browser = await get_browser()
+        page: Page = await browser.new_page()
         await page.goto(f"https://space.bilibili.com/{randint(1, 1000)}/dynamic")
-        self._cookies = await page.context.cookies()
+        await page.wait_for_load_state("domcontentloaded")
+        cookies = await page.context.cookies()
+        self._pw_page = page
+        return cookies
 
-        for cookie in self._cookies:
+    async def _reset_client_cookies(self, cookies: list[Cookie]):
+        self._client.cookies.clear()
+        for cookie in cookies:
             self._client.cookies.set(
                 name=cookie.get("name", ""),
                 value=cookie.get("value", ""),
                 domain=cookie.get("domain", ""),
-                path=cookie.get("path", ""),
+                path=cookie.get("path", "/"),
             )
-        self._refresh_time = datetime.now()
-        logger.debug("刷新B站客户端cookies完毕")
-
-    async def _init_session(self):
-        browser = await get_browser()
-        self._pw_page = await browser.new_page()
-        logger.debug("初始化B站客户端完毕")
 
     async def refresh_client(self, force: bool = False):
-        logger.debug("尝试刷新B站客户端")
-        if not self._pw_page:
-            logger.debug("无打开页面，初始化B站客户端")
-            await self._init_session()
-        assert self._pw_page
-
-        if force:
-            await self._pw_page.close()
-            await self._init_session()
-            await self._refresh_cookies(self._pw_page)
-            logger.debug("强制刷新B站客户端完毕")
-        elif datetime.now() - self._refresh_time > self.cookie_expire_time:
-            await self._pw_page.reload()
-            await self._refresh_cookies(self._pw_page)
-            logger.debug("刷新B站客户端完毕")
+        if force or datetime.now() - self._cookie_refresh_time > self.cookie_expire_time:
+            cookies = await self._get_cookies()
+            await self._reset_client_cookies(cookies)
+            self._cookie_refresh_time = datetime.now()
+            logger.debug("刷新B站客户端的cookie")
+        else:
+            logger.debug("不需要刷新B站客户端的cookie")
 
     async def get_client(self, target: Target | None) -> AsyncClient:
         await self._refresh_client()
@@ -447,15 +453,20 @@ class Bilibili(NewMessage):
             timeout=4.0,
         )
         res.raise_for_status()
-        res_obj = type_validate_json(PostAPI, res.content)
+        try:
+            res_obj = type_validate_json(PostAPI, res.content)
+        except ValidationError as e:
+            logger.exception("解析B站动态列表失败")
+            logger.error(res.json())
+            raise ApiError(res.request.url) from e
 
         # 0: 成功
         # -352: 需要cookie
         if res_obj.code == 0:
             if (data := res_obj.data) and (items := data.items):
                 logger.debug(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
-                logger.debug(f"用户{target}的动态列表: {':'.join(x.id_str for x in items)}")
-                return items
+                logger.debug(f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
+                return [item for item in items if item.type != "DYNAMIC_TYPE_NONE"]
             logger.debug(f"获取用户{target}的动态列表成功，但是没有动态")
             return []
         elif res_obj.code == -352:

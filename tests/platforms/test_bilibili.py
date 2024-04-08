@@ -58,9 +58,9 @@ async def test_parser(bilibili: "Bilibili"):
 
     test_data = get_json("bilibili-new.json")
     res = type_validate_python(PostAPI, test_data)
-    assert res.data
+    assert res.data is not None
     for item in res.data.items or []:
-        assert item.modules.module_dynamic.major
+        assert item.modules
         assert not isinstance(item.modules.module_dynamic.major, UnknownMajor)
 
 

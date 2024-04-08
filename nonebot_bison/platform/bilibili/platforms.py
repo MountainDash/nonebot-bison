@@ -68,7 +68,7 @@ class Bilibili(NewMessage):
     async def parse_target(cls, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif re.match(r"UID:\d+", target_text):
+        elif re.match(r"UID:(\d+)", target_text):
             return Target(target_text[4:])
         elif m := re.match(r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text):
             return Target(m.group(1))

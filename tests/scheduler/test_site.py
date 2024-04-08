@@ -60,7 +60,7 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BililiveSchedConf
+    from nonebot_bison.platform.bilibili.scheduler import BililiveSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])

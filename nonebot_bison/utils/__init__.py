@@ -98,3 +98,13 @@ def text_similarity(str1: str, str2: str) -> float:
     matcher = difflib.SequenceMatcher(None, str1, str2)
     t = sum(temp.size for temp in matcher.get_matching_blocks())
     return t / min(len(str1), len(str2))
+
+
+def decode_escapes(s: str):
+    """解码 \\r, \\n, \\t, \\uXXXX 等转义序列"""
+
+    def decode_match(match: re.Match[str]) -> str:
+        return bytes(match.group(0), "utf-8").decode("unicode_escape")
+
+    regex = re.compile(r"\\[rnt]|\\u[0-9a-fA-F]{4}")
+    return regex.sub(decode_match, s)

@@ -13,7 +13,7 @@ from nonebot.compat import type_validate_json, type_validate_python
 
 from nonebot_bison.post.post import Post
 from nonebot_bison.compat import model_rebuild
-from nonebot_bison.utils import text_similarity
+from nonebot_bison.utils import decode_escapes, text_similarity
 from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
 
 from .scheduler import BilibiliSchedConf, BililiveSchedConf, bilibili_client
@@ -158,13 +158,13 @@ class Bilibili(NewMessage):
         # 计算视频标题和视频描述相似度
         title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
         if title_similarity > 0.9:
-            desc = desc[len(title) :]
+            desc = desc[len(title) :].lstrip()
         # 计算视频描述和动态描述相似度
         content_similarity = 0.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
         if content_similarity > 0.8:
-            return _ProcessedText(title, dynamic if len(dynamic) < len(desc) else desc)
+            return _ProcessedText(title, desc if len(dynamic) < len(desc) else dynamic)  # 选择较长的描述
         else:
-            return _ProcessedText(title, f"{desc}\n=================\n{dynamic}")
+            return _ProcessedText(title, f"{desc}" + (f"\n=================\n{dynamic}" if dynamic else ""))
 
     def _major_parser(self, raw_post: DynRawPost):
         class ParsedPost(NamedTuple):
@@ -269,7 +269,7 @@ class Bilibili(NewMessage):
 
         post = Post(
             self,
-            content=parsed_raw_post.content.replace("\\n", "\n"),
+            content=decode_escapes(parsed_raw_post.content),
             title=parsed_raw_post.title,
             images=list(parsed_raw_post.pics),
             timestamp=self.get_date(raw_post),
@@ -282,7 +282,7 @@ class Bilibili(NewMessage):
             assert orig
             post.repost = Post(
                 self,
-                content=parsed_raw_repost.content.replace("\\n", "\n"),
+                content=decode_escapes(parsed_raw_repost.content),
                 title=parsed_raw_repost.title,
                 images=list(parsed_raw_repost.pics),
                 timestamp=self.get_date(orig),

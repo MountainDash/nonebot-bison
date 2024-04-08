@@ -74,6 +74,22 @@ async def test_get_tag(bilibili: "Bilibili", bing_dy_list):
     assert set(res1) == {"明日方舟", "123罗德岛！？"}
 
 
+async def test_dynamic_video(bilibili: "Bilibili", bing_dy_list: list):
+    from nonebot_bison.post import Post
+
+    post: Post = await bilibili.parse(bing_dy_list[8])
+
+    assert post.title == "《明日方舟》SideStory「巴别塔」活动宣传PV"
+    assert post.content == (
+        "SideStory「巴别塔」限时活动即将开启\r\n\r\n"
+        "追逐未来的道路上，\r\n"
+        "两种同样伟大的理想对撞，几场同样壮烈的悲剧上演。\r\n\r\n"
+        "———————————— \r\n"
+        "详细活动内容敬请关注《明日方舟》官网及游戏内相关公告。"
+    )
+    assert post.url == "https://www.bilibili.com/video/BV1Jp421y72e/"
+
+
 async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
     from nonebot_bison.post import Post
 
@@ -90,9 +106,9 @@ async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
         "https://m.damai.cn/shows/item.html?itemId=778626949623\n\n"
         "【活动地点】\n\n"
         "上海久事体育旗忠网球中心主场馆（上海市闵行区元江路5500弄）\n\n"
-        "【活动时间】\n\n「不觅浪尘-日场」：5月1日-5月2日\\u0026"
+        "【活动时间】\n\n「不觅浪尘-日场」：5月1日-5月2日\u0026"
         "5月4日-5月5日 13:00\n\n"
-        "「不觅浪尘-夜场」：5月1日-5月2日\\u00265月4日-5月5日 18:30\n\n"
+        "「不觅浪尘-夜场」：5月1日-5月2日\u00265月4日-5月5日 18:30\n\n"
         "【温馨提醒】\n\n"
         "*「2024明日方舟音律联觉-不觅浪尘」演出共计4天，每天有日场和夜场各1场演出，共计8场次，每场演出为相同内容。\n\n"
         "*「2024明日方舟音律联觉-不觅浪尘」演出全部录播内容后续将于bilibili独家上线，敬请期待。\n\n"
@@ -187,3 +203,43 @@ async def test_parse_target(bilibili: "Bilibili"):
     assert res2 == "161775300"
     with pytest.raises(Platform.ParseTargetException):
         await bilibili.parse_target("https://www.bilibili.com/video/BV1qP4y1g738?spm_id_from=333.999.0.0")
+
+    res3 = await bilibili.parse_target("10086")
+    assert res3 == "10086"
+
+    res4 = await bilibili.parse_target("UID:161775300")
+    assert res4 == "161775300"
+
+
+async def test_content_process(bilibili: "Bilibili"):
+    res = bilibili._text_process(
+        title="「2024明日方舟音律联觉-不觅浪尘」先导预告公开",
+        desc=(
+            "「2024明日方舟音律联觉-不觅浪尘」先导预告公开\n\n"
+            "“苦难往往相似，邪恶反倒驳杂。”\n"
+            "“点火者远去了，但火还在燃烧。”\n"
+            "“没有某种能量和激励，也没有某种责任甚至注定牺牲的命运。”\n"
+            "“欢迎回家，博士。”\n\n"
+            "活动详情及票务信息将于近期发布，请持续关注@明日方舟 。"
+        ),
+        dynamic="投稿了视频",
+    )
+
+    assert res.title == "「2024明日方舟音律联觉-不觅浪尘」先导预告公开"
+    assert res.content == (
+        "“苦难往往相似，邪恶反倒驳杂。”\n"
+        "“点火者远去了，但火还在燃烧。”\n"
+        "“没有某种能量和激励，也没有某种责任甚至注定牺牲的命运。”\n"
+        "“欢迎回家，博士。”\n\n"
+        "活动详情及票务信息将于近期发布，请持续关注@明日方舟 。\n"
+        "=================\n"
+        "投稿了视频"
+    )
+
+    res2 = bilibili._text_process(
+        title="111",
+        desc="222",
+        dynamic="2222",
+    )
+    assert res2.title == "111"
+    assert res2.content == "2222"

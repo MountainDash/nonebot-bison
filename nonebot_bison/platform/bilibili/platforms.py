@@ -248,21 +248,28 @@ class Bilibili(NewMessage):
                 )
             case UnknownMajor(type=unknown_type):
                 raise CategoryNotSupport(unknown_type)
+            case None:  # 没有major的情况
+                return ParsedPost(
+                    title="",
+                    content=get_desc_text(),
+                    pics=[],
+                    url=make_common_dynamic_url(),
+                )
             case _:
                 raise CategoryNotSupport(f"{raw_post.id_str=}")
 
     async def parse(self, raw_post: DynRawPost) -> Post:
         parsed_raw_post = self._major_parser(raw_post)
+        parsed_raw_repost = None
         if self._do_get_category(raw_post.type) == Category(5):
             if raw_post.orig:
                 parsed_raw_repost = self._major_parser(raw_post.orig)
             else:
                 logger.warning(f"转发动态{raw_post.id_str}没有原动态")
-                parsed_raw_repost = None
 
         post = Post(
             self,
-            content=parsed_raw_post.content,
+            content=parsed_raw_post.content.replace("\\n", "\n"),
             title=parsed_raw_post.title,
             images=list(parsed_raw_post.pics),
             timestamp=self.get_date(raw_post),
@@ -275,7 +282,7 @@ class Bilibili(NewMessage):
             assert orig
             post.repost = Post(
                 self,
-                content=parsed_raw_repost.content,
+                content=parsed_raw_repost.content.replace("\\n", "\n"),
                 title=parsed_raw_repost.title,
                 images=list(parsed_raw_repost.pics),
                 timestamp=self.get_date(orig),

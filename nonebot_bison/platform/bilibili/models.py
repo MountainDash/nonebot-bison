@@ -102,7 +102,7 @@ class PostAPI(APIBase):
             additional: "PostAPI.Modules.Additional | None" = None
             desc: "PostAPI.Modules.Desc | None" = None
             """动态描述，可能为空"""
-            major: "Major | UnknownMajor | None" = None
+            major: "Major | None" = None
             """主要内容，可能为空"""
 
         module_author: "PostAPI.Modules.Author"
@@ -193,7 +193,7 @@ class DrawMajor(Base):
     class Item(Base):
         width: int
         height: int
-        size: int
+        size: float
         """文件大小，KiB（1024）"""
         src: str
         """图片链接"""
@@ -305,6 +305,7 @@ Major = (
     | CommonMajor
     | CoursesMajor
     | DeletedMajor
+    | UnknownMajor
 )
 
 DynRawPost: TypeAlias = PostAPI.Item

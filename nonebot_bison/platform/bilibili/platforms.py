@@ -1,13 +1,16 @@
 import re
 import json
 from copy import deepcopy
+from functools import wraps
 from enum import Enum, unique
 from typing import NamedTuple
 from typing_extensions import Self
+from collections.abc import Callable, Awaitable
 
 from yarl import URL
 from nonebot import logger
 from httpx import AsyncClient
+from httpx import URL as HttpxURL
 from pydantic import Field, BaseModel, ValidationError
 from nonebot.compat import type_validate_json, type_validate_python
 
@@ -34,6 +37,36 @@ from .models import (
     UnknownMajor,
     LiveRecommendMajor,
 )
+
+
+class ApiCode352Error(Exception):
+    def __init__(self, url: HttpxURL) -> None:
+        msg = f"api {url} error"
+        super().__init__(msg)
+
+
+def retry_for_352(func: Callable[..., Awaitable[list[DynRawPost]]]):
+    retried_times = 0
+
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        nonlocal retried_times
+        try:
+            res = await func(*args, **kwargs)
+        except ApiCode352Error as e:
+            if retried_times < 3:
+                retried_times += 1
+                logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/3")
+                await bilibili_client.refresh_client()
+                logger.success("已尝试刷新cookie")
+                return []  # 返回空列表
+            else:
+                raise ApiError(e.args[0])
+        else:
+            retried_times = 0
+            return res
+
+    return wrapper
 
 
 class Bilibili(NewMessage):
@@ -77,6 +110,7 @@ class Bilibili(NewMessage):
                 prompt="正确格式:\n1. 用户纯数字id\n2. UID:<用户id>\n3. 用户主页链接: https://space.bilibili.com/xxxx"
             )
 
+    @retry_for_352
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
         client = await self.ctx.get_client()
         params = {"host_uid": target, "offset": 0, "need_top": 0}
@@ -100,11 +134,13 @@ class Bilibili(NewMessage):
                 logger.debug(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
                 logger.debug(f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
                 return [item for item in items if item.type != "DYNAMIC_TYPE_NONE"]
+
             logger.debug(f"获取用户{target}的动态列表成功，但是没有动态")
             return []
         elif res_obj.code == -352:
-            await bilibili_client.refresh_client(force=True)
-        raise ApiError(res.request.url)
+            raise ApiCode352Error(res.request.url)
+        else:
+            raise ApiError(res.request.url)
 
     def get_id(self, post: DynRawPost) -> str:
         return post.id_str

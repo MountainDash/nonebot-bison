@@ -23,8 +23,8 @@ class Theme(ABC, BaseModel):
 
     async def is_support_render(self, post: "AbstractPost") -> bool:
         """是否支持渲染该类型的Post"""
-        if self.need_browser and not plugin_config.bison_theme_use_browser:
-            logger.warning(f"Theme {self.name} need browser, but `bison_theme_use_browser` is False")
+        if self.need_browser and not plugin_config.bison_use_browser:
+            logger.warning(f"Theme {self.name} need browser, but `bison_use_browser` is False")
             return False
         return True
 

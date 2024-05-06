@@ -188,7 +188,7 @@ async def test_generate_msg(mock_platform):
     res1 = await post.generate()
     assert isinstance(res1[0], Image)
 
-    plugin_config.bison_theme_use_browser = False
+    plugin_config.bison_use_browser = False
 
     res3 = await post.generate()
     assert res3[0]

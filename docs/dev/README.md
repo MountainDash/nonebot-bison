@@ -300,7 +300,7 @@ RawPost 通过`Platform.parse`函数处理成 Post，然后通过`Theme.render`�
 
 Bison 在启动时会尝试注册所有在`nonebot_bison/theme/themes`下的主题，如果你的主题在这个目录下，并指定了 `__theme_meta__`，那么它会被自动注册。
 
-若配置项`BISON_THEME_USE_BROWSER=false`，则在注册的主题需要浏览器渲染，即`need_browser`字段为`True`时，会发出注册警告
+若配置项`BISON_USE_BROWSER=false`，则在注册的主题需要浏览器渲染，即`need_browser`字段为`True`时，会发出注册警告
 
 同时，你也可以手动调用`nonebot_bison.theme.theme_manager.register`来注册主题
 

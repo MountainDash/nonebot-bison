@@ -11,7 +11,7 @@ class ThemeManager:
         logger.trace(f"Registering theme: {theme}")
         if theme.name in self.__themes:
             raise ThemeRegistrationError(f"Theme {theme.name} duplicated registration")
-        if theme.need_browser and not plugin_config.bison_theme_use_browser:
+        if theme.need_browser and not plugin_config.bison_use_browser:
             logger.opt(colors=True).warning(f"Theme <b><u>{theme.name}</u></b> requires browser, but not allowed")
         self.__themes[theme.name] = theme
         logger.opt(colors=True).success(f"Theme <b><u>{theme.name}</u></b> registered")

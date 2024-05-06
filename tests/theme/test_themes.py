@@ -122,7 +122,7 @@ async def test_theme_need_browser(app: App, mock_post):
 async def test_theme_no_enable_use_browser(app: App, mock_post):
     from nonebot_bison.plugin_config import plugin_config
 
-    plugin_config.bison_theme_use_browser = False
+    plugin_config.bison_use_browser = False
 
     from nonebot_bison.theme import Theme, ThemeRenderUnsupportError, theme_manager
 
@@ -140,7 +140,7 @@ async def test_theme_no_enable_use_browser(app: App, mock_post):
         await theme.do_render(mock_post)
 
     theme_manager.unregister(theme.name)
-    plugin_config.bison_theme_use_browser = True
+    plugin_config.bison_use_browser = True
 
 
 @pytest.mark.asyncio

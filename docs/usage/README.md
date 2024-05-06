@@ -83,7 +83,7 @@ next: /usage/easy-use
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
 - `BISON_UA`: 使用的 User-Agent，默认为 Chrome
 - `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认为`True`
-- `BISON_THEME_USE_BROWSER`: 是否使用浏览器渲染主题，某些主题可能需要浏览器渲染 (htmlrender)，默认为`False`
+- `BISON_USE_BROWSER`: 环境中是否存在浏览器，某些主题或者平台需要浏览器，默认为`False`
 - `BISON_PLATFORM_THEME`: 为[平台](#平台)指定渲染用[主题](#主题)，用于渲染推送消息，默认为`{}`
   ::: details BISON_PLATFORM_THEME 配置项示例
 

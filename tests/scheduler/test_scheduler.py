@@ -172,3 +172,64 @@ async def test_schedule_delete(init_scheduler):
     await config.del_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "bilibili")
     stat_res = await get_schedule_times(BilibiliSchedConf, 2)
     assert stat_res["bilibili-t2"] == 2
+
+
+async def test_scheduler_skip_browser(mocker: MockerFixture):
+    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.scheduler.scheduler import SchedulerConfig
+    from nonebot_bison.scheduler import init_scheduler, scheduler_dict
+
+    mocker.patch.object(plugin_config, "bison_use_browser", False)
+
+    class MockPlatformSchedConf(SchedulerConfig):
+        name = "mock"
+        schedule_type = "interval"
+        schedule_setting = {"seconds": 100}
+        require_browser = True
+
+    class MockPlatform(NewMessage):
+        platform_name = "mock_platform"
+        name = "Mock Platform"
+        enabled = True
+        is_common = True
+        enable_tag = True
+        has_target = True
+        scheduler = MockPlatformSchedConf
+
+    mocker.patch.dict(platform_manager, {"mock_platform": MockPlatform})
+
+    await init_scheduler()
+
+    assert MockPlatformSchedConf not in scheduler_dict.keys()
+
+
+async def test_scheduler_no_skip_not_require_browser(mocker: MockerFixture):
+    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.scheduler.scheduler import SchedulerConfig
+    from nonebot_bison.scheduler import init_scheduler, scheduler_dict
+
+    mocker.patch.object(plugin_config, "bison_use_browser", False)
+
+    class MockPlatformSchedConf(SchedulerConfig):
+        name = "mock"
+        schedule_type = "interval"
+        schedule_setting = {"seconds": 100}
+
+    class MockPlatform(NewMessage):
+        platform_name = "mock_platform"
+        name = "Mock Platform"
+        enabled = True
+        is_common = True
+        enable_tag = True
+        has_target = True
+        scheduler = MockPlatformSchedConf
+
+    mocker.patch.dict(platform_manager, {"mock_platform": MockPlatform})
+
+    await init_scheduler()
+
+    assert MockPlatformSchedConf in scheduler_dict.keys()

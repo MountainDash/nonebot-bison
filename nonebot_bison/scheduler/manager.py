@@ -1,9 +1,12 @@
+from nonebot.log import logger
+
 from ..config import config
 from .scheduler import Scheduler
 from ..utils import SchedulerConfig
 from ..config.db_model import Target
 from ..types import Target as T_Target
 from ..platform import platform_manager
+from ..plugin_config import plugin_config
 
 scheduler_dict: dict[type[SchedulerConfig], Scheduler] = {}
 
@@ -27,6 +30,10 @@ async def init_scheduler():
         else:
             _schedule_class_platform_dict[scheduler_config].append(platform_name)
     for scheduler_config, target_list in _schedule_class_dict.items():
+        if not plugin_config.bison_use_browser and scheduler_config.require_browser:
+            logger.warning(f"{scheduler_config.name} requires browser, it will not schedule.")
+            continue
+
         schedulable_args = []
         for target in target_list:
             schedulable_args.append(

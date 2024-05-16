@@ -408,7 +408,10 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         )
         ctx.receive_event(bot, event_4_err1)
         ctx.should_call_send(
-            event_4_err1, BotReply.add_reply_on_target_parse_input_error + "\n无法从链接中解析出用户id", True
+            event_4_err1,
+            BotReply.add_reply_on_target_parse_input_error
+            + "\n正确格式:\n1. 用户纯数字id\n2. UID:<用户id>\n3. 用户主页链接: https://space.bilibili.com/xxxx",
+            True,
         )
         ctx.should_rejected()
 
@@ -420,7 +423,10 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
         )
         ctx.receive_event(bot, event_4_err1)
         ctx.should_call_send(
-            event_4_err1, BotReply.add_reply_on_target_parse_input_error + "\n无法从链接中解析出用户id", True
+            event_4_err1,
+            BotReply.add_reply_on_target_parse_input_error
+            + "\n正确格式:\n1. 用户纯数字id\n2. UID:<用户id>\n3. 用户主页链接: https://space.bilibili.com/xxxx",
+            True,
         )
         ctx.should_rejected()
 

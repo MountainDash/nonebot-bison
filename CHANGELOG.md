@@ -6,6 +6,7 @@
 
 ### 新功能
 
+- ParseTargetException可以携带prompt参数 [@AzideCupric](https://github.com/AzideCupric) ([#479](https://github.com/MountainDash/nonebot-bison/pull/479))
 - 为 scheduler config 添加 require_browser 属性 [@felinae98](https://github.com/felinae98) ([#542](https://github.com/MountainDash/nonebot-bison/pull/542))
 - 将 bison_theme_use_browser 更名为 bison_use_browser  [@felinae98](https://github.com/felinae98) ([#540](https://github.com/MountainDash/nonebot-bison/pull/540))
 

@@ -188,10 +188,14 @@ class Bilibili(NewMessage):
     async def parse_target(cls, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
+        elif re.match(r"UID:\d+", target_text):
+            return Target(target_text[4:])
         elif m := re.match(r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text):
             return Target(m.group(1))
         else:
-            raise cls.ParseTargetException()
+            raise cls.ParseTargetException(
+                prompt="正确格式:\n1. 用户纯数字id\n2. UID:<用户id>\n3. 用户主页链接: https://space.bilibili.com/xxxx"
+            )
 
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
         params = {"host_uid": target, "offset": 0, "need_top": 0}
@@ -511,7 +515,9 @@ class BilibiliBangumi(StatusChange):
             return Target(m[1])
         elif m := re.match(r"(?:https?://)?www\.bilibili\.com/bangumi/media/md(\d+)", target_string):
             return Target(m[1])
-        raise cls.ParseTargetException()
+        raise cls.ParseTargetException(
+            prompt="正确格式:\n1. 剧集id\n2. 剧集主页链接 https://www.bilibili.com/bangumi/media/mdxxxx"
+        )
 
     async def get_status(self, target: Target):
         res = await self.client.get(

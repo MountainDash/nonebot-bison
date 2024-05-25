@@ -4,8 +4,8 @@ from typing import Any
 from functools import partial
 
 from nonebot.log import logger
-from pydantic import BaseModel
-from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
+from pydantic import Field, BaseModel
+from nonebot_plugin_saa.registries import PlatformTarget
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_json, type_validate_python
 
 from ..utils import NBESFParseErr
@@ -52,7 +52,7 @@ class SubPack(BaseModel):
     """Bison给指定用户派送的快递包"""
 
     # user_target: Bison快递包收货信息
-    user_target: AllSupportedPlatformTarget
+    user_target: PlatformTarget
     subs: list[SubPayload]
 
 
@@ -64,7 +64,7 @@ class SubGroup(NBESFBase):
     """
 
     version: int = NBESF_VERSION
-    groups: list[SubPack]
+    groups: list[SubPack] = Field(default_factory=list, description="订阅分组")
 
 
 # ======================= #

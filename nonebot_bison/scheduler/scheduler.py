@@ -39,7 +39,7 @@ class Scheduler:
         self.scheduler_config_obj = self.scheduler_config()
 
         self.schedulable_list = []
-        self.batch_platform_name_targets_cache: dict[str, list[Target]] = defaultdict(list)
+        self.batch_platform_name_targets_cache = defaultdict(list)
         for platform_name, target, use_batch in schedulables:
             if use_batch:
                 self.batch_platform_name_targets_cache[platform_name].append(target)

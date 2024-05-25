@@ -68,9 +68,7 @@ async def do_choose_group_number(state: T_State, event: PrivateMessageEvent, gro
     idx = int(group_idx)
     if idx not in group_number_idx.keys():
         await group_manage_matcher.reject("请输入正确序号")
-    state["group_idx"] = idx
-    group_number_idx: dict[int, int] = state["group_number_idx"]
-    idx: int = state["group_idx"]
+
     group_id = group_number_idx[idx]
     state["target_user_info"] = TargetQQGroup(group_id=group_id)
 

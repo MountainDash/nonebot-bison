@@ -4,7 +4,7 @@ from typing import Any
 from functools import partial
 
 from nonebot.log import logger
-from pydantic import BaseModel
+from pydantic import Field, BaseModel
 from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_json, type_validate_python
 
@@ -79,7 +79,7 @@ class SubGroup(
     """
 
     version: int = NBESF_VERSION
-    groups: list[SubPack]
+    groups: list[SubPack] = Field(default_factory=list, description="订阅分组")
 
 
 # ======================= #

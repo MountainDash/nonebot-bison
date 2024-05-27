@@ -134,15 +134,11 @@ async def capture_html(
     require("nonebot_plugin_htmlrender")
     from nonebot_plugin_htmlrender import get_new_page
 
-    try:
-        assert url
-        async with get_new_page(device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs) as page:
-            await page.goto(url, timeout=timeout, wait_until=wait_until)
-            pic_data = await page.locator(selector).screenshot(
-                type=type,
-                quality=quality,
-            )
-            return pic_data
-    except Exception:
-        logger.exception("渲染错误")
-        return
+    assert url
+    async with get_new_page(device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs) as page:
+        await page.goto(url, timeout=timeout, wait_until=wait_until)
+        pic_data = await page.locator(selector).screenshot(
+            type=type,
+            quality=quality,
+        )
+        return pic_data

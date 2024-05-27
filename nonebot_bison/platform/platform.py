@@ -414,13 +414,13 @@ class SimplePost(NewMessage, abstract=True):
 
     async def _handle_new_post(
         self,
-        new_posts: list[RawPost],
+        post_list: list[RawPost],
         sub_unit: SubUnit,
     ) -> list[tuple[PlatformTarget, list[Post]]]:
-        if not new_posts:
+        if not post_list:
             return []
         else:
-            for post in new_posts:
+            for post in post_list:
                 logger.info(
                     "fetch new post from {} {}: {}".format(
                         self.platform_name,
@@ -428,7 +428,7 @@ class SimplePost(NewMessage, abstract=True):
                         self.get_id(post),
                     )
                 )
-        res = await self.dispatch_user_post(new_posts, sub_unit)
+        res = await self.dispatch_user_post(post_list, sub_unit)
         self.parse_cache = {}
         return res
 

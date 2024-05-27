@@ -78,6 +78,39 @@ async def test_parse_retweet(app: App):
     assert cookie_with_retweet.data.cookies[0].item.retweeted
 
 
+@pytest.mark.render()
+async def test_ceobe_snapshot(app: App, ceobecanteen: "CeobeCanteen"):
+    from nonebot_bison.platform.ceobecanteen.models import CeobeCookie
+
+    sp_coolies = get_json("ceobe_special_cookies.json")
+
+    # arknights-game:bulletin-list but not need to snapshot
+    cookie_bulletin_type2 = type_validate_python(CeobeCookie, sp_coolies[0])
+    assert cookie_bulletin_type2.source.type == "arknights-game:bulletin-list"
+    post = await ceobecanteen.parse(cookie_bulletin_type2)
+    assert post.images
+    assert len(post.images) == 1
+    assert post.content == "【联合行动】\n定向寻访开启"
+
+    cookie_bulletin_type1 = type_validate_python(CeobeCookie, sp_coolies[1])
+    post2 = await ceobecanteen.parse(cookie_bulletin_type1)
+    assert post2.images
+    assert len(post2.images) == 1
+    assert not post2.content
+
+    cookie_offical = type_validate_python(CeobeCookie, sp_coolies[2])
+    post3 = await ceobecanteen.parse(cookie_offical)
+    assert post3.images
+    assert len(post3.images) == 1
+    assert not post3.content
+
+    cookie_common = type_validate_python(CeobeCookie, sp_coolies[3])
+    post4 = await ceobecanteen.parse(cookie_common)
+    assert post4.images
+    assert len(post4.images) == 7
+    assert post4.content
+
+
 @pytest.mark.skip("极限测试, 不在CI中运行")
 @pytest.mark.asyncio()
 async def test_parse_crazy(app: App, ceobecanteen):
@@ -99,21 +132,6 @@ async def test_parse_crazy(app: App, ceobecanteen):
         return d
 
     assert isinstance(ceobecanteen, CeobeCanteen)
-
-    sp_coolies = get_json("ceobe_special_cookies.json")
-
-    cookie_bulletin_type2 = type_validate_python(CeobeCookie, sp_coolies[0])
-    assert cookie_bulletin_type2.source.type == "arknights-game:bulletin-list"
-    post = await ceobecanteen.parse(cookie_bulletin_type2)
-    show(ext((await post.generate_messages())[0][0]))  # type: ignore
-
-    cookie_bulletin_type1 = type_validate_python(CeobeCookie, sp_coolies[1])
-    post2 = await ceobecanteen.parse(cookie_bulletin_type1)
-    show(ext((await post2.generate_messages())[0][0]))  # type: ignore
-
-    cookie_offical = type_validate_python(CeobeCookie, sp_coolies[2])
-    post3 = await ceobecanteen.parse(cookie_offical)
-    show(ext((await post3.generate_messages())[0][0]))  # type: ignore
 
     cookie_offical = type_validate_python(CeobeCookie, get_json("ceobe_looooong_bulletin.json"))
     post4 = await ceobecanteen.parse(cookie_offical)

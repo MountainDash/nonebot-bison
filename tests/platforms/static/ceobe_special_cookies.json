@@ -124,5 +124,58 @@
       "type": "arknights-website:official-website",
       "data": "-"
     }
+  },
+  {
+    "datasource": "明日方舟-B站",
+    "icon": "https://cdn.ceobecanteen.top/datasource-avatar/af174f25-1beb-41cd-a4de-2c3aadae9666",
+    "timestamp": {
+      "platform": 1698141633000,
+      "platform_precision": "second",
+      "fetcher": 1698141802505
+    },
+    "default_cookie": {
+      "text": "【采购凭证区-新增干员】\n//折光\n“左手或右手的名片，请问您要哪一张？......宝石鉴定师，折光，很高兴认识您。别担心，选到另一张的话，您这里也没有值得我下手的对象。”\n\n__________________\n两名贵族侍从在宝石鉴定所的工作台前窃窃私语。唱片在留声机上旋转着，乐声恰到好处地盖过了他们的谈话声，也盖过了砂盘打磨宝石的单调噪音。\n如果是在几个月以前，他们会就各自带来的古董珠宝高谈阔论——纹饰的象征，数百年历史留下的痕迹，自己效忠的贵族那悠久高贵的血脉——而非如此小心谨慎地说起，该如何伪装一枚宝石，才能保证不被那位大盗“折光”盯上。他们声称见过大盗本人带着宝石一起从高塔上坠下又消失不见，而后义愤填膺：怎能让莱塔尼亚格调优雅的精粹轻易消失？怎能容忍一个疯子将历史抛进夜幕？\n工作台后的宝石鉴定师始终专注地做着自己手上的工作，对他们的议论充耳不闻。两名侍从对他的懂事十分满意，在谈话告一段落后，不吝用自己的华丽辞藻赞誉鉴定师手中的宝石。\n“这宝石如此灿烂辉煌，是哪位尊敬的大人托你打造？”\n宝石鉴定师终于抬起头，表情困惑无比。\n“不，这只是一块玻璃碎片，我自己随便磨着玩的。两位聊完了的话，请说说来这家小小的鉴定所是有何吩咐吧。”",
+      "images": [
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/f69f2d2570c828955130b1d77c2dc047161775300.png",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/8d9c849b7a4fed9c8979014a507e26fa161775300.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/67c2bc7661c4db3d5bbe812c69978134161775300.png",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/6c0a5a7a50ac84454ffd4d72a6f77f7b161775300.gif",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/b77f74f545dba41e473bb5e544f7ed80161775300.gif",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/14d5dae139477c4e8a8f54272ff26407161775300.gif",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/518b982b56d934b6e4ffb91a6ec71f35161775300.gif",
+          "compress_url": null
+        }
+      ]
+    },
+    "item": {
+      "id": "856000867726262307",
+      "url": "https://t.bilibili.com/856000867726262307",
+      "type": "DYNAMIC_TYPE_DRAW",
+      "is_top": false,
+      "is_retweeted": false
+    },
+    "source": {
+      "type": "bilibili:dynamic-by-uid",
+      "data": "161775300"
+    }
   }
 ]

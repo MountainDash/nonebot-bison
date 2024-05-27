@@ -1,6 +1,11 @@
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, NamedTuple
 
 from pydantic import BaseModel
+
+
+class CeobeTextPic(NamedTuple):
+    text: str
+    pics: list[bytes | str]
 
 
 class CeobeTarget(BaseModel):

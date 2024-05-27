@@ -1,17 +1,22 @@
-import traceback
 from datetime import timedelta
+from typing import Any, ParamSpec
+from collections.abc import Callable, Coroutine
 
-from yarl import URL
 from nonebot import logger, require
 
-from ...post import Post
+from nonebot_bison.post import Post
+from nonebot_bison.plugin_config import plugin_config
+from nonebot_bison.types import Target, RawPost, Category
+from nonebot_bison.utils import SchedulerConfig, capture_html
+
 from ..platform import NewMessage
 from .utils import process_response
-from ...types import Target, RawPost, Category
-from ...utils import SchedulerConfig, capture_html
 from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
+from .exception import CeobeSnapshotSkip, CeobeSnapshotFailed
 from .cache import CeobeCache, CeobeClient, CeobeDataSourceCache
-from .models import CeobeImage, CeobeCookie, CombIdResponse, CookiesResponse, CookieIdResponse
+from .models import CeobeImage, CeobeCookie, CeobeTextPic, CombIdResponse, CookiesResponse, CookieIdResponse
+
+P = ParamSpec("P")
 
 
 class CeobeCanteenSchedConf(SchedulerConfig):
@@ -149,46 +154,38 @@ class CeobeCanteen(NewMessage):
         return post.timestamp.fetcher
 
     async def parse(self, raw_post: CeobeCookie) -> Post:
-        raw_pics = raw_post.default_cookie.images or []
         target = await self.data_source_cache.get_by_source(raw_post.source)
         assert target, "target not found"
 
         match raw_post.source.type:
             case "arknights-website:official-website":
-                content = ""
-                pics = [
-                    (
-                        URL.build(
-                            scheme="snapshot",
-                        )
-                        % {
-                            "source": raw_post.item.url,
-                            "selector": "body > div.article-page > div.layout > div.layoutContent > div",
-                            "width": 1024,
-                            "height": 19990,
-                            "device_scale_factor": 2,
-                        }
-                    ).human_repr()
-                ]
+
+                async def owss(url: str) -> CeobeTextPic:
+                    return CeobeTextPic(text="", pics=[await self.snapshot_official_website(url)])
+
+                content, pics = await self.ceobecanteen_snapshot(
+                    raw_post,
+                    owss,
+                    raw_post.item.url,
+                )
+
             case "arknights-game:bulletin-list" if raw_post.item.display_type != 2:
-                content = ""
-                pics = [
-                    (
-                        URL.build(
-                            scheme="snapshot",
-                        )
-                        % {
-                            "source": raw_post.item.url,
-                            "selector": "body > div.main > div.container",
-                            "width": 1024,
-                            "height": 19990,
-                            "device_scale_factor": 2,
-                        }
-                    ).human_repr()
-                ]
+
+                async def blss(url: str) -> CeobeTextPic:
+                    return CeobeTextPic(text="", pics=[await self.snapshot_bulletin_list(url)])
+
+                content, pics = await self.ceobecanteen_snapshot(
+                    raw_post,
+                    blss,
+                    raw_post.item.url,
+                )
+
             case _:
-                pics = await self.handle_images_list(raw_pics, raw_post.source.type)
-                content = raw_post.default_cookie.text
+
+                async def npss() -> CeobeTextPic:
+                    raise CeobeSnapshotSkip("无需截图的数据源")
+
+                content, pics = await self.ceobecanteen_snapshot(raw_post, npss)
 
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
         if timestamp:
@@ -219,39 +216,85 @@ class CeobeCanteen(NewMessage):
             repost=retweet,
         )
 
-    async def ceobecanteen_snapshot(
-        self,
-        url: str,
-        selector: str,
-        device_scale_factor: int = 2,
-        viewport: dict = {"width": 1024, "height": 512},
-    ) -> list[bytes]:
-        """
-        将给定的url网页的指定CSS选择器部分渲染成图片
-        """
+    async def snapshot_official_website(self, url: str) -> bytes:
         require("nonebot_plugin_htmlrender")
-        from nonebot_plugin_htmlrender import text_to_pic
+        from nonebot_plugin_htmlrender import get_new_page
+
+        logger.debug(f"snapshot official website url: {url}")
+
+        # /html/body/div[1]/div[1]/div/div[1]/div[1]/div
+        snapshot_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div"  # noqa: E501
+        # /html/body/div[1]/div[1]/div/div[1]/div[1]/div/div[4]/div/div/div
+        calculate_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(4) > div > div > div"  # noqa: E501
+        viewport = {"width": 1024, "height": 19990}
 
         try:
-            assert url
+            async with get_new_page(viewport=viewport) as page:
+                await page.goto(url, wait_until="networkidle")
+                element_width = await page.evaluate(
+                    "(selector) => document.querySelector(selector).offsetWidth", calculate_selector
+                )
+                logger.debug(f"element width: {element_width}")
+                element_height = await page.evaluate(
+                    "(selector) => document.querySelector(selector).offsetHeight", calculate_selector
+                )
+                logger.debug(f"element height: {element_height}")
+                element_height += 1000
+
+                await page.set_viewport_size({"width": 1024, "height": element_height})
+
+                element = await page.locator(snapshot_selector).element_handle()
+                # add padding to make the screenshot more beautiful
+                await element.evaluate("(element) => {element.style.padding = '20px';}", element)
+
+                pic_data = await element.screenshot(
+                    type="png",
+                )
+        except Exception as e:
+            raise CeobeSnapshotFailed("渲染错误") from e
+        else:
+            return pic_data
+
+    async def snapshot_bulletin_list(self, url: str) -> bytes:
+        selector = "body > div.main > div.container"
+        viewport = {"width": 1024, "height": 19990}
+
+        try:
             pic_data = await capture_html(
                 url,
                 selector,
                 timeout=30000,
                 wait_until="networkidle",
                 viewport=viewport,
-                device_scale_factor=device_scale_factor,
             )
             assert pic_data
         except Exception:
-            err_info = traceback.format_exc()
-            logger.warning(f"渲染错误：{err_info}")
-
-            err_pic0 = await text_to_pic("错误发生！")
-            err_pic1 = await text_to_pic(err_info)
-            return [err_pic0, err_pic1]
+            raise CeobeSnapshotFailed("渲染错误")
         else:
-            return [pic_data]
+            return pic_data
+
+    async def ceobecanteen_snapshot(
+        self,
+        raw_post: CeobeCookie,
+        snapshot_func: Callable[P, Coroutine[Any, Any, CeobeTextPic]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> CeobeTextPic:
+        raw_pics = raw_post.default_cookie.images or []
+        try:
+            if not plugin_config.bison_use_browser:
+                raise CeobeSnapshotSkip("未启用浏览器")
+            res = await snapshot_func(*args, **kwargs)
+        except CeobeSnapshotSkip as e:
+            logger.info(f"skip snapshot: {e}")
+            pics = await self.handle_images_list(raw_pics, raw_post.source.type)
+            res = CeobeTextPic(text=raw_post.default_cookie.text, pics=list(pics))
+        except CeobeSnapshotFailed:
+            logger.exception("snapshot failed")
+            pics = await self.handle_images_list(raw_pics, raw_post.source.type)
+            res = CeobeTextPic(text=raw_post.default_cookie.text, pics=list(pics))
+
+        return res
 
     async def handle_images_list(self, images: list[CeobeImage], source_type: str) -> list[bytes] | list[str]:
         if source_type.startswith("weibo"):

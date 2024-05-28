@@ -24,7 +24,8 @@ class FF14(NewMessage):
         return "最终幻想XIV官方公告"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get(
+        client = await self.ctx.get_client()
+        raw_data = await client.get(
             "https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5309,5310,5311,5312,5313&pageIndex=0&pageSize=5"
         )
         return raw_data.json()["Data"]

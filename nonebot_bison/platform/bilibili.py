@@ -1,6 +1,5 @@
 import re
 import json
-from abc import ABC
 from copy import deepcopy
 from enum import Enum, unique
 from typing_extensions import Self
@@ -13,6 +12,7 @@ from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, type_validate_json, type_validate_python
 
 from nonebot_bison.compat import model_rebuild
+from nonebot_bison.utils.scheduler_config import ClientManager
 
 from ..post import Post
 from ..types import Tag, Target, RawPost, ApiError, Category
@@ -104,7 +104,7 @@ model_rebuild_recurse(UserAPI)
 model_rebuild_recurse(PostAPI)
 
 
-class BilibiliClient:
+class BilibiliClient(ClientManager):
     _client: AsyncClient
     _refresh_time: datetime
     cookie_expire_time = timedelta(hours=5)
@@ -124,37 +124,27 @@ class BilibiliClient:
         if datetime.now() - self._refresh_time > self.cookie_expire_time:
             await self._init_session()
 
-    async def get_client(self) -> AsyncClient:
+    async def get_client(self, target: Target | None) -> AsyncClient:
+        await self._refresh_client()
+        return self._client
+
+    async def get_query_name_client(self) -> AsyncClient:
         await self._refresh_client()
         return self._client
 
 
-bilibili_client = BilibiliClient()
-
-
-class BaseSchedConf(ABC, SchedulerConfig):
-    schedule_type = "interval"
-    bilibili_client: BilibiliClient
-
-    def __init__(self):
-        super().__init__()
-        self.bilibili_client = bilibili_client
-
-    async def get_client(self, _: Target) -> AsyncClient:
-        return await self.bilibili_client.get_client()
-
-    async def get_query_name_client(self) -> AsyncClient:
-        return await self.bilibili_client.get_client()
-
-
-class BilibiliSchedConf(BaseSchedConf):
+class BilibiliSchedConf(SchedulerConfig):
     name = "bilibili.com"
+    schedule_type = "interval"
     schedule_setting = {"seconds": 10}
+    client_man = BilibiliClient
 
 
-class BililiveSchedConf(BaseSchedConf):
+class BililiveSchedConf(SchedulerConfig):
     name = "live.bilibili.com"
+    schedule_type = "interval"
     schedule_setting = {"seconds": 3}
+    client_man = BilibiliClient
 
 
 class Bilibili(NewMessage):
@@ -198,8 +188,9 @@ class Bilibili(NewMessage):
             )
 
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
+        client = await self.ctx.get_client()
         params = {"host_uid": target, "offset": 0, "need_top": 0}
-        res = await self.client.get(
+        res = await client.get(
             "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
             params=params,
             timeout=4.0,
@@ -428,8 +419,9 @@ class Bilibililive(StatusChange):
         )
 
     async def batch_get_status(self, targets: list[Target]) -> list[Info]:
+        client = await self.ctx.get_client()
         # https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/live/info.md#批量查询直播间状态
-        res = await self.client.get(
+        res = await client.get(
             "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids",
             params={"uids[]": targets},
             timeout=4.0,
@@ -520,7 +512,8 @@ class BilibiliBangumi(StatusChange):
         )
 
     async def get_status(self, target: Target):
-        res = await self.client.get(
+        client = await self.ctx.get_client()
+        res = await client.get(
             self._url,
             params={"media_id": target},
             timeout=4.0,
@@ -542,9 +535,8 @@ class BilibiliBangumi(StatusChange):
             return []
 
     async def parse(self, raw_post: RawPost) -> Post:
-        detail_res = await self.client.get(
-            f'https://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}'
-        )
+        client = await self.ctx.get_client()
+        detail_res = await client.get(f'https://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}')
         detail_dict = detail_res.json()
         lastest_episode = None
         for episode in detail_dict["result"]["episodes"][::-1]:

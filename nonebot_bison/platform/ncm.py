@@ -47,7 +47,8 @@ class NcmArtist(NewMessage):
             raise cls.ParseTargetException("正确格式:\n1. 歌手数字ID\n2. https://music.163.com/#/artist?id=xxxx")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        res = await self.client.get(
+        client = await self.ctx.get_client()
+        res = await client.get(
             f"https://music.163.com/api/artist/albums/{target}",
             headers={"Referer": "https://music.163.com/"},
         )
@@ -106,7 +107,8 @@ class NcmRadio(NewMessage):
             )
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        res = await self.client.post(
+        client = await self.ctx.get_client()
+        res = await client.post(
             "http://music.163.com/api/dj/program/byradio",
             headers={"Referer": "https://music.163.com/"},
             data={"radioId": target, "limit": 1000, "offset": 0},

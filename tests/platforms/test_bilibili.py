@@ -3,8 +3,8 @@ from datetime import datetime
 
 import respx
 import pytest
+from httpx import Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
 from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_json
@@ -25,8 +25,9 @@ if typing.TYPE_CHECKING:
 def bilibili(app: App) -> "Bilibili":
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    return platform_manager["bilibili"](ProcessContext(), AsyncClient())  # type: ignore
+    return platform_manager["bilibili"](ProcessContext(DefaultClientManager()))  # type: ignore
 
 
 @pytest.fixture()

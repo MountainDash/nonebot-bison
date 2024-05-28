@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 
 import respx
 import pytest
+from httpx import Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
 
 from .utils import get_json
 
@@ -16,8 +16,9 @@ if TYPE_CHECKING:
 def bili_live(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.bilibili import BilibiliClient
 
-    return platform_manager["bilibili-live"](ProcessContext(), AsyncClient())
+    return platform_manager["bilibili-live"](ProcessContext(BilibiliClient()))
 
 
 @pytest.fixture()
@@ -28,27 +29,6 @@ def dummy_only_open_user_subinfo(app: App):
 
     user = TargetQQGroup(group_id=123)
     return UserSubInfo(user=user, categories=[1], tags=[])
-
-
-@pytest.mark.asyncio
-async def test_http_client_equal(app: App):
-    from nonebot_bison.types import Target
-    from nonebot_bison.utils import ProcessContext
-    from nonebot_bison.platform import platform_manager
-
-    empty_target = Target("0")
-
-    bilibili = platform_manager["bilibili"](ProcessContext(), AsyncClient())
-    bilibili_live = platform_manager["bilibili-live"](ProcessContext(), AsyncClient())
-
-    bilibili_scheduler = bilibili.scheduler()
-    bilibili_live_scheduler = bilibili_live.scheduler()
-
-    assert await bilibili_scheduler.get_client(empty_target) == await bilibili_live_scheduler.get_client(empty_target)
-    assert await bilibili_live_scheduler.get_client(empty_target) != bilibili_live_scheduler.default_http_client
-
-    assert await bilibili_scheduler.get_query_name_client() == await bilibili_live_scheduler.get_query_name_client()
-    assert await bilibili_scheduler.get_query_name_client() != bilibili_live_scheduler.default_http_client
 
 
 @pytest.mark.asyncio

@@ -54,9 +54,10 @@ class Ht2iTheme(Theme):
             msgs.append(Text("\n".join(urls)))
 
         if post.images:
+            client = await post.platform.ctx.get_client_for_static()
             pics = post.images
             if is_pics_mergable(pics):
-                pics = await pic_merge(list(pics), post.platform.client)
+                pics = await pic_merge(list(pics), client)
             msgs.extend(map(Image, pics))
 
         return msgs

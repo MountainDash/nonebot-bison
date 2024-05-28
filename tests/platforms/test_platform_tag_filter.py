@@ -1,6 +1,5 @@
 import pytest
 from nonebug.app import App
-from httpx import AsyncClient
 
 from .utils import get_json
 
@@ -15,8 +14,9 @@ def test_cases():
 async def test_filter_user_custom_tag(app: App, test_cases):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    bilibili = platform_manager["bilibili"](ProcessContext(), AsyncClient())
+    bilibili = platform_manager["bilibili"](ProcessContext(DefaultClientManager()))
     for case in test_cases:
         res = bilibili.is_banned_post(**case["case"])
         assert res == case["result"]
@@ -27,8 +27,9 @@ async def test_filter_user_custom_tag(app: App, test_cases):
 async def test_tag_separator(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    bilibili = platform_manager["bilibili"](ProcessContext(), AsyncClient())
+    bilibili = platform_manager["bilibili"](ProcessContext(DefaultClientManager()))
     tags = ["~111", "222", "333", "~444", "555"]
     res = bilibili.tag_separator(tags)
     assert res[0] == ["222", "333", "555"]

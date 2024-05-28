@@ -3,7 +3,6 @@ from typing import Any
 
 import pytest
 from nonebug.app import App
-from httpx import AsyncClient
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -173,8 +172,9 @@ async def test_generate_msg(mock_platform):
     from nonebot_bison.post import Post
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    post: Post = await mock_platform(ProcessContext(), AsyncClient()).parse(raw_post_list_1[0])
+    post: Post = await mock_platform(ProcessContext(DefaultClientManager())).parse(raw_post_list_1[0])
     assert post.platform.default_theme == "basic"
     res = await post.generate()
     assert len(res) == 1
@@ -203,10 +203,11 @@ async def test_msg_segments_convert(mock_platform):
     from nonebot_bison.post import Post
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     plugin_config.bison_use_pic = True
 
-    post: Post = await mock_platform(ProcessContext(), AsyncClient()).parse(raw_post_list_1[0])
+    post: Post = await mock_platform(ProcessContext(DefaultClientManager())).parse(raw_post_list_1[0])
     assert post.platform.default_theme == "basic"
     res = await post.generate_messages()
     assert len(res) == 1

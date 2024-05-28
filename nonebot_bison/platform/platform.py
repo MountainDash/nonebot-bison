@@ -92,7 +92,6 @@ class Platform(metaclass=PlatformABCMeta, base=True):
     platform_name: str
     parse_target_promot: str | None = None
     registry: list[type["Platform"]]
-    client: AsyncClient
     reverse_category: dict[str, Category]
     use_batch: bool = False
     # TODO: 限定可使用的theme名称
@@ -121,9 +120,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
         "actually function called"
         return await self.parse(raw_post)
 
-    def __init__(self, context: ProcessContext, client: AsyncClient):
+    def __init__(self, context: ProcessContext):
         super().__init__()
-        self.client = client
         self.ctx = context
 
     class ParseTargetException(Exception):
@@ -225,8 +223,8 @@ class Platform(metaclass=PlatformABCMeta, base=True):
 class MessageProcess(Platform, abstract=True):
     "General message process fetch, parse, filter progress"
 
-    def __init__(self, ctx: ProcessContext, client: AsyncClient):
-        super().__init__(ctx, client)
+    def __init__(self, ctx: ProcessContext):
+        super().__init__(ctx)
         self.parse_cache: dict[Any, Post] = {}
 
     @abstractmethod
@@ -463,11 +461,11 @@ def make_no_target_group(platform_list: list[type[Platform]]) -> type[Platform]:
         if platform.scheduler != scheduler:
             raise RuntimeError(f"Platform scheduler for {platform_name} not fit")
 
-    def __init__(self: "NoTargetGroup", ctx: ProcessContext, client: AsyncClient):
-        Platform.__init__(self, ctx, client)
+    def __init__(self: "NoTargetGroup", ctx: ProcessContext):
+        Platform.__init__(self, ctx)
         self.platform_obj_list = []
         for platform_class in self.platform_list:
-            self.platform_obj_list.append(platform_class(ctx, client))
+            self.platform_obj_list.append(platform_class(ctx))
 
     def __str__(self: "NoTargetGroup") -> str:
         return "[" + " ".join(x.name for x in self.platform_list) + "]"

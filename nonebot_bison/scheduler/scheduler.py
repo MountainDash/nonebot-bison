@@ -5,6 +5,8 @@ from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
+from nonebot_bison.utils.scheduler_config import ClientManager
+
 from ..config import config
 from ..send import send_msgs
 from ..types import Target, SubUnit
@@ -24,6 +26,7 @@ class Scheduler:
     schedulable_list: list[Schedulable]  # for load weigth from db
     batch_api_target_cache: dict[str, dict[Target, list[Target]]]  # platform_name -> (target -> [target])
     batch_platform_name_targets_cache: dict[str, list[Target]]
+    client_mgr: ClientManager
 
     def __init__(
         self,
@@ -36,6 +39,7 @@ class Scheduler:
             logger.error(f"scheduler config [{self.name}] not found, exiting")
             raise RuntimeError(f"{self.name} not found")
         self.scheduler_config = scheduler_config
+        self.client_mgr = scheduler_config.client_mgr()
         self.scheduler_config_obj = self.scheduler_config()
 
         self.schedulable_list = []
@@ -83,16 +87,14 @@ class Scheduler:
         return cur_max_schedulable
 
     async def exec_fetch(self):
-        context = ProcessContext()
         if not (schedulable := await self.get_next_schedulable()):
             return
         logger.trace(f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}")
 
-        client = await self.scheduler_config_obj.get_client(schedulable.target)
-        context.register_to_client(client)
+        context = ProcessContext(self.client_mgr)
 
         try:
-            platform_obj = platform_manager[schedulable.platform_name](context, client)
+            platform_obj = platform_manager[schedulable.platform_name](context)
             if schedulable.use_batch:
                 batch_targets = self.batch_api_target_cache[schedulable.platform_name][schedulable.target]
                 sub_units = []

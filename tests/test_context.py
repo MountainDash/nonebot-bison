@@ -6,13 +6,14 @@ from nonebug.app import App
 @respx.mock
 async def test_http_error(app: App):
     from nonebot_bison.utils import ProcessContext, http_client
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     example_route = respx.get("https://example.com")
     example_route.mock(httpx.Response(403, json={"error": "gg"}))
 
-    ctx = ProcessContext()
+    ctx = ProcessContext(DefaultClientManager())
     async with http_client() as client:
-        ctx.register_to_client(client)
+        ctx._register_to_client(client)
         await client.get("https://example.com")
 
     assert ctx.gen_req_records() == [

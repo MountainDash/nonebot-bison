@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Literal
 
 from httpx import AsyncClient
@@ -6,10 +7,32 @@ from ..types import Target
 from .http import http_client
 
 
+class ClientManager(ABC):
+    async def get_client(self, target: Target | None) -> AsyncClient: ...
+
+    async def get_client_for_static(self) -> AsyncClient: ...
+
+    async def get_query_name_client(self) -> AsyncClient: ...
+
+    async def refresh_client(self): ...
+
+
+class DefaultClientManager(ClientManager):
+    async def get_client(self, target: Target | None) -> AsyncClient:
+        return http_client()
+
+    async def get_client_for_static(self) -> AsyncClient:
+        return http_client()
+
+    async def get_query_name_client(self) -> AsyncClient:
+        return http_client()
+
+
 class SchedulerConfig:
     schedule_type: Literal["date", "interval", "cron"]
     schedule_setting: dict
     name: str
+    client_mgr: type[ClientManager] = DefaultClientManager
     require_browser: bool = False
 
     def __str__(self):
@@ -17,12 +40,6 @@ class SchedulerConfig:
 
     def __init__(self):
         self.default_http_client = http_client()
-
-    async def get_client(self, target: Target) -> AsyncClient:
-        return self.default_http_client
-
-    async def get_query_name_client(self) -> AsyncClient:
-        return self.default_http_client
 
 
 def scheduler(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[SchedulerConfig]:
@@ -32,5 +49,6 @@ def scheduler(schedule_type: Literal["date", "interval", "cron"], schedule_setti
         {
             "schedule_type": schedule_type,
             "schedule_setting": schedule_setting,
+            "client_mgr": ClientManager,
         },
     )

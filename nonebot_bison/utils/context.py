@@ -2,19 +2,25 @@ from base64 import b64encode
 
 from httpx import Response, AsyncClient
 
+from nonebot_bison.types import Target
+
+from .scheduler_config import ClientManager
+
 
 class ProcessContext:
     reqs: list[Response]
+    _client_mgr: ClientManager
 
-    def __init__(self) -> None:
+    def __init__(self, client_mgr: ClientManager) -> None:
         self.reqs = []
+        self._client_mgr = client_mgr
 
-    def log_response(self, resp: Response):
+    def _log_response(self, resp: Response):
         self.reqs.append(resp)
 
-    def register_to_client(self, client: AsyncClient):
+    def _register_to_client(self, client: AsyncClient):
         async def _log_to_ctx(r: Response):
-            self.log_response(r)
+            self._log_response(r)
 
         hooks = {
             "response": [_log_to_ctx],
@@ -41,3 +47,16 @@ class ProcessContext:
                 )
             res.append(log_content)
         return res
+
+    async def get_client(self, target: Target | None = None) -> AsyncClient:
+        client = await self._client_mgr.get_client(target)
+        self._register_to_client(client)
+        return client
+
+    async def get_client_for_static(self) -> AsyncClient:
+        client = await self._client_mgr.get_client_for_static()
+        self._register_to_client(client)
+        return client
+
+    async def refresh_client(self):
+        await self._client_mgr.refresh_client()

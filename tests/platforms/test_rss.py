@@ -5,8 +5,8 @@ import xml.etree.ElementTree as ET
 import pytz
 import respx
 import pytest
+from httpx import Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
 
 from .utils import get_file
 
@@ -36,8 +36,9 @@ def user_info_factory(app: App, dummy_user):
 def rss(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    return platform_manager["rss"](ProcessContext(), AsyncClient())
+    return platform_manager["rss"](ProcessContext(DefaultClientManager()))
 
 
 @pytest.fixture()

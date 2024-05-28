@@ -46,7 +46,8 @@ class Rss(NewMessage):
         return post.id
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        res = await self.client.get(target, timeout=10.0)
+        client = await self.ctx.get_client()
+        res = await client.get(target, timeout=10.0)
         feed = feedparser.parse(res)
         entries = feed.entries
         for entry in entries:

@@ -2,8 +2,8 @@ import typing
 
 import respx
 import pytest
+from httpx import Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
 
 from .utils import get_json
 
@@ -15,8 +15,9 @@ if typing.TYPE_CHECKING:
 def bili_bangumi(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    return platform_manager["bilibili-bangumi"](ProcessContext(), AsyncClient())
+    return platform_manager["bilibili-bangumi"](ProcessContext(DefaultClientManager()))
 
 
 async def test_parse_target(bili_bangumi: "BilibiliBangumi"):

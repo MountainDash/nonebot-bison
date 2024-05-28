@@ -78,8 +78,9 @@ class Weibo(NewMessage):
             raise cls.ParseTargetException(prompt="正确格式:\n1. 用户数字UID\n2. https://weibo.com/u/xxxx")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
+        client = await self.ctx.get_client()
         params = {"containerid": "107603" + target}
-        res = await self.client.get("https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0)
+        res = await client.get("https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0)
         res_data = json.loads(res.text)
         if not res_data["ok"] and res_data["msg"] != "这里还没有内容":
             raise ApiError(res.request.url)
@@ -149,7 +150,8 @@ class Weibo(NewMessage):
 
     async def _get_long_weibo(self, weibo_id: str) -> dict:
         try:
-            weibo_info = await self.client.get(
+            client = await self.ctx.get_client()
+            weibo_info = await client.get(
                 "https://m.weibo.cn/statuses/show",
                 params={"id": weibo_id},
                 headers=_HEADER,

@@ -2,8 +2,8 @@ from time import time
 
 import respx
 import pytest
+from httpx import Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
 from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_file, get_json
@@ -13,8 +13,9 @@ from .utils import get_file, get_json
 def arknights(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    return platform_manager["arknights"](ProcessContext(), AsyncClient())
+    return platform_manager["arknights"](ProcessContext(DefaultClientManager()))
 
 
 @pytest.fixture(scope="module")
@@ -44,9 +45,8 @@ def monster_siren_list_1():
 
 @respx.mock
 async def test_url_parse(app: App):
-    from httpx import AsyncClient
-
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinData, BulletinListItem, ArkBulletinResponse
 
     cid_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
@@ -93,7 +93,7 @@ async def test_url_parse(app: App):
     b4 = make_bulletin_obj("http://www.baidu.com")
     assert b4.jump_link == "http://www.baidu.com"
 
-    ark = Arknights(ProcessContext(), AsyncClient())
+    ark = Arknights(ProcessContext(DefaultClientManager()))
 
     cid_router.mock(return_value=make_response(b1))
     p1 = await ark.parse(make_bulletin_list_item_obj())
@@ -115,9 +115,10 @@ async def test_url_parse(app: App):
 @pytest.mark.asyncio()
 async def test_get_date_in_bulletin(app: App):
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
 
-    arknights = Arknights(ProcessContext(), AsyncClient())
+    arknights = Arknights(ProcessContext(DefaultClientManager()))
     assert (
         arknights.get_date(
             BulletinListItem(
@@ -136,13 +137,14 @@ async def test_get_date_in_bulletin(app: App):
 @pytest.mark.asyncio()
 @respx.mock
 async def test_parse_with_breakline(app: App):
-    from nonebot_bison.utils import ProcessContext, http_client
+    from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
 
     detail = get_json("arknights-detail-805")
     detail["data"]["header"] = ""
 
-    arknights = Arknights(ProcessContext(), http_client())
+    arknights = Arknights(ProcessContext(DefaultClientManager()))
 
     router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
     router.mock(return_value=Response(200, json=detail))

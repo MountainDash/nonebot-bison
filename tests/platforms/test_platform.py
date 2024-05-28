@@ -3,7 +3,6 @@ from typing import Any
 
 import pytest
 from nonebug.app import App
-from httpx import AsyncClient
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -326,12 +325,13 @@ def mock_status_change(app: App):
 async def test_new_message_target_without_cats_tags(mock_platform_without_cats_tags, user_info_factory):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    res1 = await mock_platform_without_cats_tags(ProcessContext(), AsyncClient()).fetch_new_post(
+    res1 = await mock_platform_without_cats_tags(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res1) == 0
-    res2 = await mock_platform_without_cats_tags(ProcessContext(), AsyncClient()).fetch_new_post(
+    res2 = await mock_platform_without_cats_tags(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([], [])]),
     )
     assert len(res2) == 1
@@ -347,12 +347,13 @@ async def test_new_message_target_without_cats_tags(mock_platform_without_cats_t
 async def test_new_message_target(mock_platform, user_info_factory):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    res1 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post(
+    res1 = await mock_platform(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res1) == 0
-    res2 = await mock_platform(ProcessContext(), AsyncClient()).fetch_new_post(
+    res2 = await mock_platform(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(
             Target("dummy"),
             [
@@ -382,12 +383,13 @@ async def test_new_message_target(mock_platform, user_info_factory):
 async def test_new_message_no_target(mock_platform_no_target, user_info_factory):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    res1 = await mock_platform_no_target(ProcessContext(), AsyncClient()).fetch_new_post(
+    res1 = await mock_platform_no_target(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res1) == 0
-    res2 = await mock_platform_no_target(ProcessContext(), AsyncClient()).fetch_new_post(
+    res2 = await mock_platform_no_target(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(
             Target("dummy"),
             [
@@ -411,7 +413,7 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert "p3" in id_set_1
     assert "p2" in id_set_2
     assert "p2" in id_set_3
-    res3 = await mock_platform_no_target(ProcessContext(), AsyncClient()).fetch_new_post(
+    res3 = await mock_platform_no_target(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res3) == 0
@@ -421,19 +423,20 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
 async def test_status_change(mock_status_change, user_info_factory):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
-    res1 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
+    res1 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res1) == 0
-    res2 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
+    res2 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 1
     assert posts[0].content == "on"
-    res3 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
+    res3 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(
             Target("dummy"),
             [
@@ -446,7 +449,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert len(res3[0][1]) == 1
     assert res3[0][1][0].content == "off"
     assert len(res3[1][1]) == 0
-    res4 = await mock_status_change(ProcessContext(), AsyncClient()).fetch_new_post(
+    res4 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
     )
     assert len(res4) == 0
@@ -459,14 +462,15 @@ async def test_group(
     mock_platform_no_target_2,
     user_info_factory,
 ):
+    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils import ProcessContext, http_client
     from nonebot_bison.platform.platform import make_no_target_group
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     dummy = Target("dummy")
 
     group_platform_class = make_no_target_group([mock_platform_no_target, mock_platform_no_target_2])
-    group_platform = group_platform_class(ProcessContext(), http_client())
+    group_platform = group_platform_class(ProcessContext(DefaultClientManager()))
     res1 = await group_platform.fetch_new_post(SubUnit(dummy, [user_info_factory([1, 4], [])]))
     assert len(res1) == 0
     res2 = await group_platform.fetch_new_post(SubUnit(dummy, [user_info_factory([1, 4], [])]))
@@ -487,6 +491,7 @@ async def test_batch_fetch_new_message(app: App):
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.utils.context import ProcessContext
     from nonebot_bison.types import Target, RawPost, SubUnit, UserSubInfo
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     class BatchNewMessage(NewMessage):
         platform_name = "mock_platform"
@@ -538,7 +543,7 @@ async def test_batch_fetch_new_message(app: App):
     user1 = UserSubInfo(TargetQQGroup(group_id=123), [1, 2, 3], [])
     user2 = UserSubInfo(TargetQQGroup(group_id=234), [1, 2, 3], [])
 
-    platform_obj = BatchNewMessage(ProcessContext(), None)  # type:ignore
+    platform_obj = BatchNewMessage(ProcessContext(DefaultClientManager()))  # type:ignore
 
     res1 = await platform_obj.batch_fetch_new_post(
         [
@@ -572,6 +577,7 @@ async def test_batch_fetch_compare_status(app: App):
     from nonebot_bison.post import Post
     from nonebot_bison.utils.context import ProcessContext
     from nonebot_bison.platform.platform import StatusChange
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
     from nonebot_bison.types import Target, RawPost, SubUnit, Category, UserSubInfo
 
     class BatchStatusChange(StatusChange):
@@ -612,7 +618,7 @@ async def test_batch_fetch_compare_status(app: App):
         def get_category(self, raw_post):
             return raw_post["cat"]
 
-    batch_status_change = BatchStatusChange(ProcessContext(), None)  # type: ignore
+    batch_status_change = BatchStatusChange(ProcessContext(DefaultClientManager()))
 
     user1 = UserSubInfo(TargetQQGroup(group_id=123), [1, 2, 3], [])
     user2 = UserSubInfo(TargetQQGroup(group_id=234), [1, 2, 3], [])

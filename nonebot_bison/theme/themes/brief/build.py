@@ -29,11 +29,12 @@ class BriefTheme(Theme):
         if urls:
             text += "\n".join(urls)
 
+        client = await post.platform.ctx.get_client_for_static()
         msgs: list[MessageSegmentFactory] = [Text(text)]
         if post.images:
             pics = post.images
             if is_pics_mergable(pics):
-                pics = await pic_merge(list(pics), post.platform.client)
+                pics = await pic_merge(list(pics), client)
             msgs.append(Image(pics[0]))
 
         return msgs

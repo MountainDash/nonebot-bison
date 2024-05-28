@@ -74,7 +74,8 @@ class Arknights(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[BulletinListItem]:
-        raw_data = await self.client.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
+        client = await self.ctx.get_client()
+        raw_data = await client.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
         return type_validate_python(ArkBulletinListResponse, raw_data.json()).data.list
 
     def get_id(self, post: BulletinListItem) -> Any:
@@ -91,9 +92,8 @@ class Arknights(NewMessage):
         return Category(1)
 
     async def parse(self, raw_post: BulletinListItem) -> Post:
-        raw_data = await self.client.get(
-            f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}"
-        )
+        client = await self.ctx.get_client()
+        raw_data = await client.get(f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}")
         data = type_validate_python(ArkBulletinResponse, raw_data.json()).data
 
         def title_escape(text: str) -> str:
@@ -136,8 +136,9 @@ class AkVersion(StatusChange):
         return "明日方舟游戏信息"
 
     async def get_status(self, _):
-        res_ver = await self.client.get("https://ak-conf.hypergryph.com/config/prod/official/IOS/version")
-        res_preanounce = await self.client.get(
+        client = await self.ctx.get_client()
+        res_ver = await client.get("https://ak-conf.hypergryph.com/config/prod/official/IOS/version")
+        res_preanounce = await client.get(
             "https://ak-conf.hypergryph.com/config/prod/announce_meta/IOS/preannouncement.meta.json"
         )
         res = res_ver.json()
@@ -179,7 +180,8 @@ class MonsterSiren(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get("https://monster-siren.hypergryph.com/api/news")
+        client = await self.ctx.get_client()
+        raw_data = await client.get("https://monster-siren.hypergryph.com/api/news")
         return raw_data.json()["data"]["list"]
 
     def get_id(self, post: RawPost) -> Any:
@@ -192,8 +194,9 @@ class MonsterSiren(NewMessage):
         return Category(3)
 
     async def parse(self, raw_post: RawPost) -> Post:
+        client = await self.ctx.get_client()
         url = f'https://monster-siren.hypergryph.com/info/{raw_post["cid"]}'
-        res = await self.client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
+        res = await client.get(f'https://monster-siren.hypergryph.com/api/news/{raw_post["cid"]}')
         raw_data = res.json()
         content = raw_data["data"]["content"]
         content = content.replace("</p>", "</p>\n")
@@ -226,7 +229,8 @@ class TerraHistoricusComic(NewMessage):
         return "明日方舟游戏信息"
 
     async def get_sub_list(self, _) -> list[RawPost]:
-        raw_data = await self.client.get("https://terra-historicus.hypergryph.com/api/recentUpdate")
+        client = await self.ctx.get_client()
+        raw_data = await client.get("https://terra-historicus.hypergryph.com/api/recentUpdate")
         return raw_data.json()["data"]
 
     def get_id(self, post: RawPost) -> Any:

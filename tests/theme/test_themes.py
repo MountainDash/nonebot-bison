@@ -5,7 +5,6 @@ from inspect import cleandoc
 import pytest
 from flaky import flaky
 from nonebug import App
-from httpx import AsyncClient
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -69,9 +68,10 @@ def mock_platform(app: App):
 def mock_post(app: App, mock_platform):
     from nonebot_bison.post import Post
     from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     return Post(
-        m := mock_platform(ProcessContext(), AsyncClient()),
+        m := mock_platform(ProcessContext(DefaultClientManager())),
         "text",
         title="title",
         images=["http://t.tt/1.jpg"],

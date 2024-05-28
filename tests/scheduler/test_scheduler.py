@@ -3,7 +3,6 @@ from datetime import time
 from unittest.mock import AsyncMock
 
 from nonebug import App
-from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 if typing.TYPE_CHECKING:
@@ -61,11 +60,12 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.platform.bilibili import BililiveSchedConf
+    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
 
-    mocker.patch.object(BililiveSchedConf, "get_client", return_value=AsyncClient())
+    mocker.patch.object(BililiveSchedConf, "client_man", DefaultClientManager)
 
     await init_scheduler()
 

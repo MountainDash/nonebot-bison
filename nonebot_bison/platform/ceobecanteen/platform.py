@@ -3,6 +3,7 @@ from typing import Any, ParamSpec
 from collections.abc import Callable, Coroutine
 
 from nonebot import logger, require
+from rapidfuzz import fuzz, process
 
 from nonebot_bison.post import Post
 from nonebot_bison.plugin_config import plugin_config
@@ -136,7 +137,14 @@ class CeobeCanteen(NewMessage):
     async def parse_target(cls, nickname: str) -> Target:
         ceobe_target = await cls.data_source_cache.get_by_nickname(nickname)
         if not ceobe_target:
-            raise cls.ParseTargetException(f"未找到小刻食堂数据源: {nickname}")
+            all_targets_name = [target.nickname for target in (await cls.data_source_cache.get_all()).values()]
+            matched_targets_name = process.extract(nickname, all_targets_name, scorer=fuzz.token_sort_ratio, limit=3)
+            logger.debug(f"all targets: {all_targets_name}")
+            raise cls.ParseTargetException(
+                prompt="未能匹配到对应的小刻食堂数据源，可能的选择有: \n"
+                + "\n".join(sorted([name for name, *_ in matched_targets_name]))
+                + f"\n\n请检查原输入是否正确: {nickname}"
+            )
         return Target(ceobe_target.unique_id)
 
     def get_tags(self, _: RawPost) -> None:

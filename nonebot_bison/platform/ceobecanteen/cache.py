@@ -1,3 +1,4 @@
+from typing import TypeAlias
 from functools import partial
 from datetime import timedelta
 from types import MappingProxyType
@@ -24,6 +25,8 @@ CeobeClient = partial(
     transport=cache_transport,
 )
 
+UniqueId: TypeAlias = str
+
 
 class CeobeCache:
     ceobeCache = SimpleCache()
@@ -49,7 +52,7 @@ class CeobeDataSourceCache:
     """数据源缓存, 以unique_id为key存储数据源"""
 
     def __init__(self):
-        self._cache = ExpiringDict[str, CeobeTarget](capacity=100, default_age=timedelta(days=1))
+        self._cache = ExpiringDict[UniqueId, CeobeTarget](capacity=100, default_age=timedelta(days=1))
         self.client = CeobeClient()
         self.url = DATASOURCE_URL
 
@@ -57,7 +60,7 @@ class CeobeDataSourceCache:
     def cache(self) -> MappingProxyType[str, CeobeTarget]:
         return MappingProxyType(self._cache)
 
-    async def refresh_data_sources(self):
+    async def refresh_data_sources(self) -> MappingProxyType[UniqueId, CeobeTarget]:
         """请求数据源API刷新缓存"""
         data_sources_resp = await self.client.get(self.url)
         data_sources = process_response(data_sources_resp, DataSourceResponse).data
@@ -65,7 +68,7 @@ class CeobeDataSourceCache:
             self._cache[ds.unique_id] = ds
         return self.cache
 
-    async def get_all(self, force_refresh: bool = False):
+    async def get_all(self, force_refresh: bool = False) -> MappingProxyType[UniqueId, CeobeTarget]:
         """获取所有数据源, 如果缓存为空则尝试刷新缓存"""
         if not self.cache or force_refresh:
             await self.refresh_data_sources()

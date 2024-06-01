@@ -217,3 +217,42 @@ async def test_batch_fetch_new_with_single(
     image1_router.mock(return_value=Response(200, content=b"image1"))
     image2_router.mock(return_value=Response(200, content=b"image2"))
     await post3.generate_messages()
+
+
+@pytest.mark.asyncio()
+@respx.mock
+async def test_parse_target_fuzzy(app: App, ceobecanteen: "CeobeCanteen", dummy_target, ceobecanteen_targets):
+    from nonebot_bison.platform.ceobecanteen import CeobeCanteen
+
+    mock_respone_headers = {
+        "Content-Encoding": "br",
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Thu, 08 Jul 2021 14:00:00 GMT",
+        # "Date": datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+        "Vary": "origin; access-control-request-method; access-control-request-headers",
+    }
+
+    targets_router = respx.get("https://server.ceobecanteen.top/api/v1/canteen/config/datasource/list")
+    targets_router.mock(return_value=Response(200, json=ceobecanteen_targets, headers=mock_respone_headers))
+
+    # check load data ok
+    assert await ceobecanteen.get_target_name(None, dummy_target) == "明日方舟-B站"
+    assert await ceobecanteen.parse_target("明日方舟-B站") == dummy_target
+
+    # check fuzzy search
+    # try:
+    #     assert await ceobecanteen.parse_target("丸子姐") == dummy_target
+    # except CeobeCanteen.ParseTargetException as e:
+    #     logger.error(e.prompt)
+    #     pytest.fail("fuzzy search failed")
+    with pytest.raises(CeobeCanteen.ParseTargetException) as pe1:
+        await ceobecanteen.parse_target("丸子姐")
+
+    assert pe1.value.prompt
+    assert "Wan顽子-B站\nWan顽子-微博" in pe1.value.prompt
+
+    with pytest.raises(CeobeCanteen.ParseTargetException) as pe2:
+        await ceobecanteen.parse_target("明日方舟")
+
+    assert pe2.value.prompt
+    assert "明日方舟-B站" in pe2.value.prompt

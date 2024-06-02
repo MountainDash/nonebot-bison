@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from .platform import NewMessage
-from ..utils import SchedulerConfig, http_client
+from ..utils import Site, http_client
 from ..types import Tag, Target, RawPost, ApiError, Category
 
 _HEADER = {
@@ -35,7 +35,7 @@ _HEADER = {
 }
 
 
-class WeiboSchedConf(SchedulerConfig):
+class WeiboSite(Site):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
@@ -53,7 +53,7 @@ class Weibo(NewMessage):
     name = "新浪微博"
     enabled = True
     is_common = True
-    scheduler = WeiboSchedConf
+    site = WeiboSite
     has_target = True
     parse_target_promot = "请输入用户主页（包含数字UID）的链接"
 

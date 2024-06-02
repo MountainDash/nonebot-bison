@@ -34,9 +34,8 @@ def user_info_factory(app: App, dummy_user):
 
 @pytest.fixture()
 def rss(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     return platform_manager["rss"](ProcessContext(DefaultClientManager()))
 

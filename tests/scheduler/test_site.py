@@ -6,13 +6,13 @@ from nonebug import App
 from pytest_mock import MockerFixture
 
 if typing.TYPE_CHECKING:
-    from nonebot_bison.utils.scheduler_config import SchedulerConfig
+    from nonebot_bison.utils import Site
 
 
-async def get_schedule_times(scheduler_config: type["SchedulerConfig"], time: int) -> dict[str, int]:
+async def get_schedule_times(site: type["Site"], time: int) -> dict[str, int]:
     from nonebot_bison.scheduler import scheduler_dict
 
-    scheduler = scheduler_dict[scheduler_config]
+    scheduler = scheduler_dict[site]
     res = {}
     for _ in range(time):
         schedulable = await scheduler.get_next_schedulable()
@@ -28,8 +28,8 @@ async def test_scheduler_without_time(init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.config.db_config import WeightConfig
+    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
@@ -40,12 +40,12 @@ async def test_scheduler_without_time(init_scheduler):
 
     await init_scheduler()
 
-    static_res = await get_schedule_times(BilibiliSchedConf, 6)
+    static_res = await get_schedule_times(BilibiliSite, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
     assert static_res["bilibili-bangumi-t2"] == 3
 
-    static_res = await get_schedule_times(BilibiliSchedConf, 6)
+    static_res = await get_schedule_times(BilibiliSite, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
     assert static_res["bilibili-bangumi-t2"] == 3
@@ -58,14 +58,14 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.types import UserSubInfo
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.platform.bilibili import BililiveSchedConf
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
 
-    mocker.patch.object(BililiveSchedConf, "client_man", DefaultClientManager)
+    mocker.patch.object(BililiveSchedConf, "client_mgr", DefaultClientManager)
 
     await init_scheduler()
 
@@ -96,8 +96,8 @@ async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixtu
 
     from nonebot_bison.config import config, db_config
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
     from nonebot_bison.config.db_config import WeightConfig, TimeWeightConfig
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
@@ -118,19 +118,19 @@ async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixtu
 
     mocker.patch.object(db_config, "_get_time", return_value=time(1, 30))
 
-    static_res = await get_schedule_times(BilibiliSchedConf, 6)
+    static_res = await get_schedule_times(BilibiliSite, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
     assert static_res["bilibili-bangumi-t2"] == 3
 
-    static_res = await get_schedule_times(BilibiliSchedConf, 6)
+    static_res = await get_schedule_times(BilibiliSite, 6)
     assert static_res["bilibili-t1"] == 1
     assert static_res["bilibili-t2"] == 2
     assert static_res["bilibili-bangumi-t2"] == 3
 
     mocker.patch.object(db_config, "_get_time", return_value=time(10, 30))
 
-    static_res = await get_schedule_times(BilibiliSchedConf, 6)
+    static_res = await get_schedule_times(BilibiliSite, 6)
     assert static_res["bilibili-t2"] == 6
 
 
@@ -139,8 +139,8 @@ async def test_scheduler_add_new(init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
 
@@ -148,7 +148,7 @@ async def test_scheduler_add_new(init_scheduler):
 
     await config.add_subscribe(TargetQQGroup(group_id=2345), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili", [], [])
-    stat_res = await get_schedule_times(BilibiliSchedConf, 1)
+    stat_res = await get_schedule_times(BilibiliSite, 1)
     assert stat_res["bilibili-t2"] == 1
 
 
@@ -157,34 +157,34 @@ async def test_schedule_delete(init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BilibiliSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
 
     await init_scheduler()
 
-    stat_res = await get_schedule_times(BilibiliSchedConf, 2)
+    stat_res = await get_schedule_times(BilibiliSite, 2)
     assert stat_res["bilibili-t2"] == 1
     assert stat_res["bilibili-t1"] == 1
 
     await config.del_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "bilibili")
-    stat_res = await get_schedule_times(BilibiliSchedConf, 2)
+    stat_res = await get_schedule_times(BilibiliSite, 2)
     assert stat_res["bilibili-t2"] == 2
 
 
 async def test_scheduler_skip_browser(mocker: MockerFixture):
+    from nonebot_bison.scheduler.scheduler import Site
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.scheduler.scheduler import SchedulerConfig
     from nonebot_bison.scheduler import init_scheduler, scheduler_dict
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
 
-    class MockPlatformSchedConf(SchedulerConfig):
-        name = "mock"
+    class MockSite(Site):
+        name = "mock_site"
         schedule_type = "interval"
         schedule_setting = {"seconds": 100}
         require_browser = True
@@ -196,26 +196,26 @@ async def test_scheduler_skip_browser(mocker: MockerFixture):
         is_common = True
         enable_tag = True
         has_target = True
-        scheduler = MockPlatformSchedConf
+        site = MockSite
 
     mocker.patch.dict(platform_manager, {"mock_platform": MockPlatform})
 
     await init_scheduler()
 
-    assert MockPlatformSchedConf not in scheduler_dict.keys()
+    assert MockSite not in scheduler_dict.keys()
 
 
 async def test_scheduler_no_skip_not_require_browser(mocker: MockerFixture):
+    from nonebot_bison.scheduler.scheduler import Site
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.scheduler.scheduler import SchedulerConfig
     from nonebot_bison.scheduler import init_scheduler, scheduler_dict
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
 
-    class MockPlatformSchedConf(SchedulerConfig):
-        name = "mock"
+    class MockSite(Site):
+        name = "mock_site"
         schedule_type = "interval"
         schedule_setting = {"seconds": 100}
 
@@ -226,10 +226,10 @@ async def test_scheduler_no_skip_not_require_browser(mocker: MockerFixture):
         is_common = True
         enable_tag = True
         has_target = True
-        scheduler = MockPlatformSchedConf
+        site = MockSite
 
     mocker.patch.dict(platform_manager, {"mock_platform": MockPlatform})
 
     await init_scheduler()
 
-    assert MockPlatformSchedConf in scheduler_dict.keys()
+    assert MockSite in scheduler_dict.keys()

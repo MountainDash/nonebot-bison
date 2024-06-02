@@ -5,13 +5,13 @@ from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
-from nonebot_bison.utils.scheduler_config import ClientManager
+from nonebot_bison.utils import ClientManager
 
 from ..config import config
 from ..send import send_msgs
 from ..types import Target, SubUnit
 from ..platform import platform_manager
-from ..utils import ProcessContext, SchedulerConfig
+from ..utils import Site, ProcessContext
 
 
 @dataclass
@@ -30,7 +30,7 @@ class Scheduler:
 
     def __init__(
         self,
-        scheduler_config: type[SchedulerConfig],
+        scheduler_config: type[Site],
         schedulables: list[tuple[str, Target, bool]],  # [(platform_name, target, use_batch)]
         platform_name_list: list[str],
     ):

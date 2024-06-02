@@ -3,8 +3,8 @@ from typing import Any
 from httpx import AsyncClient
 
 from ..post import Post
-from ..utils import scheduler
 from .platform import NewMessage
+from ..utils import anonymous_site
 from ..types import Target, RawPost
 
 
@@ -16,7 +16,7 @@ class FF14(NewMessage):
     enabled = True
     is_common = False
     scheduler_class = "ff14"
-    scheduler = scheduler("interval", {"seconds": 60})
+    site = anonymous_site("interval", {"seconds": 60})
     has_target = False
 
     @classmethod

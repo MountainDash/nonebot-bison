@@ -67,8 +67,7 @@ def mock_platform(app: App):
 @pytest.fixture()
 def mock_post(app: App, mock_platform):
     from nonebot_bison.post import Post
-    from nonebot_bison.utils import ProcessContext
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     return Post(
         m := mock_platform(ProcessContext(DefaultClientManager())),

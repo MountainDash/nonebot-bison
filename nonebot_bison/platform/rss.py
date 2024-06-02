@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import SchedulerConfig, text_similarity
+from ..utils import Site, text_similarity
 
 
-class RssSchedConf(SchedulerConfig):
+class RssSite(Site):
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
@@ -25,7 +25,7 @@ class Rss(NewMessage):
     name = "Rss"
     enabled = True
     is_common = True
-    scheduler = RssSchedConf
+    site = RssSite
     has_target = True
 
     @classmethod

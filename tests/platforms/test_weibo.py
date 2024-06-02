@@ -18,9 +18,8 @@ image_cdn_router = respx.route(host__regex=r"wx\d.sinaimg.cn", path__startswith=
 
 @pytest.fixture()
 def weibo(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     return platform_manager["weibo"](ProcessContext(DefaultClientManager()))
 

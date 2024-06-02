@@ -8,9 +8,9 @@ from pydantic import Field, BaseModel
 from nonebot.compat import type_validate_python
 
 from ..post import Post
+from ..utils import Site
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
-from ..utils.scheduler_config import SchedulerConfig
 
 
 class ArkResponseBase(BaseModel):
@@ -52,7 +52,7 @@ class ArkBulletinResponse(ArkResponseBase):
     data: BulletinData
 
 
-class ArknightsSchedConf(SchedulerConfig):
+class ArknightsSite(Site):
     name = "arknights"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
@@ -65,7 +65,7 @@ class Arknights(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler = ArknightsSchedConf
+    site = ArknightsSite
     has_target = False
     default_theme = "arknights"
 
@@ -127,7 +127,7 @@ class AkVersion(StatusChange):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler = ArknightsSchedConf
+    site = ArknightsSite
     has_target = False
     default_theme = "brief"
 
@@ -172,7 +172,7 @@ class MonsterSiren(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler = ArknightsSchedConf
+    site = ArknightsSite
     has_target = False
 
     @classmethod
@@ -220,7 +220,7 @@ class TerraHistoricusComic(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler = ArknightsSchedConf
+    site = ArknightsSite
     has_target = False
     default_theme = "brief"
 

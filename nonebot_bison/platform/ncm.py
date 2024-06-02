@@ -4,12 +4,12 @@ from typing import Any
 from httpx import AsyncClient
 
 from ..post import Post
+from ..utils import Site
 from .platform import NewMessage
-from ..utils import SchedulerConfig
 from ..types import Target, RawPost, ApiError
 
 
-class NcmSchedConf(SchedulerConfig):
+class NcmSite(Site):
     name = "music.163.com"
     schedule_type = "interval"
     schedule_setting = {"minutes": 1}
@@ -21,7 +21,7 @@ class NcmArtist(NewMessage):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler = NcmSchedConf
+    site = NcmSite
     name = "网易云-歌手"
     has_target = True
     parse_target_promot = "请输入歌手主页（包含数字ID）的链接"
@@ -78,7 +78,7 @@ class NcmRadio(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    scheduler = NcmSchedConf
+    site = NcmSite
     name = "网易云-电台"
     has_target = True
     parse_target_promot = "请输入主播电台主页（包含数字ID）的链接"

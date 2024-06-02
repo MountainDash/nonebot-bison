@@ -14,9 +14,8 @@ if typing.TYPE_CHECKING:
 
 @pytest.fixture()
 def ncm_artist(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     return platform_manager["ncm-artist"](ProcessContext(DefaultClientManager()))
 

@@ -170,9 +170,8 @@ async def test_generate_msg(mock_platform):
     from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.post import Post
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     post: Post = await mock_platform(ProcessContext(DefaultClientManager())).parse(raw_post_list_1[0])
     assert post.platform.default_theme == "basic"
@@ -201,9 +200,8 @@ async def test_msg_segments_convert(mock_platform):
     from nonebot_plugin_saa import Image
 
     from nonebot_bison.post import Post
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     plugin_config.bison_use_pic = True
 

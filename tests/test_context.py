@@ -5,8 +5,7 @@ from nonebug.app import App
 
 @respx.mock
 async def test_http_error(app: App):
-    from nonebot_bison.utils import ProcessContext, http_client
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager, http_client
 
     example_route = respx.get("https://example.com")
     example_route.mock(httpx.Response(403, json={"error": "gg"}))

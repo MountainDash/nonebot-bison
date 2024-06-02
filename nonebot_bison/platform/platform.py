@@ -14,8 +14,8 @@ from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
 from ..post import Post
+from ..utils import Site, ProcessContext
 from ..plugin_config import plugin_config
-from ..utils import ProcessContext, SchedulerConfig
 from ..types import Tag, Target, RawPost, SubUnit, Category
 
 
@@ -81,7 +81,7 @@ class PlatformABCMeta(PlatformMeta, ABC): ...
 
 
 class Platform(metaclass=PlatformABCMeta, base=True):
-    scheduler: type[SchedulerConfig]
+    site: type[Site]
     ctx: ProcessContext
     is_common: bool
     enabled: bool
@@ -444,7 +444,7 @@ def make_no_target_group(platform_list: list[type[Platform]]) -> type[Platform]:
     name = DUMMY_STR
     categories_keys = set()
     categories = {}
-    scheduler = platform_list[0].scheduler
+    site = platform_list[0].site
 
     for platform in platform_list:
         if platform.has_target:
@@ -458,7 +458,7 @@ def make_no_target_group(platform_list: list[type[Platform]]) -> type[Platform]:
             raise RuntimeError(f"Platform categories for {platform_name} duplicate")
         categories_keys |= platform_category_key_set
         categories.update(platform.categories)
-        if platform.scheduler != scheduler:
+        if platform.site != site:
             raise RuntimeError(f"Platform scheduler for {platform_name} not fit")
 
     def __init__(self: "NoTargetGroup", ctx: ProcessContext):
@@ -490,7 +490,7 @@ def make_no_target_group(platform_list: list[type[Platform]]) -> type[Platform]:
             "platform_name": platform_list[0].platform_name,
             "name": name,
             "categories": categories,
-            "scheduler": scheduler,
+            "site": site,
             "is_common": platform_list[0].is_common,
             "enabled": True,
             "has_target": False,

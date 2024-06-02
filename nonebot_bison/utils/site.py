@@ -28,7 +28,7 @@ class DefaultClientManager(ClientManager):
         return http_client()
 
 
-class SchedulerConfig:
+class Site:
     schedule_type: Literal["date", "interval", "cron"]
     schedule_setting: dict
     name: str
@@ -42,10 +42,10 @@ class SchedulerConfig:
         self.default_http_client = http_client()
 
 
-def scheduler(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[SchedulerConfig]:
+def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[Site]:
     return type(
-        "AnonymousScheduleConfig",
-        (SchedulerConfig,),
+        "AnonymousSite",
+        (Site,),
         {
             "schedule_type": schedule_type,
             "schedule_setting": schedule_setting,

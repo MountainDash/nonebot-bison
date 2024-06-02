@@ -84,12 +84,12 @@ def mock_platform_without_cats_tags(app: App):
 @pytest.fixture()
 def mock_platform(app: App):
     from nonebot_bison.post import Post
-    from nonebot_bison.utils import SchedulerConfig
+    from nonebot_bison.utils import Site
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.types import Tag, Target, RawPost, Category
 
-    class MockPlatformSchedConf(SchedulerConfig):
-        name = "mock"
+    class MockSite(Site):
+        name = "mock_site"
         schedule_type = "interval"
         schedule_setting = {"seconds": 100}
 
@@ -100,7 +100,7 @@ def mock_platform(app: App):
         is_common = True
         enable_tag = True
         has_target = True
-        scheduler = MockPlatformSchedConf
+        site = MockSite
         categories = {
             Category(1): "转发",
             Category(2): "视频",
@@ -144,19 +144,19 @@ def mock_platform(app: App):
 
 
 @pytest.fixture()
-def mock_scheduler_conf(app):
-    from nonebot_bison.utils import SchedulerConfig
+def mock_site(app):
+    from nonebot_bison.utils import Site
 
-    class MockPlatformSchedConf(SchedulerConfig):
-        name = "mock"
+    class MockSite(Site):
+        name = "mock_site"
         schedule_type = "interval"
         schedule_setting = {"seconds": 100}
 
-    return MockPlatformSchedConf
+    return MockSite
 
 
 @pytest.fixture()
-def mock_platform_no_target(app: App, mock_scheduler_conf):
+def mock_platform_no_target(app: App, mock_site):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Tag, Target, RawPost, Category
     from nonebot_bison.platform.platform import NewMessage, CategoryNotSupport
@@ -166,7 +166,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
         name = "Mock Platform"
         enabled = True
         is_common = True
-        scheduler = mock_scheduler_conf
+        site = mock_site
         enable_tag = True
         has_target = False
         categories = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
@@ -211,7 +211,7 @@ def mock_platform_no_target(app: App, mock_scheduler_conf):
 
 
 @pytest.fixture()
-def mock_platform_no_target_2(app: App, mock_scheduler_conf):
+def mock_platform_no_target_2(app: App, mock_site):
     from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.types import Tag, Target, RawPost, Category
@@ -220,7 +220,7 @@ def mock_platform_no_target_2(app: App, mock_scheduler_conf):
         platform_name = "mock_platform"
         name = "Mock Platform"
         enabled = True
-        scheduler = mock_scheduler_conf
+        site = mock_site
         is_common = True
         enable_tag = True
         has_target = False
@@ -323,9 +323,8 @@ def mock_status_change(app: App):
 
 @pytest.mark.asyncio
 async def test_new_message_target_without_cats_tags(mock_platform_without_cats_tags, user_info_factory):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     res1 = await mock_platform_without_cats_tags(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -345,9 +344,8 @@ async def test_new_message_target_without_cats_tags(mock_platform_without_cats_t
 
 @pytest.mark.asyncio
 async def test_new_message_target(mock_platform, user_info_factory):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     res1 = await mock_platform(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -381,9 +379,8 @@ async def test_new_message_target(mock_platform, user_info_factory):
 
 @pytest.mark.asyncio
 async def test_new_message_no_target(mock_platform_no_target, user_info_factory):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     res1 = await mock_platform_no_target(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -421,9 +418,8 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
 
 @pytest.mark.asyncio
 async def test_status_change(mock_status_change, user_info_factory):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     res1 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -462,10 +458,9 @@ async def test_group(
     mock_platform_no_target_2,
     user_info_factory,
 ):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.platform.platform import make_no_target_group
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     dummy = Target("dummy")
 
@@ -488,10 +483,10 @@ async def test_batch_fetch_new_message(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.post import Post
+    from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.utils.context import ProcessContext
     from nonebot_bison.types import Target, RawPost, SubUnit, UserSubInfo
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
 
     class BatchNewMessage(NewMessage):
         platform_name = "mock_platform"
@@ -575,9 +570,9 @@ async def test_batch_fetch_compare_status(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.post import Post
+    from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.utils.context import ProcessContext
     from nonebot_bison.platform.platform import StatusChange
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
     from nonebot_bison.types import Target, RawPost, SubUnit, Category, UserSubInfo
 
     class BatchStatusChange(StatusChange):

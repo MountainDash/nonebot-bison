@@ -11,12 +11,10 @@ from nonebot.log import logger
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, type_validate_json, type_validate_python
 
-from nonebot_bison.compat import model_rebuild
-from nonebot_bison.utils.scheduler_config import ClientManager
-
 from ..post import Post
+from ..compat import model_rebuild
 from ..types import Tag, Target, RawPost, ApiError, Category
-from ..utils import SchedulerConfig, http_client, text_similarity
+from ..utils import Site, ClientManager, http_client, text_similarity
 from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 
 TBaseModel = TypeVar("TBaseModel", bound=type[BaseModel])
@@ -133,18 +131,18 @@ class BilibiliClient(ClientManager):
         return self._client
 
 
-class BilibiliSchedConf(SchedulerConfig):
+class BilibiliSite(Site):
     name = "bilibili.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 10}
-    client_man = BilibiliClient
+    client_mgr = BilibiliClient
 
 
-class BililiveSchedConf(SchedulerConfig):
+class BililiveSchedConf(Site):
     name = "live.bilibili.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
-    client_man = BilibiliClient
+    client_mgr = BilibiliClient
 
 
 class Bilibili(NewMessage):
@@ -160,7 +158,7 @@ class Bilibili(NewMessage):
     enable_tag = True
     enabled = True
     is_common = True
-    scheduler = BilibiliSchedConf
+    site = BilibiliSite
     name = "B站"
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
@@ -333,7 +331,7 @@ class Bilibililive(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler = BililiveSchedConf
+    site = BililiveSchedConf
     name = "Bilibili直播"
     has_target = True
     use_batch = True
@@ -483,7 +481,7 @@ class BilibiliBangumi(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    scheduler = BilibiliSchedConf
+    site = BilibiliSite
     name = "Bilibili剧集"
     has_target = True
     parse_target_promot = "请输入剧集主页"

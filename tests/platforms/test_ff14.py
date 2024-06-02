@@ -8,9 +8,8 @@ from .utils import get_json
 
 @pytest.fixture()
 def ff14(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     return platform_manager["ff14"](ProcessContext(DefaultClientManager()))
 

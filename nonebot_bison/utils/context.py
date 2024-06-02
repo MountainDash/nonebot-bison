@@ -4,7 +4,7 @@ from httpx import Response, AsyncClient
 
 from nonebot_bison.types import Target
 
-from .scheduler_config import ClientManager
+from .site import ClientManager
 
 
 class ProcessContext:

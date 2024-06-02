@@ -11,9 +11,8 @@ from .utils import get_file, get_json
 
 @pytest.fixture()
 def arknights(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
     return platform_manager["arknights"](ProcessContext(DefaultClientManager()))
 
@@ -45,8 +44,7 @@ def monster_siren_list_1():
 
 @respx.mock
 async def test_url_parse(app: App):
-    from nonebot_bison.utils import ProcessContext
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinData, BulletinListItem, ArkBulletinResponse
 
     cid_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
@@ -114,8 +112,7 @@ async def test_url_parse(app: App):
 
 @pytest.mark.asyncio()
 async def test_get_date_in_bulletin(app: App):
-    from nonebot_bison.utils import ProcessContext
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
 
     arknights = Arknights(ProcessContext(DefaultClientManager()))
@@ -137,8 +134,7 @@ async def test_get_date_in_bulletin(app: App):
 @pytest.mark.asyncio()
 @respx.mock
 async def test_parse_with_breakline(app: App):
-    from nonebot_bison.utils import ProcessContext
-    from nonebot_bison.utils.scheduler_config import DefaultClientManager
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
 
     detail = get_json("arknights-detail-805")

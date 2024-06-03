@@ -12,13 +12,13 @@ from .site import Site as Site
 from ..plugin_config import plugin_config
 from .image import pic_merge as pic_merge
 from .http import http_client as http_client
+from .image import capture_html as capture_html
 from .site import ClientManager as ClientManager
 from .image import text_to_image as text_to_image
 from .site import anonymous_site as anonymous_site
 from .context import ProcessContext as ProcessContext
 from .image import is_pics_mergable as is_pics_mergable
 from .image import pic_url_to_image as pic_url_to_image
-from .image import capture_html as capture_html
 from .site import DefaultClientManager as DefaultClientManager
 
 

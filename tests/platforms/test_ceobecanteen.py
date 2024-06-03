@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING
 
 import respx
 import pytest
+from httpx import Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
 from nonebot.compat import type_validate_python
 
 from .utils import get_json
@@ -26,8 +26,9 @@ def dummy_only_open_user_subinfo(app: App):
 def ceobecanteen(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.ceobecanteen.platform import CeobeCanteenClient
 
-    return platform_manager["ceobecanteen"](ProcessContext(), AsyncClient())
+    return platform_manager["ceobecanteen"](ProcessContext(CeobeCanteenClient()))
 
 
 @pytest.fixture(scope="module")

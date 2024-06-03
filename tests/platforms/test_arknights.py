@@ -283,12 +283,12 @@ async def test_send_with_render(
 async def test_parse_title(
     app: App,
 ):
-    from nonebot_bison.utils import ProcessContext
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
 
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")
 
-    ark = Arknights(ProcessContext(), AsyncClient())
+    ark = Arknights(ProcessContext(DefaultClientManager()))
 
     mock_detail = get_json("arknights-detail-805")
     mock_detail["data"]["header"] = ""

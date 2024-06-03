@@ -2,13 +2,14 @@ from datetime import timedelta
 from typing import Any, ParamSpec
 from collections.abc import Callable, Coroutine
 
+from httpx import AsyncClient
 from nonebot import logger, require
 from rapidfuzz import fuzz, process
 
 from nonebot_bison.post import Post
 from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.types import Target, RawPost, Category
-from nonebot_bison.utils import SchedulerConfig, capture_html
+from nonebot_bison.utils import Site, ClientManager, capture_html
 
 from ..platform import NewMessage
 from .utils import process_response
@@ -20,21 +21,35 @@ from .models import CeobeImage, CeobeCookie, CeobeTextPic, CombIdResponse, Cooki
 P = ParamSpec("P")
 
 
-class CeobeCanteenSchedConf(SchedulerConfig):
+class CeobeCanteenClient(ClientManager):
+    _client: AsyncClient
+
+    def __init__(self):
+        self._client = CeobeClient(
+            headers={
+                "User-Agent": "MountainDash/Nonebot-Bison",
+            }
+        )
+
+    async def get_client(self, target: Target | None) -> AsyncClient:
+        return self._client
+
+    async def get_client_for_static(self) -> AsyncClient:
+        return self._client
+
+    async def get_query_name_client(self) -> AsyncClient:
+        return self._client
+
+    async def refresh_client(self):
+        raise NotImplementedError("refresh_client is not implemented")
+
+
+class CeobeCanteenSite(Site):
     name = "ceobe_canteen"
     schedule_type = "interval"
     # lwt の 推荐间隔
     schedule_setting = {"seconds": 15}
-
-    def __init__(self):
-        super().__init__()
-
-        # 仅用于方便小刻食堂统计，没有实际影响
-        headers = {
-            "User-Agent": "MountainDash/Nonebot-Bison",
-        }
-        self.default_http_client = CeobeClient()
-        self.default_http_client.headers.update(headers)
+    client_mgr = CeobeCanteenClient
 
 
 class CeobeCanteen(NewMessage):
@@ -43,7 +58,7 @@ class CeobeCanteen(NewMessage):
     name: str = "小刻食堂"
     enabled: bool = True
     is_common: bool = False
-    scheduler = CeobeCanteenSchedConf
+    site = CeobeCanteenSite
     has_target: bool = True
     use_batch: bool = True
     default_theme: str = "ceobecanteen"
@@ -60,7 +75,8 @@ class CeobeCanteen(NewMessage):
         """获取数据源的组合id"""
         payload = {"datasource_push": target_uuids}
         logger.trace(payload)
-        resp = await self.client.post(
+        client = await self.ctx.get_client()
+        resp = await client.post(
             COMB_ID_URL,
             json=payload,
         )
@@ -77,30 +93,31 @@ class CeobeCanteen(NewMessage):
         logger.debug(f"use comb_id: {comb_id}")
         return comb_id
 
-    async def get_cookie_id(self, comb_id: str):
-        """根据comb_id获取cookie_id"""
-        resp = await self.client.get(f"{COOKIE_ID_URL}/{comb_id}")
+    async def get_latest_cookie_id(self, comb_id: str):
+        """根据comb_id获取最新cookie_id"""
+        client = await self.ctx.get_client()
+        resp = await client.get(f"{COOKIE_ID_URL}/{comb_id}")
         cookie_id = process_response(resp, CookieIdResponse).cookie_id
         logger.trace(f"get cookie_id: {cookie_id}")
         return cookie_id
 
     async def get_cookies(self, cookie_id: str, comb_id: str | None = None):
-        """获取cookies"""
+        """根据cookie_id、comb_id组合获取cookies"""
+        client = await self.ctx.get_client()
         parmas = {
             "datasource_comb_id": comb_id,
             "cookie_id": cookie_id,
         }
         logger.trace(f"will reuquest: {parmas}")
-        resp = await self.client.get(COOKIES_URL, params=parmas)
-        cookies = process_response(resp, CookiesResponse).data.cookies
-        return cookies
+        resp = await client.get(COOKIES_URL, params=parmas)
+        return process_response(resp, CookiesResponse).data.cookies
 
     async def fetch_ceobe_cookies(self) -> list[CeobeCookie]:
         if not self.comb_id:
             comb_id = await self.get_comb_id_for_all()
             self.comb_id = comb_id
 
-        cookie_id = await self.get_cookie_id(self.comb_id)
+        cookie_id = await self.get_latest_cookie_id(self.comb_id)
         if not cookie_id:
             return []
 

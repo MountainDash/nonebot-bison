@@ -95,9 +95,10 @@ class CeobeCanteenTheme(Theme):
             datasource=post.nickname, time=datetime.fromtimestamp(post.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         )
 
+        http_client = await post.platform.ctx.get_client_for_static()
         images: list[str | bytes | Path | BytesIO] = []
         if post.images:
-            images = await self.merge_pics(post.images, post.platform.client)
+            images = await self.merge_pics(post.images, http_client)
 
         content = CeoboContent(text=post.content)
 
@@ -105,7 +106,7 @@ class CeobeCanteenTheme(Theme):
         if post.repost:
             repost_head_pic: str | None = None
             if post.repost.images:
-                repost_images = await self.merge_pics(post.repost.images, post.platform.client)
+                repost_images = await self.merge_pics(post.repost.images, http_client)
                 repost_head_pic = self.extract_head_pic(repost_images)
                 images.extend(repost_images)
 

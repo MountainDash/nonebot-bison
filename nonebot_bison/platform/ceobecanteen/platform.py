@@ -156,10 +156,10 @@ class CeobeCanteen(NewMessage):
         if not ceobe_target:
             all_targets_name = [target.nickname for target in (await cls.data_source_cache.get_all()).values()]
             matched_targets_name = process.extract(nickname, all_targets_name, scorer=fuzz.token_sort_ratio, limit=3)
-            logger.debug(f"all targets: {all_targets_name}")
+            logger.debug(f"possible targets: {matched_targets_name}")
             raise cls.ParseTargetException(
                 prompt="未能匹配到对应的小刻食堂数据源，可能的选择有: \n"
-                + "\n".join(sorted([name for name, *_ in matched_targets_name]))
+                + "\n".join([name for name, *_ in matched_targets_name])
                 + f"\n\n请检查原输入是否正确: {nickname}"
             )
         return Target(ceobe_target.unique_id)

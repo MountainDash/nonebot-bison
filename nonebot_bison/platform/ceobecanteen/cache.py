@@ -29,7 +29,7 @@ UniqueId: TypeAlias = str
 
 
 class CeobeCache:
-    ceobeCache = SimpleCache()
+    _cache = SimpleCache()
 
     def __init__(self, litetime: timedelta, store_key: str | None = None):
         self.store_key = store_key
@@ -42,10 +42,10 @@ class CeobeCache:
             self.key = self.store_key
 
     def __get__(self, instance, owner):
-        return self.ceobeCache.get(self.key)
+        return self._cache.get(self.key)
 
     def __set__(self, instance, value):
-        self.ceobeCache[self.key, self.litetime] = value
+        self._cache[self.key, self.litetime] = value
 
 
 class CeobeDataSourceCache:

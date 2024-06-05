@@ -29,6 +29,7 @@ UniqueId: TypeAlias = str
 
 
 class CeobeCache:
+    # 不在 __init__ 中初始化，让多个实例共享一个缓存
     _cache = SimpleCache()
 
     def __init__(self, litetime: timedelta, store_key: str | None = None):
@@ -36,10 +37,7 @@ class CeobeCache:
         self.litetime = litetime
 
     def __set_name__(self, owner, name: str):
-        if not self.store_key:
-            self.key = name
-        else:
-            self.key = self.store_key
+        self.key = self.store_key or name
 
     def __get__(self, instance, owner):
         return self._cache.get(self.key)

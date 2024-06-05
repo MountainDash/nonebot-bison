@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any, ParamSpec
+from collections import defaultdict
 from collections.abc import Callable, Coroutine
 
 from httpx import AsyncClient
@@ -21,7 +22,7 @@ from .models import CeobeImage, CeobeCookie, CeobeTextPic, CombIdResponse, Cooki
 P = ParamSpec("P")
 
 
-class CeobeCanteenClient(ClientManager):
+class CeobeCanteenClientManager(ClientManager):
     _client: AsyncClient
 
     def __init__(self):
@@ -49,7 +50,7 @@ class CeobeCanteenSite(Site):
     schedule_type = "interval"
     # lwt の 推荐间隔
     schedule_setting = {"seconds": 15}
-    client_mgr = CeobeCanteenClient
+    client_mgr = CeobeCanteenClientManager
 
 
 class CeobeCanteen(NewMessage):
@@ -84,7 +85,7 @@ class CeobeCanteen(NewMessage):
         logger.trace(f"get comb_id: {comb_id}")
         return comb_id
 
-    async def get_comb_id_for_all(self):
+    async def get_comb_id_of_all(self):
         """获取 "全部数据源" 的组合id，获取到的comb_id会缓存12小时"""
         logger.trace("no comb_id, request")
         target_uuids = (await self.data_source_cache.get_all()).keys()
@@ -114,36 +115,27 @@ class CeobeCanteen(NewMessage):
 
     async def fetch_ceobe_cookies(self) -> list[CeobeCookie]:
         if not self.comb_id:
-            comb_id = await self.get_comb_id_for_all()
-            self.comb_id = comb_id
+            self.comb_id = await self.get_comb_id_of_all()
 
-        cookie_id = await self.get_latest_cookie_id(self.comb_id)
-        if not cookie_id:
+        latest_cookie_id = await self.get_latest_cookie_id(self.comb_id)
+        if not latest_cookie_id:
             return []
 
-        if cookie_id != self.cookie_id:
-            cookies = await self.get_cookies(cookie_id, self.comb_id)
-            self.cookie_id = cookie_id
-            self.cookies = cookies
+        if latest_cookie_id != self.cookie_id:
+            self.cookie_id = latest_cookie_id
+            self.cookies = await self.get_cookies(latest_cookie_id, self.comb_id)
 
-        if not self.cookies:
-            return []
-        return self.cookies
+        return self.cookies or []
 
     async def batch_get_sub_list(self, targets: list[Target]) -> list[list[CeobeCookie]]:
         cookies = await self.fetch_ceobe_cookies()
 
-        dispatched_cookies: dict[Target, list[CeobeCookie]] = {}
+        dispatched_cookies: defaultdict[Target, list[CeobeCookie]] = defaultdict(list)
         for cookie in cookies:
-            ceobe_target = await self.data_source_cache.get_by_source(cookie.source)
-            if not ceobe_target:
-                continue
-            target = Target(ceobe_target.unique_id)
-            if target not in dispatched_cookies:
-                dispatched_cookies[target] = []
-            dispatched_cookies[target].append(cookie)
+            if ceobe_target := await self.data_source_cache.get_by_source(cookie.source):
+                dispatched_cookies[Target(ceobe_target.unique_id)].append(cookie)
 
-        return [dispatched_cookies.get(target, []) for target in targets]
+        return [dispatched_cookies[target] for target in targets]
 
     @classmethod
     async def get_target_name(cls, _, uuid_target: Target) -> str:
@@ -210,7 +202,7 @@ class CeobeCanteen(NewMessage):
                 async def npss() -> CeobeTextPic:
                     raise CeobeSnapshotSkip("无需截图的数据源")
 
-                content, pics = await self.ceobecanteen_snapshot(raw_post, npss)
+                content, pics = await self.ceobecanteen_snapshot(raw_post, npss)  # lambda不允许raise语句
 
         timestamp = raw_post.timestamp.platform or raw_post.timestamp.fetcher
         if timestamp:

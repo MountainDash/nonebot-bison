@@ -20,7 +20,7 @@ async def _do_send(send_target: PlatformTarget, msg: Sendable):
         await msg.send_to(send_target)
     except ActionFailed:  # TODO: catch exception of other adapters
         await refresh_bots()
-    logger.warning("send msg failed, refresh bots")
+        logger.warning("send msg failed, refresh bots")
 
 
 async def do_send_msgs():

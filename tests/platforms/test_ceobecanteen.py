@@ -26,9 +26,9 @@ def dummy_only_open_user_subinfo(app: App):
 def ceobecanteen(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.platform.ceobecanteen.platform import CeobeCanteenClient
+    from nonebot_bison.platform.ceobecanteen.platform import CeobeCanteenClientManager
 
-    return platform_manager["ceobecanteen"](ProcessContext(CeobeCanteenClient()))
+    return platform_manager["ceobecanteen"](ProcessContext(CeobeCanteenClientManager()))
 
 
 @pytest.fixture(scope="module")

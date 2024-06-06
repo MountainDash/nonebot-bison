@@ -19,7 +19,7 @@
 1. 在`.env.dev`中添加`BISON_OUTER_URL`配置项
 
    ```env
-   BISON_OUTER_URL="http://localhost:3000/bison/"`
+   BISON_OUTER_URL="http://localhost:3000/bison/"
    ```
 
 2. 运行 bot
@@ -31,8 +31,8 @@
 3. 运行前端：
 
    ```bash
-   cd admin_fronted
-   pnpm dev
+   cd admin-frontend
+   pnpm start
    ```
 
 ::: warning

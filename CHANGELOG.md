@@ -11,6 +11,10 @@
 - 为 scheduler config 添加 require_browser 属性 [@felinae98](https://github.com/felinae98) ([#542](https://github.com/MountainDash/nonebot-bison/pull/542))
 - 将 bison_theme_use_browser 更名为 bison_use_browser  [@felinae98](https://github.com/felinae98) ([#540](https://github.com/MountainDash/nonebot-bison/pull/540))
 
+### 文档
+
+- 修复前端开发部分文档的问题 [@changsun20](https://github.com/changsun20) ([#552](https://github.com/MountainDash/nonebot-bison/pull/552))
+
 ## v0.9.2
 
 ### 新功能

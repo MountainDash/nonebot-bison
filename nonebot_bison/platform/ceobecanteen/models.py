@@ -82,7 +82,7 @@ class CeobeTimestamp(BaseModel):
     fetcher: int
     """蹲饼时间，毫秒"""
     platform_precision: Literal["none", "day", "hour", "minute", "second", "ms"]
-    """平台时间精度"""
+    """平台时间精度，不足的长度补0"""
     platform: int | None = None
     """平台时间戳，毫秒"""
 

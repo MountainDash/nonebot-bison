@@ -53,7 +53,7 @@ def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
 
     # 获取函数的第一个参数
     sig = signature(func)
-    bilibili: "Bilibili" = sig.parameters["self"].annotation
+    bilibili: Bilibili = sig.parameters["self"].annotation
 
     @wraps(func)
     async def wrapper(*args, **kwargs):

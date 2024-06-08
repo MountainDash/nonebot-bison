@@ -191,6 +191,40 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     )
 
 
+@pytest.mark.asyncio
+@respx.mock
+async def test_fetch_new_live_rcmd(bilibili: "Bilibili", dummy_user_subinfo):
+    from nonebot.compat import model_dump, type_validate_python
+
+    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.platform.bilibili.models import PostAPI
+
+    target = Target("13164144")
+
+    post_router = respx.get(
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
+    )
+    post_list = type_validate_python(PostAPI, get_json("bilibili-dynamic-live-rcmd.json"))
+    assert post_list.data
+    assert post_list.data.items
+    post_0 = post_list.data.items.pop(0)
+    post_router.mock(return_value=Response(200, json=model_dump(post_list)))
+
+    res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert post_router.called
+    assert len(res) == 0
+    post_0.modules.module_author.pub_ts = int(datetime.now().timestamp())
+    post_list.data.items.insert(0, post_0)
+    post_router.mock(return_value=Response(200, json=model_dump(post_list)))
+    res2 = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert len(res2[0][1]) == 1
+    post = res2[0][1][0]
+    assert post.title == "【Zc】灵异地铁站！深夜恐怖档"
+    assert post.content == "手游 明日方舟"
+    assert post.images == ["http://i0.hdslb.com/bfs/live/new_room_cover/fdada58af9fdc0068562da17298815de72ec82e0.jpg"]
+    assert post.url == "https://live.bilibili.com/3044248"
+
+
 async def test_parse_target(bilibili: "Bilibili"):
     from nonebot_bison.platform.platform import Platform
 

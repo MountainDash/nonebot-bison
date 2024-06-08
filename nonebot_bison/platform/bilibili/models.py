@@ -150,7 +150,64 @@ class VideoMajor(Base):
 class LiveRecommendMajor(Base):
     class LiveRecommand(Base):
         content: str
-        """直播卡片的内容，值为JSON文本"""
+        """直播卡片的内容，值为JSON文本，可以解析为LiveRecommendMajor.Content"""
+
+    class Content(Base):
+        type: int
+        """直播类型"""
+        live_play_info: "LiveRecommendMajor.LivePlayInfo"
+
+    class LivePlayInfo(Base):
+        uid: int
+        """用户UID，不是直播间号"""
+        room_type: int
+        """房间类型"""
+        room_paid_type: int
+        """付费类型"""
+        play_type: int
+        """播放类型?"""
+        live_status: int
+        """直播状态"""
+        live_screen_type: int
+        """直播画面类型?"""
+        room_id: int
+        """直播间号"""
+        cover: str
+        """直播封面"""
+        title: str
+        online: int
+        """开播时长?"""
+        parent_area_id: int
+        """主分区ID"""
+        parent_area_name: str
+        """主分区名称"""
+        area_id: int
+        """分区ID"""
+        area_name: str
+        """分区名称"""
+        live_start_time: int
+        """开播时间戳"""
+        link: str
+        """跳转链接，相对协议(即//开头而不是https://开头)"""
+        live_id: str
+        """直播ID，不知道有什么用"""
+        watched_show: "LiveRecommendMajor.WatchedShow"
+
+    class WatchedShow(Base):
+        num: int
+        """观看人数"""
+        text_small: str
+        """观看人数的文本描述: 例如 1.2万"""
+        text_large: str
+        """观看人数的文本描述: 例如 1.2万人看过"""
+        switch: bool
+        """未知"""
+        icon: str
+        """观看文本前的图标"""
+        icon_web: str
+        """观看文本前的图标(网页版)"""
+        icon_location: str
+        """图标位置?"""
 
     type: Literal["MAJOR_TYPE_LIVE_RCMD"]
     live_rcmd: "LiveRecommendMajor.LiveRecommand"
@@ -167,8 +224,8 @@ class LiveMajor(Base):
         desc_first: str
         """直播信息的第一部分，用来显示分区"""
         desc_second: str
-        """跳转链接，目前用的是相对协议(即//开头而不是https://开头)"""
         jump_url: str
+        """跳转链接，目前用的是相对协议(即//开头而不是https://开头)"""
 
     type: Literal["MAJOR_TYPE_LIVE"]
     live: "LiveMajor.Live"

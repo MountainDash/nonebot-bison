@@ -234,11 +234,12 @@ class Bilibili(NewMessage):
                     url=URL(archive.jump_url).with_scheme("https").human_repr(),
                 )
             case LiveRecommendMajor(live_rcmd=live_rcmd):
+                live_play_info = type_validate_json(LiveRecommendMajor.Content, live_rcmd.content).live_play_info
                 return ParsedPost(
-                    title=get_desc_text(),
-                    content=live_rcmd.content,
-                    pics=[],
-                    url=make_common_dynamic_url(),
+                    title=live_play_info.title,
+                    content=f"{live_play_info.parent_area_name} {live_play_info.area_name}",
+                    pics=[live_play_info.cover],
+                    url=URL(live_play_info.link).with_scheme("https").with_query(None).human_repr(),
                 )
             case LiveMajor(live=live):
                 return ParsedPost(

@@ -70,7 +70,7 @@ class ArknightsBuiltinAnnouncePost(Post):
 
         text = html.unescape(self.content)  # 转义HTML特殊字符
         text = re.sub(
-            r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',
+            r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
             r"==\4==\n",
             text,
             flags=re.DOTALL,

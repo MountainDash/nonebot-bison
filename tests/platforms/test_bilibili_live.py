@@ -14,11 +14,10 @@ if TYPE_CHECKING:
 
 @pytest.fixture()
 def bili_live(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.platform.bilibili import BilibiliClient
+    from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
-    return platform_manager["bilibili-live"](ProcessContext(BilibiliClient()))
+    return platform_manager["bilibili-live"](ProcessContext(DefaultClientManager()))
 
 
 @pytest.fixture()

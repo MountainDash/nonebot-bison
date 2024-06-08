@@ -23,10 +23,11 @@ if typing.TYPE_CHECKING:
 
 @pytest.fixture()
 def bilibili(app: App) -> "Bilibili":
+    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.platform.bilibili import BilibiliClientManager
 
-    return platform_manager["bilibili"](ProcessContext(DefaultClientManager()))  # type: ignore
+    return platform_manager["bilibili"](ProcessContext(BilibiliClientManager()))  # type: ignore
 
 
 @pytest.fixture()

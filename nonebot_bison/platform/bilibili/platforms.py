@@ -3,8 +3,9 @@ import json
 from copy import deepcopy
 from functools import wraps
 from enum import Enum, unique
-from typing import NamedTuple
+from inspect import signature
 from typing_extensions import Self
+from typing import TypeVar, NamedTuple
 from collections.abc import Callable, Awaitable
 
 from yarl import URL
@@ -19,7 +20,7 @@ from nonebot_bison.compat import model_rebuild
 from nonebot_bison.utils import decode_escapes, text_similarity
 from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
 
-from .scheduler import BilibiliSchedConf, BililiveSchedConf, bilibili_client
+from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
 from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 from .models import (
     PostAPI,
@@ -38,6 +39,8 @@ from .models import (
     LiveRecommendMajor,
 )
 
+B = TypeVar("B", bound="Bilibili")
+
 
 class ApiCode352Error(Exception):
     def __init__(self, url: HttpxURL) -> None:
@@ -45,8 +48,12 @@ class ApiCode352Error(Exception):
         super().__init__(msg)
 
 
-def retry_for_352(func: Callable[..., Awaitable[list[DynRawPost]]]):
+def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
     retried_times = 0
+
+    # 获取函数的第一个参数
+    sig = signature(func)
+    bilibili: "Bilibili" = sig.parameters["self"].annotation
 
     @wraps(func)
     async def wrapper(*args, **kwargs):
@@ -57,7 +64,7 @@ def retry_for_352(func: Callable[..., Awaitable[list[DynRawPost]]]):
             if retried_times < 3:
                 retried_times += 1
                 logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/3")
-                await bilibili_client.refresh_client()
+                await bilibili.ctx.refresh_client()
                 logger.success("已尝试刷新cookie")
                 return []  # 返回空列表
             else:
@@ -112,10 +119,10 @@ class Bilibili(NewMessage):
 
     @retry_for_352
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
-        client = await self.ctx.get_client()
-        params = {"host_uid": target, "offset": 0, "need_top": 0}
+        client = await self.ctx.get_client(target)
+        params = {"host_mid": target, "timezone_offset": -480, "offset": ""}
         res = await client.get(
-            "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
+            "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space",
             params=params,
             timeout=4.0,
         )
@@ -335,7 +342,7 @@ class Bilibililive(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    site = BililiveSchedConf
+    site = BililiveSite
     name = "Bilibili直播"
     has_target = True
     use_batch = True
@@ -485,7 +492,7 @@ class BilibiliBangumi(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    site = BilibiliSite
+    site = BiliBangumiSite
     name = "Bilibili剧集"
     has_target = True
     parse_target_promot = "请输入剧集主页"

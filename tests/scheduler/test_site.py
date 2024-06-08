@@ -28,8 +28,8 @@ async def test_scheduler_without_time(init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.config.db_config import WeightConfig
-    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.platform.bilibili.scheduler import BilibiliSite
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
@@ -59,13 +59,13 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.utils import DefaultClientManager
+    from nonebot_bison.platform.bilibili import BililiveSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili.scheduler import BililiveSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
 
-    mocker.patch.object(BililiveSchedConf, "client_mgr", DefaultClientManager)
+    mocker.patch.object(BililiveSite, "client_mgr", DefaultClientManager)
 
     await init_scheduler()
 
@@ -81,7 +81,7 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
         {"bilibili-live": mocker.Mock(return_value=fake_platform_obj)},
     )
 
-    await scheduler_dict[BililiveSchedConf].exec_fetch()
+    await scheduler_dict[BililiveSite].exec_fetch()
 
     batch_fetch_mock.assert_called_once_with(
         [

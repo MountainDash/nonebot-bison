@@ -61,7 +61,7 @@ class ArknightsSite(Site):
 
 
 class ArknightsBuiltinAnnouncePost(Post):
-    def get_content(self) -> str | None:
+    def get_plaintext(self) -> str | None:
         def cleantext(text: str, old_split="\n", new_split="\n") -> str:
             lines = text.strip().split(old_split)
             cleaned_lines = [line.strip() for line in lines if line != ""]

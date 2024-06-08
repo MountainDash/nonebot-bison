@@ -1,10 +1,11 @@
-import typing
+from time import time
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 import respx
 import pytest
-from httpx import Response
 from nonebug.app import App
+from httpx import URL, Response
 from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_json
@@ -17,7 +18,7 @@ def bing_dy_list(app: App):
     return type_validate_python(PostAPI, get_json("bilibili-new.json")).data.items  # type: ignore
 
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from nonebot_bison.platform.bilibili import Bilibili
 
 
@@ -51,6 +52,118 @@ def without_dynamic(app: App):
             },
         )
     )
+
+
+@pytest.mark.asyncio
+async def test_retry_for_352(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.types import Target, RawPost, ApiError
+    from nonebot_bison.utils import ClientManager, ProcessContext, http_client
+    from nonebot_bison.platform.bilibili.platforms import MAX_352_RETRY_COUNT, ApiCode352Error, retry_for_352
+
+    now = time()
+    raw_post_1 = {"id": 1, "text": "p1", "date": now, "tags": ["tag1"], "category": 1}
+    raw_post_2 = {"id": 2, "text": "p2", "date": now + 1, "tags": ["tag2"], "category": 2}
+
+    class MockPlatform(NewMessage):
+        platform_name = "fakebili"
+        name = "fakebili"
+        enabled = True
+        is_common = True
+        schedule_interval = 10
+        enable_tag = False
+        categories = {}
+        has_target = True
+
+        raise352 = False
+        sub_index = 0
+
+        @classmethod
+        async def get_target_name(cls, client, _: "Target"):
+            return "MockPlatform"
+
+        def get_id(self, post: RawPost) -> Any:
+            return post["id"]
+
+        def get_date(self, raw_post: RawPost) -> float:
+            return raw_post["date"]
+
+        async def parse(self, raw_post: RawPost) -> Post:
+            return Post(
+                self,
+                raw_post["text"],
+                "http://t.tt/" + str(self.get_id(raw_post)),
+                nickname="Mock",
+            )
+
+        def set_raise352(self, value: bool):
+            self.raise352 = value
+
+        @retry_for_352  # type: ignore 保证接收self、target参数，返回list即可
+        async def get_sub_list(self, t: Target):
+            await self.ctx.get_client(t)
+            if not self.raise352:
+                if self.sub_index == 0:
+                    self.sub_index += 1
+                    return [raw_post_1]
+                return [raw_post_1, raw_post_2]
+            else:
+                raise ApiCode352Error(URL("http://t.tt/1"))
+
+    class MockClientManager(ClientManager):
+        get_client_call_count = 0
+        get_client_for_static_call_count = 0
+        get_query_name_client_call_count = 0
+        refresh_client_call_count = 0
+
+        async def get_client(self, target: Target | None):
+            self.get_client_call_count += 1
+            return http_client()
+
+        async def get_client_for_static(self):
+            self.get_client_for_static_call_count += 1
+            return http_client()
+
+        async def get_query_name_client(self):
+            self.get_query_name_client_call_count += 1
+            return http_client()
+
+        async def refresh_client(self):
+            self.refresh_client_call_count += 1
+
+    fakebili = MockPlatform(ProcessContext(MockClientManager()))
+    client_mgr = fakebili.ctx._client_mgr
+    assert isinstance(client_mgr, MockClientManager)
+    assert client_mgr.get_client_call_count == 0
+    assert client_mgr.get_client_for_static_call_count == 0
+    assert client_mgr.get_query_name_client_call_count == 0
+    assert client_mgr.refresh_client_call_count == 0
+
+    # 无异常
+    res: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
+    assert len(res) == 1
+    assert res[0]["id"] == 1
+    assert client_mgr.get_client_call_count == 1
+    assert client_mgr.refresh_client_call_count == 0
+
+    res = await fakebili.get_sub_list(Target("1"))  # type: ignore
+    assert len(res) == 2
+    assert res[0]["id"] == 1
+    assert res[1]["id"] == 2
+    assert client_mgr.get_client_call_count == 2
+    assert client_mgr.refresh_client_call_count == 0
+
+    # 有异常
+    fakebili.set_raise352(True)
+    for i in range(MAX_352_RETRY_COUNT):
+        res1: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
+        assert len(res1) == 0
+        assert client_mgr.get_client_call_count == 3 + i
+        assert client_mgr.refresh_client_call_count == i + 1
+    # 超过最大重试次数，抛出异常
+    with pytest.raises(ApiError):
+        await fakebili.get_sub_list(Target("1"))
 
 
 @pytest.mark.asyncio

@@ -3,7 +3,6 @@ import json
 from copy import deepcopy
 from functools import wraps
 from enum import Enum, unique
-from inspect import signature
 from typing_extensions import Self
 from typing import TypeVar, NamedTuple
 from collections.abc import Callable, Awaitable
@@ -40,6 +39,7 @@ from .models import (
 )
 
 B = TypeVar("B", bound="Bilibili")
+MAX_352_RETRY_COUNT = 3
 
 
 class ApiCode352Error(Exception):
@@ -51,20 +51,16 @@ class ApiCode352Error(Exception):
 def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
     retried_times = 0
 
-    # 获取函数的第一个参数
-    sig = signature(func)
-    bilibili: Bilibili = sig.parameters["self"].annotation
-
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(bls: B, *args, **kwargs):
         nonlocal retried_times
         try:
-            res = await func(*args, **kwargs)
+            res = await func(bls, *args, **kwargs)
         except ApiCode352Error as e:
-            if retried_times < 3:
+            if retried_times < MAX_352_RETRY_COUNT:
                 retried_times += 1
-                logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/3")
-                await bilibili.ctx.refresh_client()
+                logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/{MAX_352_RETRY_COUNT}")
+                await bls.ctx.refresh_client()
                 logger.success("已尝试刷新cookie")
                 return []  # 返回空列表
             else:

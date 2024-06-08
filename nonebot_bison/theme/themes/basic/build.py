@@ -22,12 +22,12 @@ class BasicTheme(Theme):
 
         text += f"{post.title}\n\n" if post.title else ""
 
-        text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        text += post.get_content() if len(post.get_content()) < 500 else f"{post.get_content()[:500]}..."
 
         if rp := post.repost:
             text += f"\n--------------\n转发自 {rp.nickname or ''}:\n"
             text += f"{rp.title}\n\n" if rp.title else ""
-            text += rp.content if len(rp.content) < 500 else f"{rp.content[:500]}..."
+            text += rp.get_content() if len(rp.get_content()) < 500 else f"{rp.get_content()[:500]}..."
 
         text += "\n--------------\n"
 

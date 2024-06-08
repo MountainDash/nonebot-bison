@@ -44,6 +44,9 @@ class Post(AbstractPost):
     repost: "Post | None" = None
     """转发的Post"""
 
+    def get_content(self) -> str | None:
+        return self.content
+
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
         return plugin_config.bison_platform_theme.get(self.platform.platform_name)
@@ -90,7 +93,7 @@ class Post(AbstractPost):
 
         post_format = f"""## Post: {id(self):X} ##
 
-{self.content if len(self.content) < 200 else self.content[:200] + '...'}
+{self.get_content() if len(self.get_content()) < 200 else self.get_content()[:200] + '...'}
 
 来源: <Platform {self.platform.platform_name}>
 """

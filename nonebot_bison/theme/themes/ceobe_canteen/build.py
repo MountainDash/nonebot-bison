@@ -75,7 +75,7 @@ class CeobeCanteenTheme(Theme):
         if head_pic is not None and not isinstance(head_pic, str):
             raise ThemeRenderUnsupportError("post.images[0] is not str")
 
-        content = CeoboContent(image=head_pic, text=post.content)
+        content = CeoboContent(image=head_pic, text=post.get_content())
         return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:

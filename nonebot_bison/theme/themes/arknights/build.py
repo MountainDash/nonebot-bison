@@ -44,7 +44,7 @@ class ArknightsTheme(Theme):
 
         ark_data = ArkData(
             announce_title=post.title,
-            content=post.content,
+            content=post.get_content(),
             banner_image_url=banner,
         )
 

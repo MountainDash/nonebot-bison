@@ -32,12 +32,12 @@ class Ht2iTheme(Theme):
 
         md_text += f"## {post.title}\n\n" if post.title else ""
 
-        md_text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        md_text += post.get_content() if len(post.get_content()) < 500 else f"{post.get_content()[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
-            md_text += ">  \n> " + rp.content if len(rp.content) < 500 else f"{rp.content[:500]}..." + "  \n"
+            md_text += ">  \n> " + rp.get_content() if len(rp.get_content()) < 500 else f"{rp.get_content()[:500]}..." + "  \n"
         md_text += "\n\n"
 
         md_text += f"###### 来源: {post.platform.name} {post.nickname or ''}\n"

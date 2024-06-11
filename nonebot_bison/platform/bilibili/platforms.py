@@ -134,11 +134,11 @@ class Bilibili(NewMessage):
         # -352: 需要cookie
         if res_obj.code == 0:
             if (data := res_obj.data) and (items := data.items):
-                logger.debug(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
-                logger.debug(f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
+                logger.trace(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
+                logger.trace(f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
                 return [item for item in items if item.type != "DYNAMIC_TYPE_NONE"]
 
-            logger.debug(f"获取用户{target}的动态列表成功，但是没有动态")
+            logger.trace(f"获取用户{target}的动态列表成功，但是没有动态")
             return []
         elif res_obj.code == -352:
             raise ApiCode352Error(res.request.url)
@@ -206,16 +206,11 @@ class Bilibili(NewMessage):
             pics: list[str]
             url: str | None = None
 
-        def make_common_dynamic_url() -> str:
-            return f"https://t.bilibili.com/{raw_post.id_str}"
-
-        def get_desc_text() -> str:
-            dyn = raw_post.modules.module_dynamic
-            return dyn.desc.text if dyn.desc else ""
+        dyn = raw_post.modules.module_dynamic
 
         match raw_post.modules.module_dynamic.major:
             case VideoMajor(archive=archive):
-                desc_text = get_desc_text()
+                desc_text = dyn.desc.text if dyn.desc else ""
                 parsed = self._text_process(desc_text, archive.desc, archive.title)
                 return ParsedPost(
                     title=parsed.title,
@@ -248,9 +243,9 @@ class Bilibili(NewMessage):
             case DrawMajor(draw=draw):
                 return ParsedPost(
                     title="",
-                    content=get_desc_text(),
+                    content=dyn.desc.text if dyn.desc else "",
                     pics=[item.src for item in draw.items],
-                    url=make_common_dynamic_url(),
+                    url=f"https://t.bilibili.com/{raw_post.id_str}",
                 )
             case PGCMajor(pgc=pgc):
                 return ParsedPost(
@@ -285,9 +280,9 @@ class Bilibili(NewMessage):
             case None:  # 没有major的情况
                 return ParsedPost(
                     title="",
-                    content=get_desc_text(),
+                    content=dyn.desc.text if dyn.desc else "",
                     pics=[],
-                    url=make_common_dynamic_url(),
+                    url=f"https://t.bilibili.com/{raw_post.id_str}",
                 )
             case _:
                 raise CategoryNotSupport(f"{raw_post.id_str=}")

@@ -25,7 +25,7 @@ class BilibiliClientManager(ClientManager):
             await page.goto(f"https://space.bilibili.com/{randint(1, 1000)}/dynamic")
             await page.wait_for_load_state("load")
             cookies = await page.context.cookies()
-            await page.close()
+
         return cookies
 
     async def _reset_client_cookies(self, cookies: list[Cookie]):

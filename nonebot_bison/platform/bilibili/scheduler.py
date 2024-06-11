@@ -3,7 +3,7 @@ from typing_extensions import override
 
 from httpx import AsyncClient
 from nonebot import logger, require
-from playwright.async_api import Page, Cookie
+from playwright.async_api import Cookie
 
 from nonebot_bison.types import Target
 from nonebot_bison.utils import Site, ClientManager, http_client
@@ -21,11 +21,11 @@ class BilibiliClientManager(ClientManager):
 
     async def _get_cookies(self) -> list[Cookie]:
         browser = await get_browser()
-        page: Page = await browser.new_page()
-        await page.goto(f"https://space.bilibili.com/{randint(1, 1000)}/dynamic")
-        await page.wait_for_load_state("load")
-        cookies = await page.context.cookies()
-        await page.close()
+        async with await browser.new_page() as page:
+            await page.goto(f"https://space.bilibili.com/{randint(1, 1000)}/dynamic")
+            await page.wait_for_load_state("load")
+            cookies = await page.context.cookies()
+            await page.close()
         return cookies
 
     async def _reset_client_cookies(self, cookies: list[Cookie]):

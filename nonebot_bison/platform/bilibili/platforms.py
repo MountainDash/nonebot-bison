@@ -16,7 +16,7 @@ from nonebot.compat import type_validate_json, type_validate_python
 
 from nonebot_bison.post.post import Post
 from nonebot_bison.compat import model_rebuild
-from nonebot_bison.utils import decode_escapes, text_similarity
+from nonebot_bison.utils import text_similarity, decode_unicode_escapes
 from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
 
 from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
@@ -178,12 +178,6 @@ class Bilibili(NewMessage):
         if raw_post.topic:
             tags.append(raw_post.topic.name)
         if desc := raw_post.modules.module_dynamic.desc:
-            # {
-            #    "jump_url": "//search.bilibili.com/all?keyword=鸣潮公测定档",
-            #    "orig_text": "#鸣潮公测定档#",
-            #    "text": "#鸣潮公测定档#",
-            #    "type": "RICH_TEXT_NODE_TYPE_TOPIC"
-            # }
             for node in desc.rich_text_nodes:
                 if (node_type := node.get("type", None)) and node_type == "RICH_TEXT_NODE_TYPE_TOPIC":
                     tags.append(node["text"].strip("#"))
@@ -309,7 +303,7 @@ class Bilibili(NewMessage):
 
         post = Post(
             self,
-            content=decode_escapes(parsed_raw_post.content),
+            content=decode_unicode_escapes(parsed_raw_post.content),
             title=parsed_raw_post.title,
             images=list(parsed_raw_post.pics),
             timestamp=self.get_date(raw_post),
@@ -322,7 +316,7 @@ class Bilibili(NewMessage):
             assert orig
             post.repost = Post(
                 self,
-                content=decode_escapes(parsed_raw_repost.content),
+                content=decode_unicode_escapes(parsed_raw_repost.content),
                 title=parsed_raw_repost.title,
                 images=list(parsed_raw_repost.pics),
                 timestamp=self.get_date(orig),

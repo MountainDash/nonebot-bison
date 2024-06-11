@@ -100,7 +100,7 @@ def text_similarity(str1: str, str2: str) -> float:
     return t / min(len(str1), len(str2))
 
 
-def decode_escapes(s: str):
+def decode_unicode_escapes(s: str):
     """解码 \\r, \\n, \\t, \\uXXXX 等转义序列"""
 
     def decode_match(match: re.Match[str]) -> str:

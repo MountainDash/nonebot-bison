@@ -94,7 +94,21 @@ class PostAPI(APIBase):
 
         class Desc(Base):
             rich_text_nodes: list[dict[str, Any]]
-            """描述的富文本节点，组成动态的各种内容"""
+            """描述的富文本节点，组成动态的各种内容
+
+            一个可能通用的结构:
+            ```json
+            [
+                {
+                    "jump_url": "//search.bilibili.com/all?keyword=鸣潮公测定档",
+                    "orig_text": "#鸣潮公测定档#",
+                    "text": "#鸣潮公测定档#",
+                    "type": "RICH_TEXT_NODE_TYPE_TOPIC"
+                },
+                //...
+            ]
+            ```
+            """
             text: str
             """描述的纯文本内容"""
 

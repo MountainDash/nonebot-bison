@@ -1,3 +1,5 @@
+from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
@@ -53,9 +55,15 @@ class Ht2iTheme(Theme):
         if urls:
             msgs.append(Text("\n".join(urls)))
 
+        pics_group: list[list[str | bytes | Path | BytesIO]] = []
         if post.images:
-            client = await post.platform.ctx.get_client_for_static()
-            pics = post.images
+            pics_group.append(post.images)
+        if rp and rp.images:
+            pics_group.append(rp.images)
+
+        client = await post.platform.ctx.get_client_for_static()
+
+        for pics in pics_group:
             if is_pics_mergable(pics):
                 pics = await pic_merge(list(pics), client)
             msgs.extend(map(Image, pics))

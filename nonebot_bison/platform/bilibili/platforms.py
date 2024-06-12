@@ -72,6 +72,18 @@ def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
     return wrapper
 
 
+class _ProcessedText(NamedTuple):
+    title: str
+    content: str
+
+
+class _ParsedMojarPost(NamedTuple):
+    title: str
+    content: str
+    pics: list[str]
+    url: str | None = None
+
+
 class Bilibili(NewMessage):
     categories = {
         1: "一般动态",
@@ -183,10 +195,7 @@ class Bilibili(NewMessage):
                     tags.append(node["text"].strip("#"))
         return tags
 
-    def _text_process(self, dynamic: str, desc: str, title: str):
-        class _ProcessedText(NamedTuple):
-            title: str
-            content: str
+    def _text_process(self, dynamic: str, desc: str, title: str) -> _ProcessedText:
 
         # 计算视频标题和视频描述相似度
         title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
@@ -199,20 +208,14 @@ class Bilibili(NewMessage):
         else:
             return _ProcessedText(title, f"{desc}" + (f"\n=================\n{dynamic}" if dynamic else ""))
 
-    def _major_parser(self, raw_post: DynRawPost):
-        class ParsedPost(NamedTuple):
-            title: str
-            content: str
-            pics: list[str]
-            url: str | None = None
-
+    def pre_parse_by_mojar(self, raw_post: DynRawPost) -> _ParsedMojarPost:
         dyn = raw_post.modules.module_dynamic
 
         match raw_post.modules.module_dynamic.major:
             case VideoMajor(archive=archive):
                 desc_text = dyn.desc.text if dyn.desc else ""
                 parsed = self._text_process(desc_text, archive.desc, archive.title)
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=parsed.title,
                     content=parsed.content,
                     pics=[archive.cover],
@@ -220,56 +223,56 @@ class Bilibili(NewMessage):
                 )
             case LiveRecommendMajor(live_rcmd=live_rcmd):
                 live_play_info = type_validate_json(LiveRecommendMajor.Content, live_rcmd.content).live_play_info
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=live_play_info.title,
                     content=f"{live_play_info.parent_area_name} {live_play_info.area_name}",
                     pics=[live_play_info.cover],
                     url=URL(live_play_info.link).with_scheme("https").with_query(None).human_repr(),
                 )
             case LiveMajor(live=live):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=live.title,
                     content=f"{live.desc_first}\n{live.desc_second}",
                     pics=[live.cover],
                     url=URL(live.jump_url).with_scheme("https").human_repr(),
                 )
             case ArticleMajor(article=article):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=article.title,
                     content=article.desc,
                     pics=article.covers,
                     url=URL(article.jump_url).with_scheme("https").human_repr(),
                 )
             case DrawMajor(draw=draw):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title="",
                     content=dyn.desc.text if dyn.desc else "",
                     pics=[item.src for item in draw.items],
                     url=f"https://t.bilibili.com/{raw_post.id_str}",
                 )
             case PGCMajor(pgc=pgc):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=pgc.title,
                     content="",
                     pics=[pgc.cover],
                     url=URL(pgc.jump_url).with_scheme("https").human_repr(),
                 )
             case OPUSMajor(opus=opus):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=opus.title,
                     content=opus.summary.text,
                     pics=[pic.url for pic in opus.pics],
                     url=URL(opus.jump_url).with_scheme("https").human_repr(),
                 )
             case CommonMajor(common=common):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=common.title,
                     content=common.desc,
                     pics=[common.cover],
                     url=URL(common.jump_url).with_scheme("https").human_repr(),
                 )
             case CoursesMajor(courses=courses):
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title=courses.title,
                     content=f"{courses.sub_title}\n{courses.desc}",
                     pics=[courses.cover],
@@ -278,7 +281,7 @@ class Bilibili(NewMessage):
             case UnknownMajor(type=unknown_type):
                 raise CategoryNotSupport(unknown_type)
             case None:  # 没有major的情况
-                return ParsedPost(
+                return _ParsedMojarPost(
                     title="",
                     content=dyn.desc.text if dyn.desc else "",
                     pics=[],
@@ -288,11 +291,11 @@ class Bilibili(NewMessage):
                 raise CategoryNotSupport(f"{raw_post.id_str=}")
 
     async def parse(self, raw_post: DynRawPost) -> Post:
-        parsed_raw_post = self._major_parser(raw_post)
+        parsed_raw_post = self.pre_parse_by_mojar(raw_post)
         parsed_raw_repost = None
         if self._do_get_category(raw_post.type) == Category(5):
             if raw_post.orig:
-                parsed_raw_repost = self._major_parser(raw_post.orig)
+                parsed_raw_repost = self.pre_parse_by_mojar(raw_post.orig)
             else:
                 logger.warning(f"转发动态{raw_post.id_str}没有原动态")
 

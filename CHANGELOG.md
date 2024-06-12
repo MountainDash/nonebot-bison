@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- 🐛 补充主题渲染时遗漏的转发推文中的图片 [@AzideCupric](https://github.com/AzideCupric) ([#554](https://github.com/MountainDash/nonebot-bison/pull/554))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#521](https://github.com/MountainDash/nonebot-bison/pull/521))
 
 ### 新功能

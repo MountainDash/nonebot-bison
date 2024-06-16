@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Literal
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Awaitable
+
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme

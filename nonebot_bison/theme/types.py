@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
-from collections.abc import Awaitable, Callable
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Awaitable
 
 from nonebot import logger, require
 from pydantic import BaseModel, PrivateAttr

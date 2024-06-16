@@ -1,7 +1,7 @@
 from pathlib import Path
 from dataclasses import dataclass
-from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Literal
+from collections.abc import Callable, Awaitable
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
@@ -30,8 +30,9 @@ class ArknightsTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    async def render(self, post: "Post",content_handler: Callable[[str], Awaitable[str]] | None = None):
+    async def render(self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None):
         from nonebot_plugin_htmlrender import template_to_pic
+
         post_content = post.content
         if callable(content_handler):
             post_content = await content_handler(post_content)

@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 from collections.abc import Callable, Awaitable
-from dataclasses import fields, dataclass, field
+from dataclasses import field, fields, dataclass
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory

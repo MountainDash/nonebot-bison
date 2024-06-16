@@ -61,7 +61,6 @@ def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
                 retried_times += 1
                 logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/{MAX_352_RETRY_COUNT}")
                 await bls.ctx.refresh_client()
-                logger.success("已尝试刷新cookie")
                 return []  # 返回空列表
             else:
                 raise ApiError(e.args[0])

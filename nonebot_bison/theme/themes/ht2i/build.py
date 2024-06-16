@@ -1,7 +1,6 @@
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
-from collections.abc import Callable, Awaitable
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
@@ -30,8 +29,9 @@ class Ht2iTheme(Theme):
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
-    async def render(self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None):
+    async def render(self, post: "Post"):
         post_content = post.content
+        content_handler = post.get_content_handler(self.name)
         if callable(content_handler):
             post_content = await content_handler(post_content)
         md_text = ""

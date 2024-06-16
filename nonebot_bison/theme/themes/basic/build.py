@@ -1,7 +1,6 @@
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
-from collections.abc import Callable, Awaitable
 
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
@@ -20,10 +19,9 @@ class BasicTheme(Theme):
 
     name: Literal["basic"] = "basic"
 
-    async def render(
-        self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None
-    ) -> list[MessageSegmentFactory]:
+    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
         post_content = post.content
+        content_handler = post.get_content_handler(self.name)
         if callable(content_handler):
             post_content = await content_handler(post_content)
 

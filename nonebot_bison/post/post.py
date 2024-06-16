@@ -65,6 +65,10 @@ class Post(AbstractPost):
             themes_by_priority.append("basic")
         return themes_by_priority
 
+    def get_content_handler(self, theme_name: str) -> Callable[[str], Awaitable[str]] | None:
+        """获取主题对应的content处理函数"""
+        return self.content_handlers.get(theme_name, None)
+
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
         themes = self.get_priority_themes()
@@ -99,7 +103,7 @@ class Post(AbstractPost):
 """
         post_format += "附加信息:\n"
         for class_field in fields(self):
-            if class_field.name in ("content", "platform", "repost", "content_handlers"):
+            if class_field.name in ("content", "platform", "repost"):
                 continue
             value = getattr(self, class_field.name)
             if value is not None:

@@ -11,13 +11,8 @@ from PIL import Image as PILImage
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.compat import model_validator
-<<<<<<< HEAD
-from nonebot_bison.theme.utils import convert_to_qr
-from nonebot_bison.utils.image import pic_merge, is_pics_mergable
-=======
 from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme.utils import convert_to_qr, web_embed_image
->>>>>>> 3c438a4 (:sparkles: 适配ceobecanteen平台)
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:

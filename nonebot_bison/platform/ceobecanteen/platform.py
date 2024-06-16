@@ -91,7 +91,7 @@ class CeobeCanteen(NewMessage):
         target_uuids = (await self.data_source_cache.get_all()).keys()
         comb_id = await self.get_comb_id(list(target_uuids))
 
-        logger.debug(f"use comb_id: {comb_id}")
+        logger.trace(f"use comb_id: {comb_id}")
         return comb_id
 
     async def get_latest_cookie_id(self, comb_id: str):

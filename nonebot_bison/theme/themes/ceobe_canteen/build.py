@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
-
+from collections.abc import Awaitable, Callable
 import jinja2
 from pydantic import BaseModel
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
@@ -75,10 +75,10 @@ class CeobeCanteenTheme(Theme):
         if head_pic is not None and not isinstance(head_pic, str):
             raise ThemeRenderUnsupportError("post.images[0] is not str")
 
-        content = CeoboContent(image=head_pic, text=post.get_content())
+        content = CeoboContent(image=head_pic, text=post.content)
         return CeobeCard(info=info, content=content, qr=convert_to_qr(post.url or "No URL"))
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
+    async def render(self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None) -> list[MessageSegmentFactory]:
         ceobe_card = self.parse(post)
         from nonebot_plugin_htmlrender import get_new_page
 

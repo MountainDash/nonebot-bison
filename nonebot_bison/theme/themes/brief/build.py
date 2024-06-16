@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Literal
-
+from collections.abc import Awaitable, Callable
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.utils import pic_merge, is_pics_mergable
@@ -14,7 +14,7 @@ class BriefTheme(Theme):
 
     name: Literal["brief"] = "brief"
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
+    async def render(self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None) -> list[MessageSegmentFactory]:
         if not post.title:
             raise ThemeRenderUnsupportError("Post has no title")
         text = f"{post.title}\n\n"

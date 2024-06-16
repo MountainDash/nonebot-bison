@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from collections.abc import Awaitable, Callable
 from abc import ABC, abstractmethod
 
 from nonebot import logger, require
@@ -32,14 +33,16 @@ class Theme(ABC, BaseModel):
         if self.need_browser:
             self.check_htmlrender_plugin_enable()
 
-    async def do_render(self, post: "AbstractPost") -> list[MessageSegmentFactory]:
+    async def do_render(
+        self, post: "AbstractPost", content_handler: Callable[[str], Awaitable[str]] | None = None
+    ) -> list[MessageSegmentFactory]:
         """真正调用的渲染函数，会对渲染过程进行一些处理"""
         if not await self.is_support_render(post):
             raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {post} by support check")
 
         await self.prepare()
 
-        return await self.render(post)
+        return await self.render(post, content_handler)
 
     def check_htmlrender_plugin_enable(self):
         """根据`need_browser`检测渲染插件"""
@@ -55,7 +58,9 @@ class Theme(ABC, BaseModel):
                 raise e
 
     @abstractmethod
-    async def render(self, post: "AbstractPost") -> list[MessageSegmentFactory]:
+    async def render(
+        self, post: "AbstractPost", content_handler: Callable[[str], Awaitable[str]] | None = None
+    ) -> list[MessageSegmentFactory]:
         """对多种Post的实例可以考虑使用@overload"""
         ...
 

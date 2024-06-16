@@ -67,7 +67,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     assert not detail_router.called
     post: Post = res3[0][1][0]
     assert post.platform.platform_name == "weibo"
-    assert post.get_content() == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
+    assert post.content == "#明日方舟#\nSideStory「沃伦姆德的薄暮」复刻现已开启！ "
     assert post.url == "https://weibo.com/6279793937/KkBtUx2dv"
     assert post.nickname == "明日方舟Arknights"
     assert post.images
@@ -83,7 +83,7 @@ async def test_fetch_repost(weibo):
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][3]
     post = await weibo.parse(raw_post)
     # 正文
-    assert post.get_content() == (
+    assert post.content == (
         "恭喜@黄防护服黄 等10名用户获得【音律联觉主题黑胶礼盒各一套】。微博官方唯一抽奖工具"
         + "@微博抽奖平台 -高级版对本次抽奖进行监督，结果公正有效。公示链接：微博抽奖平台"
     )
@@ -93,7 +93,7 @@ async def test_fetch_repost(weibo):
     assert post.repost is not None
     repost = post.repost
     assert repost_detail_router.called
-    assert repost.get_content() == (
+    assert repost.content == (
         "#明日方舟# #音律联觉#\n"
         "2021明日方舟音律联觉Ambience Synesthesia专场演出官方录播将于6月12日10:30正式上线，"
         "本次录播为大会员专享，相关信息可关注 网页链接( http://mrfz.biligame.com/yllj/ )\n\n"
@@ -156,7 +156,7 @@ async def test_parse_long(weibo):
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)
-    assert "全文" not in post.get_content()
+    assert "全文" not in post.content
     assert detail_router.called
 
 

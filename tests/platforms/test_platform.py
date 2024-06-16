@@ -336,7 +336,7 @@ async def test_new_message_target_without_cats_tags(mock_platform_without_cats_t
     assert len(res2) == 1
     posts_1 = res2[0][1]
     assert len(posts_1) == 3
-    id_set_1 = {x.get_content() for x in posts_1}
+    id_set_1 = {x.content for x in posts_1}
     assert "p2" in id_set_1
     assert "p3" in id_set_1
     assert "p4" in id_set_1
@@ -368,9 +368,9 @@ async def test_new_message_target(mock_platform, user_info_factory):
     assert len(posts_1) == 2
     assert len(posts_2) == 1
     assert len(posts_3) == 1
-    id_set_1 = {x.get_content() for x in posts_1}
-    id_set_2 = {x.get_content() for x in posts_2}
-    id_set_3 = {x.get_content() for x in posts_3}
+    id_set_1 = {x.content for x in posts_1}
+    id_set_2 = {x.content for x in posts_2}
+    id_set_3 = {x.content for x in posts_3}
     assert "p2" in id_set_1
     assert "p3" in id_set_1
     assert "p2" in id_set_2
@@ -403,9 +403,9 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
     assert len(posts_1) == 2
     assert len(posts_2) == 1
     assert len(posts_3) == 1
-    id_set_1 = {x.get_content() for x in posts_1}
-    id_set_2 = {x.get_content() for x in posts_2}
-    id_set_3 = {x.get_content() for x in posts_3}
+    id_set_1 = {x.content for x in posts_1}
+    id_set_2 = {x.content for x in posts_2}
+    id_set_3 = {x.content for x in posts_3}
     assert "p2" in id_set_1
     assert "p3" in id_set_1
     assert "p2" in id_set_2
@@ -431,7 +431,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 1
-    assert posts[0].get_content() == "on"
+    assert posts[0].content == "on"
     res3 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(
             Target("dummy"),
@@ -443,7 +443,7 @@ async def test_status_change(mock_status_change, user_info_factory):
     )
     assert len(res3) == 2
     assert len(res3[0][1]) == 1
-    assert res3[0][1][0].get_content() == "off"
+    assert res3[0][1][0].content == "off"
     assert len(res3[1][1]) == 0
     res4 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -472,7 +472,7 @@ async def test_group(
     assert len(res2) == 1
     posts = res2[0][1]
     assert len(posts) == 2
-    id_set_2 = {x.get_content() for x in posts}
+    id_set_2 = {x.content for x in posts}
     assert "p2" in id_set_2
     assert "p6" in id_set_2
     res3 = await group_platform.fetch_new_post(SubUnit(dummy, [user_info_factory([1, 4], [])]))
@@ -560,7 +560,7 @@ async def test_batch_fetch_new_message(app: App):
     send_set = set()
     for platform_target, posts in res2:
         for post in posts:
-            send_set.add((platform_target, post.get_content()))
+            send_set.add((platform_target, post.content))
     assert (TargetQQGroup(group_id=123), "p3") in send_set
     assert (TargetQQGroup(group_id=123), "p4") in send_set
     assert (TargetQQGroup(group_id=234), "p4") in send_set
@@ -636,7 +636,7 @@ async def test_batch_fetch_compare_status(app: App):
     send_set = set()
     for platform_target, posts in res2:
         for post in posts:
-            send_set.add((platform_target, post.get_content()))
+            send_set.add((platform_target, post.content))
     assert len(send_set) == 3
     assert (TargetQQGroup(group_id=123), "off") in send_set
     assert (TargetQQGroup(group_id=123), "on") in send_set

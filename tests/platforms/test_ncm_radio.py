@@ -54,7 +54,7 @@ async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo
     res2 = await ncm_radio.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     post: Post = res2[0][1][0]
     assert post.platform.platform_name == "ncm-radio"
-    assert post.get_content() == "网易云电台更新：「松烟行动」灰齐山麓"
+    assert post.content == "网易云电台更新：「松烟行动」灰齐山麓"
     assert post.url == "https://music.163.com/#/program/2494997688"
     assert post.images == ["http://p1.music.126.net/H5em5xUNIYXcjJhOmeaSqQ==/109951166647436789.jpg"]
     assert post.nickname == "《明日方舟》游戏原声OST"

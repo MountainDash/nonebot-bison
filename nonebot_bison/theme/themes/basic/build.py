@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Literal
-
+from collections.abc import Awaitable, Callable
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme
@@ -17,17 +17,26 @@ class BasicTheme(Theme):
 
     name: Literal["basic"] = "basic"
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
+    async def render(
+        self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None
+    ) -> list[MessageSegmentFactory]:
+        post_content = post.content
+        if callable(content_handler):
+            post_content = await content_handler(post_content)
+
         text = ""
 
         text += f"{post.title}\n\n" if post.title else ""
 
-        text += post.get_plaintext() if len(post.get_plaintext()) < 500 else f"{post.get_plaintext()[:500]}..."
+        text += post_content if len(post_content) < 500 else f"{post_content[:500]}..."
 
         if rp := post.repost:
+            rp_content = rp.content
+            if callable(content_handler):
+                rp_content = await content_handler(rp_content)
             text += f"\n--------------\n转发自 {rp.nickname or ''}:\n"
             text += f"{rp.title}\n\n" if rp.title else ""
-            text += rp.get_plaintext() if len(rp.get_plaintext()) < 500 else f"{rp.get_plaintext()[:500]}..."
+            text += rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..."
 
         text += "\n--------------\n"
 

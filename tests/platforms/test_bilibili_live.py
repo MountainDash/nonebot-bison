@@ -79,7 +79,7 @@ async def test_fetch_first_live(bili_live, dummy_only_open_user_subinfo):
     post2: Post = res2[0][1][0]
     assert post2.platform.name == "Bilibili直播"
     assert post2.title == "[开播] 【Zc】从0挑战到15肉鸽！目前10难度"
-    assert post2.get_content() == ""
+    assert post2.content == ""
     assert post2.url == "https://live.bilibili.com/3044248"
     assert post2.nickname == "魔法Zc目录 其他单机"
     assert post2.images == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]

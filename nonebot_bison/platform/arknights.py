@@ -60,33 +60,33 @@ class ArknightsSite(Site):
     schedule_setting = {"seconds": 30}
 
 
-class ArknightsBuiltinAnnouncePost(Post):
-    def get_plaintext(self) -> str | None:
-        def cleantext(text: str, old_split="\n", new_split="\n") -> str:
-            lines = text.strip().split(old_split)
-            cleaned_lines = [line.strip() for line in lines if line != ""]
-            result = new_split.join(cleaned_lines)
-            return result.split()
+async def handle_content_basic(content: str) -> str:
+    def cleantext(text: str, old_split="\n", new_split="\n") -> str:
+        lines = text.strip().split(old_split)
+        cleaned_lines = [line.strip() for line in lines if line != ""]
+        result = new_split.join(cleaned_lines)
+        return "\n".join(result.split())
 
-        text = html.unescape(self.content)  # 转义HTML特殊字符
-        text = re.sub(
-            r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
-            r"==\4==\n",
-            text,
-            flags=re.DOTALL,
-        )  # 去“标题型”p
-        text = re.sub(
-            r'\<p style="text-align:(left|right);"?\>(.*?)\<\/p\>',
-            r"\2\n",
-            text,
-            flags=re.DOTALL,
-        )  # 去左右对齐的p
-        text = re.sub(r"\<p\>(.*?)\</p\>", r"\1\n", text, flags=re.DOTALL)  # 去普通p
-        text = re.sub(r"<br/>", "\n", text)  # 去br
-        text = re.sub(r"\<strong\>(.*?)\</strong\>", r"**\1**", text)  # 去strong
-        text = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", text)  # 去color
-        text = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", text)  # 去img
-        return cleantext(text)
+    content = html.unescape(content)  # 转义HTML特殊字符
+    content = re.sub(
+        r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
+        r"==\4==\n",
+        content,
+        flags=re.DOTALL,
+    )  # 去“标题型”p
+    content = re.sub(
+        r'\<p style="text-align:(left|right);"?\>(.*?)\<\/p\>',
+        r"\2\n",
+        content,
+        flags=re.DOTALL,
+    )  # 去左右对齐的p
+    content = re.sub(r"\<p\>(.*?)\</p\>", r"\1\n", content, flags=re.DOTALL)  # 去普通p
+    content = re.sub(r'\<a href="(.*?)" target="_blank">(.*?)\<\/a\>', r"\1", content, flags=re.DOTALL)  # 去a
+    content = re.sub(r"<br/>", "\n", content)  # 去br
+    content = re.sub(r"\<strong\>(.*?)\</strong\>", r"**\1**", content)  # 去strong
+    content = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", content)  # 去color
+    content = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", content)  # 去img
+    return cleantext(content)
 
 
 class Arknights(NewMessage):
@@ -139,7 +139,7 @@ class Arknights(NewMessage):
             # 只有一张图片
             title = title_escape(data.title)
 
-        return ArknightsBuiltinAnnouncePost(
+        return Post(
             self,
             content=data.content,
             title=title,
@@ -148,6 +148,7 @@ class Arknights(NewMessage):
             url=(url.human_repr() if (url := URL(data.jump_link)).scheme.startswith("http") else None),
             timestamp=data.updated_at,
             compress=True,
+            content_handlers=[handle_content_basic],
         )
 
 

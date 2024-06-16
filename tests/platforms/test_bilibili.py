@@ -73,10 +73,10 @@ async def test_video_forward(bilibili, bing_dy_list):
     from nonebot_bison.post import Post
 
     post: Post = await bilibili.parse(bing_dy_list[1])
-    assert post.get_content() == """答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786"""
+    assert post.content == """答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786"""
     assert post.repost is not None
     # 注意原文前几行末尾是有空格的
-    assert post.repost.get_content() == (
+    assert post.repost.content == (
         "#可露希尔的秘密档案# \n"
         "11：来宿舍休息一下吧 \n"
         "档案来源：lambda:\\罗德岛内务\\秘密档案 \n"
@@ -97,7 +97,7 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
     # 视频简介和动态文本其中一方为空的情况
     post = await bilibili.parse(bing_dy_list[2])
     assert (
-        post.get_content()
+        post.content
         == "阿消的罗德岛闲谈直播#01:《女人最喜欢的女人，就是在战场上熠熠生辉的女人》"
         + "\n\n"
         + "本系列视频为饼组成员的有趣直播录播，主要内容为方舟相关，未来可能系列其他视频会包含部分饼组团建日常等。"
@@ -114,7 +114,7 @@ async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
 @pytest.mark.asyncio
 async def test_article_forward(bilibili: "Bilibili", bing_dy_list):
     post = await bilibili.parse(bing_dy_list[4])
-    assert post.get_content() == (
+    assert post.content == (
         "#明日方舟##饼学大厦#\n"
         "9.11专栏更新完毕，这还塌了实属没跟新运营对上\n"
         "后边除了周日发饼和PV没提及的中文语音，稳了\n"
@@ -122,7 +122,7 @@ async def test_article_forward(bilibili: "Bilibili", bing_dy_list):
         "https://t.bilibili.com/568093580488553786?tab=2"
     )
     assert post.repost is not None
-    assert post.repost.get_content() == (
+    assert post.repost.content == (
         "【明日方舟】饼学大厦#12~14（风暴瞭望&玛莉娅·临光&红松林&感谢庆典）"
         "9.11更新 更新记录09.11更新：覆盖09.10更新；以及排期更新，猜测周一周五开活动"
         "09.10更新：以周五开活动为底，PV/公告调整位置，整体结构更新"
@@ -139,7 +139,7 @@ async def test_article_forward(bilibili: "Bilibili", bing_dy_list):
 @pytest.mark.asyncio
 async def test_dynamic_forward(bilibili, bing_dy_list):
     post = await bilibili.parse(bing_dy_list[5])
-    assert post.get_content() == (
+    assert post.content == (
         "饼组主线饼学预测——9.11版\n"
         "①今日结果\n"
         "9.11 殿堂上的游禽-星极(x，新运营实锤了)\n"
@@ -151,7 +151,7 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
         "9.17 #罗德岛闲逛部#+新六星EP+EP09·风暴瞭望开启\n"
         "9.19 #罗德岛相簿#"
     )
-    assert post.repost.get_content() == (
+    assert post.repost.content == (
         "#明日方舟#\n"
         "【新增服饰】\n"
         "//殿堂上的游禽 - 星极\n"
@@ -205,7 +205,7 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     assert len(res2[0][1]) == 1
     post = res2[0][1][0]
     assert (
-        post.get_content()
+        post.content
         == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu"  # noqa: E501
         " 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，"
         "我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"

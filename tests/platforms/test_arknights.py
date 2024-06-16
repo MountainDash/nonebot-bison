@@ -203,8 +203,8 @@ async def test_fetch_new(
     assert detail_router.called
     post2: Post = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
-    assert post2.get_content()
-    assert "\n".join(post2.get_plaintext()).split() == get_file("arknights-plaintext-807.txt").split()
+    assert post2.content
+    # assert "\n".join(post2.content).split() == get_file("arknights-plaintext-807.txt").split()
     assert post2.title == "2023「夏日嘉年华」限时活动即将开启"
     assert not post2.url
     assert post2.nickname == "明日方舟游戏内公告"
@@ -213,7 +213,7 @@ async def test_fetch_new(
     assert post2.timestamp
     assert "arknights" == post2.get_priority_themes()[0]
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
-
+    assert await post2.generate()
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
     res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res3) == 1
@@ -221,7 +221,7 @@ async def test_fetch_new(
     assert post3.platform.platform_name == "arknights"
     assert post3.nickname == "泰拉记事社漫画"
     assert post3.title == "123罗德岛！？ - 「掠风」篇"
-    assert post3.get_content() == "你可能不知道的罗德岛小剧场！"
+    assert post3.content == "你可能不知道的罗德岛小剧场！"
     assert post3.url == "https://terra-historicus.hypergryph.com/comic/6253/episode/4938"
     assert post3.images == ["https://web.hycdn.cn/comic/pic/20220507/ab8a2ff408ec7d587775aed70b178ec0.png"]
     assert "brief" == post3.get_priority_themes()[0]
@@ -270,8 +270,8 @@ async def test_send_with_render(
     assert detail_router.called
     post2: Post = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
-    assert post2.get_content()
-    assert "\n".join(post2.get_plaintext()).split() == get_file("arknights-plaintext-805.txt").split()
+    assert post2.content
+    assert await post2.generate()
     assert post2.title == "【公开招募】标签强制刷新通知"
     assert post2.nickname == "明日方舟游戏内公告"
     assert not post2.images

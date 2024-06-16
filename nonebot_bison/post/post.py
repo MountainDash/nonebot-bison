@@ -2,7 +2,8 @@ import reprlib
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
-from dataclasses import fields, dataclass
+from collections.abc import Callable, Awaitable
+from dataclasses import fields, dataclass, field
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
@@ -43,12 +44,8 @@ class Post(AbstractPost):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
-
-    def get_content(self) -> str | None:
-        return self.content
-
-    def get_plaintext(self) -> str | None:
-        return self.content
+    content_handlers: list[Callable[[str], Awaitable[str]]] = field(default_factory=list)
+    """在`self.generate()`中处理文本的回调函数列表"""
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -68,14 +65,22 @@ class Post(AbstractPost):
             themes_by_priority.append("basic")
         return themes_by_priority
 
+    def get_content_handler(self, theme: str) -> Callable[[str], Awaitable[str]] | None:
+        """获取处理文本的回调函数"""
+        content_handler = [i for i in self.content_handlers if i.__name__ == f"handle_content_{theme}" and callable(i)]
+        if content_handler:
+            return content_handler[0]
+        return None
+
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
         themes = self.get_priority_themes()
         for theme_name in themes:
             if theme := theme_manager[theme_name]:
                 try:
+                    content_handler = self.get_content_handler(theme_name)
                     logger.debug(f"Try to render Post with theme {theme_name}")
-                    return await theme.do_render(self)
+                    return await theme.do_render(self, content_handler)
                 except ThemeRenderUnsupportError as e:
                     logger.warning(
                         f"Theme {theme_name} does not support Post of {self.platform.__class__.__name__}: {e}"
@@ -96,17 +101,17 @@ class Post(AbstractPost):
 
         post_format = f"""## Post: {id(self):X} ##
 
-{self.get_plaintext() if len(self.get_plaintext()) < 200 else self.get_plaintext()[:200] + '...'}
+{self.content if len(self.content) < 200 else self.content[:200] + '...'}
 
 来源: <Platform {self.platform.platform_name}>
 """
         post_format += "附加信息:\n"
-        for field in fields(self):
-            if field.name in ("content", "platform", "repost"):
+        for class_field in fields(self):
+            if class_field.name in ("content", "platform", "repost", "content_handlers"):
                 continue
-            value = getattr(self, field.name)
+            value = getattr(self, class_field.name)
             if value is not None:
-                post_format += f"- {field.name}: {aRepr.repr(value)}\n"
+                post_format += f"- {class_field.name}: {aRepr.repr(value)}\n"
 
         if self.repost:
             post_format += "\n转发:\n"

@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Literal
-
+from collections.abc import Awaitable, Callable
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme, ThemeRenderError
@@ -27,20 +27,26 @@ class Ht2iTheme(Theme):
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
-    async def render(self, post: "Post"):
+    async def render(self, post: "Post",content_handler: Callable[[str], Awaitable[str]] | None = None):
+        post_content = post.content
+        if callable(content_handler):
+            post_content = await content_handler(post_content)
         md_text = ""
 
         md_text += f"## {post.title}\n\n" if post.title else ""
 
-        md_text += post.get_content() if len(post.get_content()) < 500 else f"{post.get_content()[:500]}..."
+        md_text += post_content if len(post_content) < 500 else f"{post_content[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
+            rp_content = rp.content
+            if callable(content_handler):
+                rp_content = await content_handler(rp_content)
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
             md_text += (
-                ">  \n> " + rp.get_content()
-                if len(rp.get_content()) < 500
-                else f"{rp.get_content()[:500]}..." + "  \n"  # noqa: E501
+                ">  \n> " + rp_content
+                if len(rp_content) < 500
+                else f"{rp_content[:500]}..." + "  \n"  # noqa: E501
             )  # noqa: E501
         md_text += "\n\n"
 

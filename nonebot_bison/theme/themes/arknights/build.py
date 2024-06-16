@@ -32,10 +32,7 @@ class ArknightsTheme(Theme):
     async def render(self, post: "Post"):
         from nonebot_plugin_htmlrender import template_to_pic
 
-        post_content = post.content
-        content_handler = post.get_content_handler(self.name)
-        if callable(content_handler):
-            post_content = await content_handler(post_content)
+        post_content = await post.get_content(self.name)
 
         if not post.title:
             raise ThemeRenderUnsupportError("标题为空")

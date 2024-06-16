@@ -204,7 +204,6 @@ async def test_fetch_new(
     post2: Post = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
     assert post2.content
-    # assert "\n".join(post2.content).split() == get_file("arknights-plaintext-807.txt").split()
     assert post2.title == "2023「夏日嘉年华」限时活动即将开启"
     assert not post2.url
     assert post2.nickname == "明日方舟游戏内公告"

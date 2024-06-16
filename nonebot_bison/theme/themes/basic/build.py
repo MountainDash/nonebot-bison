@@ -20,10 +20,7 @@ class BasicTheme(Theme):
     name: Literal["basic"] = "basic"
 
     async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        post_content = post.content
-        content_handler = post.get_content_handler(self.name)
-        if callable(content_handler):
-            post_content = await content_handler(post_content)
+        post_content = await post.get_content(self.name)
 
         text = ""
 
@@ -32,9 +29,7 @@ class BasicTheme(Theme):
         text += post_content if len(post_content) < 500 else f"{post_content[:500]}..."
 
         if rp := post.repost:
-            rp_content = rp.content
-            if callable(content_handler):
-                rp_content = await content_handler(rp_content)
+            rp_content = await rp.get_content(self.name)
             text += f"\n--------------\n转发自 {rp.nickname or ''}:\n"
             text += f"{rp.title}\n\n" if rp.title else ""
             text += rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..."

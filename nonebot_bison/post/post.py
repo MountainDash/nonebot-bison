@@ -65,9 +65,11 @@ class Post(AbstractPost):
             themes_by_priority.append("basic")
         return themes_by_priority
 
-    def get_content_handler(self, theme_name: str) -> Callable[[str], Awaitable[str]] | None:
-        """获取主题对应的content处理函数"""
-        return self.content_handlers.get(theme_name, None)
+    async def get_content(self, theme_name: str) -> Callable[[str], Awaitable[str]] | None:
+        """根据使用的主题处理content"""
+        if handler := self.content_handlers.get(theme_name):
+            return await handler(self.content)
+        return self.content
 
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
@@ -105,9 +107,13 @@ class Post(AbstractPost):
         for class_field in fields(self):
             if class_field.name in ("content", "platform", "repost"):
                 continue
-            value = getattr(self, class_field.name)
-            if value is not None:
-                post_format += f"- {class_field.name}: {aRepr.repr(value)}\n"
+            elif class_field.name == "content_handlers":
+                handlers_keys = list(getattr(self, class_field.name).keys())
+                post_format += f"- {class_field.name}: {aRepr.repr(handlers_keys)}\n"
+            else:
+                value = getattr(self, class_field.name)
+                if value is not None:
+                    post_format += f"- {class_field.name}: {aRepr.repr(value)}\n"
 
         if self.repost:
             post_format += "\n转发:\n"

@@ -30,10 +30,8 @@ class Ht2iTheme(Theme):
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
     async def render(self, post: "Post"):
-        post_content = post.content
-        content_handler = post.get_content_handler(self.name)
-        if callable(content_handler):
-            post_content = await content_handler(post_content)
+        post_content = await post.get_content(self.name)
+
         md_text = ""
 
         md_text += f"## {post.title}\n\n" if post.title else ""
@@ -41,9 +39,7 @@ class Ht2iTheme(Theme):
         md_text += post_content if len(post_content) < 500 else f"{post_content[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
-            rp_content = rp.content
-            if callable(content_handler):
-                rp_content = await content_handler(rp_content)
+            rp_content = await rp.get_content(self.name)
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
             md_text += (

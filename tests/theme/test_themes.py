@@ -1,6 +1,7 @@
 from time import time
 from typing import Any
 from inspect import cleandoc
+from collections.abc import Callable, Awaitable
 
 import pytest
 from flaky import flaky
@@ -101,7 +102,7 @@ async def test_theme_need_browser(app: App, mock_post):
         name: str = "mock_theme"
         need_browser: bool = False
 
-        async def render(self, post):
+        async def render(self, post, content_handler: Callable[[str], Awaitable[str]] | None = None):
             return []
 
     theme = MockTheme()

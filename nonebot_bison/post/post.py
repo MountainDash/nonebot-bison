@@ -44,8 +44,8 @@ class Post(AbstractPost):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
-    content_handlers: list[Callable[[str], Awaitable[str]]] = field(default_factory=list)
-    """在`self.generate()`中处理文本的回调函数列表"""
+    content_handlers: dict[str, Callable[[str], Awaitable[str]]] = field(default_factory=dict)
+    """在`self.generate()`中处理文本的回调函数"""
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -65,22 +65,14 @@ class Post(AbstractPost):
             themes_by_priority.append("basic")
         return themes_by_priority
 
-    def get_content_handler(self, theme: str) -> Callable[[str], Awaitable[str]] | None:
-        """获取处理文本的回调函数"""
-        content_handler = [i for i in self.content_handlers if i.__name__ == f"handle_content_{theme}" and callable(i)]
-        if content_handler:
-            return content_handler[0]
-        return None
-
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
         themes = self.get_priority_themes()
         for theme_name in themes:
             if theme := theme_manager[theme_name]:
                 try:
-                    content_handler = self.get_content_handler(theme_name)
                     logger.debug(f"Try to render Post with theme {theme_name}")
-                    return await theme.do_render(self, content_handler)
+                    return await theme.do_render(self)
                 except ThemeRenderUnsupportError as e:
                     logger.warning(
                         f"Theme {theme_name} does not support Post of {self.platform.__class__.__name__}: {e}"

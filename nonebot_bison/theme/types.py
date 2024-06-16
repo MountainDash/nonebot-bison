@@ -9,7 +9,7 @@ from nonebot_plugin_saa import MessageSegmentFactory
 from ..plugin_config import plugin_config
 
 if TYPE_CHECKING:
-    from ..post.abstract_post import AbstractPost
+    from ..post.post import Post
 
 
 class Theme(ABC, BaseModel):
@@ -22,7 +22,7 @@ class Theme(ABC, BaseModel):
 
     _browser_checked: bool = PrivateAttr(default=False)
 
-    async def is_support_render(self, post: "AbstractPost") -> bool:
+    async def is_support_render(self, post: "Post") -> bool:
         """是否支持渲染该类型的Post"""
         if self.need_browser and not plugin_config.bison_use_browser:
             logger.warning(f"Theme {self.name} need browser, but `bison_use_browser` is False")
@@ -33,15 +33,13 @@ class Theme(ABC, BaseModel):
         if self.need_browser:
             self.check_htmlrender_plugin_enable()
 
-    async def do_render(
-        self, post: "AbstractPost", content_handler: Callable[[str], Awaitable[str]] | None = None
-    ) -> list[MessageSegmentFactory]:
+    async def do_render(self, post: "Post") -> list[MessageSegmentFactory]:
         """真正调用的渲染函数，会对渲染过程进行一些处理"""
         if not await self.is_support_render(post):
             raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {post} by support check")
 
         await self.prepare()
-
+        content_handler = post.content_handlers.get(self.name, None)
         return await self.render(post, content_handler)
 
     def check_htmlrender_plugin_enable(self):
@@ -59,7 +57,7 @@ class Theme(ABC, BaseModel):
 
     @abstractmethod
     async def render(
-        self, post: "AbstractPost", content_handler: Callable[[str], Awaitable[str]] | None = None
+        self, post: "Post", content_handler: Callable[[str], Awaitable[str]] | None = None
     ) -> list[MessageSegmentFactory]:
         """对多种Post的实例可以考虑使用@overload"""
         ...

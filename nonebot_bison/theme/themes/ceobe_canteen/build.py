@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
@@ -9,6 +10,7 @@ from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.compat import model_validator
 from nonebot_bison.theme.utils import convert_to_qr
+from nonebot_bison.utils.image import pic_merge, is_pics_mergable
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -112,6 +114,16 @@ class CeobeCanteenTheme(Theme):
             text += f"详情: {post.url}"
         msgs.append(Text(text))
 
+        pics_group: list[list[str | bytes | Path | BytesIO]] = []
         if post.images:
-            msgs.extend(map(Image, post.images))
+            pics_group.append(post.images)
+        if post.repost and post.repost.images:
+            pics_group.append(post.repost.images)
+
+        client = await post.platform.ctx.get_client_for_static()
+        for pics in pics_group:
+            if is_pics_mergable(pics):
+                pics = await pic_merge(list(pics), client)
+            msgs.extend(map(Image, pics))
+
         return msgs

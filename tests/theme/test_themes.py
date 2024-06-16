@@ -1,11 +1,16 @@
 from time import time
-from typing import Any
+from copy import deepcopy
 from inspect import cleandoc
+from typing import TYPE_CHECKING, Any
 from collections.abc import Callable, Awaitable
+
 
 import pytest
 from flaky import flaky
 from nonebug import App
+
+if TYPE_CHECKING:
+    from nonebot_bison.post import Post
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -16,6 +21,18 @@ raw_post_list_2 = raw_post_list_1 + [
     {"id": 3, "text": "p3", "date": now, "tags": ["tag2"], "category": 2},
     {"id": 4, "text": "p4", "date": now, "tags": ["tag2"], "category": 3},
 ]
+
+
+@pytest.fixture()
+def MERGEABLE_PNG_DATA() -> bytes:
+    from tests.platforms.utils import get_bytes
+
+    return get_bytes("mergeable-pic.jpg")
+
+
+@pytest.fixture()
+def SIMPLE_PNG_DATA() -> bytes:
+    return b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
 
 
 @pytest.fixture()
@@ -161,7 +178,7 @@ async def test_arknights_theme(app: App, mock_post):
 
 
 @pytest.mark.asyncio
-async def test_basic_theme(app: App, mock_post):
+async def test_basic_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA):
     from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.theme import theme_manager
@@ -172,7 +189,7 @@ async def test_basic_theme(app: App, mock_post):
     assert isinstance(basic_theme, BasicTheme)
     assert basic_theme.name == "basic"
     res = await basic_theme.render(mock_post)
-    assert len(res) == 2
+    assert len(res) == 3
     assert res[0] == Text(
         cleandoc(
             """title
@@ -191,7 +208,7 @@ async def test_basic_theme(app: App, mock_post):
     )
     assert isinstance(res[1], Image)
 
-    mock_post2 = mock_post
+    mock_post2 = deepcopy(mock_post)
     mock_post2.repost = None
     mock_post2.images = []
     res2 = await basic_theme.render(mock_post2)
@@ -206,6 +223,13 @@ async def test_basic_theme(app: App, mock_post):
             详情: http://t.tt/1"""
         )
     )
+
+    mock_post3 = deepcopy(mock_post)
+    mock_post3.images = [MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA]
+    assert mock_post3.repost
+    mock_post3.repost.images = [SIMPLE_PNG_DATA, SIMPLE_PNG_DATA]
+    res3 = await basic_theme.render(mock_post3)
+    assert len(res3) == 5
 
 
 @pytest.mark.asyncio
@@ -251,7 +275,7 @@ async def test_brief_theme(app: App, mock_post):
 @pytest.mark.render
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
-async def test_ceobecanteen_theme(app: App, mock_post):
+async def test_ceobecanteen_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA):
     from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.theme import theme_manager
@@ -262,16 +286,22 @@ async def test_ceobecanteen_theme(app: App, mock_post):
     assert isinstance(ceobecanteen_theme, CeobeCanteenTheme)
     assert ceobecanteen_theme.name == "ceobecanteen"
     res = await ceobecanteen_theme.render(mock_post)
-    assert len(res) == 3
+    assert len(res) == 4
     assert isinstance(res[0], Image)
     assert isinstance(res[2], Image)
     assert res[1] == Text("来源: Mock Platform Mock\n详情: http://t.tt/1")
+
+    mock_post2 = deepcopy(mock_post)
+    assert mock_post2.repost
+    mock_post2.repost.images = [MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA]
+    res2 = await ceobecanteen_theme.render(mock_post2)
+    assert len(res2) == 5
 
 
 @pytest.mark.render
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
-async def test_ht2i_theme(app: App, mock_post):
+async def test_ht2i_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA):
     from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.theme import theme_manager
@@ -282,16 +312,16 @@ async def test_ht2i_theme(app: App, mock_post):
     assert isinstance(ht2i_theme, Ht2iTheme)
     assert ht2i_theme.name == "ht2i"
     res = await ht2i_theme.render(mock_post)
-    assert len(res) == 3
+    assert len(res) == 4
     assert isinstance(res[0], Image)
     assert isinstance(res[2], Image)
     assert res[1] == Text("转发详情: http://t.tt/2\n详情: http://t.tt/1")
 
-    mock_post2 = mock_post
+    mock_post2 = deepcopy(mock_post)
     mock_post2.repost = None
-    mock_post2.images = []
+    mock_post2.images = [MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA, MERGEABLE_PNG_DATA]
 
     res2 = await ht2i_theme.render(mock_post2)
 
-    assert len(res2) == 2
+    assert len(res2) == 4
     assert res2[1] == Text("详情: http://t.tt/1")

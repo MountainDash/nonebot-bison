@@ -1,3 +1,5 @@
+from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 from collections.abc import Callable, Awaitable
 
@@ -54,8 +56,14 @@ class BasicTheme(Theme):
 
         client = await post.platform.ctx.get_client_for_static()
         msgs: list[MessageSegmentFactory] = [Text(text)]
+
+        pics_group: list[list[str | bytes | Path | BytesIO]] = []
         if post.images:
-            pics = post.images
+            pics_group.append(post.images)
+        if rp and rp.images:
+            pics_group.append(rp.images)
+
+        for pics in pics_group:
             if is_pics_mergable(pics):
                 pics = await pic_merge(list(pics), client)
             msgs.extend(map(Image, pics))

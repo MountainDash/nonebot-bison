@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Awaitable
 
 from nonebot import logger, require
 from pydantic import BaseModel, PrivateAttr
@@ -55,9 +54,7 @@ class Theme(ABC, BaseModel):
                 raise e
 
     @abstractmethod
-    async def render(
-        self, post: "AbstractPost", content_handler: Callable[[str], Awaitable[str]] | None = None
-    ) -> list[MessageSegmentFactory]:
+    async def render(self, post: "AbstractPost") -> list[MessageSegmentFactory]:
         """对多种Post的实例可以考虑使用@overload"""
         ...
 

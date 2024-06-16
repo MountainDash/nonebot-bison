@@ -4,7 +4,6 @@ from inspect import cleandoc
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable, Awaitable
 
-
 import pytest
 from flaky import flaky
 from nonebug import App

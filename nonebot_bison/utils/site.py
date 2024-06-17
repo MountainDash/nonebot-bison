@@ -38,9 +38,6 @@ class Site:
     def __str__(self):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"
 
-    def __init__(self):
-        self.default_http_client = http_client()
-
 
 def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[Site]:
     return type(

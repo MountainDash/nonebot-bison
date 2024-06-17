@@ -26,29 +26,29 @@ async def test_scheduler_without_time(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
+    from nonebot_bison.platform.ncm import NcmSite
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.config.db_config import WeightConfig
-    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
 
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-bangumi", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "ncm-artist", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "ncm-artist", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "ncm-radio", [], [])
 
-    await config.update_time_weight_config(T_Target("t2"), "bilibili", WeightConfig(default=20, time_config=[]))
-    await config.update_time_weight_config(T_Target("t2"), "bilibili-bangumi", WeightConfig(default=30, time_config=[]))
+    await config.update_time_weight_config(T_Target("t2"), "ncm-artist", WeightConfig(default=20, time_config=[]))
+    await config.update_time_weight_config(T_Target("t2"), "ncm-radio", WeightConfig(default=30, time_config=[]))
 
     await init_scheduler()
 
-    static_res = await get_schedule_times(BilibiliSite, 6)
-    assert static_res["bilibili-t1"] == 1
-    assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-bangumi-t2"] == 3
+    static_res = await get_schedule_times(NcmSite, 6)
+    assert static_res["ncm-artist-t1"] == 1
+    assert static_res["ncm-artist-t2"] == 2
+    assert static_res["ncm-radio-t2"] == 3
 
-    static_res = await get_schedule_times(BilibiliSite, 6)
-    assert static_res["bilibili-t1"] == 1
-    assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-bangumi-t2"] == 3
+    static_res = await get_schedule_times(NcmSite, 6)
+    assert static_res["ncm-artist-t1"] == 1
+    assert static_res["ncm-artist-t2"] == 2
+    assert static_res["ncm-radio-t2"] == 3
 
 
 async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
@@ -59,13 +59,13 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.utils import DefaultClientManager
+    from nonebot_bison.platform.bilibili import BililiveSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.platform.bilibili import BililiveSchedConf
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
 
-    mocker.patch.object(BililiveSchedConf, "client_mgr", DefaultClientManager)
+    mocker.patch.object(BililiveSite, "client_mgr", DefaultClientManager)
 
     await init_scheduler()
 
@@ -81,7 +81,7 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
         {"bilibili-live": mocker.Mock(return_value=fake_platform_obj)},
     )
 
-    await scheduler_dict[BililiveSchedConf].exec_fetch()
+    await scheduler_dict[BililiveSite].exec_fetch()
 
     batch_fetch_mock.assert_called_once_with(
         [
@@ -94,44 +94,44 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
 async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixture):
     from nonebot_plugin_saa import TargetQQGroup
 
+    from nonebot_bison.platform.ncm import NcmSite
     from nonebot_bison.config import config, db_config
     from nonebot_bison.types import Target as T_Target
-    from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
     from nonebot_bison.config.db_config import WeightConfig, TimeWeightConfig
 
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
-    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili-bangumi", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "ncm-artist", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "ncm-artist", [], [])
+    await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "ncm-radio", [], [])
 
     await config.update_time_weight_config(
         T_Target("t2"),
-        "bilibili",
+        "ncm-artist",
         WeightConfig(
             default=20,
             time_config=[TimeWeightConfig(start_time=time(10), end_time=time(11), weight=1000)],
         ),
     )
-    await config.update_time_weight_config(T_Target("t2"), "bilibili-bangumi", WeightConfig(default=30, time_config=[]))
+    await config.update_time_weight_config(T_Target("t2"), "ncm-radio", WeightConfig(default=30, time_config=[]))
 
     await init_scheduler()
 
     mocker.patch.object(db_config, "_get_time", return_value=time(1, 30))
 
-    static_res = await get_schedule_times(BilibiliSite, 6)
-    assert static_res["bilibili-t1"] == 1
-    assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-bangumi-t2"] == 3
+    static_res = await get_schedule_times(NcmSite, 6)
+    assert static_res["ncm-artist-t1"] == 1
+    assert static_res["ncm-artist-t2"] == 2
+    assert static_res["ncm-radio-t2"] == 3
 
-    static_res = await get_schedule_times(BilibiliSite, 6)
-    assert static_res["bilibili-t1"] == 1
-    assert static_res["bilibili-t2"] == 2
-    assert static_res["bilibili-bangumi-t2"] == 3
+    static_res = await get_schedule_times(NcmSite, 6)
+    assert static_res["ncm-artist-t1"] == 1
+    assert static_res["ncm-artist-t2"] == 2
+    assert static_res["ncm-radio-t2"] == 3
 
     mocker.patch.object(db_config, "_get_time", return_value=time(10, 30))
 
-    static_res = await get_schedule_times(BilibiliSite, 6)
-    assert static_res["bilibili-t2"] == 6
+    static_res = await get_schedule_times(NcmSite, 6)
+    assert static_res["ncm-artist-t2"] == 6
 
 
 async def test_scheduler_add_new(init_scheduler):

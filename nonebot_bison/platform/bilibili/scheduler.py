@@ -65,6 +65,7 @@ class BilibiliSite(Site):
     schedule_setting = {"seconds": 30}
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
+    require_browser = true
 
 
 class BililiveSite(Site):

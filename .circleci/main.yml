@@ -10,7 +10,7 @@ orbs:
   # Orb commands and jobs help you with common scripting around a language/tool
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
-  python: circleci/python@1.4
+  python: circleci/python@1.4.0
   node: circleci/node@4.7.0
   # poetry: frameio/poetry@0.21.0
   swissknife: roopakv/swissknife@0.59.0

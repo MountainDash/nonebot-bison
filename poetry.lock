@@ -2560,13 +2560,13 @@ reference = "offical-source"
 
 [[package]]
 name = "nonebot-plugin-datastore"
-version = "1.2.0"
+version = "1.2.1"
 description = "适用于 Nonebot2 的数据存储插件"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "nonebot_plugin_datastore-1.2.0-py3-none-any.whl", hash = "sha256:22d9bfc948506eda78b010254da6f437c595d0c1878f8852cd92f84a935d204c"},
-    {file = "nonebot_plugin_datastore-1.2.0.tar.gz", hash = "sha256:34c6c3c19fc0da6808c6f73e931bacb931d7274ab376f23bdf1b352a760799ed"},
+    {file = "nonebot_plugin_datastore-1.2.1-py3-none-any.whl", hash = "sha256:daecf40ee33952a05a3de06c5febd876c90bec0bdeb9ad25280cb61f90562304"},
+    {file = "nonebot_plugin_datastore-1.2.1.tar.gz", hash = "sha256:ddef55dd85c1ae7be3ab030e1a1f386a6c4668d1a2000d96ee2c81cdbc502968"},
 ]
 
 [package.dependencies]

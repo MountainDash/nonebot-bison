@@ -2,6 +2,7 @@ import nonebot
 from yarl import URL
 from nonebot import get_plugin_config
 from pydantic import Field, BaseModel
+from nonebot.compat import PYDANTIC_V2, ConfigDict
 
 global_config = nonebot.get_driver().config
 PlatformName = str
@@ -9,6 +10,13 @@ ThemeName = str
 
 
 class PlugConfig(BaseModel):
+    if PYDANTIC_V2:
+        model_config = ConfigDict(populate_by_name=True)
+    else:
+
+        class Config:
+            allow_population_by_field_name = True
+
     bison_config_path: str = ""
     bison_use_pic: bool = Field(
         default=False,

@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 from random import randint
 from functools import wraps
@@ -46,7 +47,7 @@ class ScheduleLevel(Enum):
 
 class ScheduleState:
     MAX_REFRESH_COUNT = 3
-    MAX_BACKOFF_COUNT = 2
+    MAX_BACKOFF_COUNT = 3
     BACKOFF_TIMEDELTA = timedelta(minutes=5)
 
     current_times: int
@@ -92,6 +93,9 @@ class ScheduleState:
                 raise ValueError("ScheduleLevel Error")
 
     def reset(self):
+        if self.level != ScheduleLevel.NORMAL:
+            logger.debug("返回正常状态")
+
         self.current_times = 1
         self.level = ScheduleLevel.NORMAL
 
@@ -130,6 +134,11 @@ def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
             schedule_state.increase()
             match schedule_state.level:
                 case ScheduleLevel.RAISE:
+                    # 重试次数用尽，随缘刷新，抛出异常
+                    if random.random() < 0.0981:
+                        logger.debug("随缘刷新")
+                        await bls.ctx.refresh_client()
+
                     raise ApiError(e.args[0]) from e
                 case _:
                     return schedule_state.latest_normal_return
@@ -191,7 +200,7 @@ class BilibiliClientManager(ClientManager):
 
 class BilibiliSite(Site):
     name = "bilibili.com"
-    schedule_setting = {"seconds": 60}
+    schedule_setting = {"seconds": 50}
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True

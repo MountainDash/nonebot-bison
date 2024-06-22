@@ -103,7 +103,6 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 - avatar: b'\x89PNG\r\n...f\x15\xc4\x89'
 - nickname: 'Mock'
 - description: 'Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.'
-- content_handlers: []
 """
     )  # noqa: E501
     post2 = Post(
@@ -144,7 +143,6 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 - avatar: b'\x89PNG\r\n...f\x15\xc4\x89'
 - nickname: 'Mock2'
 - description: 'Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.'
-- content_handlers: []
 
 转发:
 ## Post: {id(post):X} ##
@@ -163,7 +161,6 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 - avatar: b'\x89PNG\r\n...f\x15\xc4\x89'
 - nickname: 'Mock'
 - description: 'Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.'
-- content_handlers: []
 """
     )
 

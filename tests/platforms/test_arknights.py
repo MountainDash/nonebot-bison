@@ -212,7 +212,8 @@ async def test_fetch_new(
     assert post2.timestamp
     assert "arknights" == post2.get_priority_themes()[0]
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
-    assert post2.content_handlers["basic"]
+    assert post2.plain_content_handler
+    assert post2.plain_content.split() == get_file("arknights-plaintext-807.txt").split()
     assert await post2.generate()
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
     res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
@@ -271,7 +272,8 @@ async def test_send_with_render(
     post2: Post = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
     assert post2.content
-    assert post2.content_handlers["basic"]
+    assert post2.plain_content_handler
+    assert post2.plain_content.split() == get_file("arknights-plaintext-805.txt").split()
     assert await post2.generate()
     assert post2.title == "【公开招募】标签强制刷新通知"
     assert post2.nickname == "明日方舟游戏内公告"

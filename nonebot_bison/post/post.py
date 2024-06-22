@@ -2,8 +2,8 @@ import reprlib
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
-from collections.abc import Callable, Awaitable
-from dataclasses import field, fields, dataclass
+from collections.abc import Callable
+from dataclasses import fields, dataclass
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
@@ -44,8 +44,8 @@ class Post(AbstractPost):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
-    content_handlers: dict[str, Callable[[str], Awaitable[str]]] = field(default_factory=dict)
-    """在`self.generate()`中处理文本的回调函数"""
+    plain_content_handler: Callable[[str], str] | None = None
+    """在`self.plain_content`中使用的处理函数"""
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -65,10 +65,11 @@ class Post(AbstractPost):
             themes_by_priority.append("basic")
         return themes_by_priority
 
-    async def get_content(self, theme_name: str) -> Callable[[str], Awaitable[str]] | None:
-        """根据使用的主题处理content"""
-        if handler := self.content_handlers.get(theme_name):
-            return await handler(self.content)
+    @property
+    def plain_content(self) -> str:
+        """获取纯文本内容"""
+        if self.plain_content_handler:
+            return self.plain_content_handler(self.content)
         return self.content
 
     async def generate(self) -> list[MessageSegmentFactory]:
@@ -104,16 +105,13 @@ class Post(AbstractPost):
 来源: <Platform {self.platform.platform_name}>
 """
         post_format += "附加信息:\n"
-        for class_field in fields(self):
-            if class_field.name in ("content", "platform", "repost"):
+        for field in fields(self):
+            if field.name in ("content", "platform", "repost"):
                 continue
-            elif class_field.name == "content_handlers":
-                handlers_keys = list(getattr(self, class_field.name).keys())
-                post_format += f"- {class_field.name}: {aRepr.repr(handlers_keys)}\n"
             else:
-                value = getattr(self, class_field.name)
+                value = getattr(self, field.name)
                 if value is not None:
-                    post_format += f"- {class_field.name}: {aRepr.repr(value)}\n"
+                    post_format += f"- {field.name}: {aRepr.repr(value)}\n"
 
         if self.repost:
             post_format += "\n转发:\n"

@@ -30,20 +30,18 @@ class Ht2iTheme(Theme):
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
     async def render(self, post: "Post"):
-        post_content = await post.get_content(self.name)
 
         md_text = ""
 
         md_text += f"## {post.title}\n\n" if post.title else ""
 
-        md_text += post_content if len(post_content) < 500 else f"{post_content[:500]}..."
+        md_text += post.plain_content if len(post.plain_content) < 500 else f"{post.plain_content[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
-            rp_content = await rp.get_content(self.name)
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
             md_text += (
-                ">  \n> " + rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..." + "  \n"  # noqa: E501
+                ">  \n> " + rp.plain_content if len(rp.plain_content) < 500 else f"{rp.plain_content[:500]}..." + "  \n"  # noqa: E501
             )  # noqa: E501
         md_text += "\n\n"
 

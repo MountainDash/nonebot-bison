@@ -32,8 +32,6 @@ class ArknightsTheme(Theme):
     async def render(self, post: "Post"):
         from nonebot_plugin_htmlrender import template_to_pic
 
-        post_content = await post.get_content(self.name)
-
         if not post.title:
             raise ThemeRenderUnsupportError("标题为空")
         if post.images and len(post.images) > 1:
@@ -46,7 +44,7 @@ class ArknightsTheme(Theme):
 
         ark_data = ArkData(
             announce_title=post.title,
-            content=post_content,
+            content=post.content,
             banner_image_url=banner,
         )
 

@@ -1,10 +1,11 @@
-import typing
+from time import time
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 import respx
 import pytest
-from httpx import Response
 from nonebug.app import App
+from httpx import URL, Response
 from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_json
@@ -12,26 +13,27 @@ from .utils import get_json
 
 @pytest.fixture()
 def bing_dy_list(app: App):
-    from nonebot_bison.platform.bilibili import PostAPI
+    from nonebot_bison.platform.bilibili.models import PostAPI
 
-    return type_validate_python(PostAPI, get_json("bilibili_bing_list.json")).data.cards  # type: ignore
+    return type_validate_python(PostAPI, get_json("bilibili-new.json")).data.items  # type: ignore
 
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from nonebot_bison.platform.bilibili import Bilibili
 
 
 @pytest.fixture()
 def bilibili(app: App) -> "Bilibili":
+    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.platform.bilibili import BilibiliClientManager
 
-    return platform_manager["bilibili"](ProcessContext(DefaultClientManager()))  # type: ignore
+    return platform_manager["bilibili"](ProcessContext(BilibiliClientManager()))  # type: ignore
 
 
 @pytest.fixture()
 def without_dynamic(app: App):
-    from nonebot_bison.platform.bilibili import PostAPI
+    from nonebot_bison.platform.bilibili.models import PostAPI
 
     # 先验证实际的空动态返回能否通过校验，再重新导出
     return model_dump(
@@ -42,7 +44,7 @@ def without_dynamic(app: App):
                 "ttl": 1,
                 "message": "",
                 "data": {
-                    "cards": None,
+                    "items": None,
                     "has_more": 0,
                     "next_offset": 0,
                     "_gt_": 0,
@@ -53,114 +55,194 @@ def without_dynamic(app: App):
 
 
 @pytest.mark.asyncio
+async def test_retry_for_352(app: App):
+    from nonebot_bison.post import Post
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.types import Target, RawPost, ApiError
+    from nonebot_bison.utils import ClientManager, ProcessContext, http_client
+    from nonebot_bison.platform.bilibili.platforms import MAX_352_RETRY_COUNT, ApiCode352Error, retry_for_352
+
+    now = time()
+    raw_post_1 = {"id": 1, "text": "p1", "date": now, "tags": ["tag1"], "category": 1}
+    raw_post_2 = {"id": 2, "text": "p2", "date": now + 1, "tags": ["tag2"], "category": 2}
+
+    class MockPlatform(NewMessage):
+        platform_name = "fakebili"
+        name = "fakebili"
+        enabled = True
+        is_common = True
+        schedule_interval = 10
+        enable_tag = False
+        categories = {}
+        has_target = True
+
+        raise352 = False
+        sub_index = 0
+
+        @classmethod
+        async def get_target_name(cls, client, _: "Target"):
+            return "MockPlatform"
+
+        def get_id(self, post: RawPost) -> Any:
+            return post["id"]
+
+        def get_date(self, raw_post: RawPost) -> float:
+            return raw_post["date"]
+
+        async def parse(self, raw_post: RawPost) -> Post:
+            return Post(
+                self,
+                raw_post["text"],
+                "http://t.tt/" + str(self.get_id(raw_post)),
+                nickname="Mock",
+            )
+
+        def set_raise352(self, value: bool):
+            self.raise352 = value
+
+        @retry_for_352  # type: ignore 保证接收self、target参数，返回list即可
+        async def get_sub_list(self, t: Target):
+            await self.ctx.get_client(t)
+            if not self.raise352:
+                if self.sub_index == 0:
+                    self.sub_index += 1
+                    return [raw_post_1]
+                return [raw_post_1, raw_post_2]
+            else:
+                raise ApiCode352Error(URL("http://t.tt/1"))
+
+    class MockClientManager(ClientManager):
+        get_client_call_count = 0
+        get_client_for_static_call_count = 0
+        get_query_name_client_call_count = 0
+        refresh_client_call_count = 0
+
+        async def get_client(self, target: Target | None):
+            self.get_client_call_count += 1
+            return http_client()
+
+        async def get_client_for_static(self):
+            self.get_client_for_static_call_count += 1
+            return http_client()
+
+        async def get_query_name_client(self):
+            self.get_query_name_client_call_count += 1
+            return http_client()
+
+        async def refresh_client(self):
+            self.refresh_client_call_count += 1
+
+    fakebili = MockPlatform(ProcessContext(MockClientManager()))
+    client_mgr = fakebili.ctx._client_mgr
+    assert isinstance(client_mgr, MockClientManager)
+    assert client_mgr.get_client_call_count == 0
+    assert client_mgr.get_client_for_static_call_count == 0
+    assert client_mgr.get_query_name_client_call_count == 0
+    assert client_mgr.refresh_client_call_count == 0
+
+    # 无异常
+    res: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
+    assert len(res) == 1
+    assert res[0]["id"] == 1
+    assert client_mgr.get_client_call_count == 1
+    assert client_mgr.refresh_client_call_count == 0
+
+    res = await fakebili.get_sub_list(Target("1"))  # type: ignore
+    assert len(res) == 2
+    assert res[0]["id"] == 1
+    assert res[1]["id"] == 2
+    assert client_mgr.get_client_call_count == 2
+    assert client_mgr.refresh_client_call_count == 0
+
+    # 有异常
+    fakebili.set_raise352(True)
+    for i in range(MAX_352_RETRY_COUNT):
+        res1: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
+        assert len(res1) == 0
+        assert client_mgr.get_client_call_count == 3 + i
+        assert client_mgr.refresh_client_call_count == i + 1
+    # 超过最大重试次数，抛出异常
+    with pytest.raises(ApiError):
+        await fakebili.get_sub_list(Target("1"))
+
+
+@pytest.mark.asyncio
+async def test_parser(bilibili: "Bilibili"):
+    from nonebot_bison.platform.bilibili.models import PostAPI, UnknownMajor
+
+    test_data = get_json("bilibili-new.json")
+    res = type_validate_python(PostAPI, test_data)
+    assert res.data is not None
+    for item in res.data.items or []:
+        assert item.modules
+        assert not isinstance(item.modules.module_dynamic.major, UnknownMajor)
+
+
+@pytest.mark.asyncio
 async def test_get_tag(bilibili: "Bilibili", bing_dy_list):
-    from nonebot_bison.platform.bilibili import DynRawPost
+    from nonebot_bison.platform.bilibili.models import DynRawPost
 
-    raw_post_has_tag = type_validate_python(DynRawPost, bing_dy_list[0])
-    raw_post_has_tag.card = '{"user":{"uid":111111,"uname":"1111","face":"https://i2.hdslb.com/bfs/face/0b.jpg"},"item":{"rp_id":11111,"uid":31111,"content":"#测试1#\\n测试\\n#测试2#\\n#测\\n测\\n测#","ctrl":"","reply":0}}'
-
-    raw_post_has_no_tag = type_validate_python(DynRawPost, bing_dy_list[1])
-    raw_post_has_no_tag.card = '{"user":{"uid":111111,"uname":"1111","face":"https://i2.hdslb.com/bfs/face/0b.jpg"},"item":{"rp_id":11111,"uid":31111,"content":"测试1\\n测试\\n测试2\\n#测\\n测\\n测#","ctrl":"","reply":0}}'
+    raw_post_has_tag = type_validate_python(DynRawPost, bing_dy_list[6])
 
     res1 = bilibili.get_tags(raw_post_has_tag)
-    assert res1 == ["测试1", "测试2"]
-
-    res2 = bilibili.get_tags(raw_post_has_no_tag)
-    assert res2 == []
+    assert set(res1) == {"明日方舟", "123罗德岛！？"}
 
 
-async def test_video_forward(bilibili, bing_dy_list):
+async def test_dynamic_video(bilibili: "Bilibili", bing_dy_list: list):
     from nonebot_bison.post import Post
 
-    post: Post = await bilibili.parse(bing_dy_list[1])
-    assert post.content == """答案揭晓：宿舍！来看看投票结果\nhttps://t.bilibili.com/568093580488553786"""
-    assert post.repost is not None
-    # 注意原文前几行末尾是有空格的
-    assert post.repost.content == (
-        "#可露希尔的秘密档案# \n"
-        "11：来宿舍休息一下吧 \n"
-        "档案来源：lambda:\\罗德岛内务\\秘密档案 \n"
-        "发布时间：9/12 1:00 P.M. \n"
-        "档案类型：可见 \n"
-        "档案描述：今天请了病假在宿舍休息。很舒适。 \n"
-        "提供者：赫默\n"
-        "=================\n"
-        "《可露希尔的秘密档案》11话：来宿舍休息一下吧"
-    )
-    assert post.url == "https://t.bilibili.com/569448354910819194"
-    assert post.repost.url == "https://www.bilibili.com/video/BV1E3411q7nU"
-    assert post.get_priority_themes()[0] == "basic"
+    post: Post = await bilibili.parse(bing_dy_list[8])
 
-
-@pytest.mark.asyncio
-async def test_video_forward_without_dynamic(bilibili, bing_dy_list):
-    # 视频简介和动态文本其中一方为空的情况
-    post = await bilibili.parse(bing_dy_list[2])
-    assert (
-        post.content
-        == "阿消的罗德岛闲谈直播#01:《女人最喜欢的女人，就是在战场上熠熠生辉的女人》"
-        + "\n\n"
-        + "本系列视频为饼组成员的有趣直播录播，主要内容为方舟相关，未来可能系列其他视频会包含部分饼组团建日常等。"
-        "仅为娱乐性视频，内容与常规饼学预测无关。视频仅为当期主播主观观点，不代表饼组观点。仅供娱乐。"
-        "\n\n直播主播:@寒蝉慕夏 \n后期剪辑:@Melodiesviel \n\n本群视频为9.11组员慕夏直播录播，"
-        "包含慕夏对新PV的个人解读，风笛厨力疯狂放出，CP言论输出，9.16轮换池预测视频分析和理智规划杂谈内容。"
-        "\n注意:内含大量个人性质对风笛的厨力观点，与多CP混乱发言，不适者请及时点击退出或跳到下一片段。"
-    )
-    assert post.repost is None
-    assert post.url == "https://www.bilibili.com/video/BV1K44y1h7Xg"
-    assert post.get_priority_themes()[0] == "basic"
-
-
-@pytest.mark.asyncio
-async def test_article_forward(bilibili: "Bilibili", bing_dy_list):
-    post = await bilibili.parse(bing_dy_list[4])
+    assert post.title == "《明日方舟》SideStory「巴别塔」活动宣传PV"
     assert post.content == (
-        "#明日方舟##饼学大厦#\n"
-        "9.11专栏更新完毕，这还塌了实属没跟新运营对上\n"
-        "后边除了周日发饼和PV没提及的中文语音，稳了\n"
-        "别忘了来参加#可露希尔的秘密档案#的主题投票\n"
-        "https://t.bilibili.com/568093580488553786?tab=2"
+        "SideStory「巴别塔」限时活动即将开启\r\n\r\n"
+        "追逐未来的道路上，\r\n"
+        "两种同样伟大的理想对撞，几场同样壮烈的悲剧上演。\r\n\r\n"
+        "———————————— \r\n"
+        "详细活动内容敬请关注《明日方舟》官网及游戏内相关公告。"
     )
-    assert post.repost is not None
-    assert post.repost.content == (
-        "【明日方舟】饼学大厦#12~14（风暴瞭望&玛莉娅·临光&红松林&感谢庆典）"
-        "9.11更新 更新记录09.11更新：覆盖09.10更新；以及排期更新，猜测周一周五开活动"
-        "09.10更新：以周五开活动为底，PV/公告调整位置，整体结构更新"
-        "09.08更新：饼学大厦#12更新，新增一件六星商店服饰（周日发饼）"
-        "09.06更新：饼学大厦整栋整栋翻新，改为9.16开主线（四日无饼！）"
-        "09.05凌晨更新：10.13后的排期（两日无饼，鹰角背刺，心狠手辣）"
-        "前言感谢楪筱祈ぺ的动态-哔哩哔哩 (bilibili.com) 对饼学的贡献！"
-        "后续排期：9.17【风暴瞭望】、10.01【玛莉娅·临光】复刻、10.1"
-    )
-    assert post.url == "https://t.bilibili.com/569189870889648693"
-    assert post.repost.url == "https://www.bilibili.com/read/cv12993752"
+    assert post.url == "https://www.bilibili.com/video/BV1Jp421y72e/"
 
 
-@pytest.mark.asyncio
-async def test_dynamic_forward(bilibili, bing_dy_list):
-    post = await bilibili.parse(bing_dy_list[5])
+async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
+    from nonebot_bison.post import Post
+
+    post: Post = await bilibili.parse(bing_dy_list[7])
     assert post.content == (
-        "饼组主线饼学预测——9.11版\n"
-        "①今日结果\n"
-        "9.11 殿堂上的游禽-星极(x，新运营实锤了)\n"
-        "②后续预测\n"
-        "9.12 #罗德岛相簿#+#可露希尔的秘密档案#11话\n"
-        "9.13 六星先锋(执旗手)干员-琴柳\n9.14 宣传策略-空弦+家具\n"
-        "9.15 轮换池（+中文语音前瞻）\n"
-        "9.16 停机\n"
-        "9.17 #罗德岛闲逛部#+新六星EP+EP09·风暴瞭望开启\n"
-        "9.19 #罗德岛相簿#"
+        "「2024明日方舟音律联觉-不觅浪尘」将于12:00正式开启预售票！预售票购票链接：https://m.damai.cn/shows/item.html?itemId=778626949623"
     )
-    assert post.repost.content == (
-        "#明日方舟#\n"
-        "【新增服饰】\n"
-        "//殿堂上的游禽 - 星极\n"
-        "塞壬唱片偶像企划《闪耀阶梯》特供服饰/殿堂上的游禽。星极自费参加了这项企划，尝试着用大众能接受的方式演绎天空之上的故事。\n\n"
-        "_____________\n"
-        "谦逊留给观众，骄傲发自歌喉，此夜，唯我璀璨。 "
+    assert post.url == "https://t.bilibili.com/917092495452536836"
+    assert (rp := post.repost)
+    assert rp.content == (
+        "互动抽奖 #明日方舟##音律联觉#\n\n"
+        "「2024音律联觉」票务信息公开！\n\n\n\n"
+        "「2024明日方舟音律联觉-不觅浪尘」将于【4月6日12:00】正式开启预售票，预售票购票链接："
+        "https://m.damai.cn/shows/item.html?itemId=778626949623\n\n"
+        "【活动地点】\n\n"
+        "上海久事体育旗忠网球中心主场馆（上海市闵行区元江路5500弄）\n\n"
+        "【活动时间】\n\n「不觅浪尘-日场」：5月1日-5月2日\u0026"
+        "5月4日-5月5日 13:00\n\n"
+        "「不觅浪尘-夜场」：5月1日-5月2日\u00265月4日-5月5日 18:30\n\n"
+        "【温馨提醒】\n\n"
+        "*「2024明日方舟音律联觉-不觅浪尘」演出共计4天，每天有日场和夜场各1场演出，共计8场次，每场演出为相同内容。\n\n"
+        "*「2024明日方舟音律联觉-不觅浪尘」演出全部录播内容后续将于bilibili独家上线，敬请期待。\n\n"
+        "*  音律联觉将为博士们准备活动场馆往返莘庄、北桥地铁站的免费接驳车，"
+        "有需要乘坐的博士请合理安排自己的出行时间。\n\n"
+        "【票务相关】\n\n"
+        "* 本次票务和大麦网 进行合作，应相关要求本次预售仅预先开放70%的票量，"
+        "剩余票量的开票时间请继续关注明日方舟官方自媒体账号的后续通知。\n\n"
+        "* 预售期间，由于未正式开票，下单后无法立即为您配票，待正式开票后，您可通过订单详情页或票夹详情，"
+        "查看票品信息。\n\n* 本次演出为非选座电子票，依照您的付款时间顺序出票，如果您同一订单下购买多张票，"
+        "正式开票后，系统将会优先为您选择相连座位。\n\n\n"
+        "更多详情可查看下方长图，或查看活动详情页：https://ak.hypergryph.com/special/amb-2024/ \n\n\n\n"
+        "* 请各位购票前务必确认票档和相关购票须知，并提前在对应票务平台后台添加完整的个人购票信息，以方便购票。\n\n"
+        "* 明日方舟嘉年华及音律联觉活动场地存在一定距离，且活动时间有部分重叠，推荐都参加的博士选择不同日期购票。\n\n"
+        "\n\n关注并转发本动态，我们将会在5月6日抽取20位博士各赠送【2024音律联觉主题亚克力画（随机一款）】一份。"
+        "中奖的幸运博士请于开奖后5日内提交获奖信息，逾期视为自动放弃奖励。"
     )
-    assert post.url == "https://t.bilibili.com/569107343093484983"
-    assert post.repost.url == "https://t.bilibili.com/569105539209306328"
+    assert rp.images
+    assert len(rp.images) == 9
+    assert rp.url == "https://t.bilibili.com/915793667264872453"
 
 
 @pytest.mark.asyncio
@@ -168,13 +250,11 @@ async def test_dynamic_forward(bilibili, bing_dy_list):
 async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_dynamic):
     from nonebot_bison.types import Target, SubUnit
 
+    target = Target("161775300")
     post_router = respx.get(
-        "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
     )
     post_router.mock(return_value=Response(200, json=without_dynamic))
-    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
-    bilibili_main_page_router.mock(return_value=Response(200))
-    target = Target("161775300")
     res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert post_router.called
     assert len(res) == 0
@@ -183,33 +263,79 @@ async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_d
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(bilibili, dummy_user_subinfo):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot.compat import model_dump, type_validate_python
 
-    post_router = respx.get(
-        "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=161775300&offset=0&need_top=0"
-    )
-    post_router.mock(return_value=Response(200, json=get_json("bilibili_strange_post-0.json")))
-    bilibili_main_page_router = respx.get("https://www.bilibili.com/")
-    bilibili_main_page_router.mock(return_value=Response(200))
+    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.platform.bilibili.models import PostAPI
 
     target = Target("161775300")
+
+    post_router = respx.get(
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
+    )
+    post_list = type_validate_python(PostAPI, get_json("bilibili-new.json"))
+    assert post_list.data
+    assert post_list.data.items
+    post_0 = post_list.data.items.pop(0)
+    post_router.mock(return_value=Response(200, json=model_dump(post_list)))
 
     res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert post_router.called
     assert len(res) == 0
 
-    mock_data = get_json("bilibili_strange_post.json")
-    mock_data["data"]["cards"][0]["desc"]["timestamp"] = int(datetime.now().timestamp())
-    post_router.mock(return_value=Response(200, json=mock_data))
+    post_0.modules.module_author.pub_ts = int(datetime.now().timestamp())
+    post_list.data.items.insert(0, post_0)
+    post_router.mock(return_value=Response(200, json=model_dump(post_list)))
     res2 = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     post = res2[0][1][0]
-    assert (
-        post.content
-        == "#罗德厨房——回甘##明日方舟#\r\n明日方舟官方美食漫画，正式开餐。\r\n往事如烟，安然即好。\r\nMenu"  # noqa: E501
-        " 01：高脚羽兽烤串与罗德岛的领袖\r\n\r\n哔哩哔哩漫画阅读：https://manga.bilibili.com/detail/mc31998?from=manga_search\r\n\r\n关注并转发本动态，"
-        "我们将会在5月27日抽取10位博士赠送【兔兔奇境】周边礼盒一份。 互动抽奖"
+    assert post.content == (
+        "SideStory「巴别塔」限时活动即将开启\n\n\n\n"
+        "一、全新SideStory「巴别塔」，活动关卡开启\n\n"
+        "二、【如死亦终】限时寻访开启\n\n"
+        "三、新干员登场，信赖获取提升\n\n"
+        "四、【时代】系列，新装限时上架\n\n"
+        "五、复刻时装限时上架\n\n"
+        "六、新增【“疤痕商场的回忆”】主题家具，限时获取\n\n"
+        "七、礼包限时上架\n\n"
+        "八、【前路回响】限时寻访开启\n\n"
+        "九、【玛尔特】系列，限时复刻上架\n\n\n\n"
+        "更多活动内容请持续关注《明日方舟》游戏内公告及官方公告。"
     )
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_fetch_new_live_rcmd(bilibili: "Bilibili", dummy_user_subinfo):
+    from nonebot.compat import model_dump, type_validate_python
+
+    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.platform.bilibili.models import PostAPI
+
+    target = Target("13164144")
+
+    post_router = respx.get(
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
+    )
+    post_list = type_validate_python(PostAPI, get_json("bilibili-dynamic-live-rcmd.json"))
+    assert post_list.data
+    assert post_list.data.items
+    post_0 = post_list.data.items.pop(0)
+    post_router.mock(return_value=Response(200, json=model_dump(post_list)))
+
+    res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert post_router.called
+    assert len(res) == 0
+    post_0.modules.module_author.pub_ts = int(datetime.now().timestamp())
+    post_list.data.items.insert(0, post_0)
+    post_router.mock(return_value=Response(200, json=model_dump(post_list)))
+    res2 = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
+    assert len(res2[0][1]) == 1
+    post = res2[0][1][0]
+    assert post.title == "【Zc】灵异地铁站！深夜恐怖档"
+    assert post.content == "手游 明日方舟"
+    assert post.images == ["http://i0.hdslb.com/bfs/live/new_room_cover/fdada58af9fdc0068562da17298815de72ec82e0.jpg"]
+    assert post.url == "https://live.bilibili.com/3044248"
 
 
 async def test_parse_target(bilibili: "Bilibili"):
@@ -225,3 +351,43 @@ async def test_parse_target(bilibili: "Bilibili"):
     assert res2 == "161775300"
     with pytest.raises(Platform.ParseTargetException):
         await bilibili.parse_target("https://www.bilibili.com/video/BV1qP4y1g738?spm_id_from=333.999.0.0")
+
+    res3 = await bilibili.parse_target("10086")
+    assert res3 == "10086"
+
+    res4 = await bilibili.parse_target("UID:161775300")
+    assert res4 == "161775300"
+
+
+async def test_content_process(bilibili: "Bilibili"):
+    res = bilibili._text_process(
+        title="「2024明日方舟音律联觉-不觅浪尘」先导预告公开",
+        desc=(
+            "「2024明日方舟音律联觉-不觅浪尘」先导预告公开\n\n"
+            "“苦难往往相似，邪恶反倒驳杂。”\n"
+            "“点火者远去了，但火还在燃烧。”\n"
+            "“没有某种能量和激励，也没有某种责任甚至注定牺牲的命运。”\n"
+            "“欢迎回家，博士。”\n\n"
+            "活动详情及票务信息将于近期发布，请持续关注@明日方舟 。"
+        ),
+        dynamic="投稿了视频",
+    )
+
+    assert res.title == "「2024明日方舟音律联觉-不觅浪尘」先导预告公开"
+    assert res.content == (
+        "“苦难往往相似，邪恶反倒驳杂。”\n"
+        "“点火者远去了，但火还在燃烧。”\n"
+        "“没有某种能量和激励，也没有某种责任甚至注定牺牲的命运。”\n"
+        "“欢迎回家，博士。”\n\n"
+        "活动详情及票务信息将于近期发布，请持续关注@明日方舟 。\n"
+        "=================\n"
+        "投稿了视频"
+    )
+
+    res2 = bilibili._text_process(
+        title="111",
+        desc="222",
+        dynamic="2222",
+    )
+    assert res2.title == "111"
+    assert res2.content == "2222"

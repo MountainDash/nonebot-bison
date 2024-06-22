@@ -2,7 +2,6 @@
 
 ## 最近更新
 
-- 🐛 补充主题渲染时遗漏的转发推文中的图片 [@AzideCupric](https://github.com/AzideCupric) ([#554](https://github.com/MountainDash/nonebot-bison/pull/554))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#521](https://github.com/MountainDash/nonebot-bison/pull/521))
 
 ### 新功能
@@ -11,6 +10,11 @@
 - ParseTargetException可以携带prompt参数 [@AzideCupric](https://github.com/AzideCupric) ([#479](https://github.com/MountainDash/nonebot-bison/pull/479))
 - 为 scheduler config 添加 require_browser 属性 [@felinae98](https://github.com/felinae98) ([#542](https://github.com/MountainDash/nonebot-bison/pull/542))
 - 将 bison_theme_use_browser 更名为 bison_use_browser  [@felinae98](https://github.com/felinae98) ([#540](https://github.com/MountainDash/nonebot-bison/pull/540))
+
+### Bug 修复
+
+- B站蹲饼修复 [@AzideCupric](https://github.com/AzideCupric) ([#525](https://github.com/MountainDash/nonebot-bison/pull/525))
+- 🐛 补充主题渲染时遗漏的转发推文中的图片 [@AzideCupric](https://github.com/AzideCupric) ([#554](https://github.com/MountainDash/nonebot-bison/pull/554))
 
 ### 文档
 

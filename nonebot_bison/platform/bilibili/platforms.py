@@ -1,148 +1,86 @@
 import re
 import json
 from copy import deepcopy
+from functools import wraps
 from enum import Enum, unique
 from typing_extensions import Self
-from datetime import datetime, timedelta
-from typing import Any, TypeVar, TypeAlias, NamedTuple
+from typing import TypeVar, NamedTuple
+from collections.abc import Callable, Awaitable
 
+from yarl import URL
+from nonebot import logger
 from httpx import AsyncClient
-from nonebot.log import logger
-from pydantic import Field, BaseModel
-from nonebot.compat import PYDANTIC_V2, ConfigDict, type_validate_json, type_validate_python
+from httpx import URL as HttpxURL
+from pydantic import Field, BaseModel, ValidationError
+from nonebot.compat import type_validate_json, type_validate_python
 
-from ..post import Post
-from ..compat import model_rebuild
-from ..types import Tag, Target, RawPost, ApiError, Category
-from ..utils import Site, ClientManager, http_client, text_similarity
-from .platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
+from nonebot_bison.post.post import Post
+from nonebot_bison.compat import model_rebuild
+from nonebot_bison.utils import text_similarity, decode_unicode_escapes
+from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
 
-TBaseModel = TypeVar("TBaseModel", bound=type[BaseModel])
+from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
+from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
+from .models import (
+    PostAPI,
+    UserAPI,
+    PGCMajor,
+    DrawMajor,
+    LiveMajor,
+    OPUSMajor,
+    DynRawPost,
+    VideoMajor,
+    CommonMajor,
+    DynamicType,
+    ArticleMajor,
+    CoursesMajor,
+    UnknownMajor,
+    LiveRecommendMajor,
+)
 
-
-# 不能当成装饰器用
-# 当装饰器用时，global namespace 中还没有被装饰的类，会报错
-def model_rebuild_recurse(cls: TBaseModel) -> TBaseModel:
-    """Recursively rebuild all BaseModel subclasses in the class."""
-    if not PYDANTIC_V2:
-        from inspect import isclass, getmembers
-
-        for _, sub_cls in getmembers(cls, lambda x: isclass(x) and issubclass(x, BaseModel)):
-            model_rebuild_recurse(sub_cls)
-    model_rebuild(cls)
-    return cls
-
-
-class Base(BaseModel):
-    if PYDANTIC_V2:
-        model_config = ConfigDict(from_attributes=True)
-    else:
-
-        class Config:
-            orm_mode = True
+B = TypeVar("B", bound="Bilibili")
+MAX_352_RETRY_COUNT = 3
 
 
-class APIBase(Base):
-    """Bilibili API返回的基础数据"""
-
-    code: int
-    message: str
-
-
-class UserAPI(APIBase):
-    class Card(Base):
-        name: str
-
-    class Data(Base):
-        card: "UserAPI.Card"
-
-    data: Data | None = None
+class ApiCode352Error(Exception):
+    def __init__(self, url: HttpxURL) -> None:
+        msg = f"api {url} error"
+        super().__init__(msg)
 
 
-class PostAPI(APIBase):
-    class Info(Base):
-        uname: str
+def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
+    retried_times = 0
 
-    class UserProfile(Base):
-        info: "PostAPI.Info"
-
-    class Origin(Base):
-        uid: int
-        dynamic_id: int
-        dynamic_id_str: str
-        timestamp: int
-        type: int
-        rid: int
-        bvid: str | None = None
-
-    class Desc(Base):
-        dynamic_id: int
-        dynamic_id_str: str
-        timestamp: int
-        type: int
-        user_profile: "PostAPI.UserProfile"
-        rid: int
-        bvid: str | None = None
-
-        origin: "PostAPI.Origin | None" = None
-
-    class Card(Base):
-        desc: "PostAPI.Desc"
-        card: str
-
-    class Data(Base):
-        cards: "list[PostAPI.Card] | None"
-
-    data: Data | None = None
-
-
-DynRawPost: TypeAlias = PostAPI.Card
-
-model_rebuild_recurse(UserAPI)
-model_rebuild_recurse(PostAPI)
-
-
-class BilibiliClient(ClientManager):
-    _client: AsyncClient
-    _refresh_time: datetime
-    cookie_expire_time = timedelta(hours=5)
-
-    def __init__(self) -> None:
-        self._client = http_client()
-        self._refresh_time = datetime(year=2000, month=1, day=1)  # an expired time
-
-    async def _init_session(self):
-        res = await self._client.get("https://www.bilibili.com/")
-        if res.status_code != 200:
-            logger.warning("unable to refresh temp cookie")
+    @wraps(func)
+    async def wrapper(bls: B, *args, **kwargs):
+        nonlocal retried_times
+        try:
+            res = await func(bls, *args, **kwargs)
+        except ApiCode352Error as e:
+            if retried_times < MAX_352_RETRY_COUNT:
+                retried_times += 1
+                logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/{MAX_352_RETRY_COUNT}")
+                await bls.ctx.refresh_client()
+                return []  # 返回空列表
+            else:
+                raise ApiError(e.args[0])
         else:
-            self._refresh_time = datetime.now()
+            retried_times = 0
+            return res
 
-    async def _refresh_client(self):
-        if datetime.now() - self._refresh_time > self.cookie_expire_time:
-            await self._init_session()
-
-    async def get_client(self, target: Target | None) -> AsyncClient:
-        await self._refresh_client()
-        return self._client
-
-    async def get_query_name_client(self) -> AsyncClient:
-        await self._refresh_client()
-        return self._client
+    return wrapper
 
 
-class BilibiliSite(Site):
-    name = "bilibili.com"
-    schedule_type = "interval"
-    schedule_setting = {"seconds": 10}
-    client_mgr = BilibiliClient
+class _ProcessedText(NamedTuple):
+    title: str
+    content: str
 
 
-class BililiveSchedConf(Site):
-    name = "live.bilibili.com"
-    schedule_type = "interval"
-    schedule_setting = {"seconds": 3}
-    client_mgr = BilibiliClient
+class _ParsedMojarPost(NamedTuple):
+    title: str
+    content: str
+    pics: list[str]
+    url: str | None = None
 
 
 class Bilibili(NewMessage):
@@ -152,6 +90,7 @@ class Bilibili(NewMessage):
         3: "视频",
         4: "纯文字",
         5: "转发",
+        6: "直播推送",
         # 5: "短视频"
     }
     platform_name = "bilibili"
@@ -176,7 +115,7 @@ class Bilibili(NewMessage):
     async def parse_target(cls, target_text: str) -> Target:
         if re.match(r"\d+", target_text):
             return Target(target_text)
-        elif re.match(r"UID:\d+", target_text):
+        elif re.match(r"UID:(\d+)", target_text):
             return Target(target_text[4:])
         elif m := re.match(r"(?:https?://)?space\.bilibili\.com/(\d+)", target_text):
             return Target(m.group(1))
@@ -185,142 +124,202 @@ class Bilibili(NewMessage):
                 prompt="正确格式:\n1. 用户纯数字id\n2. UID:<用户id>\n3. 用户主页链接: https://space.bilibili.com/xxxx"
             )
 
+    @retry_for_352
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
-        client = await self.ctx.get_client()
-        params = {"host_uid": target, "offset": 0, "need_top": 0}
+        client = await self.ctx.get_client(target)
+        params = {"host_mid": target, "timezone_offset": -480, "offset": ""}
         res = await client.get(
-            "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history",
+            "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space",
             params=params,
             timeout=4.0,
         )
         res.raise_for_status()
-        res_obj = type_validate_json(PostAPI, res.content)
+        try:
+            res_obj = type_validate_json(PostAPI, res.content)
+        except ValidationError as e:
+            logger.exception("解析B站动态列表失败")
+            logger.error(res.json())
+            raise ApiError(res.request.url) from e
 
+        # 0: 成功
+        # -352: 需要cookie
         if res_obj.code == 0:
-            if (data := res_obj.data) and (card := data.cards):
-                return card
-            return []
-        raise ApiError(res.request.url)
+            if (data := res_obj.data) and (items := data.items):
+                logger.trace(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
+                logger.trace(f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
+                return [item for item in items if item.type != "DYNAMIC_TYPE_NONE"]
 
-    def get_id(self, post: DynRawPost) -> int:
-        return post.desc.dynamic_id
+            logger.trace(f"获取用户{target}的动态列表成功，但是没有动态")
+            return []
+        elif res_obj.code == -352:
+            raise ApiCode352Error(res.request.url)
+        else:
+            raise ApiError(res.request.url)
+
+    def get_id(self, post: DynRawPost) -> str:
+        return post.id_str
 
     def get_date(self, post: DynRawPost) -> int:
-        return post.desc.timestamp
+        return post.modules.module_author.pub_ts
 
-    def _do_get_category(self, post_type: int) -> Category:
+    def _do_get_category(self, post_type: DynamicType) -> Category:
         match post_type:
-            case 2:
+            case "DYNAMIC_TYPE_DRAW" | "DYNAMIC_TYPE_COMMON_VERTICAL" | "DYNAMIC_TYPE_COMMON_SQUARE":
                 return Category(1)
-            case 64:
+            case "DYNAMIC_TYPE_ARTICLE":
                 return Category(2)
-            case 8:
+            case "DYNAMIC_TYPE_AV":
                 return Category(3)
-            case 4:
+            case "DYNAMIC_TYPE_WORD":
                 return Category(4)
-            case 1:
+            case "DYNAMIC_TYPE_FORWARD":
                 # 转发
                 return Category(5)
+            case "DYNAMIC_TYPE_LIVE_RCMD" | "DYNAMIC_TYPE_LIVE":
+                return Category(6)
             case unknown_type:
                 raise CategoryNotRecognize(unknown_type)
 
     def get_category(self, post: DynRawPost) -> Category:
-        post_type = post.desc.type
+        post_type = post.type
         return self._do_get_category(post_type)
 
     def get_tags(self, raw_post: DynRawPost) -> list[Tag]:
-        card_content = json.loads(raw_post.card)
-        text: str = card_content["item"]["content"]
-        result: list[str] = re.findall(r"#(.*?)#", text)
-        return result
+        tags: list[Tag] = []
+        if raw_post.topic:
+            tags.append(raw_post.topic.name)
+        if desc := raw_post.modules.module_dynamic.desc:
+            for node in desc.rich_text_nodes:
+                if (node_type := node.get("type", None)) and node_type == "RICH_TEXT_NODE_TYPE_TOPIC":
+                    tags.append(node["text"].strip("#"))
+        return tags
 
-    def _text_process(self, dynamic: str, desc: str, title: str) -> str:
-        similarity = 1.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
-        if len(dynamic) == 0 and len(desc) == 0:
-            text = title
-        elif similarity > 0.8:
-            text = title + "\n\n" + desc if len(dynamic) < len(desc) else dynamic + "\n=================\n" + title
+    def _text_process(self, dynamic: str, desc: str, title: str) -> _ProcessedText:
+
+        # 计算视频标题和视频描述相似度
+        title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
+        if title_similarity > 0.9:
+            desc = desc[len(title) :].lstrip()
+        # 计算视频描述和动态描述相似度
+        content_similarity = 0.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
+        if content_similarity > 0.8:
+            return _ProcessedText(title, desc if len(dynamic) < len(desc) else dynamic)  # 选择较长的描述
         else:
-            text = dynamic + "\n=================\n" + title + "\n\n" + desc
-        return text
+            return _ProcessedText(title, f"{desc}" + (f"\n=================\n{dynamic}" if dynamic else ""))
 
-    def _raw_post_parse(self, raw_post: DynRawPost, in_repost: bool = False):
-        class ParsedPost(NamedTuple):
-            text: str
-            pics: list[str]
-            url: str | None
-            repost_owner: str | None = None
-            repost: "ParsedPost | None" = None
+    def pre_parse_by_mojar(self, raw_post: DynRawPost) -> _ParsedMojarPost:
+        dyn = raw_post.modules.module_dynamic
 
-        card_content: dict[str, Any] = json.loads(raw_post.card)
-        repost_owner: str | None = ou["info"]["uname"] if (ou := card_content.get("origin_user")) else None
-
-        def extract_url_id(url_template: str, name: str) -> str | None:
-            if in_repost:
-                if origin := raw_post.desc.origin:
-                    return url_template.format(getattr(origin, name))
-                return None
-            return url_template.format(getattr(raw_post.desc, name))
-
-        match self._do_get_category(raw_post.desc.type):
-            case 1:
-                # 一般动态
-                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
-                text: str = card_content["item"]["description"]
-                pic: list[str] = [img["img_src"] for img in card_content["item"]["pictures"]]
-                return ParsedPost(text, pic, url, repost_owner)
-            case 2:
-                # 专栏文章
-                url = extract_url_id("https://www.bilibili.com/read/cv{}", "rid")
-                text = "{} {}".format(card_content["title"], card_content["summary"])
-                pic = card_content["image_urls"]
-                return ParsedPost(text, pic, url, repost_owner)
-            case 3:
-                # 视频
-                url = extract_url_id("https://www.bilibili.com/video/{}", "bvid")
-                dynamic = card_content.get("dynamic", "")
-                title = card_content["title"]
-                desc = card_content.get("desc", "")
-                text = self._text_process(dynamic, desc, title)
-                pic = [card_content["pic"]]
-                return ParsedPost(text, pic, url, repost_owner)
-            case 4:
-                # 纯文字
-                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
-                text = card_content["item"]["content"]
-                pic = []
-                return ParsedPost(text, pic, url, repost_owner)
-            case 5:
-                # 转发
-                url = extract_url_id("https://t.bilibili.com/{}", "dynamic_id_str")
-                text = card_content["item"]["content"]
-                orig_type: int = card_content["item"]["orig_type"]
-                orig_card: str = card_content["origin"]
-                orig_post = DynRawPost(desc=raw_post.desc, card=orig_card)
-                orig_post.desc.type = orig_type
-
-                orig_parsed_post = self._raw_post_parse(orig_post, in_repost=True)
-                return ParsedPost(text, [], url, repost_owner, orig_parsed_post)
-            case unsupported_type:
-                raise CategoryNotSupport(unsupported_type)
+        match raw_post.modules.module_dynamic.major:
+            case VideoMajor(archive=archive):
+                desc_text = dyn.desc.text if dyn.desc else ""
+                parsed = self._text_process(desc_text, archive.desc, archive.title)
+                return _ParsedMojarPost(
+                    title=parsed.title,
+                    content=parsed.content,
+                    pics=[archive.cover],
+                    url=URL(archive.jump_url).with_scheme("https").human_repr(),
+                )
+            case LiveRecommendMajor(live_rcmd=live_rcmd):
+                live_play_info = type_validate_json(LiveRecommendMajor.Content, live_rcmd.content).live_play_info
+                return _ParsedMojarPost(
+                    title=live_play_info.title,
+                    content=f"{live_play_info.parent_area_name} {live_play_info.area_name}",
+                    pics=[live_play_info.cover],
+                    url=URL(live_play_info.link).with_scheme("https").with_query(None).human_repr(),
+                )
+            case LiveMajor(live=live):
+                return _ParsedMojarPost(
+                    title=live.title,
+                    content=f"{live.desc_first}\n{live.desc_second}",
+                    pics=[live.cover],
+                    url=URL(live.jump_url).with_scheme("https").human_repr(),
+                )
+            case ArticleMajor(article=article):
+                return _ParsedMojarPost(
+                    title=article.title,
+                    content=article.desc,
+                    pics=article.covers,
+                    url=URL(article.jump_url).with_scheme("https").human_repr(),
+                )
+            case DrawMajor(draw=draw):
+                return _ParsedMojarPost(
+                    title="",
+                    content=dyn.desc.text if dyn.desc else "",
+                    pics=[item.src for item in draw.items],
+                    url=f"https://t.bilibili.com/{raw_post.id_str}",
+                )
+            case PGCMajor(pgc=pgc):
+                return _ParsedMojarPost(
+                    title=pgc.title,
+                    content="",
+                    pics=[pgc.cover],
+                    url=URL(pgc.jump_url).with_scheme("https").human_repr(),
+                )
+            case OPUSMajor(opus=opus):
+                return _ParsedMojarPost(
+                    title=opus.title,
+                    content=opus.summary.text,
+                    pics=[pic.url for pic in opus.pics],
+                    url=URL(opus.jump_url).with_scheme("https").human_repr(),
+                )
+            case CommonMajor(common=common):
+                return _ParsedMojarPost(
+                    title=common.title,
+                    content=common.desc,
+                    pics=[common.cover],
+                    url=URL(common.jump_url).with_scheme("https").human_repr(),
+                )
+            case CoursesMajor(courses=courses):
+                return _ParsedMojarPost(
+                    title=courses.title,
+                    content=f"{courses.sub_title}\n{courses.desc}",
+                    pics=[courses.cover],
+                    url=URL(courses.jump_url).with_scheme("https").human_repr(),
+                )
+            case UnknownMajor(type=unknown_type):
+                raise CategoryNotSupport(unknown_type)
+            case None:  # 没有major的情况
+                return _ParsedMojarPost(
+                    title="",
+                    content=dyn.desc.text if dyn.desc else "",
+                    pics=[],
+                    url=f"https://t.bilibili.com/{raw_post.id_str}",
+                )
+            case _:
+                raise CategoryNotSupport(f"{raw_post.id_str=}")
 
     async def parse(self, raw_post: DynRawPost) -> Post:
-        parsed_raw_post = self._raw_post_parse(raw_post)
+        parsed_raw_post = self.pre_parse_by_mojar(raw_post)
+        parsed_raw_repost = None
+        if self._do_get_category(raw_post.type) == Category(5):
+            if raw_post.orig:
+                parsed_raw_repost = self.pre_parse_by_mojar(raw_post.orig)
+            else:
+                logger.warning(f"转发动态{raw_post.id_str}没有原动态")
 
         post = Post(
             self,
-            parsed_raw_post.text,
-            url=parsed_raw_post.url,
+            content=decode_unicode_escapes(parsed_raw_post.content),
+            title=parsed_raw_post.title,
             images=list(parsed_raw_post.pics),
-            nickname=raw_post.desc.user_profile.info.uname,
+            timestamp=self.get_date(raw_post),
+            url=parsed_raw_post.url,
+            avatar=raw_post.modules.module_author.face,
+            nickname=raw_post.modules.module_author.name,
         )
-        if rp := parsed_raw_post.repost:
+        if parsed_raw_repost:
+            orig = raw_post.orig
+            assert orig
             post.repost = Post(
                 self,
-                rp.text,
-                url=rp.url,
-                images=list(rp.pics),
-                nickname=rp.repost_owner,
+                content=decode_unicode_escapes(parsed_raw_repost.content),
+                title=parsed_raw_repost.title,
+                images=list(parsed_raw_repost.pics),
+                timestamp=self.get_date(orig),
+                url=parsed_raw_repost.url,
+                avatar=orig.modules.module_author.face,
+                nickname=orig.modules.module_author.name,
             )
         return post
 
@@ -331,7 +330,7 @@ class Bilibililive(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    site = BililiveSchedConf
+    site = BililiveSite
     name = "Bilibili直播"
     has_target = True
     use_batch = True
@@ -481,7 +480,7 @@ class BilibiliBangumi(StatusChange):
     enable_tag = False
     enabled = True
     is_common = True
-    site = BilibiliSite
+    site = BiliBangumiSite
     name = "Bilibili剧集"
     has_target = True
     parse_target_promot = "请输入剧集主页"

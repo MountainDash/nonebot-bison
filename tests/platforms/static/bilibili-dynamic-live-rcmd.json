@@ -1,0 +1,269 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "has_more": true,
+    "items": [
+      {
+        "basic": {
+          "comment_id_str": "940610847313494066",
+          "comment_type": 17,
+          "like_icon": {
+            "action_url": "https://i0.hdslb.com/bfs/garb/item/8860c7c01179f9984f88fb61bc55cab9dc1d28cb.bin",
+            "end_url": "",
+            "id": 33772,
+            "start_url": ""
+          },
+          "rid_str": "507312380136289176"
+        },
+        "id_str": "940610847313494066",
+        "modules": {
+          "module_author": {
+            "avatar": {
+              "container_size": {
+                "height": 1.375,
+                "width": 1.375
+              },
+              "fallback_layers": {
+                "is_critical_group": true,
+                "layers": [
+                  {
+                    "general_spec": {
+                      "pos_spec": {
+                        "axis_x": 0.6875,
+                        "axis_y": 0.6875,
+                        "coordinate_pos": 2
+                      },
+                      "render_spec": {
+                        "opacity": 1
+                      },
+                      "size_spec": {
+                        "height": 0.787,
+                        "width": 0.787
+                      }
+                    },
+                    "layer_config": {
+                      "is_critical": true,
+                      "tags": {
+                        "AVATAR_LAYER": {},
+                        "GENERAL_CFG": {
+                          "config_type": 1,
+                          "general_config": {
+                            "web_css_style": {
+                              "borderRadius": "50%"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "resource": {
+                      "res_image": {
+                        "image_src": {
+                          "placeholder": 6,
+                          "remote": {
+                            "bfs_style": "widget-layer-avatar",
+                            "url": "https://i0.hdslb.com/bfs/face/a84fa10f90f7060d0336384954ee1cde7a8e9bc6.jpg"
+                          },
+                          "src_type": 1
+                        }
+                      },
+                      "res_type": 3
+                    },
+                    "visible": true
+                  },
+                  {
+                    "general_spec": {
+                      "pos_spec": {
+                        "axis_x": 0.6875,
+                        "axis_y": 0.6875,
+                        "coordinate_pos": 2
+                      },
+                      "render_spec": {
+                        "opacity": 1
+                      },
+                      "size_spec": {
+                        "height": 1.375,
+                        "width": 1.375
+                      }
+                    },
+                    "layer_config": {
+                      "tags": {
+                        "PENDENT_LAYER": {}
+                      }
+                    },
+                    "resource": {
+                      "res_image": {
+                        "image_src": {
+                          "remote": {
+                            "bfs_style": "widget-layer-avatar",
+                            "url": "https://i0.hdslb.com/bfs/garb/item/7f8aa8ef1eed8c2dce0796801ddc82552a4164f9.png"
+                          },
+                          "src_type": 1
+                        }
+                      },
+                      "res_type": 3
+                    },
+                    "visible": true
+                  },
+                  {
+                    "general_spec": {
+                      "pos_spec": {
+                        "axis_x": 0.7560000000000001,
+                        "axis_y": 0.7726666666666667,
+                        "coordinate_pos": 1
+                      },
+                      "render_spec": {
+                        "opacity": 1
+                      },
+                      "size_spec": {
+                        "height": 0.41666666666666663,
+                        "width": 0.41666666666666663
+                      }
+                    },
+                    "layer_config": {
+                      "tags": {
+                        "GENERAL_CFG": {
+                          "config_type": 1,
+                          "general_config": {
+                            "web_css_style": {
+                              "background-color": "rgb(255,255,255)",
+                              "border": "2px solid rgba(255,255,255,1)",
+                              "borderRadius": "50%",
+                              "boxSizing": "border-box"
+                            }
+                          }
+                        },
+                        "ICON_LAYER": {}
+                      }
+                    },
+                    "resource": {
+                      "res_image": {
+                        "image_src": {
+                          "local": 3,
+                          "src_type": 2
+                        }
+                      },
+                      "res_type": 3
+                    },
+                    "visible": true
+                  }
+                ]
+              },
+              "mid": "13164144"
+            },
+            "decorate": {
+              "card_url": "https://i0.hdslb.com/bfs/garb/item/a1c3db0829e7a1dff2fe476421cf587702b09293.png",
+              "fan": {
+                "color": "#f9b636",
+                "color_format": {
+                  "colors": ["#f9b636FF", "#f9b636FF"],
+                  "end_point": "0,100",
+                  "gradients": [0, 100],
+                  "start_point": "0,0"
+                },
+                "is_fan": true,
+                "num_prefix": "NO.",
+                "num_str": "000001",
+                "number": 1
+              },
+              "id": 36354,
+              "jump_url": "https://www.bilibili.com/h5/mall/equity-link/collect-home?item_id=36354&isdiy=0&part=card&from=post&f_source=garb&vmid=13164144&native.theme=1&navhide=1",
+              "name": "魔法美少女ZC粉丝",
+              "type": 3
+            },
+            "face": "https://i0.hdslb.com/bfs/face/a84fa10f90f7060d0336384954ee1cde7a8e9bc6.jpg",
+            "face_nft": false,
+            "following": true,
+            "jump_url": "//space.bilibili.com/13164144/dynamic",
+            "label": "",
+            "mid": 13164144,
+            "name": "魔法Zc目录",
+            "official_verify": {
+              "desc": "",
+              "type": 0
+            },
+            "pendant": {
+              "expire": 0,
+              "image": "https://i0.hdslb.com/bfs/garb/item/7f8aa8ef1eed8c2dce0796801ddc82552a4164f9.png",
+              "image_enhance": "https://i0.hdslb.com/bfs/garb/item/7f8aa8ef1eed8c2dce0796801ddc82552a4164f9.png",
+              "image_enhance_frame": "",
+              "n_pid": 3860,
+              "name": "2021拜年纪",
+              "pid": 3860
+            },
+            "pub_action": "直播了",
+            "pub_location_text": "",
+            "pub_time": "",
+            "pub_ts": 1717841429,
+            "type": "AUTHOR_TYPE_NORMAL",
+            "vip": {
+              "avatar_subscript": 1,
+              "avatar_subscript_url": "",
+              "due_date": 1737475200000,
+              "label": {
+                "bg_color": "#FB7299",
+                "bg_style": 1,
+                "border_color": "",
+                "img_label_uri_hans": "https://i0.hdslb.com/bfs/activity-plat/static/20220608/e369244d0b14644f5e1a06431e22a4d5/0DFy9BHgwE.gif",
+                "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d7e624d13d3e134251e4174a7318c19a8edbd71.png",
+                "img_label_uri_hant": "",
+                "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/uckjAv3Npy.png",
+                "label_theme": "annual_vip",
+                "path": "",
+                "text": "年度大会员",
+                "text_color": "#FFFFFF",
+                "use_img_label": true
+              },
+              "nickname_color": "#FB7299",
+              "status": 1,
+              "theme_type": 0,
+              "type": 2
+            }
+          },
+          "module_dynamic": {
+            "additional": null,
+            "desc": null,
+            "major": {
+              "live_rcmd": {
+                "content": "{\"type\":1,\"live_play_info\":{\"room_paid_type\":0,\"room_id\":3044248,\"cover\":\"http://i0.hdslb.com/bfs/live/new_room_cover/fdada58af9fdc0068562da17298815de72ec82e0.jpg\",\"parent_area_name\":\"手游\",\"live_screen_type\":0,\"link\":\"//live.bilibili.com/3044248?live_from=85002\",\"live_status\":1,\"title\":\"【Zc】灵异地铁站！深夜恐怖档\",\"parent_area_id\":3,\"area_name\":\"明日方舟\",\"live_start_time\":1717840829,\"live_id\":\"507312380136289176\",\"pendants\":{\"list\":{\"mobile_index_badge\":{\"list\":{\"1\":{\"text\":\"\",\"bg_color\":\"#FB9E60\",\"bg_pic\":\"https://i0.hdslb.com/bfs/live/539ce26c45cd4019f55b64cfbcedc3c01820e539.png\",\"pendant_id\":426,\"type\":\"mobile_index_badge\",\"name\":\"百人成就\",\"position\":1}}},\"index_badge\":{\"list\":{\"1\":{\"type\":\"index_badge\",\"name\":\"百人成就\",\"position\":1,\"text\":\"\",\"bg_color\":\"#FB9E60\",\"bg_pic\":\"https://i0.hdslb.com/bfs/live/539ce26c45cd4019f55b64cfbcedc3c01820e539.png\",\"pendant_id\":425}}}}},\"uid\":13164144,\"play_type\":0,\"area_id\":255,\"room_type\":0,\"online\":1269096,\"watched_show\":{\"switch\":true,\"num\":122343,\"text_small\":\"12.2万\",\"text_large\":\"12.2万人看过\",\"icon\":\"https://i0.hdslb.com/bfs/live/a725a9e61242ef44d764ac911691a7ce07f36c1d.png\",\"icon_location\":\"\",\"icon_web\":\"https://i0.hdslb.com/bfs/live/8d9d0f33ef8bf6f308742752d13dd0df731df19c.png\"}},\"live_record_info\":null}",
+                "reserve_type": 0
+              },
+              "type": "MAJOR_TYPE_LIVE_RCMD"
+            },
+            "topic": null
+          },
+          "module_more": {
+            "three_point_items": [
+              {
+                "label": "举报",
+                "type": "THREE_POINT_REPORT"
+              }
+            ]
+          },
+          "module_stat": {
+            "comment": {
+              "count": 0,
+              "forbidden": false,
+              "hidden": true
+            },
+            "forward": {
+              "count": 0,
+              "forbidden": false
+            },
+            "like": {
+              "count": 351,
+              "forbidden": false,
+              "status": false
+            }
+          }
+        },
+        "type": "DYNAMIC_TYPE_LIVE_RCMD",
+        "visible": true
+      }
+    ],
+    "offset": "915793667264872453",
+    "update_baseline": "",
+    "update_num": 0
+  }
+}

@@ -1,11 +1,11 @@
 import reprlib
 from io import BytesIO
 from pathlib import Path
-from bs4 import BeautifulSoup
 from collections.abc import Callable
 from dataclasses import fields, dataclass
 from typing import TYPE_CHECKING, ClassVar
 
+from bs4 import BeautifulSoup
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 

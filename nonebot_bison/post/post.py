@@ -50,6 +50,7 @@ class Post(AbstractPost):
     @classmethod
     def register_plain_content_handler(cls, platform_name: str):
         """注册 platform 对应的纯文本处理函数"""
+
         def decorator(func: Callable[[str], str]):
             cls.plain_content_handlers[platform_name] = func
             return func

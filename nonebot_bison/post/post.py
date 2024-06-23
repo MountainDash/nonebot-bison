@@ -118,7 +118,7 @@ class Post(AbstractPost):
         for cls_field in fields(self):
             if cls_field.name in ("content", "platform", "repost"):
                 continue
-            elif cls_field.name == "content_handlers":
+            elif cls_field.name == "plain_content_handlers":
                 handlers_keys = list(getattr(self, cls_field.name).keys())
                 post_format += f"- {cls_field.name}: {aRepr.repr(handlers_keys)}\n"
             else:

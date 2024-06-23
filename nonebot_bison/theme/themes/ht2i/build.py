@@ -35,15 +35,15 @@ class Ht2iTheme(Theme):
 
         md_text += f"## {post.title}\n\n" if post.title else ""
 
-        md_text += post.plain_content if len(post.plain_content) < 500 else f"{post.plain_content[:500]}..."
+        md_text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
             md_text += (
-                ">  \n> " + rp.plain_content
-                if len(rp.plain_content) < 500
-                else f"{rp.plain_content[:500]}..." + "  \n"  # noqa: E501
+                ">  \n> " + rp.content
+                if len(rp.content) < 500
+                else f"{rp.content[:500]}..." + "  \n"  # noqa: E501
             )  # noqa: E501
         md_text += "\n\n"
 

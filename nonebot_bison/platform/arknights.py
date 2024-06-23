@@ -65,7 +65,7 @@ def content_handler(content: str) -> str:
     content = html.unescape(content)  # 转义HTML特殊字符
     content = re.sub(
         r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
-        r"**\4**\n",
+        r"==\4==\n",
         content,
         flags=re.DOTALL,
     )  # 去“标题型”p

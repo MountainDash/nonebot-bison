@@ -41,9 +41,7 @@ class Ht2iTheme(Theme):
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
             md_text += (
-                ">  \n> " + rp.content
-                if len(rp.content) < 500
-                else f"{rp.content[:500]}..." + "  \n"  # noqa: E501
+                ">  \n> " + rp.content if len(rp.content) < 500 else f"{rp.content[:500]}..." + "  \n"  # noqa: E501
             )  # noqa: E501
         md_text += "\n\n"
 

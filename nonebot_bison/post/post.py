@@ -1,6 +1,7 @@
 import reprlib
 from io import BytesIO
 from pathlib import Path
+from bs4 import BeautifulSoup
 from collections.abc import Callable
 from dataclasses import fields, dataclass
 from typing import TYPE_CHECKING, ClassVar
@@ -8,6 +9,7 @@ from typing import TYPE_CHECKING, ClassVar
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 
+from ..utils import cleantext
 from ..theme import theme_manager
 from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
@@ -53,6 +55,7 @@ class Post(AbstractPost):
 
         def decorator(func: Callable[[str], str]):
             cls.plain_content_handlers[platform_name] = func
+            logger.opt(colors=True).success(f"Plain Content Handler for <b><u>{platform_name}</u></b> registered")
             return func
 
         return decorator
@@ -61,6 +64,8 @@ class Post(AbstractPost):
     def plain_content(self) -> str:
         """获取纯文本内容"""
         if handler := self.plain_content_handlers.get(self.platform.platform_name):
+            return handler(self.content)
+        if handler := self.plain_content_handlers.get("global"):
             return handler(self.content)
         return self.content
 
@@ -116,11 +121,8 @@ class Post(AbstractPost):
 """
         post_format += "附加信息:\n"
         for cls_field in fields(self):
-            if cls_field.name in ("content", "platform", "repost"):
+            if cls_field.name in ("content", "platform", "repost", "plain_content_handlers"):
                 continue
-            elif cls_field.name == "plain_content_handlers":
-                handlers_keys = list(getattr(self, cls_field.name).keys())
-                post_format += f"- {cls_field.name}: {aRepr.repr(handlers_keys)}\n"
             else:
                 value = getattr(self, cls_field.name)
                 if value is not None:
@@ -131,3 +133,19 @@ class Post(AbstractPost):
             post_format += str(self.repost)
 
         return post_format
+
+
+@Post.register_plain_content_handler("global")
+def global_plain_content_handler(content: str) -> str:
+    soup = BeautifulSoup(content, "html.parser")
+
+    for img in soup.find_all("img"):
+        img.replace_with("[图片]")
+
+    for br in soup.find_all("br"):
+        br.replace_with("\n")
+
+    for p in soup.find_all("p"):
+        p.insert_after("\n")
+
+    return cleantext(soup.get_text())

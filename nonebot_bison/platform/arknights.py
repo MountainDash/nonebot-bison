@@ -10,7 +10,7 @@ from pydantic import Field, BaseModel
 from nonebot.compat import type_validate_python
 
 from ..post import Post
-from ..utils import Site
+from ..utils import Site, cleantext
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
 
@@ -62,16 +62,10 @@ class ArknightsSite(Site):
 
 @Post.register_plain_content_handler("arknights")
 def content_handler(content: str) -> str:
-    def cleantext(text: str, old_split="\n", new_split="\n") -> str:
-        lines = text.strip().split(old_split)
-        cleaned_lines = [line.strip() for line in lines if line != ""]
-        result = new_split.join(cleaned_lines)
-        return "\n".join(result.split())
-
     content = html.unescape(content)  # 转义HTML特殊字符
     content = re.sub(
         r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
-        r"==\4==\n",
+        r"**\4**\n",
         content,
         flags=re.DOTALL,
     )  # 去“标题型”p
@@ -84,7 +78,7 @@ def content_handler(content: str) -> str:
     content = re.sub(r"\<p\>(.*?)\</p\>", r"\1\n", content, flags=re.DOTALL)  # 去普通p
     content = re.sub(r'\<a href="(.*?)" target="_blank">(.*?)\<\/a\>', r"\1", content, flags=re.DOTALL)  # 去a
     content = re.sub(r"<br/>", "\n", content)  # 去br
-    content = re.sub(r"\<strong\>(.*?)\</strong\>", r"**\1**", content)  # 去strong
+    content = re.sub(r"\<strong\>(.*?)\</strong\>", r"\1", content)  # 去strong
     content = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", content)  # 去color
     content = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", content)  # 去img
     return cleantext(content)

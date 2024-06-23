@@ -108,3 +108,10 @@ def decode_unicode_escapes(s: str):
 
     regex = re.compile(r"\\[rnt]|\\u[0-9a-fA-F]{4}")
     return regex.sub(decode_match, s)
+
+
+def cleantext(text: str, old_split="\n", new_split="\n") -> str:
+    """清理文本：去掉所有多余的空格和换行"""
+    lines = text.strip().split(old_split)
+    cleaned_lines = [line.strip() for line in lines if line != ""]
+    return new_split.join(cleaned_lines)

@@ -1,9 +1,9 @@
 import reprlib
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
 from collections.abc import Callable
 from dataclasses import fields, dataclass
+from typing import TYPE_CHECKING, ClassVar
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
@@ -44,8 +44,24 @@ class Post(AbstractPost):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
-    plain_content_handler: Callable[[str], str] | None = None
+    plain_content_handlers: ClassVar[dict[str, Callable[[str], str]]] = {}
     """在`self.plain_content`中使用的处理函数"""
+
+    @classmethod
+    def register_plain_content_handler(cls, platform_name: str):
+        """注册 platform 对应的纯文本处理函数"""
+        def decorator(func: Callable[[str], str]):
+            cls.plain_content_handlers[platform_name] = func
+            return func
+
+        return decorator
+
+    @property
+    def plain_content(self) -> str:
+        """获取纯文本内容"""
+        if handler := self.plain_content_handlers.get(self.platform.platform_name):
+            return handler(self.content)
+        return self.content
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -64,13 +80,6 @@ class Post(AbstractPost):
         if "basic" not in themes_by_priority:
             themes_by_priority.append("basic")
         return themes_by_priority
-
-    @property
-    def plain_content(self) -> str:
-        """获取纯文本内容"""
-        if self.plain_content_handler:
-            return self.plain_content_handler(self.content)
-        return self.content
 
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
@@ -105,13 +114,16 @@ class Post(AbstractPost):
 来源: <Platform {self.platform.platform_name}>
 """
         post_format += "附加信息:\n"
-        for field in fields(self):
-            if field.name in ("content", "platform", "repost"):
+        for cls_field in fields(self):
+            if cls_field.name in ("content", "platform", "repost"):
                 continue
+            elif cls_field.name == "content_handlers":
+                handlers_keys = list(getattr(self, cls_field.name).keys())
+                post_format += f"- {cls_field.name}: {aRepr.repr(handlers_keys)}\n"
             else:
-                value = getattr(self, field.name)
+                value = getattr(self, cls_field.name)
                 if value is not None:
-                    post_format += f"- {field.name}: {aRepr.repr(value)}\n"
+                    post_format += f"- {cls_field.name}: {aRepr.repr(value)}\n"
 
         if self.repost:
             post_format += "\n转发:\n"

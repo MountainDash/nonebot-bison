@@ -59,7 +59,7 @@ class ArknightsSite(Site):
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
 
-
+@Post.register_plain_content_handler("arknights")
 def content_handler(content: str) -> str:
     def cleantext(text: str, old_split="\n", new_split="\n") -> str:
         lines = text.strip().split(old_split)
@@ -147,8 +147,7 @@ class Arknights(NewMessage):
             images=[data.banner_image_url] if data.banner_image_url else None,
             url=(url.human_repr() if (url := URL(data.jump_link)).scheme.startswith("http") else None),
             timestamp=data.updated_at,
-            compress=True,
-            plain_content_handler=content_handler,
+            compress=True
         )
 
 

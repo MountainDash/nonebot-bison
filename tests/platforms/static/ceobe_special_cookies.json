@@ -1,0 +1,181 @@
+[
+  {
+    "datasource": "明日方舟公告-IOS",
+    "icon": "https://cdn.ceobecanteen.top/datasource-avatar/a54d411b-2eb0-4ca8-aa1d-02c68b2f152f",
+    "timestamp": {
+      "platform": 1708531200000,
+      "platform_precision": "day",
+      "fetcher": 1708588811293
+    },
+    "default_cookie": {
+      "text": "【联合行动】\n定向寻访开启",
+      "images": [
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240221/4542667b6a3b799d52759d2f5744aa1a.jpg",
+          "compress_url": null
+        }
+      ]
+    },
+    "item": {
+      "id": "8378",
+      "url": "https://cdn.ceobecanteen.top/game/bulletin/8378_1708588811341",
+      "category": "活动公告",
+      "display_type": 2,
+      "target_type": "game|recruit|param1=norm|unknown",
+      "target_link": "uniwebview://move?target=recruit&param1=NORM_47_0_3"
+    },
+    "source": {
+      "type": "arknights-game:bulletin-list",
+      "data": "IOS"
+    }
+  },
+  {
+    "datasource": "明日方舟公告-B服",
+    "icon": "https://cdn.ceobecanteen.top/datasource-avatar/92773ca6-5c6f-41a6-9004-a2d8328c159f",
+    "timestamp": {
+      "platform": 1708012800000,
+      "platform_precision": "day",
+      "fetcher": 1708074005605
+    },
+    "default_cookie": {
+      "text": "#04「引航者试炼」限时活动即将开启\n[图片]一、#04「引航者试炼」限时活动开启\n关卡开放时间：02月22日 16:00 - 03月07日 03:59\n解锁条件：通关主线1-10\n活动说明：活动期间将开放「引航者试炼」限时活动，玩家可通过活动关卡作战、完成“试炼任务”积累试炼经验，提升【试炼之路】等级获取相应活动奖励\n\n【试炼之路】开放时间：02月22日 16:00 - 03月10日 03:59\n【试炼之路】主要奖励：时装【0011制造系列 - “贺新禧” -清流】、寻访凭证、模组养成材料、高级养成素材、作战记录、龙门币、家具零件等\n\n\n[图片]二、【联合行动】特选干员定向寻访开启\n活动时间：02月22日 16:00 - 03月07日 03:59\n活动说明：活动期间【联合行动】特选干员定向寻访开启，该寻访卡池列表中六星干员与五星干员仅出现以下干员\n★★★★★★（6★出率：2%）：玛恩纳 / 仇白 / 琳琅诗怀雅 / 山  \n★★★★★（5★出率：8%）：火哨 / 绮良 / 熔泉 / 蜜蜡 / 絮雨 / 安哲拉\n注意：本次活动【联合行动】寻访为【标准寻访】\n\n\n[图片]三、组合包限时上架\n售卖时间：02月28日 11:00 - 03月29日 03:59\n活动说明：活动期间，采购中心将限时售卖以下组合包\n\n\n[冬隐归路组合包]\n组合包内容：时装【忒斯特收藏系列 - “初晴” -陈】、音乐可交互家具【“冰痕” 】、可交互家具【近卫局广告机】、头像“白兔子”*1、高级资深干员特训装置*1、资深干员特训装置*1、十连寻访凭证*1\n高级资深干员特训装置：使用该特训装置后可选择一名已晋升至精英阶段2的6星干员直接升至精英阶段2，等级90。干员升级后不会返还已投入的养成资源\n资深干员特训装置：使用该特训装置后可选择一名已晋升至精英阶段2的5星干员直接升至精英阶段2，等级80。干员升级后不会返还已投入的养成资源\n\n\n[图片][黎明前奏组合包]\n组合包内容：时装【忒斯特收藏系列 - “午夜邮差” -能天使】、主题家具【龙门风情茶室】、头像“徘徊歧路”*1、十连寻访凭证*1、龙门币*200000、高级作战记录*60、技巧概要·卷3*30\n注意：此前已购买过[黎明前奏组合包]的玩家无法再次购买该礼包\n\n\n[图片]四、【时代】系列，限时复刻上架\n活动时间：02月29日 16:00 - 03月14日 03:59\n活动说明：活动期间以下干员复刻时装将在时装商店上架并进行限时贩售：\n◆【时代】系列 - “拾翼” - 见行者\n\n\n[图片]五、剿灭作战关卡【新旅店大道】追加\n开启时间：03月04日 04:00 ~ 04月29日 03:59\n开启条件：所有通关主线2-8的玩家\n关卡说明：新增剿灭委托关卡【新旅店大道】将替换现有剿灭委托关卡【千嶂边城】，现剿灭委托关卡【千嶂边城】将在关闭后收录进假定作战目标\n\n\n\n更多活动内容请持续关注《明日方舟》游戏内公告及官方公告。\n\n\n【明日方舟】运营组\n2024年02月16日",
+      "images": [
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/e52fcb18976c4373a60cfa2316c28ccf.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/8d135717510cb847034eb88ffb95bf97.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/60e94ad12ce32408b5bbbbe9ad20c168.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/eaa6f41fe718f4556a1eb3fe8ef90040.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/9917b74ab2b5f42bc4a185c60f95365c.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/e422fc4ad9d3daa5cdabcc5d09142e1f.jpg",
+          "compress_url": null
+        }
+      ]
+    },
+    "item": {
+      "id": "4959",
+      "url": "https://cdn.ceobecanteen.top/game/bulletin/4959_1708074005815",
+      "category": "活动公告",
+      "display_type": 1
+    },
+    "source": {
+      "type": "arknights-game:bulletin-list",
+      "data": "Bilibili"
+    }
+  },
+  {
+    "datasource": "明日方舟-官网",
+    "icon": "https://cdn.ceobecanteen.top/datasource-avatar/0e9fbb0a-0504-4bf7-ae06-daf1dbd00820",
+    "timestamp": {
+      "platform": 1708012800000,
+      "platform_precision": "day",
+      "fetcher": 1708012800000
+    },
+    "default_cookie": {
+      "text": "[活动预告]#04「引航者试炼」限时活动即将开启\n[图片]一、#04「引航者试炼」限时活动开启\n关卡开放时间：02月22日 16:00 - 03月07日 03:59\n解锁条件：通关主线1-10\n活动说明：活动期间将开放「引航者试炼」限时活动，玩家可通过活动关卡作战、完成“试炼任务”积累试炼经验，提升【试炼之路】等级获取相应活动奖励\n\n【试炼之路】开放时间：02月22日 16:00 - 03月10日 03:59\n【试炼之路】主要奖励：时装【0011制造系列 - “贺新禧” -清流】、寻访凭证、模组养成材料、高级养成素材、作战记录、龙门币、家具零件等\n\n\n[图片]二、【联合行动】特选干员定向寻访开启\n活动时间：02月22日 16:00 - 03月07日 03:59\n活动说明：活动期间【联合行动】特选干员定向寻访开启，该寻访卡池列表中六星干员与五星干员仅出现以下干员\n★★★★★★（6★出率：2%）：玛恩纳 / 仇白 / 琳琅诗怀雅 / 山  \n★★★★★（5★出率：8%）：火哨 / 绮良 / 熔泉 / 蜜蜡 / 絮雨 / 安哲拉\n注意：本次活动【联合行动】寻访为【标准寻访】\n\n\n[图片]三、组合包限时上架\n售卖时间：02月28日 11:00 - 03月29日 03:59\n活动说明：活动期间，采购中心将限时售卖以下组合包\n\n\n[冬隐归路组合包]\n组合包内容：时装【忒斯特收藏系列 - “初晴” -陈】、音乐可交互家具【“冰痕” 】、可交互家具【近卫局广告机】、头像“白兔子”*1、高级资深干员特训装置*1、资深干员特训装置*1、十连寻访凭证*1\n高级资深干员特训装置：使用该特训装置后可选择一名已晋升至精英阶段2的6星干员直接升至精英阶段2，等级90。干员升级后不会返还已投入的养成资源\n资深干员特训装置：使用该特训装置后可选择一名已晋升至精英阶段2的5星干员直接升至精英阶段2，等级80。干员升级后不会返还已投入的养成资源\n\n\n[图片][黎明前奏组合包]\n组合包内容：时装【忒斯特收藏系列 - “午夜邮差” -能天使】、主题家具【龙门风情茶室】、头像“徘徊歧路”*1、十连寻访凭证*1、龙门币*200000、高级作战记录*60、技巧概要·卷3*30\n注意：此前已购买过[黎明前奏组合包]的玩家无法再次购买该礼包\n\n\n[图片]四、【时代】系列，限时复刻上架\n活动时间：02月29日 16:00 - 03月14日 03:59\n活动说明：活动期间以下干员复刻时装将在时装商店上架并进行限时贩售：\n◆【时代】系列 - “拾翼” - 见行者\n\n\n[图片]五、剿灭作战关卡【新旅店大道】追加\n开启时间：03月04日 04:00 ~ 04月29日 03:59\n开启条件：所有通关主线2-8的玩家\n关卡说明：新增剿灭委托关卡【新旅店大道】将替换现有剿灭委托关卡【千嶂边城】，现剿灭委托关卡【千嶂边城】将在关闭后收录进假定作战目标\n\n\n\n更多活动内容请持续关注《明日方舟》游戏内公告及官方公告。\n\n\n\n【明日方舟】运营组\n2024年02月16日",
+      "images": [
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/e52fcb18976c4373a60cfa2316c28ccf.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/8d135717510cb847034eb88ffb95bf97.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/60e94ad12ce32408b5bbbbe9ad20c168.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/eaa6f41fe718f4556a1eb3fe8ef90040.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/9917b74ab2b5f42bc4a185c60f95365c.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://web.hycdn.cn/announce/images/20240216/e422fc4ad9d3daa5cdabcc5d09142e1f.jpg",
+          "compress_url": null
+        }
+      ]
+    },
+    "item": {
+      "id": "news/2024021210",
+      "url": "https://ak.hypergryph.com/news/2024021210.html",
+      "category": "活动",
+      "is_top": true
+    },
+    "source": {
+      "type": "arknights-website:official-website",
+      "data": "-"
+    }
+  },
+  {
+    "datasource": "明日方舟-B站",
+    "icon": "https://cdn.ceobecanteen.top/datasource-avatar/af174f25-1beb-41cd-a4de-2c3aadae9666",
+    "timestamp": {
+      "platform": 1698141633000,
+      "platform_precision": "second",
+      "fetcher": 1698141802505
+    },
+    "default_cookie": {
+      "text": "【采购凭证区-新增干员】\n//折光\n“左手或右手的名片，请问您要哪一张？......宝石鉴定师，折光，很高兴认识您。别担心，选到另一张的话，您这里也没有值得我下手的对象。”\n\n__________________\n两名贵族侍从在宝石鉴定所的工作台前窃窃私语。唱片在留声机上旋转着，乐声恰到好处地盖过了他们的谈话声，也盖过了砂盘打磨宝石的单调噪音。\n如果是在几个月以前，他们会就各自带来的古董珠宝高谈阔论——纹饰的象征，数百年历史留下的痕迹，自己效忠的贵族那悠久高贵的血脉——而非如此小心谨慎地说起，该如何伪装一枚宝石，才能保证不被那位大盗“折光”盯上。他们声称见过大盗本人带着宝石一起从高塔上坠下又消失不见，而后义愤填膺：怎能让莱塔尼亚格调优雅的精粹轻易消失？怎能容忍一个疯子将历史抛进夜幕？\n工作台后的宝石鉴定师始终专注地做着自己手上的工作，对他们的议论充耳不闻。两名侍从对他的懂事十分满意，在谈话告一段落后，不吝用自己的华丽辞藻赞誉鉴定师手中的宝石。\n“这宝石如此灿烂辉煌，是哪位尊敬的大人托你打造？”\n宝石鉴定师终于抬起头，表情困惑无比。\n“不，这只是一块玻璃碎片，我自己随便磨着玩的。两位聊完了的话，请说说来这家小小的鉴定所是有何吩咐吧。”",
+      "images": [
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/f69f2d2570c828955130b1d77c2dc047161775300.png",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/8d9c849b7a4fed9c8979014a507e26fa161775300.jpg",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/67c2bc7661c4db3d5bbe812c69978134161775300.png",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/6c0a5a7a50ac84454ffd4d72a6f77f7b161775300.gif",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/b77f74f545dba41e473bb5e544f7ed80161775300.gif",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/14d5dae139477c4e8a8f54272ff26407161775300.gif",
+          "compress_url": null
+        },
+        {
+          "origin_url": "https://i0.hdslb.com/bfs/new_dyn/518b982b56d934b6e4ffb91a6ec71f35161775300.gif",
+          "compress_url": null
+        }
+      ]
+    },
+    "item": {
+      "id": "856000867726262307",
+      "url": "https://t.bilibili.com/856000867726262307",
+      "type": "DYNAMIC_TYPE_DRAW",
+      "is_top": false,
+      "is_retweeted": false
+    },
+    "source": {
+      "type": "bilibili:dynamic-by-uid",
+      "data": "161775300"
+    }
+  }
+]

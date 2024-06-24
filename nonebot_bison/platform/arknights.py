@@ -107,7 +107,6 @@ class Arknights(NewMessage):
         else:
             # 只有一张图片
             title = title_escape(data.title)
-
         return Post(
             self,
             content=data.content,

@@ -69,7 +69,6 @@ nb-cli = "^1.4.0"
 nonebot2 = { extras = ["fastapi", "aiohttp"], version = "^2.2.1" }
 nonebot-adapter-red = "^0.9.0"
 nonebot-adapter-qq = "^1.4.2"
-nonebot-adapter-telegram = "^0.1.0b14"
 poetry-core = "^1.8.1"
 
 [tool.poetry.extras]

@@ -15,6 +15,6 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
     - name: Setup Poetry
-      uses: Gr1N/setup-poetry@v8
+      uses: Gr1N/setup-poetry@v9
       with:
         poetry-version: "1.7.1"

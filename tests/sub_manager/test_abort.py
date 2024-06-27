@@ -250,7 +250,7 @@ async def test_abort_del_sub(app: App, init_scheduler):
             ctx,
             MessageFactory(
                 "订阅的帐号为：\n"
-                + "1 weibo 明日方舟Arknights 6279793937\n"
+                + "1 weibo 明日方舟Arknights 6279793937"
                 + " [图文] 明日方舟\n"
                 + "请输入要删除的订阅的序号\n输入'取消'中止",
             ),

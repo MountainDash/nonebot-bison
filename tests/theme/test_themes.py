@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from flaky import flaky
 from nonebug import App
+from pytest_mock import MockerFixture
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -134,10 +135,10 @@ async def test_theme_need_browser(app: App, mock_post):
 
 
 @pytest.mark.asyncio
-async def test_theme_no_enable_use_browser(app: App, mock_post):
+async def test_theme_no_enable_use_browser(app: App, mock_post, mocker: MockerFixture):
     from nonebot_bison.plugin_config import plugin_config
 
-    plugin_config.bison_use_browser = False
+    mocker.patch.object(plugin_config, "bison_use_browser", False)
 
     from nonebot_bison.theme import Theme, ThemeRenderUnsupportError, theme_manager
 
@@ -155,7 +156,6 @@ async def test_theme_no_enable_use_browser(app: App, mock_post):
         await theme.do_render(mock_post)
 
     theme_manager.unregister(theme.name)
-    plugin_config.bison_use_browser = True
 
 
 @pytest.mark.asyncio

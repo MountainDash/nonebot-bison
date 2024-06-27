@@ -17,7 +17,7 @@ def do_query_sub(query_sub: type[Matcher]):
         sub_list = await config.list_subscribe(user_info)
         res = "订阅的帐号为：\n"
         for sub in sub_list:
-            if  platform := platform_manager.get(sub.target.platform_name):
+            if platform := platform_manager.get(sub.target.platform_name):
                 res += f"{sub.target.platform_name} {sub.target.target_name} {sub.target.target}"
                 if platform.categories:
                     res += " [{}]".format(", ".join(platform.categories[Category(x)] for x in sub.categories))

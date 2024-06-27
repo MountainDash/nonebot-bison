@@ -27,13 +27,15 @@ def do_del_sub(del_sub: type[Matcher]):
                 "platform_name": sub.target.platform_name,
                 "target": sub.target.target,
             }
-            res += f"{index} {sub.target.platform_name} {sub.target.target_name} {sub.target.target}\n"
+            res += f"{index} {sub.target.platform_name} {sub.target.target_name} {sub.target.target}"
             if platform := platform_manager.get(sub.target.platform_name):
                 if platform.categories:
                     res += " [{}]".format(", ".join(platform.categories[Category(x)] for x in sub.categories))
                 if platform.enable_tag:
                     res += " {}".format(", ".join(sub.tags))
-                res += "\n"
+            else:
+                res += f" （平台 {sub.target.platform_name} 已失效，请删除此订阅）"
+            res += "\n"
         res += "请输入要删除的订阅的序号\n输入'取消'中止"
         await MessageFactory(await parse_text(res)).send()
 

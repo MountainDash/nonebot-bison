@@ -38,7 +38,6 @@ class Theme(ABC, BaseModel):
             raise ThemeRenderUnsupportError(f"Theme [{self.name}] does not support render {post} by support check")
 
         await self.prepare()
-
         return await self.render(post)
 
     def check_htmlrender_plugin_enable(self):

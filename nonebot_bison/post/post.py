@@ -1,12 +1,15 @@
 import reprlib
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from collections.abc import Callable
 from dataclasses import fields, dataclass
+from typing import TYPE_CHECKING, ClassVar
 
+from bs4 import BeautifulSoup
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 
+from ..utils import cleantext
 from ..theme import theme_manager
 from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
@@ -43,6 +46,28 @@ class Post(AbstractPost):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
+    plain_content_handlers: ClassVar[dict[str, Callable[[str], str]]] = {}
+    """在`self.plain_content`中使用的处理函数"""
+
+    @classmethod
+    def register_plain_content_handler(cls, platform_name: str):
+        """注册 platform 对应的纯文本处理函数"""
+
+        def decorator(func: Callable[[str], str]):
+            cls.plain_content_handlers[platform_name] = func
+            logger.opt(colors=True).success(f"Plain Content Handler for <b><u>{platform_name}</u></b> registered")
+            return func
+
+        return decorator
+
+    @property
+    def plain_content(self) -> str:
+        """获取纯文本内容"""
+        if handler := self.plain_content_handlers.get(self.platform.platform_name):
+            return handler(self.content)
+        if handler := self.plain_content_handlers.get("global"):
+            return handler(self.content)
+        return self.content
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -95,15 +120,32 @@ class Post(AbstractPost):
 来源: <Platform {self.platform.platform_name}>
 """
         post_format += "附加信息:\n"
-        for field in fields(self):
-            if field.name in ("content", "platform", "repost"):
+        for cls_field in fields(self):
+            if cls_field.name in ("content", "platform", "repost", "plain_content_handlers"):
                 continue
-            value = getattr(self, field.name)
-            if value is not None:
-                post_format += f"- {field.name}: {aRepr.repr(value)}\n"
+            else:
+                value = getattr(self, cls_field.name)
+                if value is not None:
+                    post_format += f"- {cls_field.name}: {aRepr.repr(value)}\n"
 
         if self.repost:
             post_format += "\n转发:\n"
             post_format += str(self.repost)
 
         return post_format
+
+
+@Post.register_plain_content_handler("global")
+def global_plain_content_handler(content: str) -> str:
+    soup = BeautifulSoup(content, "html.parser")
+
+    for img in soup.find_all("img"):
+        img.replace_with("[图片]")
+
+    for br in soup.find_all("br"):
+        br.replace_with("\n")
+
+    for p in soup.find_all("p"):
+        p.insert_after("\n")
+
+    return cleantext(soup.get_text())

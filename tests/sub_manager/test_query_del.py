@@ -32,7 +32,7 @@ async def test_query_sub(app: App, init_scheduler):
         ctx.should_pass_permission()
         should_send_saa(
             ctx,
-            MessageFactory("订阅的帐号为：\nweibo 明日方舟Arknights 6279793937 [图文] 明日方舟\n"),
+            MessageFactory("订阅的帐号为：\nweibo 明日方舟Arknights 6279793937\n [图文] 明日方舟\n"),
             bot,
             event=event,
         )
@@ -68,7 +68,7 @@ async def test_query_no_exsits_sub(app: App, init_scheduler):
         should_send_saa(
             ctx,
             MessageFactory(
-                "订阅的帐号为：\nno_exsits_platform 明日方舟Arknights 6279793937"
+                "订阅的帐号为：\nno_exsits_platform 明日方舟Arknights 6279793937\n"
                 + " （平台 no_exsits_platform 已失效，请删除此订阅）\n"
             ),
             bot,
@@ -106,7 +106,7 @@ async def test_del_sub(app: App, init_scheduler):
             ctx,
             MessageFactory(
                 "订阅的帐号为：\n"
-                + "1 weibo 明日方舟Arknights 6279793937"
+                + "1 weibo 明日方舟Arknights 6279793937\n"
                 + " [图文] 明日方舟\n"
                 + "请输入要删除的订阅的序号\n输入'取消'中止",
             ),
@@ -157,7 +157,7 @@ async def test_del_no_exsits_sub(app: App, init_scheduler):
             ctx,
             MessageFactory(
                 "订阅的帐号为：\n"
-                + "1 no_exsits_platform 明日方舟Arknights 6279793937"
+                + "1 no_exsits_platform 明日方舟Arknights 6279793937\n"
                 + " （平台 no_exsits_platform 已失效，请删除此订阅）\n"
                 + "请输入要删除的订阅的序号\n输入'取消'中止",
             ),

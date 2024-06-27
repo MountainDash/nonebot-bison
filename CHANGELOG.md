@@ -18,6 +18,7 @@
 
 ### 文档
 
+- 💄 更新 favicon [@KomoriDev](https://github.com/KomoriDev) ([#585](https://github.com/MountainDash/nonebot-bison/pull/585))
 - 修复前端开发部分文档的问题 [@changsun20](https://github.com/changsun20) ([#552](https://github.com/MountainDash/nonebot-bison/pull/552))
 
 ## v0.9.2

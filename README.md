@@ -97,7 +97,7 @@ pnpm && pnpm run build
 
 在群里 @Bot 或者直接私聊 Bot 发送 “添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
 
-参考[文档](https://nonebot-bison.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
+参考[文档](https://nonebot-bison.netlify.app/usage/#%E4%BD%BF%E7%94%A8)
 
 ## FAQ
 

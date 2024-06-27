@@ -1,4 +1,10 @@
 <div align="center">
+  <a href="https://v2.nonebot.dev/store">
+    <img src="https://nonebot-bison.netlify.app/logo.svg" width="200" alt="logo">
+  </a>
+</div>
+
+<div align="center">
 
 # Bison
 
@@ -10,7 +16,7 @@ _✨ 通用订阅推送插件 ✨_
 <a href="https://pypi.python.org/pypi/nonebot-bison">
     <img src="https://img.shields.io/pypi/v/nonebot-bison?logo=python&logoColor=edb641" alt="pypi">
 </a>
-<img src="https://img.shields.io/badge/python-3.8+-blue?logo=python&logoColor=edb641" alt="python">
+<img src="https://img.shields.io/badge/python-3.10+-blue?logo=python&logoColor=edb641" alt="python">
 <a href="https://github.com/psf/black">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg?logo=python&logoColor=edb641" alt="black">
 </a>
@@ -52,7 +58,7 @@ _✨ 通用订阅推送插件 ✨_
 基于 [`NoneBot2`](https://github.com/nonebot/nonebot2) 开发（诞生于明日方舟的蹲饼活动）
 
 <details>
-<summary>本项目原名原名 nonebot-hk-reporter</summary>
+<summary>本项目原名 nonebot-hk-reporter</summary>
 
 寓意本 Bot 要做全世界跑的最快的搬运机器人，后因名字过于暴力改名
 
@@ -79,32 +85,32 @@ _✨ 通用订阅推送插件 ✨_
 
 ## 使用方法
 
-**!! 注意，如果要使用后台管理功能请使用 pypi 版本或者 docker 版本，如果直接 clone 源代码
-需要按下面方式进行 build**
+> [!warning]
+> 如果要使用后台管理功能请使用 pypi 版本或者 docker 版本，如果直接 clone 源代码，需要按下面方式进行 build
 
 ```bash
 cd ./admin-frontend
 pnpm && pnpm run build
 ```
 
-可以使用 Docker，docker-compose，作为插件安装在 nonebot 中，或者直接运行
+可以使用 Docker，docker-compose，作为插件安装在 NoneBot 中，或者直接运行
 
-在群里 at Bot 或者直接私聊 Bot“添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
+在群里 @Bot 或者直接私聊 Bot 发送 “添加订阅”，按照提示输入需要订阅的账号，就可以愉快接收消息了。
 
-参考[文档](https://nonebot-bison.vercel.app/usage/#%E4%BD%BF%E7%94%A8)
+参考[文档](https://nonebot-bison.netlify.app/usage/#%E4%BD%BF%E7%94%A8)
 
 ## FAQ
 
-1. 报错`TypeError: 'type' object is not subscriptable`  
+1. 报错 `TypeError: 'type' object is not subscriptable`  
    本项目使用了 Python 3.10 的语法，请将 Python 版本升级到 3.10 及以上，推荐使用 docker 部署
 2. bot 不理我  
-   请确认自己是群主或者管理员，并且检查`COMMAND_START`环境变量是否设为`[""]`
-   或者按照`COMMAND_START`中的设置添加命令前缀，例：
-   `COMMAND_START=["/"]`则应发送`/添加订阅`
+   请确认自己是群主或者管理员，并且检查 `COMMAND_START` 环境变量是否设为 `[""]`
+   或者按照 `COMMAND_START` 中的设置添加命令前缀，例：
+   `COMMAND_START=["/"]` 则应发送 `/添加订阅`
 3. 微博漏订阅了
    微博更新了新的风控措施，某些含有某些关键词的微博会获取不到。
 4. 无法使用后台管理页面
-   1. 确认自己正确配置了 nonebot 的端口，如果在远程或容器外访问网页请确保`HOST=0.0.0.0`
+   1. 确认自己正确配置了 NoneBot 的端口，如果在远程或容器外访问网页请确保 `HOST=0.0.0.0`
    2. 确认自己的云服务器的防火墙配置正确
    3. 确认自己使用了正确的方法安装插件
 

@@ -1,3 +1,4 @@
+import random
 from time import time
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -8,6 +9,7 @@ from loguru import logger
 from nonebug.app import App
 from httpx import URL, Response
 from freezegun import freeze_time
+from pytest_mock import MockerFixture
 from nonebot.compat import model_dump, type_validate_python
 
 from .utils import get_json
@@ -57,17 +59,21 @@ def without_dynamic(app: App):
 
 
 @pytest.mark.asyncio
-async def test_retry_for_352(app: App):
+async def test_retry_for_352(app: App, mocker: MockerFixture):
     from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.platform.bilibili.retry import Context
     from nonebot_bison.types import Target, RawPost, ApiError
-    from nonebot_bison.platform.bilibili.scheduler import ScheduleState
     from nonebot_bison.utils import ClientManager, ProcessContext, http_client
     from nonebot_bison.platform.bilibili.platforms import ApiCode352Error, retry_for_352
+
+    mocker.patch.object(random, "random", return_value=0.0)  # 稳定触发RAISE阶段的随缘刷新
 
     now = time()
     raw_post_1 = {"id": 1, "text": "p1", "date": now, "tags": ["tag1"], "category": 1}
     raw_post_2 = {"id": 2, "text": "p2", "date": now + 1, "tags": ["tag2"], "category": 2}
+
+    ctx = Context()
 
     class MockPlatform(NewMessage):
         platform_name = "fakebili"
@@ -165,52 +171,53 @@ async def test_retry_for_352(app: App):
     fakebili.set_raise352(True)
     # 有异常
     with freeze_time(freeze_start):
-        for i in range(1, ScheduleState.MAX_REFRESH_COUNT + 1):
-            logger.debug(f"refresh count: {i}, {datetime.now()}")
+        for i in range(ctx.max_refresh_count):
+            logger.debug(f"refresh count: {i + 1}, {datetime.now()}")
             res1: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
-            assert len(res1) == 2  # 上次正常返回的结果
-            assert client_mgr.get_client_call_count == 2 + i
-            assert client_mgr.refresh_client_call_count == i - 1
+            assert len(res1) == 0
+            assert client_mgr.get_client_call_count == 2 + i + 1
+            assert client_mgr.refresh_client_call_count == i
 
         # 本次为最后一次重试失败的请求
         logger.debug(f"latest refresh: {datetime.now()}")
         res2: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
-        assert len(res2) == 2  # 上次正常返回的结果
-        assert client_mgr.get_client_call_count == 2 + ScheduleState.MAX_REFRESH_COUNT + 1
-        assert client_mgr.refresh_client_call_count == ScheduleState.MAX_REFRESH_COUNT
-
-    assert client_mgr.get_client_call_count == 2 + ScheduleState.MAX_REFRESH_COUNT + 1
-    assert client_mgr.refresh_client_call_count == ScheduleState.MAX_REFRESH_COUNT
+        assert len(res2) == 0
+        assert client_mgr.get_client_call_count == 2 + ctx.max_refresh_count + 1
+        assert client_mgr.refresh_client_call_count == ctx.max_refresh_count
 
     # 超过最大重试次数，进入回避
 
     # 在回避时间内，不进行请求
-    with freeze_time(freeze_start + ScheduleState.BACKOFF_TIMEDELTA / 2):
-        logger.debug(f"in backoff time, {datetime.now()}")
+    with freeze_time(freeze_start + ctx.backoff_timedelta / 2):
+        logger.debug(f"still in backoff time, {datetime.now()}")
         res3: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
-        assert len(res3) == 2  # 上次正常返回的结果
-        assert client_mgr.get_client_call_count == 2 + ScheduleState.MAX_REFRESH_COUNT + 1
-        assert client_mgr.refresh_client_call_count == ScheduleState.MAX_REFRESH_COUNT
+        assert len(res3) == 0
+        assert client_mgr.get_client_call_count == 2 + ctx.max_refresh_count + 1
+        assert client_mgr.refresh_client_call_count == ctx.max_refresh_count
 
+    freeze_start = freeze_start + ctx.backoff_timedelta / 2
     # 进行回避尝试
-    for i in range(1, ScheduleState.MAX_BACKOFF_COUNT + 1):
-        new_freeze_start = freeze_start + ScheduleState.BACKOFF_TIMEDELTA * i**2
+    for i in range(ctx.max_backoff_count):
+        new_freeze_start = freeze_start + ctx.backoff_timedelta * (i + 1) ** 2
         with freeze_time(new_freeze_start):
-            logger.debug(f"backoff count: {i}, {datetime.now()}")
+            logger.debug(f"backoff count: {i + 1}, {datetime.now()}")
             # 如果是最后一次回避尝试，则应该抛出异常
-            if i == ScheduleState.MAX_BACKOFF_COUNT:
+            if i == ctx.max_backoff_count:
                 with pytest.raises(ApiError):
                     await fakebili.get_sub_list(Target("1"))
                 continue
             res2: list[dict[str, Any]] = await fakebili.get_sub_list(Target("1"))  # type: ignore
-            assert len(res2) == 2  # 上次正常返回的结果
-            assert client_mgr.get_client_call_count == 3 + ScheduleState.MAX_REFRESH_COUNT + i
-            assert client_mgr.refresh_client_call_count == ScheduleState.MAX_REFRESH_COUNT + i
+            assert len(res2) == 0
+            for j in range(ctx.max_refresh_count):
+                await fakebili.get_sub_list(Target("1"))
+                assert client_mgr.get_client_call_count == 3 + ctx.max_refresh_count + i * ctx.max_refresh_count + j + 1
+                assert client_mgr.refresh_client_call_count == ctx.max_refresh_count + i * ctx.max_refresh_count + j + 1
 
         freeze_start = new_freeze_start
 
-    assert client_mgr.get_client_call_count == 3 + ScheduleState.MAX_REFRESH_COUNT + ScheduleState.MAX_BACKOFF_COUNT
-    assert client_mgr.refresh_client_call_count == ScheduleState.MAX_REFRESH_COUNT + ScheduleState.MAX_BACKOFF_COUNT
+    assert client_mgr.get_client_call_count == 3 + ctx.max_refresh_count + ctx.max_backoff_count * ctx.max_refresh_count
+    # 随缘刷新触发
+    assert client_mgr.refresh_client_call_count == ctx.max_refresh_count + ctx.max_backoff_count * ctx.max_refresh_count
 
 
 @pytest.mark.asyncio

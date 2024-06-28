@@ -1,3 +1,4 @@
+import sys
 import random
 from functools import wraps
 from dataclasses import dataclass
@@ -36,14 +37,36 @@ class Action(Generic[TState, TEvent], Protocol):
     def __call__(self, from_: TState, event: TEvent, to: TState) -> Coroutine[Any, Any, ActionReturn]: ...
 
 
-class Transition(Generic[TState, TEvent], NamedTuple):
-    action: Action[TState, TEvent]
-    to: TState
+# Python 3.11+ 才支持 NamedTuple和TypedDict使用多继承添加泛型
+if sys.version_info >= (3, 11):
 
+    class Transition(Generic[TState, TEvent], NamedTuple):
+        action: Action[TState, TEvent]
+        to: TState
 
-class StateGraph(Generic[TState, TEvent], TypedDict):
-    transitions: dict[TState, dict[TEvent, Transition[TState, TEvent]]]
-    initial: TState
+    class StateGraph(Generic[TState, TEvent], TypedDict):
+        transitions: dict[TState, dict[TEvent, Transition[TState, TEvent]]]
+        initial: TState
+
+elif TYPE_CHECKING:
+
+    class Transition(Generic[TState, TEvent], NamedTuple):
+        action: Action[TState, TEvent]
+        to: TState
+
+    class StateGraph(Generic[TState, TEvent], TypedDict):
+        transitions: dict[TState, dict[TEvent, Transition[TState, TEvent]]]
+        initial: TState
+
+else:
+
+    class Transition(NamedTuple):
+        action: Action
+        to: StrEnum
+
+    class StateGraph(TypedDict):
+        transitions: dict[StrEnum, dict[StrEnum, Transition]]
+        initial: StrEnum
 
 
 class FSM(Generic[TState, TEvent]):

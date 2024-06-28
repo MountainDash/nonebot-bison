@@ -1,16 +1,13 @@
 import re
 import json
 from copy import deepcopy
-from functools import wraps
 from enum import Enum, unique
+from typing import NamedTuple
 from typing_extensions import Self
-from typing import TypeVar, NamedTuple
-from collections.abc import Callable, Awaitable
 
 from yarl import URL
 from nonebot import logger
 from httpx import AsyncClient
-from httpx import URL as HttpxURL
 from pydantic import Field, BaseModel, ValidationError
 from nonebot.compat import type_validate_json, type_validate_python
 
@@ -19,6 +16,7 @@ from nonebot_bison.compat import model_rebuild
 from nonebot_bison.utils import text_similarity, decode_unicode_escapes
 from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
 
+from .retry import ApiCode352Error, retry_for_352
 from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
 from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 from .models import (
@@ -37,38 +35,6 @@ from .models import (
     UnknownMajor,
     LiveRecommendMajor,
 )
-
-B = TypeVar("B", bound="Bilibili")
-MAX_352_RETRY_COUNT = 3
-
-
-class ApiCode352Error(Exception):
-    def __init__(self, url: HttpxURL) -> None:
-        msg = f"api {url} error"
-        super().__init__(msg)
-
-
-def retry_for_352(func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
-    retried_times = 0
-
-    @wraps(func)
-    async def wrapper(bls: B, *args, **kwargs):
-        nonlocal retried_times
-        try:
-            res = await func(bls, *args, **kwargs)
-        except ApiCode352Error as e:
-            if retried_times < MAX_352_RETRY_COUNT:
-                retried_times += 1
-                logger.warning(f"获取动态列表失败，尝试刷新cookie: {retried_times}/{MAX_352_RETRY_COUNT}")
-                await bls.ctx.refresh_client()
-                return []  # 返回空列表
-            else:
-                raise ApiError(e.args[0])
-        else:
-            retried_times = 0
-            return res
-
-    return wrapper
 
 
 class _ProcessedText(NamedTuple):

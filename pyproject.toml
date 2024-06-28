@@ -60,6 +60,7 @@ pytest-cov = ">=3,<6"
 pytest-mock = "^3.10.0"
 pytest-xdist = { extras = ["psutil"], version = "^3.1.0" }
 respx = ">=0.20,<0.22"
+freezegun = "^1.5.1"
 
 [tool.poetry.group.docker]
 optional = true

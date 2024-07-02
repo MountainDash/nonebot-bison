@@ -52,6 +52,8 @@ async def handle_insert_new_target(platform_name: str, target: T_Target):
 
 
 async def handle_delete_target(platform_name: str, target: T_Target):
+    if platform_name not in platform_manager:
+        return
     platform = platform_manager[platform_name]
     scheduler_obj = scheduler_dict[platform.site]
     scheduler_obj.delete_schedulable(platform_name, target)

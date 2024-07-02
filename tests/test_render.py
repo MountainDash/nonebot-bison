@@ -1,16 +1,17 @@
 import pytest
 from nonebug.app import App
+from pytest_mock import MockerFixture
 
 
 @pytest.mark.asyncio
 @pytest.mark.render
-async def test_render(app: App):
+async def test_render(app: App, mocker: MockerFixture):
     from nonebot_plugin_saa import Image
 
     from nonebot_bison.utils import parse_text
     from nonebot_bison.plugin_config import plugin_config
 
-    plugin_config.bison_use_pic = True
+    mocker.patch.object(plugin_config, "bison_use_pic", True)
 
     res = await parse_text(
         "a\nbbbbbbbbbbbbbbbbbbbbbb\ncd\n<h1>中文</h1>VuePress 由两部分组成：第一部分是一个极简静态网站生成器(opens new"
@@ -24,13 +25,13 @@ async def test_render(app: App):
 
 @pytest.mark.asyncio
 @pytest.mark.render
-async def test_convert(app: App):
+async def test_convert(app: App, mocker: MockerFixture):
     from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.utils import text_to_image
     from nonebot_bison.plugin_config import plugin_config
 
-    plugin_config.bison_use_pic = True
+    mocker.patch.object(plugin_config, "bison_use_pic", True)
 
     text = Text("如果，生命的脚印终有一天会被时间的尘埃掩埋......那我们就永远不能——停下脚步")
     res = await text_to_image(text)

@@ -2,6 +2,7 @@ import respx
 import pytest
 from httpx import Response
 from nonebug.app import App
+from pytest_mock import MockerFixture
 from nonebug_saa import should_send_saa
 
 from ..platforms.utils import get_json
@@ -9,14 +10,15 @@ from ..utils import BotReply, fake_admin_user, fake_group_message_event, add_rep
 
 
 @pytest.mark.asyncio
-async def test_configurable_at_me_true_failed(app: App):
+async def test_configurable_at_me_true_failed(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.sub_manager import add_sub_matcher
 
-    plugin_config.bison_to_me = True
+    mocker.patch.object(plugin_config, "bison_to_me", True)
+
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
         event = fake_group_message_event(message=Message("添加订阅"), sender=fake_admin_user)
@@ -33,7 +35,7 @@ async def test_configurable_at_me_true_failed(app: App):
 
 
 @pytest.mark.asyncio
-async def test_configurable_at_me_false(app: App):
+async def test_configurable_at_me_false(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
@@ -41,7 +43,8 @@ async def test_configurable_at_me_false(app: App):
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
-    plugin_config.bison_to_me = False
+    mocker.patch.object(plugin_config, "bison_to_me", False)
+
     async with app.test_matcher(add_sub_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
         event = fake_group_message_event(message=Message("添加订阅"), sender=fake_admin_user)

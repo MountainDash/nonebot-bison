@@ -61,7 +61,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
 
 
 @pytest.mark.asyncio
-async def test_send_merge_no_queue(app: App):
+async def test_send_merge_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot_plugin_saa.auto_select_bot import refresh_bots
     from nonebot_plugin_saa import Text, Image, TargetQQGroup, MessageFactory, AggregatedMessageFactory
@@ -69,8 +69,8 @@ async def test_send_merge_no_queue(app: App):
     from nonebot_bison.send import send_msgs
     from nonebot_bison.plugin_config import plugin_config
 
-    plugin_config.bison_use_pic_merge = 1
-    plugin_config.bison_use_queue = False
+    mocker.patch.object(plugin_config, "bison_use_pic_merge", 1)
+    mocker.patch.object(plugin_config, "bison_use_queue", False)
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, self_id="8888")
@@ -106,7 +106,7 @@ async def test_send_merge_no_queue(app: App):
         await send_msgs(target, message)
 
 
-async def test_send_merge2_no_queue(app: App):
+async def test_send_merge2_no_queue(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot_plugin_saa.auto_select_bot import refresh_bots
     from nonebot_plugin_saa import Text, Image, TargetQQGroup, MessageFactory, AggregatedMessageFactory
@@ -114,8 +114,8 @@ async def test_send_merge2_no_queue(app: App):
     from nonebot_bison.send import send_msgs
     from nonebot_bison.plugin_config import plugin_config
 
-    plugin_config.bison_use_pic_merge = 2
-    plugin_config.bison_use_queue = False
+    mocker.patch.object(plugin_config, "bison_use_pic_merge", 2)
+    mocker.patch.object(plugin_config, "bison_use_queue", False)
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, self_id="8888")

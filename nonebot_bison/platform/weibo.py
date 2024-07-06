@@ -183,7 +183,14 @@ class Weibo(NewMessage):
                 res.raise_for_status()
                 pics.append(res.content)
         detail_url = f"https://weibo.com/{info['user']['id']}/{info['bid']}"
-        return Post(self, parsed_text, url=detail_url, images=pics, nickname=info["user"]["screen_name"])
+        return Post(
+            self,
+            content=parsed_text,
+            plain_content=parsed_text,
+            url=detail_url,
+            images=pics,
+            nickname=info["user"]["screen_name"],
+        )
 
     async def parse(self, raw_post: RawPost) -> Post:
         info = raw_post["mblog"]

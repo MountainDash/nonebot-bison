@@ -301,6 +301,7 @@ class Bilibili(NewMessage):
         post = Post(
             self,
             content=decode_unicode_escapes(parsed_raw_post.content),
+            plain_content=decode_unicode_escapes(parsed_raw_post.content),
             title=parsed_raw_post.title,
             images=list(parsed_raw_post.pics),
             timestamp=self.get_date(raw_post),
@@ -314,6 +315,7 @@ class Bilibili(NewMessage):
             post.repost = Post(
                 self,
                 content=decode_unicode_escapes(parsed_raw_repost.content),
+                plain_content=decode_unicode_escapes(parsed_raw_repost.content),
                 title=parsed_raw_repost.title,
                 images=list(parsed_raw_repost.pics),
                 timestamp=self.get_date(orig),
@@ -465,7 +467,8 @@ class Bilibililive(StatusChange):
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
             self,
-            "",
+            content="",
+            plain_content="",
             title=title,
             url=url,
             images=list(pic),
@@ -550,7 +553,8 @@ class BilibiliBangumi(StatusChange):
         title = lastest_episode["share_copy"]
         return Post(
             self,
-            content,
+            content=content,
+            plain_content=content,
             title=title,
             url=url,
             images=list(pic),

@@ -60,30 +60,6 @@ class ArknightsSite(Site):
     schedule_setting = {"seconds": 30}
 
 
-@Post.register_plain_content_handler("arknights")
-def content_handler(content: str) -> str:
-    content = html.unescape(content)  # 转义HTML特殊字符
-    content = re.sub(
-        r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
-        r"==\4==\n",
-        content,
-        flags=re.DOTALL,
-    )  # 去“标题型”p
-    content = re.sub(
-        r'\<p style="text-align:(left|right);"?\>(.*?)\<\/p\>',
-        r"\2\n",
-        content,
-        flags=re.DOTALL,
-    )  # 去左右对齐的p
-    content = re.sub(r"\<p\>(.*?)\</p\>", r"\1\n", content, flags=re.DOTALL)  # 去普通p
-    content = re.sub(r'\<a href="(.*?)" target="_blank">(.*?)\<\/a\>', r"\1", content, flags=re.DOTALL)  # 去a
-    content = re.sub(r"<br/>", "\n", content)  # 去br
-    content = re.sub(r"\<strong\>(.*?)\</strong\>", r"\1", content)  # 去strong
-    content = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", content)  # 去color
-    content = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", content)  # 去img
-    return cleantext(content)
-
-
 class Arknights(NewMessage):
     categories = {1: "游戏公告"}
     platform_name = "arknights"
@@ -117,6 +93,28 @@ class Arknights(NewMessage):
     def get_category(self, _) -> Category:
         return Category(1)
 
+    def _plain_content_handler(self, content: str) -> str:
+        content = html.unescape(content)  # 转义HTML特殊字符
+        content = re.sub(
+            r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
+            r"==\4==\n",
+            content,
+            flags=re.DOTALL,
+        )  # 去“标题型”p
+        content = re.sub(
+            r'\<p style="text-align:(left|right);"?\>(.*?)\<\/p\>',
+            r"\2\n",
+            content,
+            flags=re.DOTALL,
+        )  # 去左右对齐的p
+        content = re.sub(r"\<p\>(.*?)\</p\>", r"\1\n", content, flags=re.DOTALL)  # 去普通p
+        content = re.sub(r'\<a href="(.*?)" target="_blank">(.*?)\<\/a\>', r"\1", content, flags=re.DOTALL)  # 去a
+        content = re.sub(r"<br/>", "\n", content)  # 去br
+        content = re.sub(r"\<strong\>(.*?)\</strong\>", r"\1", content)  # 去strong
+        content = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", content)  # 去color
+        content = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", content)  # 去img
+        return cleantext(content)
+
     async def parse(self, raw_post: BulletinListItem) -> Post:
         client = await self.ctx.get_client()
         raw_data = await client.get(f"https://ak-webview.hypergryph.com/api/game/bulletin/{self.get_id(post=raw_post)}")
@@ -137,6 +135,7 @@ class Arknights(NewMessage):
         return Post(
             self,
             content=data.content,
+            plain_content=self._plain_content_handler(data.content),
             title=title,
             nickname="明日方舟游戏内公告",
             images=[data.banner_image_url] if data.banner_image_url else None,
@@ -231,7 +230,8 @@ class MonsterSiren(NewMessage):
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return Post(
             self,
-            text,
+            content=text,
+            plain_content=text,
             images=imgs,
             url=url,
             nickname="塞壬唱片新闻",
@@ -272,7 +272,8 @@ class TerraHistoricusComic(NewMessage):
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
             self,
-            raw_post["subtitle"],
+            content=raw_post["subtitle"],
+            plain_content=raw_post["subtitle"],
             title=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
             images=[raw_post["coverUrl"]],
             url=url,

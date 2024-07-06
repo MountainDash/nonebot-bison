@@ -74,7 +74,8 @@ class Rss(NewMessage):
                     pics.append(media.get("url"))
         return Post(
             self,
-            desc,
+            content=desc,
+            plain_content=desc,
             title=title,
             url=raw_post.link,
             images=pics,

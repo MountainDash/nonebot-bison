@@ -5,11 +5,9 @@ from collections.abc import Callable
 from dataclasses import fields, dataclass
 from typing import TYPE_CHECKING, ClassVar
 
-from bs4 import BeautifulSoup
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 
-from ..utils import cleantext
 from ..theme import theme_manager
 from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
@@ -30,6 +28,8 @@ class Post(AbstractPost):
     """来源平台"""
     content: str
     """文本内容"""
+    plain_content: str
+    """纯文本内容"""
     title: str | None = None
     """标题"""
     images: list[str | bytes | Path | BytesIO] | None = None
@@ -48,26 +48,6 @@ class Post(AbstractPost):
     """转发的Post"""
     plain_content_handlers: ClassVar[dict[str, Callable[[str], str]]] = {}
     """在`self.plain_content`中使用的处理函数"""
-
-    @classmethod
-    def register_plain_content_handler(cls, platform_name: str):
-        """注册 platform 对应的纯文本处理函数"""
-
-        def decorator(func: Callable[[str], str]):
-            cls.plain_content_handlers[platform_name] = func
-            logger.opt(colors=True).success(f"Plain Content Handler for <b><u>{platform_name}</u></b> registered")
-            return func
-
-        return decorator
-
-    @property
-    def plain_content(self) -> str:
-        """获取纯文本内容"""
-        if handler := self.plain_content_handlers.get(self.platform.platform_name):
-            return handler(self.content)
-        if handler := self.plain_content_handlers.get("global"):
-            return handler(self.content)
-        return self.content
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -133,19 +113,3 @@ class Post(AbstractPost):
             post_format += str(self.repost)
 
         return post_format
-
-
-@Post.register_plain_content_handler("global")
-def global_plain_content_handler(content: str) -> str:
-    soup = BeautifulSoup(content, "html.parser")
-
-    for img in soup.find_all("img"):
-        img.replace_with("[图片]")
-
-    for br in soup.find_all("br"):
-        br.replace_with("\n")
-
-    for p in soup.find_all("p"):
-        p.insert_after("\n")
-
-    return cleantext(soup.get_text())

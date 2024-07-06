@@ -101,7 +101,7 @@ class Post(AbstractPost):
 """
         post_format += "附加信息:\n"
         for cls_field in fields(self):
-            if cls_field.name in ("content", "platform", "repost", "plain_content_handlers"):
+            if cls_field.name in ("content", "plain_content", "platform", "repost"):
                 continue
             else:
                 value = getattr(self, cls_field.name)

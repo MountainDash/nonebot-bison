@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from shutil import rmtree
 
 import pytest
 import nonebot
@@ -67,6 +68,11 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
     # 关闭渲染图片时打开的浏览器
     await shutdown_browser()
+    # 清除缓存文件
+    cache_dir = Path.cwd() / ".cache" / "hishel"
+    if cache_dir.exists():
+        rmtree(cache_dir)
+        cache_dir.mkdir()
 
 
 @pytest.fixture()

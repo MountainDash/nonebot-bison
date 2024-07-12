@@ -12,6 +12,7 @@ from .site import Site as Site
 from ..plugin_config import plugin_config
 from .image import pic_merge as pic_merge
 from .http import http_client as http_client
+from .image import capture_html as capture_html
 from .site import ClientManager as ClientManager
 from .image import text_to_image as text_to_image
 from .site import anonymous_site as anonymous_site
@@ -108,3 +109,8 @@ def decode_unicode_escapes(s: str):
 
     regex = re.compile(r"\\[rnt]|\\u[0-9a-fA-F]{4}")
     return regex.sub(decode_match, s)
+
+
+def text_fletten(text: str, *, banned: str = "\n\r\t", replace: str = " ") -> str:
+    """将文本中的格式化字符去除"""
+    return "".join(c if c not in banned else replace for c in text)

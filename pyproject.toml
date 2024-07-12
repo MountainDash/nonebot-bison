@@ -23,7 +23,6 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0.0"
 beautifulsoup4 = ">=4.12.3"
-expiringdict = "^1.2.2"
 feedparser = "^6.0.11"
 httpx = ">=0.27.0"
 nonebot2 = { extras = ["fastapi"], version = "^2.3.2" }
@@ -40,6 +39,9 @@ qrcode = "^7.4.2"
 pydantic = ">=1.10.17,<3.0.0,!=2.5.0,!=2.5.1"
 lxml = ">=5.2.2"
 yarl = ">=1.9.4"
+hishel = "^0.0.20"
+expiringdictx = "^1.0.1"
+rapidfuzz = "^3.9.3"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=23.12.1,<25.0"

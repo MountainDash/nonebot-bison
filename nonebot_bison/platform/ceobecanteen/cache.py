@@ -32,9 +32,9 @@ class CeobeCache:
     # 不在 __init__ 中初始化，让多个实例共享一个缓存
     _cache = SimpleCache()
 
-    def __init__(self, litetime: timedelta, store_key: str | None = None):
+    def __init__(self, lifetime: timedelta, store_key: str | None = None):
         self.store_key = store_key
-        self.litetime = litetime
+        self.lifetime = lifetime
 
     def __set_name__(self, owner, name: str):
         self.key = self.store_key or name
@@ -43,7 +43,7 @@ class CeobeCache:
         return self._cache.get(self.key)
 
     def __set__(self, instance, value):
-        self._cache[self.key, self.litetime] = value
+        self._cache[self.key, self.lifetime] = value
 
 
 class CeobeDataSourceCache:

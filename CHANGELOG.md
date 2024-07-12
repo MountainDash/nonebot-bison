@@ -6,6 +6,7 @@
 
 ### 新功能
 
+- 适配小刻食堂平台 [@AzideCupric](https://github.com/AzideCupric) ([#379](https://github.com/MountainDash/nonebot-bison/pull/379))
 - refactor client getting logic in platform config [@felinae98](https://github.com/felinae98) ([#544](https://github.com/MountainDash/nonebot-bison/pull/544))
 - ParseTargetException可以携带prompt参数 [@AzideCupric](https://github.com/AzideCupric) ([#479](https://github.com/MountainDash/nonebot-bison/pull/479))
 - 为 scheduler config 添加 require_browser 属性 [@felinae98](https://github.com/felinae98) ([#542](https://github.com/MountainDash/nonebot-bison/pull/542))

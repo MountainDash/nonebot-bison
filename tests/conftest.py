@@ -14,11 +14,12 @@ from .utils import AppReq
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
-        "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+        "sqlalchemy_database_url": "sqlite+aiosqlite:///:memory:",
         "superusers": {"10001"},
         "command_start": {""},
         "log_level": "TRACE",
         "bison_use_browser": True,
+        "alembic_startup_check": False,
     }
 
 
@@ -44,9 +45,8 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
-    from nonebot_plugin_datastore.config import plugin_config as datastore_config
-    from nonebot_plugin_datastore.db import create_session, init_db
     from nonebot_plugin_htmlrender.browser import shutdown_browser
+    from nonebot_plugin_orm import get_session, init_orm
 
     from nonebot_bison import plugin_config
     from nonebot_bison.config.db_model import ScheduleTimeWeight, Subscribe, Target, User
@@ -55,10 +55,6 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     plugin_config.bison_filter_log = False
     plugin_config.bison_use_browser = True
 
-    datastore_config.datastore_config_dir = tmp_path / "config"
-    datastore_config.datastore_cache_dir = tmp_path / "cache"
-    datastore_config.datastore_data_dir = tmp_path / "data"
-
     param: AppReq = getattr(request, "param", AppReq())
 
     # 如果在 app 前调用会报错“无法找到调用者”
@@ -66,7 +62,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     patch_refresh_bilibili_anonymous_cookie(mocker)
 
     if not param.get("no_init_db"):
-        await init_db()
+        await init_orm()
     # if not param.get("refresh_bot"):
     #     import nonebot_bison.utils.get_bot
     #
@@ -75,7 +71,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     yield App()
 
     # cleanup
-    async with create_session() as session, session.begin():
+    async with get_session() as session, session.begin():
         await session.execute(delete(User))
         await session.execute(delete(Subscribe))
         await session.execute(delete(Target))

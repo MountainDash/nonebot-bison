@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10, <4.0.0"
 resolution-markers = [
     "python_full_version < '3.11'",
@@ -548,7 +549,7 @@ name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
 wheels = [
@@ -1063,6 +1064,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f1/70/7703c29685631f5a7590aa73f1f1d3fa9a380e654b86af429e0934a32f7d/idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9", size = 190490 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3", size = 70442 },
+]
+
+[[package]]
+name = "importlib-resources"
+version = "6.5.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/8c/f834fbf984f691b4f7ff60f50b514cc3de5cc08abfc3295564dd89c5e2e7/importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c", size = 44693 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec", size = 37461 },
 ]
 
 [[package]]
@@ -1596,7 +1606,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-bison"
-version = "0.9.5"
+version = "0.9.6rc2"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -1609,6 +1619,7 @@ dependencies = [
     { name = "nonebot-plugin-apscheduler" },
     { name = "nonebot-plugin-datastore" },
     { name = "nonebot-plugin-htmlrender" },
+    { name = "nonebot-plugin-orm" },
     { name = "nonebot-plugin-send-anything-anywhere" },
     { name = "nonebot2", extra = ["fastapi"] },
     { name = "pillow" },
@@ -1667,6 +1678,7 @@ requires-dist = [
     { name = "nonebot-plugin-apscheduler", specifier = ">=0.5.0" },
     { name = "nonebot-plugin-datastore", specifier = ">=1.3.0,<2.0.0" },
     { name = "nonebot-plugin-htmlrender", specifier = ">=0.3.5,!=0.5.0" },
+    { name = "nonebot-plugin-orm", specifier = ">=0.7.6" },
     { name = "nonebot-plugin-send-anything-anywhere", specifier = ">=0.7.1,<0.7.2" },
     { name = "nonebot2", extras = ["aiohttp", "fastapi"], marker = "extra == 'docker'", specifier = ">=2.3.3,<3.0.0" },
     { name = "nonebot2", extras = ["fastapi"], specifier = ">=2.3.3,<3.0.0" },
@@ -1680,6 +1692,7 @@ requires-dist = [
     { name = "tinydb", specifier = ">=4.8.0,<5.0.0" },
     { name = "yarl", specifier = ">=1.11.1" },
 ]
+provides-extras = ["docker"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1764,6 +1777,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5e/aa/a038f16a1770e0f3a12efa4e99ffee236a7742bbbba0f7ed7c369a0e073e/nonebot_plugin_localstore-0.7.3.tar.gz", hash = "sha256:1aff10e2dacfc5bc9ce239fd34849f8d7172a118135dbc5aeba1c97605d9959d", size = 5681 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d6/ab/5589d873bbc47bfb70c5fca95de7538568ddfd4e9a1f0a40c16d3b80077d/nonebot_plugin_localstore-0.7.3-py3-none-any.whl", hash = "sha256:1bc239b4b5320df0dc08eada7c4f8ba4cb92d4dc3134bf4646ab5e297bd7e575", size = 6894 },
+]
+
+[[package]]
+name = "nonebot-plugin-orm"
+version = "0.7.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "alembic" },
+    { name = "click" },
+    { name = "importlib-resources", marker = "python_full_version < '3.12'" },
+    { name = "nonebot-plugin-localstore" },
+    { name = "nonebot2" },
+    { name = "sqlalchemy" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cb/21/68a9efa50444ead2f6ee5bc2de69acaafb2a705e1bea734cc4b1d5b5c459/nonebot_plugin_orm-0.7.6.tar.gz", hash = "sha256:3ae4ac362a8ea6e6467666f654287855a30447f8fa457af88f1760f155c5d68c", size = 27537 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/c5/6ae05bf3a667231dbdbc923e9980611fdb4f144deb620b3b9a06bd1a54b6/nonebot_plugin_orm-0.7.6-py3-none-any.whl", hash = "sha256:6ce808d7e847eb7c1a738609b0e94bb612488650c5150ae1b2d67463034bb255", size = 32884 },
 ]
 
 [[package]]
@@ -2580,7 +2611,7 @@ name = "qrcode"
 version = "7.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "pypng" },
     { name = "typing-extensions" },
 ]
@@ -2968,7 +2999,7 @@ name = "tzlocal"
 version = "5.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "tzdata", marker = "platform_system == 'Windows'" },
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/04/d3/c19d65ae67636fe63953b20c2e4a8ced4497ea232c43ff8d01db16de8dc0/tzlocal-5.2.tar.gz", hash = "sha256:8d399205578f1a9342816409cc1e46a93ebd5755e39ea2d85334bea911bf0e6e", size = 30201 }
 wheels = [

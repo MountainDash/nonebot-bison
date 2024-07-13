@@ -4,7 +4,7 @@ from typing import cast
 
 from nonebot.compat import type_validate_python
 from nonebot.log import logger
-from nonebot_plugin_datastore.db import create_session
+from nonebot_plugin_orm import get_session
 from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy import select
 from sqlalchemy.orm.strategy_options import selectinload
@@ -25,7 +25,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
         对 sqlalchemy Select 对象的操作函数，用于限定查询范围
         e.g. lambda stmt: stmt.where(User.uid=2233, User.type="group")
     """
-    async with create_session() as sess:
+    async with get_session() as sess:
         sub_stmt = select(Subscribe).join(User)
         sub_stmt = selector(sub_stmt).options(selectinload(Subscribe.target))
         sub_stmt = cast(Select[tuple[Subscribe]], sub_stmt)
@@ -51,7 +51,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
         )
         groups.append(sub_pack)
 
-    async with create_session() as sess:
+    async with get_session() as sess:
         cookie_target_stmt = (
             select(CookieTarget)
             .join(Cookie)

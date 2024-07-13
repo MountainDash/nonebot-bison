@@ -1,8 +1,7 @@
+from nonebot import logger
 from nonebot.compat import model_dump
-from nonebot.log import logger
-from nonebot_plugin_datastore.db import get_engine
+from nonebot_plugin_orm import get_session
 from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
-from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from .config_legacy import Config, ConfigContent, drop
 from .db_model import Subscribe, Target, User
@@ -13,7 +12,7 @@ async def data_migrate():
     if config.available:
         logger.warning("You are still using legacy db, migrating to sqlite")
         all_subs: list[ConfigContent] = [ConfigContent(**item) for item in config.get_all_subscribe().all()]
-        async with AsyncSession(get_engine()) as sess:
+        async with get_session() as sess:
             user_to_create = []
             subscribe_to_create = []
             platform_target_map: dict[str, tuple[Target, str, int]] = {}

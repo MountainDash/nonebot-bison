@@ -82,6 +82,8 @@ class FSM(Generic[TState, TEvent, TContext]):
                 raise StateError(f"Invalid event {event} in state {self.current_state}")
 
             res = await transition.action(self.current_state, event, transition.to, self.ctx)
+            logger.trace(f"after action ctx: {self.ctx}")
+            logger.trace(f"action return: {res}")
             self.current_state = transition.to
 
     async def start(self):
@@ -115,8 +117,8 @@ class RetryEvent(StrEnum):
 
 @dataclass
 class RetryContext:
-    refresh_count = 0
-    backoff_count = 0
+    refresh_count: int = 0
+    backoff_count: int = 0
     backoff_finish_time: datetime | None = None
 
     @property
@@ -139,25 +141,32 @@ class RetryContext:
     def reach_max(self, key: Literal["refresh", "backoff"]):
         attr_name = f"{key}_count"
         if hasattr(self, attr_name):
-            logger.trace(f"reach max current {attr_name}: {getattr(self, attr_name)}")
+            logger.trace(f"reach_max current {attr_name}: {getattr(self, attr_name)}")
             return getattr(self, attr_name) > (getattr(self, f"max_{attr_name}") - 1)
         raise KeyError(f"key {key} not found")
 
-    def set_backoff_end_time(self):
-        self.backoff_finish_time = datetime.now() + self.backoff_timedelta * (self.backoff_count + 1) ** 2
-        logger.trace(f"set backoff end time: {self.backoff_finish_time}")
+    def record_backoff_finish_time(self):
+        self.backoff_finish_time = (
+            datetime.now()
+            + self.backoff_timedelta * (self.backoff_count + 1) ** 2
+            # + timedelta(seconds=random.randint(1, 60)) # jitter
+        )
+        logger.trace(f"set backoff finish time: {self.backoff_finish_time}")
 
     def is_in_backoff_time(self):
         """是否在指数回避时间内"""
         # 指数回避
         if not self.backoff_finish_time:
-            raise ValueError("backoff_finish_time is None")
+            logger.trace("not in backoff time")
+            return False
+
         logger.trace(f"now: {datetime.now()}, backoff_finish_time: {self.backoff_finish_time}")
         return datetime.now() < self.backoff_finish_time
 
 
 class RetryActionReturn(StrEnum):
-    REACH_MAX = "reach_max"
+    REFRESH_MAX = "refresh_max"
+    BACKOFF_MAX = "backoff_max"
     IN_BACKOFF = "in_backoff"
     OUT_BACKOFF = "out_backoff"
 
@@ -180,13 +189,19 @@ async def refresh_action(from_: RetryState, event: RetryEvent, to: RetryState, c
         ctx.reset_all()
         return
 
-    ctx.refresh_count += 1
-    logger.warning(f"刷新失败({ctx.refresh_count}/{ctx.max_refresh_count})，继续重试")
-    if ctx.reach_max("refresh"):
-        logger.error("刷新次数达到上限，记录指数回避结束时间")
-        ctx.set_backoff_end_time()
+    if event is RetryEvent.REQUEST_AND_RAISE:
+        ctx.refresh_count += 1
+        logger.warning(f"刷新失败({ctx.refresh_count}/{ctx.max_refresh_count})，继续重试")
+
+    if not ctx.reach_max("refresh"):
+        return
+    elif not ctx.reach_max("backoff"):
+        # 刷新次数达到上限，但未达到指数回避次数上限，进入指数回避状态
+        ctx.record_backoff_finish_time()
         ctx.refresh_count = 0
-        return RetryActionReturn.REACH_MAX
+        return RetryActionReturn.REFRESH_MAX
+    else:
+        return RetryActionReturn.BACKOFF_MAX
 
 
 async def backoff_action(from_: RetryState, event: RetryEvent, to: RetryState, ctx: RetryContext) -> ActionReturn:
@@ -198,13 +213,10 @@ async def backoff_action(from_: RetryState, event: RetryEvent, to: RetryState, c
         logger.warning("当前在指数回避时间内，继续等待")
         return RetryActionReturn.IN_BACKOFF
 
-    logger.warning(f"本次指数回避时间结束({ctx.backoff_count + 1}/{ctx.max_backoff_count})")
-    ctx.backoff_finish_time = None
-    ctx.backoff_count += 1
-
-    if ctx.reach_max("backoff"):
-        logger.error("指数回避次数达到上限")
-        return RetryActionReturn.REACH_MAX
+    if to is not RetryState.BACKOFF:
+        logger.warning(f"本次指数回避时间结束({ctx.backoff_count + 1}/{ctx.max_backoff_count})")
+        ctx.backoff_finish_time = None
+        ctx.backoff_count += 1
 
     return RetryActionReturn.OUT_BACKOFF
 
@@ -224,6 +236,7 @@ RETRY_GRAPH: StateGraph[RetryState, RetryEvent, RetryContext] = {
             RetryEvent.REQUEST_AND_RAISE: Transition(log_action, RetryState.REFRESH),
         },
         RetryState.REFRESH: {
+            RetryEvent.REACH_MAX_BACKOFF: Transition(refresh_action, RetryState.RAISE),
             RetryEvent.REACH_MAX_REFRESH: Transition(refresh_action, RetryState.BACKOFF),
             RetryEvent.REQUEST_AND_SUCCESS: Transition(refresh_action, RetryState.NROMAL),
             RetryEvent.REQUEST_AND_RAISE: Transition(refresh_action, RetryState.REFRESH),
@@ -231,7 +244,6 @@ RETRY_GRAPH: StateGraph[RetryState, RetryEvent, RetryContext] = {
         RetryState.BACKOFF: {
             RetryEvent.IN_BACKOFF_TIME: Transition(backoff_action, RetryState.BACKOFF),
             RetryEvent.OUT_BACKOFF_TIME: Transition(backoff_action, RetryState.REFRESH),
-            RetryEvent.REACH_MAX_BACKOFF: Transition(backoff_action, RetryState.RAISE),
         },
         RetryState.RAISE: {
             RetryEvent.REQUEST_AND_SUCCESS: Transition(raise_action, RetryState.NROMAL),
@@ -272,10 +284,14 @@ def retry_for_352(api_func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
                     await bls.ctx.refresh_client()
                     res = await api_func(bls, *args, **kwargs)
                 except ApiCode352Error:
-                    action_res = await fsm.emit(RetryEvent.REQUEST_AND_RAISE)
-                    if action_res is RetryActionReturn.REACH_MAX:
-                        logger.error("刷新次数达到上限，进入指数回避状态")
-                        await fsm.emit(RetryEvent.REACH_MAX_REFRESH)
+                    match await fsm.emit(RetryEvent.REQUEST_AND_RAISE):
+                        case RetryActionReturn.REFRESH_MAX:
+                            logger.error("刷新次数达到上限，进入指数回避状态")
+                            await fsm.emit(RetryEvent.REACH_MAX_REFRESH)
+                        case RetryActionReturn.BACKOFF_MAX:
+                            logger.error("指数回避次数达到上限，放弃回避")
+                            await fsm.emit(RetryEvent.REACH_MAX_BACKOFF)
+
                     return []
                 else:
                     logger.success("刷新成功，返回正常状态")
@@ -285,23 +301,15 @@ def retry_for_352(api_func: Callable[[B, Target], Awaitable[list[DynRawPost]]]):
             case RetryState.BACKOFF:
                 action_res = await fsm.emit(RetryEvent.IN_BACKOFF_TIME)
 
-                match action_res:
-                    case RetryActionReturn.IN_BACKOFF:
-                        pass
-                    case RetryActionReturn.REACH_MAX:
-                        logger.error("指数回避次数达到上限，抛出异常")
-                        await fsm.emit(RetryEvent.REACH_MAX_BACKOFF)
-                    case RetryActionReturn.OUT_BACKOFF:
-                        logger.warning("离开指数回避状态")
-                        await fsm.emit(RetryEvent.OUT_BACKOFF_TIME)
-                    case _:
-                        raise StateError(f"Invalid action return {action_res}")
+                if action_res is RetryActionReturn.OUT_BACKOFF:
+                    logger.warning("离开指数回避状态")
+                    action_res = await fsm.emit(RetryEvent.OUT_BACKOFF_TIME)
 
                 return []
 
             case RetryState.RAISE:
                 try:
-                    if random.random() < 0.1236:
+                    if random.random() < 0.1236:  # magic number! 其实是随便写的0.618的两倍(
                         logger.trace("随机刷新Client")
                         await bls.ctx.refresh_client()
                     res = await api_func(bls, *args, **kwargs)

@@ -138,7 +138,7 @@ class RetryContext:
         self.backoff_count = 0
         self.backoff_finish_time = None
 
-    def reach_max(self, key: Literal["refresh", "backoff"]):
+    def reach_max(self, key: Literal["refresh", "backoff"]) -> bool:
         attr_name = f"{key}_count"
         if hasattr(self, attr_name):
             logger.trace(f"reach_max current {attr_name}: {getattr(self, attr_name)}")

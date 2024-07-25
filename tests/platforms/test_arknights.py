@@ -274,7 +274,7 @@ async def test_send_with_render(
     assert post2.platform.platform_name == "arknights"
     assert post2.content
     post2_plain_content = await post2.get_plain_content()
-    assert post2_plain_content.strip() == get_file("arknights-plaintext-807.txt").strip()
+    assert post2_plain_content.strip() == get_file("arknights-plaintext-805.txt").strip()
     assert await post2.generate()
     assert post2.title == "【公开招募】标签强制刷新通知"
     assert post2.nickname == "明日方舟游戏内公告"

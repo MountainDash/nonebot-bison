@@ -10,7 +10,7 @@ from pydantic import Field, BaseModel
 from nonebot.compat import type_validate_python
 
 from ..post import Post
-from ..utils import Site, cleantext
+from ..utils import Site
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
 from ..post.support import HTMLContentSupport, PlainContentSupport
@@ -62,6 +62,12 @@ class ArknightsSite(Site):
 
 
 class ArknightsPost(Post, PlainContentSupport, HTMLContentSupport):
+    def _cleantext(text: str, old_split="\n", new_split="\n") -> str:
+        """清理文本：去掉所有多余的空格和换行"""
+        lines = text.strip().split(old_split)
+        cleaned_lines = [line.strip() for line in lines if line != ""]
+        return new_split.join(cleaned_lines)
+
     async def get_html_content(self) -> str:
         return self.content
 
@@ -85,7 +91,7 @@ class ArknightsPost(Post, PlainContentSupport, HTMLContentSupport):
         content = re.sub(r"\<strong\>(.*?)\</strong\>", r"\1", content)  # 去strong
         content = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", content)  # 去color
         content = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", content)  # 去img
-        return cleantext(content)
+        return self._cleantext(content)
 
 
 class Arknights(NewMessage):

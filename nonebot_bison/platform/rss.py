@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, cleantext, text_similarity
+from ..utils import Site, text_fletten, text_similarity
 from ..post.support import HTMLContentSupport, PlainContentSupport
 
 
@@ -35,7 +35,7 @@ class RssPost(Post, PlainContentSupport, HTMLContentSupport):
         for p in soup.find_all("p"):
             p.insert_after("\n")
 
-        return cleantext(soup.get_text())
+        return text_fletten(soup.get_text())
 
 
 class Rss(NewMessage):

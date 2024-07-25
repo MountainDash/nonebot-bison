@@ -8,8 +8,8 @@ from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..theme import theme_manager
-from .support import PlainContentSupport
 from .abstract_post import AbstractPost
+from .support import PlainContentSupport
 from ..plugin_config import plugin_config
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
 

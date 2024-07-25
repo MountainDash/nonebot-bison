@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, text_fletten, text_similarity
 from ..post.support import HTMLContentSupport
+from ..utils import Site, text_fletten, text_similarity
 
 
 class RssSite(Site):

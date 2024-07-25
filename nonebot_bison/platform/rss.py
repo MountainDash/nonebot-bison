@@ -10,7 +10,7 @@ from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
 from ..utils import Site, text_fletten, text_similarity
-from ..post.support import HTMLContentSupport, PlainContentSupport
+from ..post.support import HTMLContentSupport
 
 
 class RssSite(Site):
@@ -19,7 +19,7 @@ class RssSite(Site):
     schedule_setting = {"seconds": 30}
 
 
-class RssPost(Post, PlainContentSupport, HTMLContentSupport):
+class RssPost(Post, HTMLContentSupport):
     async def get_html_content(self) -> str:
         return self.content
 

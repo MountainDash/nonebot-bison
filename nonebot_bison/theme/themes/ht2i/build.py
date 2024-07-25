@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, Literal
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme, ThemeRenderError
+from nonebot_bison.post.support import HTMLContentSupport
 from nonebot_bison.utils import pic_merge, is_pics_mergable
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
-    from nonebot_bison.post.support import HTMLContentSupport
 
 
 class Ht2iTheme(Theme):

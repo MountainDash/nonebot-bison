@@ -12,8 +12,8 @@ from nonebot.compat import type_validate_python
 from ..post import Post
 from ..utils import Site
 from ..types import Target, RawPost, Category
+from ..post.support import HTMLContentSupport
 from .platform import NewMessage, StatusChange
-from ..post.support import HTMLContentSupport, PlainContentSupport
 
 
 class ArkResponseBase(BaseModel):
@@ -61,8 +61,8 @@ class ArknightsSite(Site):
     schedule_setting = {"seconds": 30}
 
 
-class ArknightsPost(Post, PlainContentSupport, HTMLContentSupport):
-    def _cleantext(text: str, old_split="\n", new_split="\n") -> str:
+class ArknightsPost(Post, HTMLContentSupport):
+    def _cleantext(self, text: str, old_split="\n", new_split="\n") -> str:
         """清理文本：去掉所有多余的空格和换行"""
         lines = text.strip().split(old_split)
         cleaned_lines = [line.strip() for line in lines if line != ""]

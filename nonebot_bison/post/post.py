@@ -8,6 +8,7 @@ from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..theme import theme_manager
+from .support import PlainContentSupport
 from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Post(AbstractPost):
+class Post(AbstractPost, PlainContentSupport):
     """最通用的Post，理论上包含所有常用的数据
 
     对于更特殊的需要，可以考虑另外实现一个Post
@@ -61,6 +62,9 @@ class Post(AbstractPost):
         if "basic" not in themes_by_priority:
             themes_by_priority.append("basic")
         return themes_by_priority
+
+    async def get_plain_content(self):
+        return self.content
 
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""

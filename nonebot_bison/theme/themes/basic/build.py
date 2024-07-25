@@ -9,7 +9,6 @@ from nonebot_bison.utils import pic_merge, is_pics_mergable
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
-    from nonebot_bison.post.support import PlainContentSupport
 
 
 class BasicTheme(Theme):
@@ -25,19 +24,13 @@ class BasicTheme(Theme):
 
         text += f"{post.title}\n\n" if post.title else ""
 
-        if isinstance(post, PlainContentSupport):
-            content = await post.get_plain_content()
-        else:
-            content = post.content
+        content = await post.get_plain_content()
         text += content if len(content) < 500 else f"{content[:500]}..."
 
         if rp := post.repost:
             text += f"\n--------------\n转发自 {rp.nickname or ''}:\n"
             text += f"{rp.title}\n\n" if rp.title else ""
-            if isinstance(rp, PlainContentSupport):
-                rp_content = await rp.get_plain_content()
-            else:
-                rp_content = rp.content
+            rp_content = await rp.get_plain_content()
 
             text += rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..."
 

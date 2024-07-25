@@ -239,8 +239,8 @@ async def test_send_with_render(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    from nonebot_bison.platform.arknights import ArknightsPost
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.platform.arknights import ArknightsPost
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")

@@ -7,10 +7,10 @@ from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
-from ..post.support import PlainContentSupport, HTMLContentSupport
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, text_similarity, cleantext
+from ..utils import Site, cleantext, text_similarity
+from ..post.support import HTMLContentSupport, PlainContentSupport
 
 
 class RssSite(Site):

@@ -10,10 +10,10 @@ from pydantic import Field, BaseModel
 from nonebot.compat import type_validate_python
 
 from ..post import Post
-from ..post.support import PlainContentSupport, HTMLContentSupport
 from ..utils import Site, cleantext
 from ..types import Target, RawPost, Category
 from .platform import NewMessage, StatusChange
+from ..post.support import HTMLContentSupport, PlainContentSupport
 
 
 class ArkResponseBase(BaseModel):

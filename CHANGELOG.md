@@ -6,6 +6,7 @@
 
 ### 新功能
 
+- 适配小刻食堂平台 [@AzideCupric](https://github.com/AzideCupric) ([#379](https://github.com/MountainDash/nonebot-bison/pull/379))
 - refactor client getting logic in platform config [@felinae98](https://github.com/felinae98) ([#544](https://github.com/MountainDash/nonebot-bison/pull/544))
 - ParseTargetException可以携带prompt参数 [@AzideCupric](https://github.com/AzideCupric) ([#479](https://github.com/MountainDash/nonebot-bison/pull/479))
 - 为 scheduler config 添加 require_browser 属性 [@felinae98](https://github.com/felinae98) ([#542](https://github.com/MountainDash/nonebot-bison/pull/542))
@@ -13,11 +14,16 @@
 
 ### Bug 修复
 
+- fix config alias err [@felinae98](https://github.com/felinae98) ([#580](https://github.com/MountainDash/nonebot-bison/pull/580))
+- 插入新的Schedulable时应传入use_batch参数 [@AzideCupric](https://github.com/AzideCupric) ([#594](https://github.com/MountainDash/nonebot-bison/pull/594))
+- 查询订阅时提示不存在的平台 [@suyiiyii](https://github.com/suyiiyii) ([#584](https://github.com/MountainDash/nonebot-bison/pull/584))
 - B站蹲饼修复 [@AzideCupric](https://github.com/AzideCupric) ([#525](https://github.com/MountainDash/nonebot-bison/pull/525))
 - 🐛 补充主题渲染时遗漏的转发推文中的图片 [@AzideCupric](https://github.com/AzideCupric) ([#554](https://github.com/MountainDash/nonebot-bison/pull/554))
 
 ### 文档
 
+- 📝 更新 README [@KomoriDev](https://github.com/KomoriDev) ([#583](https://github.com/MountainDash/nonebot-bison/pull/583))
+- 💄 更新 favicon [@KomoriDev](https://github.com/KomoriDev) ([#585](https://github.com/MountainDash/nonebot-bison/pull/585))
 - 修复前端开发部分文档的问题 [@changsun20](https://github.com/changsun20) ([#552](https://github.com/MountainDash/nonebot-bison/pull/552))
 
 ## v0.9.2

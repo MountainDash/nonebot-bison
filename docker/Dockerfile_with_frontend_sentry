@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.2
+# syntax=docker/dockerfile:1.8
 FROM python:3.11-slim-bullseye as base
 
 FROM base as builder
@@ -44,7 +44,6 @@ RUN pip install -e . && playwright install chromium
 RUN mv docker.env.prod .env.prod && \
     nb adapter install nonebot-adapter-red && \
     nb adapter install nonebot-adapter-qq && \
-    nb adapter install nonebot-adapter-telegram && \
     nb plugin install nonebot-plugin-sentry
 ENV HOST=0.0.0.0
 CMD ["nb", "run"]

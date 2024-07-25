@@ -12,6 +12,7 @@ from .site import Site as Site
 from ..plugin_config import plugin_config
 from .image import pic_merge as pic_merge
 from .http import http_client as http_client
+from .image import capture_html as capture_html
 from .site import ClientManager as ClientManager
 from .image import text_to_image as text_to_image
 from .site import anonymous_site as anonymous_site
@@ -110,8 +111,7 @@ def decode_unicode_escapes(s: str):
     return regex.sub(decode_match, s)
 
 
-def cleantext(text: str, old_split="\n", new_split="\n") -> str:
-    """清理文本：去掉所有多余的空格和换行"""
-    lines = text.strip().split(old_split)
-    cleaned_lines = [line.strip() for line in lines if line != ""]
-    return new_split.join(cleaned_lines)
+
+def text_fletten(text: str, *, banned: str = "\n\r\t", replace: str = " ") -> str:
+    """将文本中的格式化字符去除"""
+    return "".join(c if c not in banned else replace for c in text)

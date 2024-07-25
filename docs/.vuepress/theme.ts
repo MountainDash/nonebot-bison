@@ -5,6 +5,8 @@ import sidebar from "./sidebar.js";
 export default hopeTheme({
   hostname: "https://nonebot-bison.netlify.app",
 
+  favicon: "favicon.ico",
+
   author: {
     name: "MountainDash Team",
     url: "https://github.com/orgs/MountainDash/teams",

@@ -4,6 +4,7 @@ from inspect import cleandoc
 
 import pytest
 from nonebug.app import App
+from pytest_mock import MockerFixture
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -174,7 +175,7 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 
 
 @pytest.mark.asyncio
-async def test_generate_msg(mock_platform):
+async def test_generate_msg(mock_platform, mocker: MockerFixture):
     from nonebot_plugin_saa import Text, Image
 
     from nonebot_bison.post import Post
@@ -195,7 +196,7 @@ async def test_generate_msg(mock_platform):
     res1 = await post.generate()
     assert isinstance(res1[0], Image)
 
-    plugin_config.bison_use_browser = False
+    mocker.patch.object(plugin_config, "bison_use_browser", False)
 
     res3 = await post.generate()
     assert res3[0]
@@ -204,14 +205,14 @@ async def test_generate_msg(mock_platform):
 
 @pytest.mark.asyncio
 @pytest.mark.render
-async def test_msg_segments_convert(mock_platform):
+async def test_msg_segments_convert(mock_platform, mocker: MockerFixture):
     from nonebot_plugin_saa import Image
 
     from nonebot_bison.post import Post
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.utils import ProcessContext, DefaultClientManager
 
-    plugin_config.bison_use_pic = True
+    mocker.patch.object(plugin_config, "bison_use_pic", True)
 
     post: Post = await mock_platform(ProcessContext(DefaultClientManager())).parse(raw_post_list_1[0])
     assert post.platform.default_theme == "basic"

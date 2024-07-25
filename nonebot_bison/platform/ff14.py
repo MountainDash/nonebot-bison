@@ -44,4 +44,4 @@ class FF14(NewMessage):
         title = raw_post["Title"]
         text = raw_post["Summary"]
         url = raw_post["Author"]
-        return Post(self, content=text, plain_content=text, title=title, url=url, nickname="最终幻想XIV官方公告")
+        return Post(self, content=text, title=title, url=url, nickname="最终幻想XIV官方公告")

@@ -170,6 +170,7 @@ async def test_fetch_new(
 ):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.platform.arknights import ArknightsPost
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/5716")
@@ -201,7 +202,7 @@ async def test_fetch_new(
     res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     assert detail_router.called
-    post2: Post = res2[0][1][0]
+    post2: ArknightsPost = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
     assert post2.content
     assert post2.title == "2023「夏日嘉年华」限时活动即将开启"
@@ -212,7 +213,8 @@ async def test_fetch_new(
     assert post2.timestamp
     assert "arknights" == post2.get_priority_themes()[0]
     # assert(post.pics == ['https://ak-fs.hypergryph.com/announce/images/20210623/e6f49aeb9547a2278678368a43b95b07.jpg'])
-    assert post2.plain_content.strip() == get_file("arknights-plaintext-807.txt").strip()
+    post2_plain_content = await post2.get_plain_content()
+    assert post2_plain_content.strip() == get_file("arknights-plaintext-807.txt").strip()
     assert await post2.generate()
     terra_list.mock(return_value=Response(200, json=get_json("terra-hist-1.json")))
     res3 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
@@ -237,7 +239,7 @@ async def test_send_with_render(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    from nonebot_bison.post import Post
+    from nonebot_bison.platform.arknights import ArknightsPost
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
@@ -268,10 +270,11 @@ async def test_send_with_render(
     res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     assert detail_router.called
-    post2: Post = res2[0][1][0]
+    post2: ArknightsPost = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
     assert post2.content
-    assert post2.plain_content.strip() == get_file("arknights-plaintext-805.txt").strip()
+    post2_plain_content = await post2.get_plain_content()
+    assert post2_plain_content.strip() == get_file("arknights-plaintext-807.txt").strip()
     assert await post2.generate()
     assert post2.title == "【公开招募】标签强制刷新通知"
     assert post2.nickname == "明日方舟游戏内公告"

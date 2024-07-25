@@ -7,15 +7,35 @@ from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
+from ..post.support import PlainContentSupport, HTMLContentSupport
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, text_similarity
+from ..utils import Site, text_similarity, cleantext
 
 
 class RssSite(Site):
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
+
+
+class RssPost(Post, PlainContentSupport, HTMLContentSupport):
+    async def get_html_content(self) -> str:
+        return self.content
+
+    async def get_plain_content(self) -> str:
+        soup = bs(self.content, "html.parser")
+
+        for img in soup.find_all("img"):
+            img.replace_with("[图片]")
+
+        for br in soup.find_all("br"):
+            br.replace_with("\n")
+
+        for p in soup.find_all("p"):
+            p.insert_after("\n")
+
+        return cleantext(soup.get_text())
 
 
 class Rss(NewMessage):
@@ -72,10 +92,9 @@ class Rss(NewMessage):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
-        return Post(
+        return RssPost(
             self,
             content=desc,
-            plain_content=desc,
             title=title,
             url=raw_post.link,
             images=pics,

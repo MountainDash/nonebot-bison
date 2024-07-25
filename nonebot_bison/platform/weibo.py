@@ -186,7 +186,6 @@ class Weibo(NewMessage):
         return Post(
             self,
             content=parsed_text,
-            plain_content=parsed_text,
             url=detail_url,
             images=pics,
             nickname=info["user"]["screen_name"],

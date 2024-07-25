@@ -9,6 +9,7 @@ from nonebot_bison.utils import pic_merge, is_pics_mergable
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
+    from nonebot_bison.post.support import HTMLContentSupport
 
 
 class Ht2iTheme(Theme):
@@ -35,13 +36,22 @@ class Ht2iTheme(Theme):
 
         md_text += f"## {post.title}\n\n" if post.title else ""
 
-        md_text += post.content if len(post.content) < 500 else f"{post.content[:500]}..."
+        if isinstance(post, HTMLContentSupport):
+            content = await post.get_html_content()
+        else:
+            content = post.content
+        md_text += content if len(content) < 500 else f"{content[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
             md_text += f"> 转发自 {f'**{rp.nickname}**' if rp.nickname else ''}:  \n"
             md_text += f"> {rp.title}  \n" if rp.title else ""
+            if isinstance(rp, HTMLContentSupport):
+                rp_content = await rp.get_html_content()
+            else:
+                rp_content = rp.content
+
             md_text += (
-                ">  \n> " + rp.content if len(rp.content) < 500 else f"{rp.content[:500]}..." + "  \n"  # noqa: E501
+                ">  \n> " + rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..." + "  \n"  # noqa: E501
             )  # noqa: E501
         md_text += "\n\n"
 

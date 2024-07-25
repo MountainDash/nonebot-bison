@@ -49,7 +49,6 @@ def mock_platform(app: App):
             return Post(
                 self,
                 content=raw_post["text"],
-                plain_content=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="MockNick",
             )
@@ -77,7 +76,6 @@ async def test_display(mock_platform):
     post1 = Post(
         mock_platform,
         content=post1_content,
-        plain_content=post1_content,
         title="Ipsum consectetuer voluptua eirmod aliquyam dolore eu volutpat ipsum ipsum eirmod nulla.",
         images=[
             b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89",
@@ -121,7 +119,6 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
     post2 = Post(
         mock_platform,
         content=post2_content,
-        plain_content=post2_content,
         title="Ipsum consectetuer voluptua eirmod aliquyam dolore eu volutpat ipsum ipsum eirmod nulla.",
         images=[
             b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89",

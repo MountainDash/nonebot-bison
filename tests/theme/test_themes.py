@@ -65,7 +65,6 @@ def mock_platform(app: App):
             return Post(
                 self,
                 content=raw_post["text"],
-                plain_content=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
             )
@@ -89,7 +88,6 @@ def mock_post(app: App, mock_platform):
     return Post(
         m := mock_platform(ProcessContext(DefaultClientManager())),
         content="text",
-        plain_content="text",
         title="title",
         images=["http://t.tt/1.jpg"],
         timestamp=1234567890,
@@ -100,7 +98,6 @@ def mock_post(app: App, mock_platform):
         repost=Post(
             m,
             content="repost",
-            plain_content="repost",
             title="repost-title",
             images=["http://t.tt/2.jpg"],
             timestamp=1234567891,

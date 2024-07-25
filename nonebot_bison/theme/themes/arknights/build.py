@@ -7,7 +7,7 @@ from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
-    from nonebot_bison.post import Post
+    from nonebot_bison.platform.arknights import ArknightsPost
 
 
 @dataclass
@@ -29,7 +29,7 @@ class ArknightsTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    async def render(self, post: "Post"):
+    async def render(self, post: "ArknightsPost"):
         from nonebot_plugin_htmlrender import template_to_pic
 
         if not post.title:

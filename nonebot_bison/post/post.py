@@ -1,9 +1,8 @@
 import reprlib
 from io import BytesIO
 from pathlib import Path
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 from dataclasses import fields, dataclass
-from typing import TYPE_CHECKING, ClassVar
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
@@ -28,8 +27,6 @@ class Post(AbstractPost):
     """来源平台"""
     content: str
     """文本内容"""
-    plain_content: str
-    """纯文本内容"""
     title: str | None = None
     """标题"""
     images: list[str | bytes | Path | BytesIO] | None = None
@@ -46,8 +43,6 @@ class Post(AbstractPost):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
-    plain_content_handlers: ClassVar[dict[str, Callable[[str], str]]] = {}
-    """在`self.plain_content`中使用的处理函数"""
 
     def get_config_theme(self) -> str | None:
         """获取用户指定的theme"""
@@ -101,7 +96,7 @@ class Post(AbstractPost):
 """
         post_format += "附加信息:\n"
         for cls_field in fields(self):
-            if cls_field.name in ("content", "plain_content", "platform", "repost"):
+            if cls_field.name in ("content", "platform", "repost"):
                 continue
             else:
                 value = getattr(self, cls_field.name)

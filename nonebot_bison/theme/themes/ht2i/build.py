@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Literal
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme, ThemeRenderError
-from nonebot_bison.post.support import HTMLContentSupport, XMLContentSupport
 from nonebot_bison.utils import pic_merge, is_pics_mergable
+from nonebot_bison.post.support import XMLContentSupport, HTMLContentSupport
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post

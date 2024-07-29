@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..post.support import HTMLContentSupport
+from ..post.support import XMLContentSupport
 from ..utils import Site, text_fletten, text_similarity
 
 
@@ -19,8 +19,8 @@ class RssSite(Site):
     schedule_setting = {"seconds": 30}
 
 
-class RssPost(Post, HTMLContentSupport):
-    async def get_html_content(self) -> str:
+class RssPost(Post, XMLContentSupport):
+    async def get_xml_content(self) -> str:
         return self.content
 
     async def get_plain_content(self) -> str:

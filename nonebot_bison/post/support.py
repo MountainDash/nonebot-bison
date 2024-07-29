@@ -12,5 +12,10 @@ class HTMLContentSupport(Protocol):
 
 
 @runtime_checkable
+class XMLContentSupport(Protocol):
+    async def get_xml_content(self) -> str: ...
+
+
+@runtime_checkable
 class MarkdownContentSupport(Protocol):
     async def get_markdown_content(self) -> str: ...

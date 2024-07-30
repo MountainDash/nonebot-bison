@@ -11,8 +11,8 @@ from nonebot.compat import type_validate_python
 
 from ..post import Post
 from ..utils import Site
-from ..post.protocol import HTMLContentSupport
 from ..types import Target, RawPost, Category
+from ..post.protocol import HTMLContentSupport
 from .platform import NewMessage, StatusChange
 
 

@@ -9,8 +9,8 @@ from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..theme import theme_manager
 from .abstract_post import AbstractPost
-from .protocol import PlainContentSupport
 from ..plugin_config import plugin_config
+from .protocol import PlainContentSupport
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:

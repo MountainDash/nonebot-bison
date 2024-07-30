@@ -9,7 +9,7 @@ from nonebot_plugin_saa import MessageSegmentFactory
 
 from ..theme import theme_manager
 from .abstract_post import AbstractPost
-from .support import PlainContentSupport
+from .protocol import PlainContentSupport
 from ..plugin_config import plugin_config
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
 
@@ -62,6 +62,9 @@ class Post(AbstractPost, PlainContentSupport):
         if "basic" not in themes_by_priority:
             themes_by_priority.append("basic")
         return themes_by_priority
+
+    async def get_content(self):
+        return self.content
 
     async def get_plain_content(self):
         return self.content

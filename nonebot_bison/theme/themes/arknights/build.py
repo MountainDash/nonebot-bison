@@ -49,10 +49,9 @@ class ArknightsTheme(Theme):
                 raise ThemeRenderUnsupportError(
                     f"图片类型错误, 期望 str | Path | bytes | BytesIO | None, 实际为 {type(banner)}"
                 )
-
         ark_data = ArkData(
             announce_title=text_fletten(post.title),
-            content=post.content,
+            content=await post.get_content(),
             banner_image_url=banner,
         )
 

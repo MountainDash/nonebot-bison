@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Literal
 from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
 
 from nonebot_bison.theme import Theme, ThemeRenderError
+from nonebot_bison.post.protocol import HTMLContentSupport
 from nonebot_bison.utils import pic_merge, is_pics_mergable
-from nonebot_bison.post.support import XMLContentSupport, HTMLContentSupport
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -38,10 +38,8 @@ class Ht2iTheme(Theme):
 
         if isinstance(post, HTMLContentSupport):
             content = await post.get_html_content()
-        elif isinstance(post, XMLContentSupport):
-            content = await post.get_xml_content()
         else:
-            content = post.content
+            content = await post.get_content()
         md_text += content if len(content) < 500 else f"{content[:500]}..."
         md_text += "\n\n"
         if rp := post.repost:
@@ -49,10 +47,8 @@ class Ht2iTheme(Theme):
             md_text += f"> {rp.title}  \n" if rp.title else ""
             if isinstance(rp, HTMLContentSupport):
                 rp_content = await rp.get_html_content()
-            elif isinstance(rp, XMLContentSupport):
-                rp_content = await rp.get_xml_content()
             else:
-                rp_content = rp.content
+                rp_content = await rp.get_content()
 
             md_text += (
                 ">  \n> " + rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..." + "  \n"  # noqa: E501

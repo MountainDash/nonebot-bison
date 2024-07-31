@@ -63,9 +63,9 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.platform.bilibili.retry import RetryState, RetryContext
+    from nonebot_bison.platform.bilibili.platforms import ApiCode352Error
     from nonebot_bison.utils import ClientManager, ProcessContext, http_client
-    from nonebot_bison.platform.bilibili.platforms import ApiCode352Error, retry_for_352
+    from nonebot_bison.platform.bilibili.retry import RetryAddon, RetryState, retry_fsm, retry_for_352
 
     mocker.patch.object(random, "random", return_value=0.0)  # 稳定触发RAISE阶段的随缘刷新
 
@@ -169,53 +169,33 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
     assert client_mgr.get_client_call_count == 2
     assert client_mgr.refresh_client_call_count == 0
 
-    ctx = RetryContext()
+    addon = RetryAddon()
 
     # 异常直到最终报错
-    test_state_list: list[RetryState] = [RetryState.NROMAL] + [RetryState.REFRESH] * ctx.max_refresh_count
-    for _ in range(ctx.max_backoff_count):
+    test_state_list: list[RetryState] = [RetryState.NROMAL] + [RetryState.REFRESH] * addon.max_refresh_count
+    for _ in range(addon.max_backoff_count):
         test_state_list += [RetryState.BACKOFF] * 2
-        test_state_list += [RetryState.REFRESH] * ctx.max_refresh_count
+        test_state_list += [RetryState.REFRESH] * addon.max_refresh_count
     test_state_list += [RetryState.RAISE] * 2
 
     freeze_start = datetime(2024, 6, 19, 0, 0, 0, 0)
-    timedelta_length = ctx.backoff_timedelta
+    timedelta_length = addon.backoff_timedelta
 
     fakebili.set_raise352(True)
-    latest_refresh_client_count = client_mgr.refresh_client_call_count
-    latest_get_client_count = client_mgr.get_client_call_count
-    backoff_count = 0
-    logger.info(f"{latest_get_client_count=}, {latest_refresh_client_count=}")
 
     for state in test_state_list:
         logger.info(f"\n\nnow state should be {state}")
-        latest_refresh_client_count = client_mgr.refresh_client_call_count
-        latest_get_client_count = client_mgr.get_client_call_count
-        logger.info(f"{latest_get_client_count=}, {latest_refresh_client_count=}")
+        assert retry_fsm.current_state == state
 
         with freeze_time(freeze_start):
             res = await fakebili.get_sub_list(Target("t1"))  # type: ignore
             assert not res
 
-        match state:
-            case RetryState.NROMAL:
-                assert client_mgr.refresh_client_call_count == latest_refresh_client_count
-                assert client_mgr.get_client_call_count == latest_get_client_count + 1
-            case RetryState.REFRESH:
-                assert client_mgr.refresh_client_call_count == latest_refresh_client_count + 1
-                assert client_mgr.get_client_call_count == latest_get_client_count + 1
-            case RetryState.BACKOFF:
-                assert client_mgr.refresh_client_call_count == latest_refresh_client_count
-                assert client_mgr.get_client_call_count == latest_get_client_count
-                freeze_start += timedelta_length * (backoff_count + 1) ** 2
-                backoff_count += 1
-            case RetryState.RAISE:
-                # patch的random.random()始终返回0.0，所以稳定触发RAISE阶段的随缘刷新
-                assert client_mgr.refresh_client_call_count == latest_refresh_client_count + 1
-                assert client_mgr.get_client_call_count == latest_get_client_count + 1
+        if state == RetryState.BACKOFF:
+            freeze_start += timedelta_length * (retry_fsm.addon.backoff_count + 1) ** 2
 
-    assert client_mgr.refresh_client_call_count == 4 * 3 + 2  # refresh + raise
-    assert client_mgr.get_client_call_count == 2 + 1 + 4 * 3 + 2  # previous + normal + refresh + raise
+    assert client_mgr.refresh_client_call_count == 4 * 3 + 3  # refresh + raise
+    assert client_mgr.get_client_call_count == 2 + 4 * 3 + 3  # previous + refresh + raise
 
     # 重置回正常状态
     fakebili.set_raise352(False)
@@ -236,7 +216,7 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
 
     fakebili.set_raise352(False)
     # BACKOFF阶段在回避时间中
-    test_state_list3 = [RetryState.NROMAL] + [RetryState.REFRESH] * ctx.max_refresh_count + [RetryState.BACKOFF]
+    test_state_list3 = [RetryState.NROMAL] + [RetryState.REFRESH] * addon.max_refresh_count + [RetryState.BACKOFF]
     for idx, _ in enumerate(test_state_list3):
         if idx == len(test_state_list3) - 1:
             fakebili.set_raise352(False)

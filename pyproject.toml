@@ -127,6 +127,7 @@ plugin_dirs = ["extra_plugins"]
 builtin_plugins = ["echo"]
 
 [tool.pyright]
+typeCheckingMode = "basic"
 reportShadowedImports = false
 pythonVersion = "3.10"
 pythonPlatform = "All"

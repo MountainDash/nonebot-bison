@@ -92,10 +92,10 @@ class FSM(Generic[TState, TEvent, TAddon]):
         self.started = False
         self.graph = graph
         self.current_state = graph["initial"]
-        self.machine = self.core()
+        self.machine = self._core()
         self.addon = addon
 
-    async def core(self) -> AsyncGenerator[ActionReturn, TEvent]:
+    async def _core(self) -> AsyncGenerator[ActionReturn, TEvent]:
         self.current_state = self.graph["initial"]
         res = None
         while True:

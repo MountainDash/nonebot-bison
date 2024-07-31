@@ -7,6 +7,8 @@ from collections.abc import Set as AbstractSet
 from collections.abc import Callable, Sequence, Awaitable, AsyncGenerator
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, Protocol, TypeAlias, TypedDict, NamedTuple, runtime_checkable
 
+from nonebot import logger
+
 
 class StrEnum(str, Enum): ...
 
@@ -106,18 +108,25 @@ class FSM(Generic[TState, TEvent, TAddon]):
 
             selected_transition = await self.cherry_pick(event)
 
+            logger.trace(f"exit state: {self.current_state}")
             if isinstance(self.current_state, SupportStateOnExit):
+                logger.trace(f"do {self.current_state}.on_exit")
                 await self.current_state.on_exit(self.addon)
 
+            logger.trace(f"do action: {selected_transition.action}")
             res = await selected_transition.action(self.current_state, event, selected_transition.to, self.addon)
+
+            logger.trace(f"enter state: {selected_transition.to}")
             self.current_state = selected_transition.to
 
             if isinstance(self.current_state, SupportStateOnEnter):
+                logger.trace(f"do {self.current_state}.on_enter")
                 await self.current_state.on_enter(self.addon)
 
     async def start(self):
         await anext(self.machine)
         self.started = True
+        logger.trace(f"FSM started, initial state: {self.current_state}")
 
     async def cherry_pick(self, event: TEvent) -> Transition[TState, TEvent, TAddon]:
         transitions = self.graph["transitions"][self.current_state].get(event)
@@ -136,6 +145,7 @@ class FSM(Generic[TState, TEvent, TAddon]):
                 values = await asyncio.gather(*(condition(self.addon) for condition in transition.conditions))
 
                 if all(values):
+                    logger.trace(f"conditions {transition.conditions} passed")
                     return transition
             else:
                 if no_conds:

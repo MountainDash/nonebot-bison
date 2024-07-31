@@ -55,13 +55,13 @@ async def on_normal_enter(addon: "RetryAddon"):
 async def on_refresh_enter(addon: "RetryAddon"):
     addon.refresh_count += 1
     await addon.refresh_client()
-    logger.debug(f"refresh count: {addon.refresh_count}/{addon.max_refresh_count}")
+    logger.warning(f"当前刷新次数: {addon.refresh_count}/{addon.max_refresh_count}")
 
 
 async def on_raise_enter(addon: "RetryAddon"):
     if random.random() < 0.1236:
         await addon.refresh_client()
-        logger.debug("random refresh client triggered")
+        logger.warning("触发随机刷新")
 
 
 class RetryState(StateMixin, Enum):
@@ -106,7 +106,7 @@ class RetryAddon(Generic[TBilibili]):
         if self.bilibili_platform:
             await self.bilibili_platform.ctx.refresh_client()
         else:
-            logger.error("bilibili platform not found")
+            raise RuntimeError("未设置 bilibili_platform")
 
     def reset_all(self):
         self.refresh_count = 0
@@ -125,7 +125,7 @@ class RetryAddon(Generic[TBilibili]):
         """是否在指数回避时间内"""
         # 指数回避
         if not self.backoff_finish_time:
-            logger.trace("not in backoff time")
+            logger.trace("not have backoff_finish_time")
             return False
 
         logger.trace(f"now: {datetime.now()}, backoff_finish_time: {self.backoff_finish_time}")
@@ -133,21 +133,23 @@ class RetryAddon(Generic[TBilibili]):
 
 
 async def action_log(from_: RetryState, event: RetryEvent, to: RetryState, addon: RetryAddon) -> ActionReturn:
-    logger.trace(f"{from_} -> {to}, by {event}")
+    logger.debug(f"{from_} -> {to}, by {event}")
 
 
 async def action_up_to_backoff(from_: RetryState, event: RetryEvent, to: RetryState, addon: RetryAddon) -> ActionReturn:
     addon.refresh_count = 0
     addon.backoff_count += 1
     addon.record_backoff_finish_time()
-    logger.debug(f"up to backoff, count: {addon.backoff_count}/{addon.max_backoff_count}")
+    logger.warning(
+        f"当前已回避次数: {addon.backoff_count}/{addon.max_backoff_count}, 本次回避时间至 {addon.backoff_finish_time}"
+    )
 
 
 async def action_back_to_refresh(
     from_: RetryState, event: RetryEvent, to: RetryState, addon: RetryAddon
 ) -> ActionReturn:
     addon.backoff_finish_time = None
-    logger.debug("back to refresh")
+    logger.debug("back to refresh state")
 
 
 async def is_reach_max_refresh(addon: RetryAddon) -> bool:
@@ -221,7 +223,6 @@ def retry_for_352(api_func: Callable[[TBilibili, Target], Awaitable[list[DynRawP
     async def wrapper(bls: TBilibili, *args, **kwargs) -> list[DynRawPost]:
         # nonlocal fsm
         if not retry_fsm.started:
-            logger.debug("start retry fsm")
             await retry_fsm.start(bls)
 
         match retry_fsm.current_state:

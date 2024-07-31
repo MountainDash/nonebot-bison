@@ -157,3 +157,12 @@ class FSM(Generic[TState, TEvent, TAddon]):
 
     async def emit(self, event: TEvent):
         return await self.machine.asend(event)
+
+    async def reset(self):
+        await self.machine.aclose()
+        self.started = False
+
+        del self.machine
+        self.machine = self._core()
+
+        logger.trace("FSM closed")

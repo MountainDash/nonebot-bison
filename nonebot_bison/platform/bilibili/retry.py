@@ -3,8 +3,8 @@ from enum import Enum
 from functools import wraps
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing_extensions import assert_never
 from collections.abc import Callable, Awaitable
+from typing_extensions import override, assert_never
 from typing import TYPE_CHECKING, Generic, Literal, TypeVar
 
 from strenum import StrEnum
@@ -208,12 +208,19 @@ RETRY_GRAPH: StateGraph[RetryState, RetryEvent, RetryAddon] = {
 
 
 class RetryFSM(FSM[RetryState, RetryEvent, RetryAddon[TBilibili]]):
+    @override
     async def start(self, bls: TBilibili):
         self.addon.bilibili_platform = bls
         await super().start()
 
+    @override
+    async def reset(self):
+        self.addon.reset_all()
+        await super().reset()
 
-retry_fsm = RetryFSM(RETRY_GRAPH, RetryAddon["Bilibili"]())
+
+# FIXME: 拿出来是方便测试了，但全局单例会导致所有被装饰的函数共享状态，有待改进
+_retry_fsm = RetryFSM(RETRY_GRAPH, RetryAddon["Bilibili"]())
 
 
 def retry_for_352(api_func: Callable[[TBilibili, Target], Awaitable[list[DynRawPost]]]):
@@ -222,25 +229,25 @@ def retry_for_352(api_func: Callable[[TBilibili, Target], Awaitable[list[DynRawP
     @wraps(api_func)
     async def wrapper(bls: TBilibili, *args, **kwargs) -> list[DynRawPost]:
         # nonlocal fsm
-        if not retry_fsm.started:
-            await retry_fsm.start(bls)
+        if not _retry_fsm.started:
+            await _retry_fsm.start(bls)
 
-        match retry_fsm.current_state:
+        match _retry_fsm.current_state:
             case RetryState.NROMAL | RetryState.REFRESH | RetryState.RAISE:
                 try:
                     res = await api_func(bls, *args, **kwargs)
                 except ApiCode352Error:
                     logger.error("API 352 错误")
-                    await retry_fsm.emit(RetryEvent.REQUEST_AND_RAISE)
+                    await _retry_fsm.emit(RetryEvent.REQUEST_AND_RAISE)
                     return []
                 else:
-                    await retry_fsm.emit(RetryEvent.REQUEST_AND_SUCCESS)
+                    await _retry_fsm.emit(RetryEvent.REQUEST_AND_SUCCESS)
                     return res
             case RetryState.BACKOFF:
                 logger.warning("回避中，不请求")
-                await retry_fsm.emit(RetryEvent.IN_BACKOFF_TIME)
+                await _retry_fsm.emit(RetryEvent.IN_BACKOFF_TIME)
                 return []
             case _:
-                assert_never(retry_fsm.current_state)
+                assert_never(_retry_fsm.current_state)
 
     return wrapper

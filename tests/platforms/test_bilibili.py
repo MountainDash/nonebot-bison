@@ -65,7 +65,7 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
     from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.platform.bilibili.platforms import ApiCode352Error
     from nonebot_bison.utils import ClientManager, ProcessContext, http_client
-    from nonebot_bison.platform.bilibili.retry import RetryAddon, RetryState, retry_fsm, retry_for_352
+    from nonebot_bison.platform.bilibili.retry import RetryAddon, RetryState, _retry_fsm, retry_for_352
 
     mocker.patch.object(random, "random", return_value=0.0)  # 稳定触发RAISE阶段的随缘刷新
 
@@ -185,14 +185,14 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
 
     for state in test_state_list:
         logger.info(f"\n\nnow state should be {state}")
-        assert retry_fsm.current_state == state
+        assert _retry_fsm.current_state == state
 
         with freeze_time(freeze_start):
             res = await fakebili.get_sub_list(Target("t1"))  # type: ignore
             assert not res
 
         if state == RetryState.BACKOFF:
-            freeze_start += timedelta_length * (retry_fsm.addon.backoff_count + 1) ** 2
+            freeze_start += timedelta_length * (_retry_fsm.addon.backoff_count + 1) ** 2
 
     assert client_mgr.refresh_client_call_count == 4 * 3 + 3  # refresh + raise
     assert client_mgr.get_client_call_count == 2 + 4 * 3 + 3  # previous + refresh + raise
@@ -226,6 +226,13 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
             fakebili.set_raise352(True)
             res = await fakebili.get_sub_list(Target("t1"))  # type: ignore
             assert not res
+
+    # 测试重置
+    await _retry_fsm.reset()
+
+    await fakebili.get_sub_list(Target("t1"))  # type: ignore
+
+    await _retry_fsm.reset()
 
 
 @pytest.mark.asyncio

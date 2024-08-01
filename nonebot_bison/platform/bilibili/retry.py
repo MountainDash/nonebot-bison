@@ -224,11 +224,11 @@ _retry_fsm = RetryFSM(RETRY_GRAPH, RetryAddon["Bilibili"]())
 
 
 def retry_for_352(api_func: Callable[[TBilibili, Target], Awaitable[list[DynRawPost]]]):
-    # fsm = RetryFSM(RETRY_GRAPH, RetryAddon[TBilibili]())
+    # _retry_fsm = RetryFSM(RETRY_GRAPH, RetryAddon[TBilibili]())
 
     @wraps(api_func)
     async def wrapper(bls: TBilibili, *args, **kwargs) -> list[DynRawPost]:
-        # nonlocal fsm
+        # nonlocal _retry_fsm
         if not _retry_fsm.started:
             await _retry_fsm.start(bls)
 

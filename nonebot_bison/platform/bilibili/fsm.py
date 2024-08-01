@@ -81,12 +81,12 @@ else:
 
     class Transition(NamedTuple):
         action: Action
-        to: StrEnum
+        to: Any
         conditions: AbstractSet[Condition] | None = None
 
     class StateGraph(TypedDict):
-        transitions: dict[StrEnum, dict[StrEnum, Transition]]
-        initial: StrEnum
+        transitions: dict[Any, dict[Any, Transition]]
+        initial: Any
 
 
 class FSM(Generic[TState, TEvent, TAddon]):

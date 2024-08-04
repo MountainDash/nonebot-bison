@@ -2,8 +2,6 @@
 
 ## 最近更新
 
-- :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#521](https://github.com/MountainDash/nonebot-bison/pull/521))
-
 ### 新功能
 
 - 适配小刻食堂平台 [@AzideCupric](https://github.com/AzideCupric) ([#379](https://github.com/MountainDash/nonebot-bison/pull/379))

@@ -111,24 +111,3 @@ jobs:
             felinae98/nonebot-bison:sentry
           cache-from: type=gha
           cache-to: type=gha,mode=max
-  deploy-web:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docs
-        uses: ./.github/actions/build-docs
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: "./docs/.vuepress/dist"
-          production-deploy: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy ${{ env.TAG_NAME }}"
-          enable-commit-comment: false
-          alias: ${{ env.TAG_NAME }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

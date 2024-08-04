@@ -62,6 +62,7 @@ pytest-cov = ">=5.0.0,<6"
 pytest-mock = "^3.14.0"
 pytest-xdist = { extras = ["psutil"], version = "^3.6.1" }
 respx = ">=0.21.1,<0.22"
+freezegun = "^1.5.1"
 
 [tool.poetry.group.docker]
 optional = true
@@ -126,6 +127,7 @@ plugin_dirs = ["extra_plugins"]
 builtin_plugins = ["echo"]
 
 [tool.pyright]
+typeCheckingMode = "basic"
 reportShadowedImports = false
 pythonVersion = "3.10"
 pythonPlatform = "All"

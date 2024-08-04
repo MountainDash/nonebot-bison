@@ -1,5 +1,6 @@
-from random import randint
+import random
 from typing_extensions import override
+from typing import TYPE_CHECKING, TypeVar
 
 from httpx import AsyncClient
 from nonebot import logger, require
@@ -8,8 +9,13 @@ from playwright.async_api import Cookie
 from nonebot_bison.types import Target
 from nonebot_bison.utils import Site, ClientManager, http_client
 
+if TYPE_CHECKING:
+    from .platforms import Bilibili
+
 require("nonebot_plugin_htmlrender")
 from nonebot_plugin_htmlrender import get_browser
+
+B = TypeVar("B", bound="Bilibili")
 
 
 class BilibiliClientManager(ClientManager):
@@ -22,7 +28,7 @@ class BilibiliClientManager(ClientManager):
     async def _get_cookies(self) -> list[Cookie]:
         browser = await get_browser()
         async with await browser.new_page() as page:
-            await page.goto(f"https://space.bilibili.com/{randint(1, 1000)}/dynamic")
+            await page.goto(f"https://space.bilibili.com/{random.randint(1, 1000)}/dynamic")
             await page.wait_for_load_state("load")
             cookies = await page.context.cookies()
 
@@ -62,7 +68,7 @@ class BilibiliClientManager(ClientManager):
 
 class BilibiliSite(Site):
     name = "bilibili.com"
-    schedule_setting = {"seconds": 30}
+    schedule_setting = {"seconds": 50}
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True

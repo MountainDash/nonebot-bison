@@ -10,6 +10,7 @@ from nonebot_plugin_saa import MessageSegmentFactory
 from ..theme import theme_manager
 from .abstract_post import AbstractPost
 from ..plugin_config import plugin_config
+from .protocol import PlainContentSupport
 from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Post(AbstractPost):
+class Post(AbstractPost, PlainContentSupport):
     """最通用的Post，理论上包含所有常用的数据
 
     对于更特殊的需要，可以考虑另外实现一个Post
@@ -62,6 +63,12 @@ class Post(AbstractPost):
             themes_by_priority.append("basic")
         return themes_by_priority
 
+    async def get_content(self):
+        return self.content
+
+    async def get_plain_content(self):
+        return self.content
+
     async def generate(self) -> list[MessageSegmentFactory]:
         """生成消息"""
         themes = self.get_priority_themes()
@@ -95,12 +102,13 @@ class Post(AbstractPost):
 来源: <Platform {self.platform.platform_name}>
 """
         post_format += "附加信息:\n"
-        for field in fields(self):
-            if field.name in ("content", "platform", "repost"):
+        for cls_field in fields(self):
+            if cls_field.name in ("content", "platform", "repost"):
                 continue
-            value = getattr(self, field.name)
-            if value is not None:
-                post_format += f"- {field.name}: {aRepr.repr(value)}\n"
+            else:
+                value = getattr(self, cls_field.name)
+                if value is not None:
+                    post_format += f"- {cls_field.name}: {aRepr.repr(value)}\n"
 
         if self.repost:
             post_format += "\n转发:\n"

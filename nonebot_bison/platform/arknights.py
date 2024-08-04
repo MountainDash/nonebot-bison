@@ -1,3 +1,5 @@
+import re
+import html
 from typing import Any
 from functools import partial
 
@@ -10,6 +12,7 @@ from nonebot.compat import type_validate_python
 from ..post import Post
 from ..utils import Site
 from ..types import Target, RawPost, Category
+from ..post.protocol import HTMLContentSupport
 from .platform import NewMessage, StatusChange
 
 
@@ -56,6 +59,39 @@ class ArknightsSite(Site):
     name = "arknights"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
+
+
+class ArknightsPost(Post, HTMLContentSupport):
+    def _cleantext(self, text: str, old_split="\n", new_split="\n") -> str:
+        """清理文本：去掉所有多余的空格和换行"""
+        lines = text.strip().split(old_split)
+        cleaned_lines = [line.strip() for line in lines if line != ""]
+        return new_split.join(cleaned_lines)
+
+    async def get_html_content(self) -> str:
+        return self.content
+
+    async def get_plain_content(self) -> str:
+        content = html.unescape(self.content)  # 转义HTML特殊字符
+        content = re.sub(
+            r'\<p style="text-align:center;"\>(.*?)\<strong\>(.*?)\<span style=(.*?)\>(.*?)\<\/span\>(.*?)\<\/strong\>(.*?)<\/p\>',  # noqa: E501
+            r"==\4==\n",
+            content,
+            flags=re.DOTALL,
+        )  # 去“标题型”p
+        content = re.sub(
+            r'\<p style="text-align:(left|right);"?\>(.*?)\<\/p\>',
+            r"\2\n",
+            content,
+            flags=re.DOTALL,
+        )  # 去左右对齐的p
+        content = re.sub(r"\<p\>(.*?)\</p\>", r"\1\n", content, flags=re.DOTALL)  # 去普通p
+        content = re.sub(r'\<a href="(.*?)" target="_blank">(.*?)\<\/a\>', r"\1", content, flags=re.DOTALL)  # 去a
+        content = re.sub(r"<br/>", "\n", content)  # 去br
+        content = re.sub(r"\<strong\>(.*?)\</strong\>", r"\1", content)  # 去strong
+        content = re.sub(r'<span style="color:(#.*?)">(.*?)</span>', r"\2", content)  # 去color
+        content = re.sub(r'<div class="media-wrap image-wrap">(.*?)</div>', "", content)  # 去img
+        return self._cleantext(content)
 
 
 class Arknights(NewMessage):
@@ -108,7 +144,7 @@ class Arknights(NewMessage):
             # 只有一张图片
             title = title_escape(data.title)
 
-        return Post(
+        return ArknightsPost(
             self,
             content=data.content,
             title=title,
@@ -205,7 +241,7 @@ class MonsterSiren(NewMessage):
         text = f'{raw_post["title"]}\n{soup.text.strip()}'
         return Post(
             self,
-            text,
+            content=text,
             images=imgs,
             url=url,
             nickname="塞壬唱片新闻",
@@ -246,7 +282,7 @@ class TerraHistoricusComic(NewMessage):
         url = f'https://terra-historicus.hypergryph.com/comic/{raw_post["comicCid"]}/episode/{raw_post["episodeCid"]}'
         return Post(
             self,
-            raw_post["subtitle"],
+            content=raw_post["subtitle"],
             title=f'{raw_post["title"]} - {raw_post["episodeShortTitle"]}',
             images=[raw_post["coverUrl"]],
             url=url,

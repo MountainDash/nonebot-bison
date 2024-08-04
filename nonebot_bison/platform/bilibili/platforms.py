@@ -465,7 +465,7 @@ class Bilibililive(StatusChange):
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
             self,
-            "",
+            content="",
             title=title,
             url=url,
             images=list(pic),
@@ -550,7 +550,7 @@ class BilibiliBangumi(StatusChange):
         title = lastest_episode["share_copy"]
         return Post(
             self,
-            content,
+            content=content,
             title=title,
             url=url,
             images=list(pic),

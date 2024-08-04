@@ -9,13 +9,30 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, text_similarity
+from ..utils import Site, text_fletten, text_similarity
 
 
 class RssSite(Site):
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
+
+
+class RssPost(Post):
+
+    async def get_plain_content(self) -> str:
+        soup = bs(self.content, "html.parser")
+
+        for img in soup.find_all("img"):
+            img.replace_with("[图片]")
+
+        for br in soup.find_all("br"):
+            br.replace_with("\n")
+
+        for p in soup.find_all("p"):
+            p.insert_after("\n")
+
+        return text_fletten(soup.get_text())
 
 
 class Rss(NewMessage):
@@ -72,9 +89,9 @@ class Rss(NewMessage):
             for media in raw_post["media_content"]:
                 if media.get("medium") == "image" and media.get("url"):
                     pics.append(media.get("url"))
-        return Post(
+        return RssPost(
             self,
-            desc,
+            content=desc,
             title=title,
             url=raw_post.link,
             images=pics,

@@ -10,7 +10,7 @@ from nonebot_bison.theme.utils import web_embed_image
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
-    from nonebot_bison.post import Post
+    from nonebot_bison.platform.arknights import ArknightsPost
 
 
 @dataclass
@@ -32,7 +32,7 @@ class ArknightsTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    async def render(self, post: "Post"):
+    async def render(self, post: "ArknightsPost"):
         from nonebot_plugin_htmlrender import template_to_pic
 
         if not post.title:
@@ -49,10 +49,9 @@ class ArknightsTheme(Theme):
                 raise ThemeRenderUnsupportError(
                     f"图片类型错误, 期望 str | Path | bytes | BytesIO | None, 实际为 {type(banner)}"
                 )
-
         ark_data = ArkData(
             announce_title=text_fletten(post.title),
-            content=post.content,
+            content=await post.get_content(),
             banner_image_url=banner,
         )
 

@@ -65,7 +65,7 @@ def mock_platform(app: App):
         async def parse(self, raw_post: "RawPost") -> "Post":
             return Post(
                 self,
-                raw_post["text"],
+                content=raw_post["text"],
                 url="http://t.tt/" + str(self.get_id(raw_post)),
                 nickname="Mock",
             )
@@ -88,7 +88,7 @@ def mock_post(app: App, mock_platform):
 
     return Post(
         m := mock_platform(ProcessContext(DefaultClientManager())),
-        "text",
+        content="text",
         title="title",
         images=["http://t.tt/1.jpg"],
         timestamp=1234567890,
@@ -98,7 +98,7 @@ def mock_post(app: App, mock_platform):
         description="description",
         repost=Post(
             m,
-            "repost",
+            content="repost",
             title="repost-title",
             images=["http://t.tt/2.jpg"],
             timestamp=1234567891,

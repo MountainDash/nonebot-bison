@@ -95,7 +95,7 @@ class CeobeCanteenTheme(Theme):
         if post.images:
             images = await self.merge_pics(post.images, http_client)
 
-        content = CeoboContent(text=post.content)
+        content = CeoboContent(text=await post.get_content())
 
         retweet: CeoboRetweet | None = None
         if post.repost:
@@ -106,7 +106,9 @@ class CeobeCanteenTheme(Theme):
                 images.extend(repost_images)
 
             repost_nickname = f"@{post.repost.nickname}:" if post.repost.nickname else ""
-            retweet = CeoboRetweet(image=repost_head_pic, content=post.repost.content, author=repost_nickname)
+            retweet = CeoboRetweet(
+                image=repost_head_pic, content=await post.repost.get_content(), author=repost_nickname
+            )
 
         return (
             CeobeCard(

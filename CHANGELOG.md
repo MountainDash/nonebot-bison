@@ -14,6 +14,7 @@
 
 ### Bug 修复
 
+- 实现 `Post.content` 相关扩展协议 [@GuGuMur](https://github.com/GuGuMur) ([#553](https://github.com/MountainDash/nonebot-bison/pull/553))
 - fix config alias err [@felinae98](https://github.com/felinae98) ([#580](https://github.com/MountainDash/nonebot-bison/pull/580))
 - 插入新的Schedulable时应传入use_batch参数 [@AzideCupric](https://github.com/AzideCupric) ([#594](https://github.com/MountainDash/nonebot-bison/pull/594))
 - 查询订阅时提示不存在的平台 [@suyiiyii](https://github.com/suyiiyii) ([#584](https://github.com/MountainDash/nonebot-bison/pull/584))

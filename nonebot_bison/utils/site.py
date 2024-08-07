@@ -1,5 +1,5 @@
-from abc import ABC
 from typing import Literal
+from abc import ABC, abstractmethod
 
 from httpx import AsyncClient
 
@@ -8,12 +8,16 @@ from .http import http_client
 
 
 class ClientManager(ABC):
+    @abstractmethod
     async def get_client(self, target: Target | None) -> AsyncClient: ...
 
+    @abstractmethod
     async def get_client_for_static(self) -> AsyncClient: ...
 
+    @abstractmethod
     async def get_query_name_client(self) -> AsyncClient: ...
 
+    @abstractmethod
     async def refresh_client(self): ...
 
 
@@ -26,6 +30,9 @@ class DefaultClientManager(ClientManager):
 
     async def get_query_name_client(self) -> AsyncClient:
         return http_client()
+
+    async def refresh_client(self):
+        pass
 
 
 class Site:
@@ -46,6 +53,6 @@ def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_
         {
             "schedule_type": schedule_type,
             "schedule_setting": schedule_setting,
-            "client_mgr": ClientManager,
+            "client_mgr": DefaultClientManager,
         },
     )

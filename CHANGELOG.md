@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修复 anonymous_site() 无法正确工作的问题 [@felinae98](https://github.com/felinae98) ([#606](https://github.com/MountainDash/nonebot-bison/pull/606))
+
 ## v0.9.3
 
 ### 新功能

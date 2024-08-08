@@ -2,8 +2,8 @@ import asyncio
 from collections import deque
 
 from nonebot.log import logger
+from nonebot.exception import ActionFailed
 from nonebot_plugin_saa.auto_select_bot import refresh_bots
-from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
 
 from .plugin_config import plugin_config
@@ -18,9 +18,9 @@ MESSGE_SEND_INTERVAL = 1.5
 async def _do_send(send_target: PlatformTarget, msg: Sendable):
     try:
         await msg.send_to(send_target)
-    except ActionFailed:  # TODO: catch exception of other adapters
+    except ActionFailed:  # catch exception of sending message
         await refresh_bots()
-        logger.warning("send msg failed, refresh bots")
+        logger.warning(f"send msg: {msg!s} to {send_target} failed, refresh bots")
 
 
 async def do_send_msgs():
@@ -34,6 +34,7 @@ async def do_send_msgs():
         # So, read from queue first then pop from it
         send_target, msg_factory, retry_time = QUEUE[0]
         try:
+            logger.debug(f"send msg {msg_factory!s} to {send_target}")
             await _do_send(send_target, msg_factory)
         except Exception as e:
             await asyncio.sleep(MESSGE_SEND_INTERVAL)
@@ -41,10 +42,7 @@ async def do_send_msgs():
             if retry_time > 0:
                 QUEUE.appendleft((send_target, msg_factory, retry_time - 1))
             else:
-                msg_str = str(msg_factory)
-                if len(msg_str) > 50:
-                    msg_str = msg_str[:50] + "..."
-                logger.warning(f"send msg err {e} {msg_str}")
+                logger.warning(f"send msg to {send_target} err {e}: {msg_factory!s}")
         else:
             # sleeping after popping may also cause re-execution error like above mentioned
             await asyncio.sleep(MESSGE_SEND_INTERVAL)

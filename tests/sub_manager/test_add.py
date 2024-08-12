@@ -615,3 +615,48 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
     assert sub.tags == []
     assert sub.target.platform_name == "bilibili-bangumi"
     assert sub.target.target_name == "汉化日记 第三季"
+
+
+@pytest.mark.asyncio
+async def test_subscribe_platform_requires_browser(app: App, mocker: MockerFixture):
+    from nonebot.adapters.onebot.v11.event import Sender
+    from nonebot.adapters.onebot.v11.message import Message
+
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
+    from nonebot_bison.platform import platform_manager, unavailable_paltforms
+
+    mocker.patch.object(plugin_config, "bison_use_browser", False)
+    mocker.patch.dict(unavailable_paltforms, {"bilibili": "需要启用 bison_use_browser"})
+
+    async with app.test_matcher(add_sub_matcher) as ctx:
+        bot = ctx.create_bot()
+        event_1 = fake_group_message_event(
+            message=Message("添加订阅"),
+            sender=Sender(card="", nickname="test", role="admin"),
+            to_me=True,
+        )
+        ctx.receive_event(bot, event_1)
+        ctx.should_pass_rule()
+        ctx.should_call_send(
+            event_1,
+            BotReply.add_reply_on_platform(platform_manager=platform_manager, common_platform=common_platform),
+            True,
+        )
+        event_2 = fake_group_message_event(
+            message=Message("全部"), sender=Sender(card="", nickname="test", role="admin")
+        )
+        ctx.receive_event(bot, event_2)
+        ctx.should_rejected()
+        ctx.should_call_send(
+            event_2,
+            BotReply.add_reply_on_platform_input_allplatform(platform_manager),
+            True,
+        )
+        event_3 = fake_group_message_event(message=Message("bilibili"), sender=fake_admin_user)
+        ctx.receive_event(bot, event_3)
+        ctx.should_call_send(
+            event_3,
+            BotReply.add_reply_platform_unavailable("bilibili", "需要启用 bison_use_browser"),
+            True,
+        )

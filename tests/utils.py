@@ -146,6 +146,10 @@ class BotReply:
         extra_text = ("1." + target_promot + "\n2.") if target_promot else ""
         return extra_text + base_text
 
+    @staticmethod
+    def add_reply_platform_unavailable(platform: str, reason: str) -> str:
+        return f"无法订阅 {platform}，{reason}"
+
     add_reply_on_id_input_error = "id输入错误"
     add_reply_on_target_parse_input_error = "不能从你的输入中提取出id，请检查你输入的内容是否符合预期"
     add_reply_on_platform_input_error = "平台输入错误"

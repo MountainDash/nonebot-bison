@@ -9,9 +9,9 @@ from nonebot_plugin_saa import Text, PlatformTarget, SupportedAdapters
 from ..types import Target
 from ..config import config
 from ..apis import check_sub_target
-from ..platform import Platform, platform_manager
 from ..config.db_config import SubscribeDupException
 from .utils import common_platform, ensure_user_info, gen_handle_cancel
+from ..platform import Platform, platform_manager, unavailable_paltforms
 
 
 def do_add_sub(add_sub: type[Matcher]):
@@ -39,6 +39,8 @@ def do_add_sub(add_sub: type[Matcher]):
         elif platform == "取消":
             await add_sub.finish("已中止订阅")
         elif platform in platform_manager:
+            if platform in unavailable_paltforms:
+                await add_sub.finish(f"无法订阅 {platform}，{unavailable_paltforms[platform]}")
             state["platform"] = platform
         else:
             await add_sub.reject("平台输入错误")

@@ -237,7 +237,7 @@ def retry_for_352(api_func: Callable[[TBilibili, Target], Awaitable[list[DynRawP
                 try:
                     res = await api_func(bls, *args, **kwargs)
                 except ApiCode352Error:
-                    logger.error("API 352 错误")
+                    logger.warning("本次请求 API 返回 352 错误码")
                     await _retry_fsm.emit(RetryEvent.REQUEST_AND_RAISE)
                     return []
                 else:

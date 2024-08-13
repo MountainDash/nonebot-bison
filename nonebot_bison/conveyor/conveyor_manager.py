@@ -1,9 +1,10 @@
 import asyncio
 import inspect
-from typing import TypeVar, Callable, get_origin
+from collections.abc import Callable
+from typing import TypeVar, get_origin
 
+from nonebot import logger, get_driver
 from anyio import create_memory_object_stream
-from nonebot import get_driver, logger
 
 T = TypeVar("T")
 

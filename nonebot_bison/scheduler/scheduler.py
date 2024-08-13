@@ -1,16 +1,15 @@
-from dataclasses import dataclass
 from collections import defaultdict
+from dataclasses import dataclass
 
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
 from nonebot_bison.utils import ClientManager
-
 from ..config import config
-from ..send import send_msgs
-from ..types import Target, SubUnit
+from ..conveyor import conveyor_manager
 from ..platform import platform_manager
+from ..types import Target, SubUnit
 from ..utils import Site, ProcessContext
 
 
@@ -121,7 +120,7 @@ class Scheduler:
             for send_post in send_list:
                 logger.info(f"send to {user}: {send_post}")
                 try:
-                    await send_msgs(
+                    await conveyor_manager.entry(
                         user,
                         await send_post.generate_messages(),
                     )

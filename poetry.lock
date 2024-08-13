@@ -5112,4 +5112,4 @@ yaml = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "d685583bbdceb8277e33e71357fb9c9e781c6388911cd09aa5a0153605ae38ae"
+content-hash = "dc1ec4f25802834bc6b053f216d53b6dae83d52820a4aaab8e471e73b82a4645"

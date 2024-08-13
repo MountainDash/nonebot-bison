@@ -1,11 +1,12 @@
 import asyncio
 from collections import deque
 
-from nonebot.log import logger
-from nonebot_plugin_saa.auto_select_bot import refresh_bots
 from nonebot.adapters.onebot.v11.exception import ActionFailed
+from nonebot.log import logger
 from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
+from nonebot_plugin_saa.auto_select_bot import refresh_bots
 
+from .conveyor import conveyor_manager
 from .plugin_config import plugin_config
 
 Sendable = MessageFactory | AggregatedMessageFactory
@@ -64,6 +65,7 @@ async def _send_msgs_dispatch(send_target: PlatformTarget, msg: Sendable):
         await _do_send(send_target, msg)
 
 
+@conveyor_manager.register_parcel_processor
 async def send_msgs(send_target: PlatformTarget, msgs: list[MessageFactory]):
     if not plugin_config.bison_use_pic_merge:
         for msg in msgs:

@@ -43,6 +43,7 @@ hishel = "^0.0.20"
 expiringdictx = "^1.0.1"
 rapidfuzz = "^3.9.3"
 
+anyio = "^4.4.0"
 [tool.poetry.group.dev.dependencies]
 black = ">=23.12.1,<25.0"
 ipdb = "^0.13.13"

@@ -5,7 +5,7 @@ from datetime import datetime
 from urllib.parse import unquote
 
 from yarl import URL
-from lxml import etree
+from lxml.etree import HTML
 from httpx import AsyncClient
 from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
@@ -131,7 +131,7 @@ class Weibo(NewMessage):
 
     def _get_text(self, raw_text: str) -> str:
         text = raw_text.replace("<br/>", "\n").replace("<br />", "\n")
-        selector = etree.HTML(text, parser=None)
+        selector = HTML(text, parser=None)
         if selector is None:
             return text
         url_elems = selector.xpath("//a[@href]/span[@class='surl-text']")

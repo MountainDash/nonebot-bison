@@ -79,7 +79,7 @@ class SubGroup(
     """
 
     version: int = NBESF_VERSION
-    groups: list[SubPack]
+    groups: list[SubPack] = []
 
 
 # ======================= #

@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
     from nonebot_bison.platform.bilibili import BilibiliBangumi
 
 
-@pytest.fixture()
+@pytest.fixture
 def bili_bangumi(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager

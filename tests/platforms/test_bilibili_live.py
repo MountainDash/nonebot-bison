@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nonebot_bison.platform.bilibili import Bilibililive
 
 
-@pytest.fixture()
+@pytest.fixture
 def bili_live(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager
@@ -20,7 +20,7 @@ def bili_live(app: App):
     return platform_manager["bilibili-live"](ProcessContext(DefaultClientManager()))
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_only_open_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -131,7 +131,7 @@ async def test_fetch_bililive_only_live_open(bili_live: "Bilibililive", dummy_on
     assert len(res4[0][1]) == 0
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_only_title_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -190,7 +190,7 @@ async def test_fetch_bililive_only_title_change(bili_live, dummy_only_title_user
     assert len(res4[0][1]) == 0
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_only_close_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -250,7 +250,7 @@ async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinf
     assert post4.compress is True
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_bililive_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 

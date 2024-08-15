@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nonebot_bison.platform.ceobecanteen import CeobeCanteen
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_only_open_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -22,7 +22,7 @@ def dummy_only_open_user_subinfo(app: App):
     return UserSubInfo(user=user, categories=[1], tags=[])
 
 
-@pytest.fixture()
+@pytest.fixture
 def ceobecanteen(app: App):
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager

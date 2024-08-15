@@ -18,8 +18,8 @@ try:
     from typing_extensions import ParamSpec
 
     import anyio
-    from anyio import to_thread, from_thread
     import click
+    from anyio import to_thread, from_thread
 except ImportError as e:  # pragma: no cover
     raise ImportError("请使用 `pip install nonebot-bison[cli]` 安装所需依赖") from e
 

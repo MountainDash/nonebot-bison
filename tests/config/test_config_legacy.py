@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
     from nonebot_bison.config.config_legacy import Config
 
 
-@pytest.fixture()
+@pytest.fixture
 def config_legacy(app: App, use_legacy_config):
     from nonebot_bison.config import config_legacy as config
 

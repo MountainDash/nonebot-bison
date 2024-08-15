@@ -28,7 +28,7 @@ def load_adapters(nonebug_init: None):
     return driver
 
 
-@pytest.fixture()
+@pytest.fixture
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
@@ -75,7 +75,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
         cache_dir.mkdir()
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -85,14 +85,14 @@ def dummy_user_subinfo(app: App):
     return UserSubInfo(user=user, categories=[], tags=[])
 
 
-@pytest.fixture()
+@pytest.fixture
 async def init_scheduler(app: App):
     from nonebot_bison.scheduler.manager import init_scheduler
 
     return await init_scheduler()
 
 
-@pytest.fixture()
+@pytest.fixture
 async def use_legacy_config(app: App):
     import aiofiles
 

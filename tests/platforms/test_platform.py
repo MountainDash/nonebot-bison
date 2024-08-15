@@ -16,7 +16,7 @@ raw_post_list_2 = raw_post_list_1 + [
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_user(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
@@ -24,7 +24,7 @@ def dummy_user(app: App):
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_info_factory(app: App, dummy_user):
     from nonebot_bison.types import UserSubInfo
 
@@ -34,7 +34,7 @@ def user_info_factory(app: App, dummy_user):
     return _user_info
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_platform_without_cats_tags(app: App):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost
@@ -81,7 +81,7 @@ def mock_platform_without_cats_tags(app: App):
     return MockPlatform
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_platform(app: App):
     from nonebot_bison.post import Post
     from nonebot_bison.utils import Site
@@ -143,7 +143,7 @@ def mock_platform(app: App):
     return MockPlatform
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_site(app):
     from nonebot_bison.utils import Site
 
@@ -155,7 +155,7 @@ def mock_site(app):
     return MockSite
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_platform_no_target(app: App, mock_site):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Tag, Target, RawPost, Category
@@ -210,7 +210,7 @@ def mock_platform_no_target(app: App, mock_site):
     return MockPlatform
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_platform_no_target_2(app: App, mock_site):
     from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NewMessage
@@ -272,7 +272,7 @@ def mock_platform_no_target_2(app: App, mock_site):
     return MockPlatform
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_status_change(app: App):
     from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import StatusChange

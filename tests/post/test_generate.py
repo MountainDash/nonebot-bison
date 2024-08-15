@@ -18,7 +18,7 @@ raw_post_list_2 = raw_post_list_1 + [
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_platform(app: App):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost

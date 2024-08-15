@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     pass
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_user(app: App):
     from nonebot_bison.types import User
 
@@ -22,7 +22,7 @@ def dummy_user(app: App):
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_info_factory(app: App, dummy_user):
     from nonebot_bison.types import UserSubInfo
 
@@ -32,7 +32,7 @@ def user_info_factory(app: App, dummy_user):
     return _user_info
 
 
-@pytest.fixture()
+@pytest.fixture
 def rss(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager
@@ -40,7 +40,7 @@ def rss(app: App):
     return platform_manager["rss"](ProcessContext(DefaultClientManager()))
 
 
-@pytest.fixture()
+@pytest.fixture
 def update_time_feed_1():
     file = get_file("rss-twitter-ArknightsStaff.xml")
     root = ET.fromstring(file)
@@ -53,7 +53,7 @@ def update_time_feed_1():
     return ET.tostring(root, encoding="unicode")
 
 
-@pytest.fixture()
+@pytest.fixture
 def update_time_feed_2():
     file = get_file("rss-ruanyifeng.xml")
     root = ET.fromstring(file)
@@ -119,7 +119,7 @@ async def test_fetch_new_2(
     assert post1.content == "这里记录每周值得分享的科技内容，周五发布。..."
 
 
-@pytest.fixture()
+@pytest.fixture
 def update_time_feed_3():
     file = get_file("rss-github-atom.xml")
     root = ET.fromstring(file)

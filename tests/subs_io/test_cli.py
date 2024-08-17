@@ -138,10 +138,10 @@ async def test_subs_import_v1(app: App, tmp_path):
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 3
 
-    mock_file: Path = tmp_path / "2.yaml"
-    mock_file.write_text(get_file("v1/subs_export.yaml"))
+    mock_file2: Path = tmp_path / "2.yaml"
+    mock_file2.write_text(get_file("v1/subs_export.yaml"))
 
-    result = await run_sync(runner.invoke)(cli, ["import", "-p", str(mock_file), "--format=yml"])
+    result = await run_sync(runner.invoke)(cli, ["import", "-p", str(mock_file2), "--format=yml"])
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 6
 
@@ -169,9 +169,9 @@ async def test_sub_import_v2(app: App, tmp_path):
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 3
 
-    mock_file: Path = tmp_path / "2.yaml"
-    mock_file.write_text(get_file("v2/subs_export.yaml"))
+    mock_file2: Path = tmp_path / "2.yaml"
+    mock_file2.write_text(get_file("v2/subs_export.yaml"))
 
-    result = await run_sync(runner.invoke)(cli, ["import", "-p", str(mock_file), "--format=yml"])
+    result = await run_sync(runner.invoke)(cli, ["import", "-p", str(mock_file2), "--format=yml"])
     assert result.exit_code == 0
     assert len(await config.list_subs_with_all_info()) == 6

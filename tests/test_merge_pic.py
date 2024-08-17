@@ -52,12 +52,12 @@ async def download_imgs(url_list: list[str]) -> list[bytes]:
     return img_contents
 
 
-@pytest.fixture()
+@pytest.fixture
 async def downloaded_resource():
     return await download_imgs(merge_source_9)
 
 
-@pytest.fixture()
+@pytest.fixture
 async def downloaded_resource_2():
     return await download_imgs(merge_source_9_2)
 

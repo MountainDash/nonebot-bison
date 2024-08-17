@@ -22,19 +22,19 @@ raw_post_list_2 = raw_post_list_1 + [
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def MERGEABLE_PNG_DATA() -> bytes:
     from tests.platforms.utils import get_bytes
 
     return get_bytes("mergeable-pic.jpg")
 
 
-@pytest.fixture()
+@pytest.fixture
 def SIMPLE_PNG_DATA() -> bytes:
     return b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_platform(app: App):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost
@@ -81,7 +81,7 @@ def mock_platform(app: App):
     return MockPlatform
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_post(app: App, mock_platform):
     from nonebot_bison.post import Post
     from nonebot_bison.utils import ProcessContext, DefaultClientManager

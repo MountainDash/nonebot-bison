@@ -50,7 +50,7 @@ isort = "^5.13.2"
 nonemoji = "^0.1.4"
 nb-cli = "^1.4.1"
 pre-commit = "^3.7.1"
-ruff = ">=0.5.1"
+ruff = "^0.6.0"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.8.1"
@@ -95,11 +95,12 @@ markers = [
 asyncio_mode = "auto"
 
 [tool.ruff]
-select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
-ignore = ["E402", "C901", "PT023"]
-
 line-length = 120
 target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
+ignore = ["E402", "C901", "PT023"]
 
 [tool.black]
 line-length = 120

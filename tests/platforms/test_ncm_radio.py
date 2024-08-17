@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
     from nonebot_bison.platform.ncm import NcmRadio
 
 
-@pytest.fixture()
+@pytest.fixture
 def ncm_radio(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager

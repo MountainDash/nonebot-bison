@@ -6,7 +6,7 @@ from nonebug.app import App
 from .utils import get_json
 
 
-@pytest.fixture()
+@pytest.fixture
 def ff14(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager

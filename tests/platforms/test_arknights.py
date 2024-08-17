@@ -9,7 +9,7 @@ from nonebot.compat import model_dump, type_validate_python
 from .utils import get_file, get_json
 
 
-@pytest.fixture()
+@pytest.fixture
 def arknights(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager

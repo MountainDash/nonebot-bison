@@ -15,7 +15,7 @@ from nonebot.compat import model_dump, type_validate_python
 from .utils import get_json
 
 
-@pytest.fixture()
+@pytest.fixture
 def bing_dy_list(app: App):
     from nonebot_bison.platform.bilibili.models import PostAPI
 
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from nonebot_bison.platform.bilibili import Bilibili
 
 
-@pytest.fixture()
+@pytest.fixture
 def bilibili(app: App) -> "Bilibili":
     from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
@@ -35,7 +35,7 @@ def bilibili(app: App) -> "Bilibili":
     return platform_manager["bilibili"](ProcessContext(BilibiliClientManager()))  # type: ignore
 
 
-@pytest.fixture()
+@pytest.fixture
 def without_dynamic(app: App):
     from nonebot_bison.platform.bilibili.models import PostAPI
 

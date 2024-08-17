@@ -52,18 +52,18 @@ async def test_add_subscribe(app: App, init_scheduler):
     )
     confs = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(confs) == 1
-    conf: Subscribe = confs[0]
+    conf2: Subscribe = confs[0]
     async with AsyncSession(get_engine()) as sess:
-        related_user_obj = await sess.scalar(select(User).where(User.id == conf.user_id))
-        related_target_obj = await sess.scalar(select(Target).where(Target.id == conf.target_id))
+        related_user_obj = await sess.scalar(select(User).where(User.id == conf2.user_id))
+        related_target_obj = await sess.scalar(select(Target).where(Target.id == conf2.target_id))
     assert related_user_obj
     assert related_target_obj
     assert related_user_obj.user_target["group_id"] == 123
     assert related_target_obj.target_name == "weibo_name2"
     assert related_target_obj.target == "weibo_id"
-    assert conf.target.target == "weibo_id"
-    assert conf.categories == [1]
-    assert conf.tags == ["tag"]
+    assert conf2.target.target == "weibo_id"
+    assert conf2.categories == [1]
+    assert conf2.tags == ["tag"]
 
 
 async def test_add_dup_sub(init_scheduler):

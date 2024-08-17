@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
 image_cdn_router = respx.route(host__regex=r"wx\d.sinaimg.cn", path__startswith="/large/")
 
 
-@pytest.fixture()
+@pytest.fixture
 def weibo(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.utils import ProcessContext, DefaultClientManager

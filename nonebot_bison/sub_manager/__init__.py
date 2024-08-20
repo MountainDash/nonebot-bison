@@ -124,4 +124,5 @@ __all__ = [
     "query_sub_matcher",
     "del_sub_matcher",
     "group_manage_matcher",
+    "no_permission_matcher",
 ]

@@ -115,7 +115,7 @@ no_permission_matcher = on_command(
 
 @no_permission_matcher.handle()
 async def send_no_permission():
-    await no_permission_matcher.finish("您没有权限进行此操作，请联系Bot所有者")
+    await no_permission_matcher.finish("您没有权限进行此操作，请联系 Bot 管理员")
 
 
 __all__ = [

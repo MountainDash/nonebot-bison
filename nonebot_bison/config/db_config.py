@@ -13,7 +13,7 @@ from nonebot_plugin_datastore import create_session
 from ..types import Tag
 from ..types import Target as T_Target
 from .utils import NoSuchTargetException
-from .db_model import User, Target, Subscribe, ScheduleTimeWeight
+from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
 from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 
 
@@ -258,6 +258,75 @@ class DBConfig:
                 )
             )
         return res
+
+    async def get_cookie_by_user(self, user: PlatformTarget) -> list[Cookie]:
+        async with create_session() as sess:
+            res = await sess.scalar(
+                select(User)
+                .where(User.user_target == model_dump(user))
+                .join(Cookie)
+                .outerjoin(CookieTarget)
+                .options(selectinload(User.cookies))
+            )
+            if not res:
+                return []
+            return res.cookies
+
+    async def add_cookie(self, user: PlatformTarget, platform_name: str, content: str) -> int:
+        async with create_session() as sess:
+            user_obj = await sess.scalar(select(User).where(User.user_target == model_dump(user)))
+            cookie = Cookie(user=user_obj, platform_name=platform_name, content=content)
+            sess.add(cookie)
+            await sess.commit()
+            await sess.refresh(cookie)
+            return cookie.id
+
+    async def update_cookie(self, cookie: Cookie):
+        async with create_session() as sess:
+            cookie_in_db: Cookie | None = await sess.scalar(select(Cookie).where(Cookie.id == cookie.id))
+            if not cookie_in_db:
+                return
+            cookie_in_db.content = cookie.content
+            cookie_in_db.last_usage = cookie.last_usage
+            cookie_in_db.status = cookie.status
+            cookie_in_db.tags = cookie.tags
+            await sess.commit()
+
+    async def delete_cookie(self, cookie_id: int):
+        async with create_session() as sess:
+            await sess.execute(delete(Cookie).where(Cookie.id == cookie_id))
+            await sess.commit()
+
+    async def get_cookie_by_target(self, target: T_Target, platform_name: str) -> list[Cookie]:
+        async with create_session() as sess:
+            query = (
+                select(Cookie)
+                .join(CookieTarget)
+                .join(Target)
+                .where(Target.platform_name == platform_name, Target.target == target)
+            )
+            return list((await sess.scalars(query)).all())
+
+    async def add_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
+        async with create_session() as sess:
+            target_obj = await sess.scalar(
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
+            )
+            cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            cookie_target = CookieTarget(target=target_obj, cookie=cookie_obj)
+            sess.add(cookie_target)
+            await sess.commit()
+
+    async def delete_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
+        async with create_session() as sess:
+            target_obj = await sess.scalar(
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
+            )
+            cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            await sess.execute(
+                delete(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie == cookie_obj)
+            )
+            await sess.commit()
 
 
 config = DBConfig()

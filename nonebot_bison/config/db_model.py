@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 from pathlib import Path
 
 from nonebot_plugin_saa import PlatformTarget
@@ -6,7 +7,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 from nonebot_plugin_datastore import get_plugin_data
 from sqlalchemy.orm import Mapped, relationship, mapped_column
-from sqlalchemy import JSON, String, ForeignKey, UniqueConstraint
+from sqlalchemy import JSON, String, DateTime, ForeignKey, UniqueConstraint
 
 from ..types import Tag, Category
 
@@ -19,6 +20,7 @@ class User(Model):
     user_target: Mapped[dict] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="user")
+    cookies: Mapped[list["Cookie"]] = relationship(back_populates="user")
 
     @property
     def saa_target(self) -> PlatformTarget:
@@ -36,6 +38,7 @@ class Target(Model):
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="target")
     time_weight: Mapped[list["ScheduleTimeWeight"]] = relationship(back_populates="target")
+    cookies: Mapped[list["CookieTarget"]] = relationship(back_populates="target")
 
 
 class ScheduleTimeWeight(Model):
@@ -66,3 +69,25 @@ class Subscribe(Model):
 
     target: Mapped[Target] = relationship(back_populates="subscribes")
     user: Mapped[User] = relationship(back_populates="subscribes")
+
+
+class Cookie(Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_user.id"))
+    platform_name: Mapped[str] = mapped_column(String(20))
+    content: Mapped[str] = mapped_column(String(1024))
+    last_usage: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime(1970, 1, 1))
+    status: Mapped[str] = mapped_column(String(20), default="")
+    tags: Mapped[dict[str, Any]] = mapped_column(JSON().with_variant(JSONB, "postgresql"), default={})
+
+    user: Mapped[User] = relationship(back_populates="cookies")
+    targets: Mapped[list["CookieTarget"]] = relationship(back_populates="cookie")
+
+
+class CookieTarget(Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    target_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_target.id", ondelete="CASCADE"))
+    cookie_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_cookie.id", ondelete="CASCADE"))
+
+    target: Mapped[Target] = relationship(back_populates="cookies")
+    cookie: Mapped[Cookie] = relationship(back_populates="targets")

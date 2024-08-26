@@ -1,4 +1,5 @@
 from .types import Target
+from .config.db_model import Cookie
 from .scheduler import scheduler_dict
 from .platform import platform_manager
 
@@ -15,3 +16,8 @@ async def check_sub_target(platform_name: str, target: Target):
 async def check_sub_target_cookie(platform_name: str, target: Target, cookie: str):
     # TODO
     return "check pass"
+
+
+async def get_cookie_friendly_name(cookie: Cookie):
+    # TODO
+    return cookie.platform_name + cookie.content[:10]

@@ -12,7 +12,7 @@ from nonebot_plugin_datastore import create_session
 
 from ..types import Tag
 from ..types import Target as T_Target
-from .utils import NoSuchTargetException
+from .utils import NoSuchTargetException, DuplicateCookieTargetException
 from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
 from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 
@@ -259,12 +259,31 @@ class DBConfig:
             )
         return res
 
-    async def get_cookie_by_user(self, user: PlatformTarget) -> list[Cookie]:
+    async def get_cookie(
+        self, user: PlatformTarget = None, platform_name: str = None, target: T_Target = None
+    ) -> list[Cookie]:
+        async with create_session() as sess:
+            query = select(Cookie).distinct().join(User)
+            if user:
+                user_id = await sess.scalar(select(User.id).where(User.user_target == model_dump(user)))
+                query = query.where(Cookie.user_id == user_id)
+            if platform_name:
+                query = query.where(Cookie.platform_name == platform_name)
+            query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
+            res = (await sess.scalars(query)).all()
+            if target:
+                query = select(CookieTarget.cookie_id).join(Target).where(Target.target == target)
+                ids = set((await sess.scalars(query)).all())
+                res = [cookie for cookie in res if cookie.id in ids]
+            return res
+
+    async def get_cookie_by_user_and_platform(self, user: PlatformTarget, platform_name: str) -> list[Cookie]:
         async with create_session() as sess:
             res = await sess.scalar(
                 select(User)
                 .where(User.user_target == model_dump(user))
                 .join(Cookie)
+                .where(Cookie.platform_name == platform_name)
                 .outerjoin(CookieTarget)
                 .options(selectinload(User.cookies))
             )
@@ -312,6 +331,12 @@ class DBConfig:
             target_obj = await sess.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
+            # check if relation exists
+            cookie_target = await sess.scalar(
+                select(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie_id == cookie_id)
+            )
+            if cookie_target:
+                raise DuplicateCookieTargetException()
             cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
             cookie_target = CookieTarget(target=target_obj, cookie=cookie_obj)
             sess.add(cookie_target)

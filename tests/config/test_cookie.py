@@ -52,7 +52,7 @@ async def test_cookie_by_user(app: App, init_scheduler):
 
     await config.add_cookie(TargetQQGroup(group_id=123), "weibo", "cookie")
 
-    cookies = await config.get_cookie_by_user(TargetQQGroup(group_id=123))
+    cookies = await config.get_cookie(TargetQQGroup(group_id=123))
     cookie = cookies[0]
     assert len(cookies) == 1
     assert cookie.content == "cookie"
@@ -65,7 +65,7 @@ async def test_cookie_by_user(app: App, init_scheduler):
     cookie.status = "status1"
     cookie.tags = {"tag1": "value1"}
     await config.update_cookie(cookie)
-    cookies = await config.get_cookie_by_user(TargetQQGroup(group_id=123))
+    cookies = await config.get_cookie(TargetQQGroup(group_id=123))
 
     assert len(cookies) == 1
     assert cookies[0].content == cookie.content
@@ -74,7 +74,7 @@ async def test_cookie_by_user(app: App, init_scheduler):
     assert cookies[0].tags == cookie.tags
 
     await config.delete_cookie(cookies[0].id)
-    cookies = await config.get_cookie_by_user(TargetQQGroup(group_id=123))
+    cookies = await config.get_cookie(TargetQQGroup(group_id=123))
     assert len(cookies) == 0
 
 

@@ -15,6 +15,7 @@ from .add_sub import do_add_sub
 from .del_sub import do_del_sub
 from .query_sub import do_query_sub
 from .add_cookie import do_add_cookie
+from .add_cookie_target import do_add_cookie_target
 from .utils import common_platform, admin_permission, gen_handle_cancel, configurable_to_me, set_target_user_info
 
 add_sub_matcher = on_command(
@@ -50,6 +51,16 @@ add_cookie_matcher = on_command(
 )
 add_cookie_matcher.handle()(set_target_user_info)
 do_add_cookie(add_cookie_matcher)
+
+add_cookie_target_matcher = on_command(
+    "关联cookie",
+    rule=configurable_to_me,
+    permission=admin_permission(),
+    priority=5,
+    block=True,
+)
+add_cookie_target_matcher.handle()(set_target_user_info)
+do_add_cookie_target(add_cookie_target_matcher)
 
 group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True)
 

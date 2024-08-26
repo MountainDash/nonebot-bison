@@ -58,4 +58,6 @@ def do_add_cookie(add_cookie: type[Matcher]):
     @add_cookie.handle()
     async def add_cookie_process(state: T_State, user: PlatformTarget = Arg("target_user_info")):
         await config.add_cookie(user, state["platform"], state["cookie"])
-        await add_cookie.finish(f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}")
+        await add_cookie.finish(
+            f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}" + "\n请使用“关联cookie”为 cookie 关联订阅"
+        )

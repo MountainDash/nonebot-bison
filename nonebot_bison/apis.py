@@ -10,3 +10,8 @@ async def check_sub_target(platform_name: str, target: Target):
     client = await scheduler.client_mgr.get_query_name_client()
 
     return await platform_manager[platform_name].get_target_name(client, target)
+
+
+async def check_sub_target_cookie(platform_name: str, target: Target, cookie: str):
+    # TODO
+    return "check pass"

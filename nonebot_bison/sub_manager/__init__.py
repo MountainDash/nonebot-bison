@@ -48,6 +48,7 @@ add_cookie_matcher = on_command(
     priority=5,
     block=True,
 )
+add_cookie_matcher.handle()(set_target_user_info)
 do_add_cookie(add_cookie_matcher)
 
 group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True)

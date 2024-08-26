@@ -6,8 +6,8 @@ from nonebot.adapters import Message, MessageTemplate
 
 from ..types import Target
 from ..config import config
-from ..apis import check_sub_target
 from ..platform import platform_manager
+from ..apis import check_sub_target_cookie
 from .utils import common_platform, ensure_user_info, gen_handle_cancel
 
 
@@ -44,21 +44,18 @@ def do_add_cookie(add_cookie: type[Matcher]):
     async def prepare_get_id(matcher: Matcher, state: T_State):
         cur_platform = platform_manager[state["platform"]]
         if cur_platform.has_target:
-            state["_prompt"] = (
-                ("1." + cur_platform.parse_target_promot + "\n2.") if cur_platform.parse_target_promot else ""
-            ) + "请输入 Cookie \n查询id获取方法请回复:“查询”"
+            state["_prompt"] = "请输入 Cookie"
         else:
             matcher.set_arg("cookie", None)  # type: ignore
             state["id"] = "default"
-            state["name"] = await check_sub_target(state["platform"], Target(""))
 
     @add_cookie.got("cookie", MessageTemplate("{_prompt}"), [handle_cancel])
-    async def got_id(state: T_State, cookie: Message = Arg()):
+    async def got_cookie(state: T_State, cookie: Message = Arg()):
         cookie_text = cookie.extract_plain_text()
         state["cookie"] = cookie_text
-        state["name"] = await check_sub_target(state["platform"], Target(""))
+        state["name"] = await check_sub_target_cookie(state["platform"], Target(""), cookie_text)
 
     @add_cookie.handle()
-    async def add_cookie(state: T_State, user: PlatformTarget = Arg("target_user_info")):
+    async def add_cookie_process(state: T_State, user: PlatformTarget = Arg("target_user_info")):
         await config.add_cookie(user, state["platform"], state["cookie"])
         await add_cookie.finish(f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}")

@@ -18,6 +18,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "superusers": {"10001"},
         "command_start": {""},
         "log_level": "TRACE",
+        "bison_use_browser": True,
     }
 
 

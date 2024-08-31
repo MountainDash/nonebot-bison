@@ -1,5 +1,7 @@
 import contextlib
 from typing import Annotated
+from itertools import groupby
+from operator import attrgetter
 
 from nonebot.rule import Rule
 from nonebot.adapters import Event
@@ -66,9 +68,16 @@ def admin_permission():
 
 
 async def generate_sub_list_text(
-    matcher: type[Matcher], state: T_State, user_info: PlatformTarget, is_index=False, is_show_cookie=False
+    matcher: type[Matcher], state: T_State, user_info: PlatformTarget = None, is_index=False, is_show_cookie=False
 ):
-    sub_list = await config.list_subscribe(user_info)
+    if user_info:
+        sub_list = await config.list_subscribe(user_info)
+    else:
+        sub_list = await config.list_subs_with_all_info()
+        sub_list = [
+            next(group)
+            for key, group in groupby(sorted(sub_list, key=attrgetter("target_id")), key=attrgetter("target_id"))
+        ]
     if not sub_list:
         await matcher.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")
     res = "订阅的帐号为：\n"
@@ -88,7 +97,7 @@ async def generate_sub_list_text(
                     res += " {}".format(", ".join(sub.tags)) + "\n"
             if is_show_cookie:
                 target_cookies = await config.get_cookie(
-                    user=user_info, target=sub.target.target, platform_name=sub.target.platform_name
+                    target=sub.target.target, platform_name=sub.target.platform_name
                 )
                 if target_cookies:
                     res += "  关联的 Cookie：\n"

@@ -1,20 +1,17 @@
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
-from nonebot_plugin_saa import PlatformTarget
 from nonebot.adapters import Message, MessageTemplate
 
 from ..types import Target
 from ..config import config
 from ..platform import platform_manager
 from ..apis import check_sub_target_cookie
-from .utils import common_platform, ensure_user_info, gen_handle_cancel
+from .utils import common_platform, gen_handle_cancel
 
 
 def do_add_cookie(add_cookie: type[Matcher]):
     handle_cancel = gen_handle_cancel(add_cookie, "已中止添加cookie")
-
-    add_cookie.handle()(ensure_user_info(add_cookie))
 
     @add_cookie.handle()
     async def init_promote(state: T_State):
@@ -56,8 +53,8 @@ def do_add_cookie(add_cookie: type[Matcher]):
         state["name"] = await check_sub_target_cookie(state["platform"], Target(""), cookie_text)
 
     @add_cookie.handle()
-    async def add_cookie_process(state: T_State, user: PlatformTarget = Arg("target_user_info")):
-        await config.add_cookie(user, state["platform"], state["cookie"])
+    async def add_cookie_process(state: T_State):
+        await config.add_cookie(state["platform"], state["cookie"])
         await add_cookie.finish(
             f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}" + "\n请使用“关联cookie”为 Cookie 关联订阅"
         )

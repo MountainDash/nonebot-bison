@@ -1,25 +1,21 @@
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
-from nonebot.params import Arg, ArgPlainText
+from nonebot.params import ArgPlainText
+from nonebot_plugin_saa import MessageFactory
 from nonebot.internal.adapter import MessageTemplate
-from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
 from ..config import config
 from ..utils import parse_text
 from ..apis import get_cookie_friendly_name
-from .utils import ensure_user_info, gen_handle_cancel, generate_sub_list_text
+from .utils import gen_handle_cancel, generate_sub_list_text
 
 
 def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     handle_cancel = gen_handle_cancel(add_cookie_target_matcher, "已中止关联 cookie")
 
-    add_cookie_target_matcher.handle()(ensure_user_info(add_cookie_target_matcher))
-
     @add_cookie_target_matcher.handle()
-    async def init_promote(state: T_State, user_info: PlatformTarget = Arg("target_user_info")):
-        res = await generate_sub_list_text(
-            add_cookie_target_matcher, state, user_info, is_index=True, is_show_cookie=True
-        )
+    async def init_promote(state: T_State):
+        res = await generate_sub_list_text(add_cookie_target_matcher, state, is_index=True, is_show_cookie=True)
         res += "请输入要关联 cookie 的订阅的序号\n输入'取消'中止"
         await MessageFactory(await parse_text(res)).send()
 
@@ -34,11 +30,8 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     @add_cookie_target_matcher.handle()
     async def init_promote_cookie(state: T_State):
 
-        cookies = await config.get_cookie(
-            user=state["target_user_info"], platform_name=state["target"]["platform_name"]
-        )
+        cookies = await config.get_cookie(platform_name=state["target"]["platform_name"])
         associated_cookies = await config.get_cookie(
-            user=state["target_user_info"],
             target=state["target"]["target"],
             platform_name=state["target"]["platform_name"],
         )
@@ -62,7 +55,7 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
             await add_cookie_target_matcher.reject("序号错误")
 
     @add_cookie_target_matcher.handle()
-    async def add_cookie_target_process(state: T_State, user: PlatformTarget = Arg("target_user_info")):
+    async def add_cookie_target_process(state: T_State):
         await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], state["cookie"].id)
         await add_cookie_target_matcher.finish(
             f"已关联 Cookie: {await get_cookie_friendly_name(state['cookie'])} "

@@ -20,7 +20,6 @@ class User(Model):
     user_target: Mapped[dict] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
 
     subscribes: Mapped[list["Subscribe"]] = relationship(back_populates="user")
-    cookies: Mapped[list["Cookie"]] = relationship(back_populates="user")
 
     @property
     def saa_target(self) -> PlatformTarget:
@@ -73,14 +72,12 @@ class Subscribe(Model):
 
 class Cookie(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("nonebot_bison_user.id"))
     platform_name: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(String(1024))
     last_usage: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime(1970, 1, 1))
     status: Mapped[str] = mapped_column(String(20), default="")
     tags: Mapped[dict[str, Any]] = mapped_column(JSON().with_variant(JSONB, "postgresql"), default={})
 
-    user: Mapped[User] = relationship(back_populates="cookies")
     targets: Mapped[list["CookieTarget"]] = relationship(back_populates="cookie")
 
 

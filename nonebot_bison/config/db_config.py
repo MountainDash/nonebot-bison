@@ -259,14 +259,9 @@ class DBConfig:
             )
         return res
 
-    async def get_cookie(
-        self, user: PlatformTarget = None, platform_name: str = None, target: T_Target = None
-    ) -> list[Cookie]:
+    async def get_cookie(self, platform_name: str = None, target: T_Target = None) -> list[Cookie]:
         async with create_session() as sess:
-            query = select(Cookie).distinct().join(User)
-            if user:
-                user_id = await sess.scalar(select(User.id).where(User.user_target == model_dump(user)))
-                query = query.where(Cookie.user_id == user_id)
+            query = select(Cookie).distinct()
             if platform_name:
                 query = query.where(Cookie.platform_name == platform_name)
             query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
@@ -277,24 +272,9 @@ class DBConfig:
                 res = [cookie for cookie in res if cookie.id in ids]
             return res
 
-    async def get_cookie_by_user_and_platform(self, user: PlatformTarget, platform_name: str) -> list[Cookie]:
+    async def add_cookie(self, platform_name: str, content: str) -> int:
         async with create_session() as sess:
-            res = await sess.scalar(
-                select(User)
-                .where(User.user_target == model_dump(user))
-                .join(Cookie)
-                .where(Cookie.platform_name == platform_name)
-                .outerjoin(CookieTarget)
-                .options(selectinload(User.cookies))
-            )
-            if not res:
-                return []
-            return res.cookies
-
-    async def add_cookie(self, user: PlatformTarget, platform_name: str, content: str) -> int:
-        async with create_session() as sess:
-            user_obj = await sess.scalar(select(User).where(User.user_target == model_dump(user)))
-            cookie = Cookie(user=user_obj, platform_name=platform_name, content=content)
+            cookie = Cookie(platform_name=platform_name, content=content)
             sess.add(cookie)
             await sess.commit()
             await sess.refresh(cookie)

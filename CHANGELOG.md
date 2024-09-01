@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- 无权限用户尝试添加订阅时返回提示信息 [@suyiiyii](https://github.com/suyiiyii) ([#617](https://github.com/MountainDash/nonebot-bison/pull/617))
 - B站请求策略阶段行为优化 [@AzideCupric](https://github.com/AzideCupric) ([#610](https://github.com/MountainDash/nonebot-bison/pull/610))
 - Rss 不再删除格式化字符 [@suyiiyii](https://github.com/suyiiyii) ([#615](https://github.com/MountainDash/nonebot-bison/pull/615))
 - forbid adding platform that needs browser in no-browser env [@felinae98](https://github.com/felinae98) ([#609](https://github.com/MountainDash/nonebot-bison/pull/609))

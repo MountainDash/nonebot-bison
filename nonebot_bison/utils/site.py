@@ -85,6 +85,9 @@ class CookieClientManager(ClientManager):
         else:
             logger.debug(f"平台 {self._platform_name} 未获取到用户cookie, 使用空cookie")
 
+        return await self.assemble_client(client, cookie)
+
+    async def assemble_client(self, client, cookie):
         cookies = httpx.Cookies()
         if cookie:
             cookies.update(json.loads(cookie.content))
@@ -104,7 +107,7 @@ class CookieClientManager(ClientManager):
 
 
 def create_cookie_client_manager(platform_name: str) -> type[CookieClientManager]:
-    """创建一个预定义为平台特化的 CookieClientManger"""
+    """创建一个平台特化的 CookieClientManger"""
     return type(
         "CookieClientManager",
         (CookieClientManager,),

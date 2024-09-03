@@ -1,6 +1,7 @@
 import json
 from typing import Literal
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 
 import httpx
 from httpx import AsyncClient
@@ -42,29 +43,41 @@ class DefaultClientManager(ClientManager):
 
 class CookieClientManager(ClientManager):
     _platform_name: str
+    _cookie_cd: int = 10
 
     def _generate_hook(self, cookie: Cookie):
+        """hook函数生成器，用于回写请求状态到数据库"""
+
         async def _response_hook(resp: httpx.Response):
-            if not cookie:
+            if cookie.content == "{}":
                 logger.debug(f"未携带bison cookie: {resp.request.url}")
+                return
             if resp.status_code == 200:
                 logger.debug(f"请求成功: {cookie.id} {resp.request.url}")
-
+                cookie.status = "success"
             else:
                 logger.error(f"请求失败:{cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
+                cookie.status = "failed"
+            cookie.last_usage = datetime.now()
+            await config.update_cookie(cookie)
 
         return _response_hook
 
     async def _choose_cookie(self, target: Target) -> Cookie:
+        """选择 cookie 的具体算法"""
         if not target:
             return Cookie(content="{}")
         cookies = await config.get_cookie_by_target(target, self._platform_name)
+        cookies = (
+            cookie for cookie in cookies if cookie.last_usage + timedelta(seconds=self._cookie_cd) < datetime.now()
+        )
         if not cookies:
             return Cookie(content="{}")
-        cookie = sorted(cookies, key=lambda x: x.last_usage, reverse=True)[0]
+        cookie = max(cookies, key=lambda x: x.last_usage)
         return cookie
 
     async def get_client(self, target: Target | None) -> AsyncClient:
+        """获取 client，根据 target 选择 cookie"""
         client = http_client()
         cookie = await self._choose_cookie(target)
         if cookie.content != "{}":
@@ -91,6 +104,7 @@ class CookieClientManager(ClientManager):
 
 
 def create_cookie_client_manager(platform_name: str) -> type[CookieClientManager]:
+    """创建一个预定义为平台特化的 CookieClientManger"""
     return type(
         "CookieClientManager",
         (CookieClientManager,),

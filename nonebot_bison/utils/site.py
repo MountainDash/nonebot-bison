@@ -60,10 +60,10 @@ class CookieClientManager(ClientManager):
         return client
 
     async def get_client_for_static(self) -> AsyncClient:
-        pass
+        return http_client()
 
     async def get_query_name_client(self) -> AsyncClient:
-        pass
+        return http_client()
 
     async def refresh_client(self):
         pass

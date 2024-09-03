@@ -1,4 +1,4 @@
-FROM node:20.15.1 as frontend
+FROM node:20.17.0 as frontend
 ADD . /app
 WORKDIR /app/admin-frontend
 RUN yarn && yarn build

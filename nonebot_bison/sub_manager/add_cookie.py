@@ -5,6 +5,7 @@ from nonebot.adapters import Message, MessageTemplate
 
 from ..types import Target
 from ..config import config
+from ..config.db_model import Cookie
 from ..platform import platform_manager
 from ..apis import check_sub_target_cookie
 from .utils import common_platform, gen_handle_cancel
@@ -18,7 +19,11 @@ def do_add_cookie(add_cookie: type[Matcher]):
         state["_prompt"] = (
             "请输入想要添加 Cookie 的平台，目前支持，请输入冒号左边的名称：\n"
             + "".join(
-                [f"{platform_name}: {platform_manager[platform_name].name}\n" for platform_name in common_platform]
+                [
+                    f"{platform_name}: {platform_manager[platform_name].name}\n"
+                    for platform_name in common_platform
+                    if hasattr(platform_manager[platform_name].site.client_mgr, "_cookie_client_manger_")
+                ]
             )
             + "要查看全部平台请输入：“全部”\n中止添加cookie过程请输入：“取消”"
         )
@@ -27,7 +32,11 @@ def do_add_cookie(add_cookie: type[Matcher]):
     async def parse_platform(state: T_State, platform: str = ArgPlainText()) -> None:
         if platform == "全部":
             message = "全部平台\n" + "\n".join(
-                [f"{platform_name}: {platform.name}" for platform_name, platform in platform_manager.items()]
+                [
+                    f"{platform_name}: {platform.name}"
+                    for platform_name, platform in platform_manager.items()
+                    if hasattr(platform_manager[platform_name].site.client_mgr, "_cookie_client_manger_")
+                ]
             )
             await add_cookie.reject(message)
         elif platform == "取消":
@@ -54,7 +63,9 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
-        await config.add_cookie(state["platform"], state["cookie"])
+        cookie = Cookie(platform_name=state["platform"], content=state["cookie"])
+        cookie = platform_manager[state["platform"]].site.init_cookie(cookie)
+        await config.add_cookie(cookie)
         await add_cookie.finish(
             f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}" + "\n请使用“关联cookie”为 Cookie 关联订阅"
         )

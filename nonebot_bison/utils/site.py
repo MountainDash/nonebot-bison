@@ -41,6 +41,10 @@ class DefaultClientManager(ClientManager):
         pass
 
 
+def is_cookie_client_manager(manger: type[ClientManager]) -> bool:
+    return hasattr(manger, "_cookie_client_manger_")
+
+
 class CookieClientManager(ClientManager):
     _cookie_client_manger_ = True
     _platform_name: str

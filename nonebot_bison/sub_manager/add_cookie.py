@@ -8,6 +8,7 @@ from ..config import config
 from ..config.db_model import Cookie
 from ..platform import platform_manager
 from ..apis import check_sub_target_cookie
+from ..utils.site import is_cookie_client_manager
 from .utils import common_platform, gen_handle_cancel
 
 
@@ -22,7 +23,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
                 [
                     f"{platform_name}: {platform_manager[platform_name].name}\n"
                     for platform_name in common_platform
-                    if hasattr(platform_manager[platform_name].site.client_mgr, "_cookie_client_manger_")
+                    if is_cookie_client_manager(platform_manager[platform_name].site.client_mgr)
                 ]
             )
             + "要查看全部平台请输入：“全部”\n中止添加cookie过程请输入：“取消”"
@@ -35,7 +36,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
                 [
                     f"{platform_name}: {platform.name}"
                     for platform_name, platform in platform_manager.items()
-                    if hasattr(platform_manager[platform_name].site.client_mgr, "_cookie_client_manger_")
+                    if is_cookie_client_manager(platform_manager[platform_name].site.client_mgr)
                 ]
             )
             await add_cookie.reject(message)

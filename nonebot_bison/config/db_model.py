@@ -74,10 +74,15 @@ class Cookie(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     platform_name: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(String(1024))
+    # 最后使用的时刻
     last_usage: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime(1970, 1, 1))
+    # Cookie 当前的状态
     status: Mapped[str] = mapped_column(String(20), default="")
+    # 使用一次之后，需要的冷却时间
     cd: Mapped[int] = mapped_column(default=0)
+    # 是否是通用 Cookie，默认用于匿名 Cookie
     is_universal: Mapped[bool] = mapped_column(default=False)
+    # 标签，扩展用
     tags: Mapped[dict[str, Any]] = mapped_column(JSON().with_variant(JSONB, "postgresql"), default={})
 
     targets: Mapped[list["CookieTarget"]] = relationship(back_populates="cookie")

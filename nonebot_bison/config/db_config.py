@@ -272,9 +272,29 @@ class DBConfig:
                 res = [cookie for cookie in res if cookie.id in ids]
             return res
 
-    async def add_cookie(self, platform_name: str, content: str) -> int:
+    async def get_unviersal_cookie(self, platform_name: str = None, target: T_Target = None) -> list[Cookie]:
+        async with create_session() as sess:
+            query = select(Cookie).distinct().where(Cookie.is_universal == True)  # noqa: E712
+            if platform_name:
+                query = query.where(Cookie.platform_name == platform_name)
+            query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
+            res = (await sess.scalars(query)).all()
+            if target:
+                query = select(CookieTarget.cookie_id).join(Target).where(Target.target == target)
+                ids = set((await sess.scalars(query)).all())
+                res = [cookie for cookie in res if cookie.id in ids]
+            return res
+
+    async def add_cookie_with_content(self, platform_name: str, content: str) -> int:
         async with create_session() as sess:
             cookie = Cookie(platform_name=platform_name, content=content)
+            sess.add(cookie)
+            await sess.commit()
+            await sess.refresh(cookie)
+            return cookie.id
+
+    async def add_cookie(self, cookie: Cookie) -> int:
+        async with create_session() as sess:
             sess.add(cookie)
             await sess.commit()
             await sess.refresh(cookie)
@@ -303,6 +323,15 @@ class DBConfig:
                 .join(CookieTarget)
                 .join(Target)
                 .where(Target.platform_name == platform_name, Target.target == target)
+            )
+            return list((await sess.scalars(query)).all())
+
+    async def get_universal_cookie(self, platform_name: str) -> list[Cookie]:
+        async with create_session() as sess:
+            query = (
+                select(Cookie)
+                .where(Cookie.platform_name == platform_name)
+                .where(Cookie.is_universal == True)  # noqa: E712
             )
             return list((await sess.scalars(query)).all())
 

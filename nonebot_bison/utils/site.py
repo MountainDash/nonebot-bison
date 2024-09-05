@@ -42,6 +42,7 @@ class DefaultClientManager(ClientManager):
 
 
 class CookieClientManager(ClientManager):
+    _cookie_client_manger_ = True
     _platform_name: str
     _cookie_cd: int = 10
 
@@ -49,9 +50,6 @@ class CookieClientManager(ClientManager):
         """hook函数生成器，用于回写请求状态到数据库"""
 
         async def _response_hook(resp: httpx.Response):
-            if cookie.content == "{}":
-                logger.debug(f"未携带bison cookie: {resp.request.url}")
-                return
             if resp.status_code == 200:
                 logger.debug(f"请求成功: {cookie.id} {resp.request.url}")
                 cookie.status = "success"
@@ -63,18 +61,30 @@ class CookieClientManager(ClientManager):
 
         return _response_hook
 
+    @classmethod
+    async def init_universal_cookie(cls):
+        """移除已有的匿名cookie，添加一个新的匿名cookie"""
+        universal_cookies = await config.get_unviersal_cookie(cls._platform_name)
+        for cookie in universal_cookies:
+            await config.delete_cookie(cookie.id)
+        universal_cookie = Cookie(platform_name=cls._platform_name, content="{}", is_universal=True)
+        await config.add_cookie(universal_cookie)
+
+    @classmethod
+    async def init_cookie(cls, cookie: Cookie):
+        """初始化cookie，添加用户cookie时使用"""
+        cookie.cd = cls._cookie_cd
+
     async def _choose_cookie(self, target: Target) -> Cookie:
         """选择 cookie 的具体算法"""
         if not target:
             return Cookie(content="{}")
-        cookies = await config.get_cookie_by_target(target, self._platform_name)
-        cookies = (
-            cookie for cookie in cookies if cookie.last_usage + timedelta(seconds=self._cookie_cd) < datetime.now()
-        )
-        cookies = list(cookies)
-        if not cookies:
-            return Cookie(content="{}")
-        cookie = max(cookies, key=lambda x: x.last_usage)
+        cookies = [
+            *(await config.get_cookie_by_target(target, self._platform_name)),
+            *(await config.get_universal_cookie(self._platform_name)),
+        ]
+        cookies = (cookie for cookie in cookies if cookie.last_usage + timedelta(seconds=cookie.cd) < datetime.now())
+        cookie = min(cookies, key=lambda x: x.last_usage)
         return cookie
 
     async def _check_cookie(self, cookie: Cookie) -> Cookie:
@@ -85,10 +95,10 @@ class CookieClientManager(ClientManager):
         """获取 client，根据 target 选择 cookie"""
         client = http_client()
         cookie = await self._choose_cookie(target)
-        if cookie.content != "{}":
-            logger.debug(f"平台 {self._platform_name} 获取到用户cookie: {cookie.id}")
+        if cookie.is_universal:
+            logger.debug(f"平台 {self._platform_name} 未获取到用户cookie, 使用匿名cookie")
         else:
-            logger.debug(f"平台 {self._platform_name} 未获取到用户cookie, 使用空cookie")
+            logger.debug(f"平台 {self._platform_name} 获取到用户cookie: {cookie.id}")
 
         return await self._assemble_client(client, cookie)
 

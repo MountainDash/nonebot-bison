@@ -1,4 +1,5 @@
 from .types import Target
+from .utils import text_fletten
 from .config.db_model import Cookie
 from .scheduler import scheduler_dict
 from .platform import platform_manager
@@ -20,4 +21,4 @@ async def check_sub_target_cookie(platform_name: str, target: Target, cookie: st
 
 async def get_cookie_friendly_name(cookie: Cookie):
     # TODO
-    return f"{cookie.platform_name} [{cookie.content[:10]}]"
+    return text_fletten(f"{cookie.platform_name} [{cookie.content[:10]}]")

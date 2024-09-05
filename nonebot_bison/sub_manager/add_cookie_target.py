@@ -15,7 +15,9 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
 
     @add_cookie_target_matcher.handle()
     async def init_promote(state: T_State):
-        res = await generate_sub_list_text(add_cookie_target_matcher, state, is_index=True, is_show_cookie=True)
+        res = await generate_sub_list_text(
+            add_cookie_target_matcher, state, is_index=True, is_show_cookie=True, is_hide_no_cookie_platfrom=True
+        )
         res += "请输入要关联 cookie 的订阅的序号\n输入'取消'中止"
         await MessageFactory(await parse_text(res)).send()
 

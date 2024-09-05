@@ -16,6 +16,7 @@ from ..types import Category
 from ..platform import platform_manager
 from ..plugin_config import plugin_config
 from ..apis import get_cookie_friendly_name
+from ..utils.site import is_cookie_client_manager
 
 
 def _configurable_to_me(to_me: bool = EventToMe()):
@@ -68,7 +69,12 @@ def admin_permission():
 
 
 async def generate_sub_list_text(
-    matcher: type[Matcher], state: T_State, user_info: PlatformTarget = None, is_index=False, is_show_cookie=False
+    matcher: type[Matcher],
+    state: T_State,
+    user_info: PlatformTarget = None,
+    is_index=False,
+    is_show_cookie=False,
+    is_hide_no_cookie_platfrom=False,
 ):
     if user_info:
         sub_list = await config.list_subscribe(user_info)
@@ -77,6 +83,12 @@ async def generate_sub_list_text(
         sub_list = [
             next(group)
             for key, group in groupby(sorted(sub_list, key=attrgetter("target_id")), key=attrgetter("target_id"))
+        ]
+    if is_hide_no_cookie_platfrom:
+        sub_list = [
+            sub
+            for sub in sub_list
+            if is_cookie_client_manager(platform_manager.get(sub.target.platform_name).site.client_mgr)
         ]
     if not sub_list:
         await matcher.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")

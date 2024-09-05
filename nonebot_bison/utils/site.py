@@ -50,6 +50,39 @@ class CookieClientManager(ClientManager):
     _platform_name: str
     _cookie_cd: int = 10
 
+    @classmethod
+    async def init_universal_cookie(cls):
+        """移除已有的匿名cookie，添加一个新的匿名cookie"""
+        universal_cookies = await config.get_unviersal_cookie(cls._platform_name)
+        for cookie in universal_cookies:
+            await config.delete_cookie(cookie.id)
+        universal_cookie = Cookie(platform_name=cls._platform_name, content="{}", is_universal=True)
+        await config.add_cookie(universal_cookie)
+
+    @classmethod
+    async def init_cookie(cls, cookie: Cookie) -> Cookie:
+        """初始化cookie，添加用户cookie时使用"""
+        cookie.cd = cls._cookie_cd
+        return cookie
+
+    @classmethod
+    async def valid_cookie(cls, content: str) -> bool:
+        """验证cookie是否有效，添加cookie时考用，可根据平台的具体情况进行重写"""
+        try:
+            data = json.loads(content)
+            if not isinstance(data, dict):
+                raise ValueError
+        except Exception:
+            return False
+        return True
+
+    @classmethod
+    async def get_cookie_friendly_name(cls, cookie: Cookie) -> str:
+        """获取友好的cookie名字，用于展示"""
+        from . import text_fletten
+
+        return text_fletten(f"{cookie.platform_name} [{cookie.content[:10]}]")
+
     def _generate_hook(self, cookie: Cookie):
         """hook函数生成器，用于回写请求状态到数据库"""
 
@@ -64,20 +97,6 @@ class CookieClientManager(ClientManager):
             await config.update_cookie(cookie)
 
         return _response_hook
-
-    @classmethod
-    async def init_universal_cookie(cls):
-        """移除已有的匿名cookie，添加一个新的匿名cookie"""
-        universal_cookies = await config.get_unviersal_cookie(cls._platform_name)
-        for cookie in universal_cookies:
-            await config.delete_cookie(cookie.id)
-        universal_cookie = Cookie(platform_name=cls._platform_name, content="{}", is_universal=True)
-        await config.add_cookie(universal_cookie)
-
-    @classmethod
-    async def init_cookie(cls, cookie: Cookie):
-        """初始化cookie，添加用户cookie时使用"""
-        cookie.cd = cls._cookie_cd
 
     async def _choose_cookie(self, target: Target) -> Cookie:
         """选择 cookie 的具体算法"""

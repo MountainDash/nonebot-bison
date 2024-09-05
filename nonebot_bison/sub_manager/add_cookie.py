@@ -1,15 +1,15 @@
+from typing import cast
+
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
 from nonebot.adapters import Message, MessageTemplate
 
-from ..types import Target
 from ..config import config
 from ..config.db_model import Cookie
 from ..platform import platform_manager
-from ..apis import check_sub_target_cookie
-from ..utils.site import is_cookie_client_manager
 from .utils import common_platform, gen_handle_cancel
+from ..utils.site import CookieClientManager, is_cookie_client_manager
 
 
 def do_add_cookie(add_cookie: type[Matcher]):
@@ -48,24 +48,21 @@ def do_add_cookie(add_cookie: type[Matcher]):
             await add_cookie.reject("平台输入错误")
 
     @add_cookie.handle()
-    async def prepare_get_id(matcher: Matcher, state: T_State):
-        cur_platform = platform_manager[state["platform"]]
-        if cur_platform.has_target:
-            state["_prompt"] = "请输入 Cookie"
-        else:
-            matcher.set_arg("cookie", None)  # type: ignore
-            state["id"] = "default"
+    async def prepare_get_id(state: T_State):
+        state["_prompt"] = "请输入 Cookie"
 
     @add_cookie.got("cookie", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_cookie(state: T_State, cookie: Message = Arg()):
+        client_mgr: CookieClientManager = platform_manager[state["platform"]].site.client_mgr
         cookie_text = cookie.extract_plain_text()
         state["cookie"] = cookie_text
-        state["name"] = await check_sub_target_cookie(state["platform"], Target(""), cookie_text)
+        state["name"] = await client_mgr.valid_cookie(cookie_text)
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
         cookie = Cookie(platform_name=state["platform"], content=state["cookie"])
-        cookie = platform_manager[state["platform"]].site.init_cookie(cookie)
+        client_mgr = cast(CookieClientManager, platform_manager[state["platform"]].site.client_mgr)
+        cookie = await client_mgr.init_cookie(cookie)
         await config.add_cookie(cookie)
         await add_cookie.finish(
             f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}" + "\n请使用“关联cookie”为 Cookie 关联订阅"

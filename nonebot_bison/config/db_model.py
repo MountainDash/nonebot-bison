@@ -77,6 +77,7 @@ class Cookie(Model):
     last_usage: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime(1970, 1, 1))
     status: Mapped[str] = mapped_column(String(20), default="")
     cd: Mapped[int] = mapped_column(default=0)
+    is_universal: Mapped[bool] = mapped_column(default=False)
     tags: Mapped[dict[str, Any]] = mapped_column(JSON().with_variant(JSONB, "postgresql"), default={})
 
     targets: Mapped[list["CookieTarget"]] = relationship(back_populates="cookie")

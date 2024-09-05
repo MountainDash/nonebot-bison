@@ -71,9 +71,14 @@ class CookieClientManager(ClientManager):
         cookies = (
             cookie for cookie in cookies if cookie.last_usage + timedelta(seconds=self._cookie_cd) < datetime.now()
         )
+        cookies = list(cookies)
         if not cookies:
             return Cookie(content="{}")
         cookie = max(cookies, key=lambda x: x.last_usage)
+        return cookie
+
+    async def _check_cookie(self, cookie: Cookie) -> Cookie:
+        """检查Cookie，可以做一些自定义的逻辑，比如说Site的统一风控"""
         return cookie
 
     async def get_client(self, target: Target | None) -> AsyncClient:
@@ -85,9 +90,9 @@ class CookieClientManager(ClientManager):
         else:
             logger.debug(f"平台 {self._platform_name} 未获取到用户cookie, 使用空cookie")
 
-        return await self.assemble_client(client, cookie)
+        return await self._assemble_client(client, cookie)
 
-    async def assemble_client(self, client, cookie):
+    async def _assemble_client(self, client, cookie):
         cookies = httpx.Cookies()
         if cookie:
             cookies.update(json.loads(cookie.content))

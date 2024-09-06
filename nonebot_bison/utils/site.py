@@ -86,7 +86,7 @@ class CookieClientManager(ClientManager):
 
         return text_fletten(f"{cookie.platform_name} [{cookie.content[:10]}]")
 
-    def _generate_hook(self, cookie: Cookie):
+    def _generate_hook(self, cookie: Cookie) -> callable:
         """hook 函数生成器，用于回写请求状态到数据库"""
 
         async def _response_hook(resp: httpx.Response):
@@ -103,12 +103,9 @@ class CookieClientManager(ClientManager):
 
     async def _choose_cookie(self, target: Target) -> Cookie:
         """选择 cookie 的具体算法"""
-        if not target:
-            return Cookie(content="{}")
-        cookies = [
-            *(await config.get_cookie_by_target(target, self._platform_name)),
-            *(await config.get_universal_cookie(self._platform_name)),
-        ]
+        cookies = await config.get_universal_cookie(self._platform_name)
+        if target:
+            cookies += await config.get_cookie(self._platform_name, target)
         cookies = (cookie for cookie in cookies if cookie.last_usage + timedelta(seconds=cookie.cd) < datetime.now())
         cookie = min(cookies, key=lambda x: x.last_usage)
         return cookie
@@ -128,7 +125,8 @@ class CookieClientManager(ClientManager):
 
         return await self._assemble_client(client, cookie)
 
-    async def _assemble_client(self, client, cookie):
+    async def _assemble_client(self, client, cookie) -> AsyncClient:
+        """组装 client，可以自定义 cookie 对象的 content 装配到 client 中的方式"""
         cookies = httpx.Cookies()
         if cookie:
             cookies.update(json.loads(cookie.content))

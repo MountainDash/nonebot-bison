@@ -260,8 +260,9 @@ class DBConfig:
         return res
 
     async def get_cookie(self, platform_name: str = None, target: T_Target = None) -> list[Cookie]:
+        """根据平台名和订阅名获取 cookie，不会返回匿名cookie"""
         async with create_session() as sess:
-            query = select(Cookie).distinct()
+            query = select(Cookie).distinct().where(Cookie.is_universal == False)  # noqa: E712
             if platform_name:
                 query = query.where(Cookie.platform_name == platform_name)
             query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
@@ -277,12 +278,7 @@ class DBConfig:
             query = select(Cookie).distinct().where(Cookie.is_universal == True)  # noqa: E712
             if platform_name:
                 query = query.where(Cookie.platform_name == platform_name)
-            query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
             res = (await sess.scalars(query)).all()
-            if target:
-                query = select(CookieTarget.cookie_id).join(Target).where(Target.target == target)
-                ids = set((await sess.scalars(query)).all())
-                res = [cookie for cookie in res if cookie.id in ids]
             return res
 
     async def add_cookie_with_content(self, platform_name: str, content: str) -> int:

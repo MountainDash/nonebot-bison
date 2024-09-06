@@ -55,8 +55,9 @@ def do_add_cookie(add_cookie: type[Matcher]):
     async def got_cookie(state: T_State, cookie: Message = Arg()):
         client_mgr: CookieClientManager = platform_manager[state["platform"]].site.client_mgr
         cookie_text = cookie.extract_plain_text()
+        if not await client_mgr.valid_cookie(cookie_text):
+            await add_cookie.reject("无效的 Cookie，请检查后重新输入，详情见<待添加的文档>")
         state["cookie"] = cookie_text
-        state["name"] = await client_mgr.valid_cookie(cookie_text)
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):

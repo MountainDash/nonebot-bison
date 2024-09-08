@@ -73,7 +73,7 @@ async def test_cookie_by_user(app: App, init_scheduler):
     assert cookies[0].status == cookie.status
     assert cookies[0].tags == cookie.tags
 
-    await config.delete_cookie(cookies[0].id)
+    await config.delete_cookie_by_id(cookies[0].id)
     cookies = await config.get_cookie(TargetQQGroup(group_id=123))
     assert len(cookies) == 0
 

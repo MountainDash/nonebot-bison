@@ -307,8 +307,16 @@ class DBConfig:
             cookie_in_db.tags = cookie.tags
             await sess.commit()
 
-    async def delete_cookie(self, cookie_id: int):
+    async def delete_cookie_by_id(self, cookie_id: int):
         async with create_session() as sess:
+            cookie = await sess.scalar(
+                select(Cookie)
+                .where(Cookie.id == cookie_id)
+                .outerjoin(CookieTarget)
+                .options(selectinload(Cookie.targets))
+            )
+            if len(cookie.targets) > 0:
+                raise Exception(f"cookie {cookie.id} in use")
             await sess.execute(delete(Cookie).where(Cookie.id == cookie_id))
             await sess.commit()
 

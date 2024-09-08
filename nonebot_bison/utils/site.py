@@ -61,7 +61,7 @@ class CookieClientManager(ClientManager):
         for cookie in universal_cookies:
             if not cookie.tags.get("temporary"):
                 continue
-            await config.delete_cookie(cookie.id)
+            await config.delete_cookie_by_id(cookie.id)
             universal_cookie.id = cookie.id  # 保持原有的id
         await config.add_cookie(universal_cookie)
 

@@ -358,10 +358,23 @@ class DBConfig:
             )
             await sess.commit()
 
-    async def get_cookie_target(self) -> Sequence[CookieTarget]:
+    async def delete_cookie_target_by_id(self, cookie_target_id: int):
         async with create_session() as sess:
-            query = select(CookieTarget).outerjoin(Target).options(selectinload(CookieTarget.target))
-            return (await sess.scalars(query)).all()
+            await sess.execute(delete(CookieTarget).where(CookieTarget.id == cookie_target_id))
+            await sess.commit()
+
+    async def get_cookie_target(self) -> list[CookieTarget]:
+        async with create_session() as sess:
+            query = (
+                select(CookieTarget)
+                .outerjoin(Target)
+                .options(selectinload(CookieTarget.target))
+                .outerjoin(Cookie)
+                .options(selectinload(CookieTarget.cookie))
+            )
+            res = list((await sess.scalars(query)).all())
+            res.sort(key=lambda x: (x.target.platform_name, x.cookie_id, x.target_id))
+            return res
 
 
 config = DBConfig()

@@ -55,8 +55,12 @@ class CookieClientManager(ClientManager):
     async def init_universal_cookie(cls):
         """移除已有的匿名cookie，添加一个新的匿名cookie"""
         universal_cookies = await config.get_unviersal_cookie(cls._platform_name)
-        universal_cookie = Cookie(platform_name=cls._platform_name, content="{}", is_universal=True)
+        universal_cookie = Cookie(
+            platform_name=cls._platform_name, content="{}", is_universal=True, tags={"temporary": True}
+        )
         for cookie in universal_cookies:
+            if not cookie.tags.get("temporary"):
+                continue
             await config.delete_cookie(cookie.id)
             universal_cookie.id = cookie.id  # 保持原有的id
         await config.add_cookie(universal_cookie)

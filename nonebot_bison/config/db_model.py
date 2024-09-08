@@ -72,7 +72,7 @@ class Subscribe(Model):
 
 class Cookie(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    platform_name: Mapped[str] = mapped_column(String(20))
+    site_name: Mapped[str] = mapped_column(String(100))
     content: Mapped[str] = mapped_column(String(1024))
     # 最后使用的时刻
     last_usage: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime(1970, 1, 1))

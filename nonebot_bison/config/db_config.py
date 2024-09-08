@@ -259,7 +259,7 @@ class DBConfig:
             )
         return res
 
-    async def get_cookie(self, platform_name: str = None, target: T_Target = None) -> list[Cookie]:
+    async def get_cookie(self, platform_name: str = None, target: T_Target = None) -> Sequence[Cookie]:
         """根据平台名和订阅名获取 cookie，不会返回匿名cookie"""
         async with create_session() as sess:
             query = select(Cookie).distinct().where(Cookie.is_universal == False)  # noqa: E712
@@ -273,7 +273,7 @@ class DBConfig:
                 res = [cookie for cookie in res if cookie.id in ids]
             return res
 
-    async def get_unviersal_cookie(self, platform_name: str = None, target: T_Target = None) -> list[Cookie]:
+    async def get_unviersal_cookie(self, platform_name: str = None) -> Sequence[Cookie]:
         async with create_session() as sess:
             query = select(Cookie).distinct().where(Cookie.is_universal == True)  # noqa: E712
             if platform_name:
@@ -312,7 +312,7 @@ class DBConfig:
             await sess.execute(delete(Cookie).where(Cookie.id == cookie_id))
             await sess.commit()
 
-    async def get_cookie_by_target(self, target: T_Target, platform_name: str) -> list[Cookie]:
+    async def get_cookie_by_target(self, target: T_Target, platform_name: str) -> Sequence[Cookie]:
         async with create_session() as sess:
             query = (
                 select(Cookie)
@@ -320,16 +320,16 @@ class DBConfig:
                 .join(Target)
                 .where(Target.platform_name == platform_name, Target.target == target)
             )
-            return list((await sess.scalars(query)).all())
+            return (await sess.scalars(query)).all()
 
-    async def get_universal_cookie(self, platform_name: str) -> list[Cookie]:
+    async def get_universal_cookie(self, platform_name: str) -> Sequence[Cookie]:
         async with create_session() as sess:
             query = (
                 select(Cookie)
                 .where(Cookie.platform_name == platform_name)
                 .where(Cookie.is_universal == True)  # noqa: E712
             )
-            return list((await sess.scalars(query)).all())
+            return (await sess.scalars(query)).all()
 
     async def add_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
         async with create_session() as sess:
@@ -357,6 +357,11 @@ class DBConfig:
                 delete(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie == cookie_obj)
             )
             await sess.commit()
+
+    async def get_cookie_target(self) -> Sequence[CookieTarget]:
+        async with create_session() as sess:
+            query = select(CookieTarget).outerjoin(Target).options(selectinload(CookieTarget.target))
+            return (await sess.scalars(query)).all()
 
 
 config = DBConfig()

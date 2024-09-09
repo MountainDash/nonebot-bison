@@ -13,7 +13,7 @@ from nonebot_plugin_saa import PlatformTarget, extract_target
 
 from ..config import config
 from ..types import Category
-from ..platform import platform_manager
+from ..platform import platform_manager, site_manager
 from ..plugin_config import plugin_config
 from ..utils.site import CookieClientManager, is_cookie_client_manager
 
@@ -108,12 +108,12 @@ async def generate_sub_list_text(
                     res += " {}".format(", ".join(sub.tags)) + "\n"
             if is_show_cookie:
                 target_cookies = await config.get_cookie(
-                    target=sub.target.target, platform_name=sub.target.platform_name
+                    target=sub.target.target, site_name=platform.site.name
                 )
                 if target_cookies:
                     res += "  关联的 Cookie：\n"
                     for cookie in target_cookies:
-                        client_mgr = cast(CookieClientManager, platform_manager[cookie.platform_name].site.client_mgr)
+                        client_mgr = cast(CookieClientManager, site_manager[platform.site.name].client_mgr)
                         res += f"  \t{await client_mgr.get_cookie_friendly_name(cookie)}\n"
 
         else:

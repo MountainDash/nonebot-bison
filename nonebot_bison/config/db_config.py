@@ -1,20 +1,20 @@
 import asyncio
 from collections import defaultdict
-from datetime import time, datetime
 from collections.abc import Callable, Sequence, Awaitable
+from datetime import time, datetime
 
 from nonebot.compat import model_dump
-from sqlalchemy.orm import selectinload
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import func, delete, select
-from nonebot_plugin_saa import PlatformTarget
 from nonebot_plugin_datastore import create_session
+from nonebot_plugin_saa import PlatformTarget
+from sqlalchemy import func, delete, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
+from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
+from .utils import NoSuchTargetException, DuplicateCookieTargetException
+from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 from ..types import Tag
 from ..types import Target as T_Target
-from .utils import NoSuchTargetException, DuplicateCookieTargetException
-from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
-from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 
 
 def _get_time():
@@ -342,7 +342,8 @@ class DBConfig:
     async def add_cookie_target(self, target: T_Target, site_name: str, cookie_id: int):
         async with create_session() as sess:
             target_obj = await sess.scalar(
-                select(Target).where(Target.site_name == site_name, Target.target == target)
+                select(Target).where(Target.target == target)
+                # TODO: 仅判断 target，可能会有重名现象，还要判断 platform_name
             )
             # check if relation exists
             cookie_target = await sess.scalar(

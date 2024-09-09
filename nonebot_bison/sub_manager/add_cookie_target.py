@@ -8,7 +8,7 @@ from nonebot.internal.adapter import MessageTemplate
 
 from ..config import config
 from ..utils import parse_text
-from ..platform import platform_manager
+from ..platform import platform_manager, site_manager
 from ..utils.site import CookieClientManager
 from .utils import gen_handle_cancel, generate_sub_list_text
 
@@ -29,16 +29,17 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
         try:
             target_idx = int(target_idx)
             state["target"] = state["sub_table"][target_idx]
+            state["site"] = platform_manager[state["target"]["platform_name"]].site
         except Exception:
             await add_cookie_target_matcher.reject("序号错误")
 
     @add_cookie_target_matcher.handle()
     async def init_promote_cookie(state: T_State):
 
-        cookies = await config.get_cookie(platform_name=state["target"]["platform_name"])
+        cookies = await config.get_cookie(site_name=state["site"].name)
         associated_cookies = await config.get_cookie(
             target=state["target"]["target"],
-            platform_name=state["target"]["platform_name"],
+            site_name=state["site"].name,
         )
         associated_cookie_ids = {cookie.id for cookie in associated_cookies}
         cookies = [cookie for cookie in cookies if cookie.id not in associated_cookie_ids]
@@ -48,7 +49,7 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
             )
         state["cookies"] = cookies
 
-        client_mgr = cast(CookieClientManager, platform_manager[cookies[0].platform_name].site.client_mgr)
+        client_mgr = cast(CookieClientManager, state["site"].client_mgr)
         state["_prompt"] = "请选择一个 Cookie，已关联的 Cookie 不会显示\n" + "\n".join(
             [f"{idx}. {await client_mgr.get_cookie_friendly_name(cookie)}" for idx, cookie in enumerate(cookies, 1)]
         )
@@ -63,10 +64,10 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
 
     @add_cookie_target_matcher.handle()
     async def add_cookie_target_process(state: T_State):
-        await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], state["cookie"].id)
+        await config.add_cookie_target(state["target"]["target"], state["site"].name, state["cookie"].id)
         cookie = state["cookie"]
-        client_mgr = cast(CookieClientManager, platform_manager[cookie.platform_name].site.client_mgr)
+        client_mgr = cast(CookieClientManager, state["site"].client_mgr)
         await add_cookie_target_matcher.finish(
             f"已关联 Cookie: {await client_mgr.get_cookie_friendly_name(cookie)} "
-            f"到订阅 {state['target']['platform_name']} {state['target']['target']}"
+            f"到订阅 {state['site'].name} {state['target']['target']}"
         )

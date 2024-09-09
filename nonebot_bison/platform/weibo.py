@@ -40,7 +40,7 @@ class WeiboSite(Site):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
-    client_mgr = create_cookie_client_manager("weibo")
+    client_mgr = create_cookie_client_manager(name)
 
 
 class Weibo(NewMessage):

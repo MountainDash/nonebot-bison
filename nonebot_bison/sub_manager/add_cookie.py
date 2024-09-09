@@ -44,6 +44,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
             await add_cookie.finish("已中止添加cookie")
         elif platform in platform_manager:
             state["platform"] = platform
+            state["site"] = platform_manager[platform].site
         else:
             await add_cookie.reject("平台输入错误")
 
@@ -62,7 +63,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
-        cookie = Cookie(platform_name=state["platform"], content=state["cookie"])
+        cookie = Cookie(site_name=state["site"].name, content=state["cookie"])
         client_mgr = cast(CookieClientManager, platform_manager[state["platform"]].site.client_mgr)
         cookie = await client_mgr.init_cookie(cookie)
         await config.add_cookie(cookie)

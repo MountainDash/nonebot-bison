@@ -14,7 +14,7 @@ from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
 from .add_sub import do_add_sub
 from .del_sub import do_del_sub
 from .query_sub import do_query_sub
-# from .add_cookie import do_add_cookie
+from .add_cookie import do_add_cookie
 # from .del_cookie import do_del_cookie
 # from .add_cookie_target import do_add_cookie_target
 # from .del_cookie_target import do_del_cookie_target
@@ -51,7 +51,7 @@ add_cookie_matcher = on_command(
     priority=5,
     block=True,
 )
-# do_add_cookie(add_cookie_matcher)
+do_add_cookie(add_cookie_matcher)
 
 # add_cookie_target_matcher = on_command(
 #     "关联cookie",

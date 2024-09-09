@@ -156,11 +156,6 @@ def create_cookie_client_manager(site_name: str) -> type[CookieClientManager]:
         (CookieClientManager,),
         {"_site_name": site_name},
     )
-#
-# def create_cookie_client_manager(platform_name: str):
-#     """创建一个平台特化的 CookieClientManger"""
-#     return DefaultClientManager
-#
 
 
 class Site(metaclass=RegistryMeta,base=True):

@@ -58,3 +58,18 @@ class ApiError(Exception):
 class SubUnit(NamedTuple):
     sub_target: Target
     user_sub_infos: list[UserSubInfo]
+
+
+class RegistryMeta(type):
+    def __new__(cls, name, bases, namespace, **kwargs):
+        return super().__new__(cls, name, bases, namespace)
+
+    def __init__(cls, name, bases, namespace, **kwargs):
+        if kwargs.get("base"):
+            # this is the base class
+            cls.registry = []
+        elif not kwargs.get("abstract"):
+            # this is the subclass
+            cls.registry.append(cls)
+
+        super().__init__(name, bases, namespace, **kwargs)

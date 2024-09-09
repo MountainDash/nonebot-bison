@@ -4,6 +4,7 @@ from collections import defaultdict
 from importlib import import_module
 
 from .platform import Platform, make_no_target_group
+from ..utils import Site
 
 _package_dir = str(Path(__file__).resolve().parent)
 for _, module_name, _ in iter_modules([_package_dir]):
@@ -22,3 +23,11 @@ for name, platform_list in _platform_list.items():
         platform_manager[name] = platform_list[0]
     else:
         platform_manager[name] = make_no_target_group(platform_list)
+
+
+site_manager: dict[str, type[Site]] = {}
+for site in Site.registry:
+    if not hasattr(site, "name"):
+        continue
+    site_manager[site.name] = site
+

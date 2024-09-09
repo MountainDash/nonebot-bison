@@ -1,14 +1,14 @@
 from typing import cast
 
-from nonebot.typing import T_State
+from nonebot.adapters import Message, MessageTemplate
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
-from nonebot.adapters import Message, MessageTemplate
+from nonebot.typing import T_State
 
+from .utils import common_platform, gen_handle_cancel
 from ..config import config
 from ..config.db_model import Cookie
 from ..platform import platform_manager
-from .utils import common_platform, gen_handle_cancel
 from ..utils.site import CookieClientManager, is_cookie_client_manager
 
 
@@ -20,12 +20,12 @@ def do_add_cookie(add_cookie: type[Matcher]):
         state["_prompt"] = (
             "请输入想要添加 Cookie 的平台，目前支持，请输入冒号左边的名称：\n"
             + "".join(
-                [
-                    f"{platform_name}: {platform_manager[platform_name].name}\n"
-                    for platform_name in common_platform
-                    if is_cookie_client_manager(platform_manager[platform_name].site.client_mgr)
-                ]
-            )
+            [
+                f"{platform_name}: {platform_manager[platform_name].name}\n"
+                for platform_name in common_platform
+                if is_cookie_client_manager(platform_manager[platform_name].site.client_mgr)
+            ]
+        )
             + "要查看全部平台请输入：“全部”\n中止添加cookie过程请输入：“取消”"
         )
 
@@ -53,7 +53,8 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.got("cookie", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_cookie(state: T_State, cookie: Message = Arg()):
-        client_mgr: CookieClientManager = platform_manager[state["platform"]].site.client_mgr
+        client_mgr: type[CookieClientManager] = cast(type[CookieClientManager],
+                                                     platform_manager[state["platform"]].site.client_mgr)
         cookie_text = cookie.extract_plain_text()
         if not await client_mgr.valid_cookie(cookie_text):
             await add_cookie.reject("无效的 Cookie，请检查后重新输入，详情见<待添加的文档>")

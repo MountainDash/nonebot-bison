@@ -44,15 +44,15 @@ del_sub_matcher = on_command(
 del_sub_matcher.handle()(set_target_user_info)
 do_del_sub(del_sub_matcher)
 
-# add_cookie_matcher = on_command(
-#     "添加cookie",
-#     rule=configurable_to_me,
-#     permission=SUPERUSER,
-#     priority=5,
-#     block=True,
-# )
+add_cookie_matcher = on_command(
+    "添加cookie",
+    rule=configurable_to_me,
+    permission=SUPERUSER,
+    priority=5,
+    block=True,
+)
 # do_add_cookie(add_cookie_matcher)
-#
+
 # add_cookie_target_matcher = on_command(
 #     "关联cookie",
 #     rule=configurable_to_me,

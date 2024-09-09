@@ -7,8 +7,9 @@ from datetime import datetime, timedelta
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
+from sqlalchemy.testing.suite.test_reflection import metadata
 
-from ..types import Target
+from ..types import Target, RegistryMeta
 from ..config import config
 from .http import http_client
 from ..config.db_model import Cookie
@@ -163,12 +164,14 @@ def create_cookie_client_manager(platform_name: str):
 
 
 
-class Site:
+class Site(metaclass=RegistryMeta,base=True):
     schedule_type: Literal["date", "interval", "cron"]
     schedule_setting: dict
     name: str
     client_mgr: type[ClientManager] = DefaultClientManager
     require_browser: bool = False
+    registry: list[type["Site"]]
+
 
     def __str__(self):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"

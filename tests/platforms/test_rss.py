@@ -88,9 +88,21 @@ async def test_fetch_new_1(
     assert post1.title is None
     assert (
         post1.content
-        == "【#統合戦略】 引き続き新テーマ「ミヅキと紺碧の樹」の新要素及びシステムの変更点を一部ご紹介します！"
-        " 今回は「灯火」、「ダイス」、「記号認識」、「鍵」についてです。詳細は添付の画像をご確認ください。"
-        "#アークナイツ https://t.co/ARmptV0Zvu"
+        == "【#統合戦略】 <br />引き続き新テーマ「ミヅキと紺碧の樹」の新要素及びシステムの変更点を一部ご紹介します！ "
+        "<br /><br />"
+        "今回は「灯火」、「ダイス」、「記号認識」、「鍵」についてです。<br />詳細は添付の画像をご確認ください。"
+        "<br /><br />"
+        "#アークナイツ https://t.co/ARmptV0Zvu<br />"
+        '<img src="https://pbs.twimg.com/media/FwZG9YAacAIXDw2?format=jpg&amp;name=orig" />'
+    )
+    plain_content = await post1.get_plain_content()
+    assert (
+        plain_content == "【#統合戦略】 \n"
+        "引き続き新テーマ「ミヅキと紺碧の樹」の新要素及びシステムの変更点を一部ご紹介します！ \n\n"
+        "今回は「灯火」、「ダイス」、「記号認識」、「鍵」についてです。\n"
+        "詳細は添付の画像をご確認ください。\n\n"
+        "#アークナイツ https://t.co/ARmptV0Zvu\n"
+        "[图片]"
     )
 
 
@@ -174,7 +186,9 @@ async def test_fetch_new_4(
     assert len(res2[0][1]) == 1
     post1 = res2[0][1][0]
     assert post1.url == "https://wallhaven.cc/w/85rjej"
-    assert post1.content == "85rjej.jpg"
+    assert post1.content == '<img alt="loading" class="lazyload" src="https://th.wallhaven.cc/small/85/85rjej.jpg" />'
+    plain_content = await post1.get_plain_content()
+    assert plain_content == "[图片]"
 
 
 def test_similar_text_process():

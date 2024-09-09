@@ -3,8 +3,9 @@ from pkgutil import iter_modules
 from collections import defaultdict
 from importlib import import_module
 
-from .platform import Platform, make_no_target_group
 from ..utils import Site
+from ..plugin_config import plugin_config
+from .platform import Platform, make_no_target_group
 
 _package_dir = str(Path(__file__).resolve().parent)
 for _, module_name, _ in iter_modules([_package_dir]):
@@ -25,9 +26,20 @@ for name, platform_list in _platform_list.items():
         platform_manager[name] = make_no_target_group(platform_list)
 
 
+def _get_unavailable_platforms() -> dict[str, str]:
+    res = {}
+    for name, platform in platform_manager.items():
+        if platform.site.require_browser and not plugin_config.bison_use_browser:
+            res[name] = "需要启用 bison_use_browser"
+    return res
+
+
+# platform => reason for not available
+unavailable_paltforms: dict[str, str] = _get_unavailable_platforms()
+
+
 site_manager: dict[str, type[Site]] = {}
 for site in Site.registry:
     if not hasattr(site, "name"):
         continue
     site_manager[site.name] = site
-

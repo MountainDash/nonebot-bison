@@ -183,7 +183,7 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
 
     fakebili.set_raise352(True)
 
-    for state in test_state_list:
+    for state in test_state_list[:-3]:
         logger.info(f"\n\nnow state should be {state}")
         assert _retry_fsm.current_state == state
 
@@ -193,6 +193,13 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
 
         if state == RetryState.BACKOFF:
             freeze_start += timedelta_length * (_retry_fsm.addon.backoff_count + 1) ** 2
+
+    for state in test_state_list[-3:]:
+        logger.info(f"\n\nnow state should be {state}")
+        assert _retry_fsm.current_state == state
+
+        with pytest.raises(ApiCode352Error):
+            await fakebili.get_sub_list(Target("t1"))  # type: ignore
 
     assert client_mgr.refresh_client_call_count == 4 * 3 + 3  # refresh + raise
     assert client_mgr.get_client_call_count == 2 + 4 * 3 + 3  # previous + refresh + raise

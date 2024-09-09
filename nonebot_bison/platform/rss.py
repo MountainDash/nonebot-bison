@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
+from ..utils import Site, text_similarity
 from ..utils.site import create_cookie_client_manager
-from ..utils import Site, text_fletten, text_similarity
 
 
 class RssSite(Site):
@@ -34,7 +34,7 @@ class RssPost(Post):
         for p in soup.find_all("p"):
             p.insert_after("\n")
 
-        return text_fletten(soup.get_text())
+        return soup.get_text()
 
 
 class Rss(NewMessage):
@@ -84,7 +84,7 @@ class Rss(NewMessage):
     async def parse(self, raw_post: RawPost) -> Post:
         title = raw_post.get("title", "")
         soup = bs(raw_post.description, "html.parser")
-        desc = soup.text.strip()
+        desc = raw_post.description
         title, desc = self._text_process(title, desc)
         pics = [x.attrs["src"] for x in soup("img")]
         if raw_post.get("media_content"):

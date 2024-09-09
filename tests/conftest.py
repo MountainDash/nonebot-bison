@@ -18,6 +18,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "superusers": {"10001"},
         "command_start": {""},
         "log_level": "TRACE",
+        "bison_use_browser": True,
     }
 
 
@@ -113,3 +114,12 @@ async def use_legacy_config(app: App):
 
     # 清除单例的缓存
     Singleton._instances.clear()
+
+
+@pytest.fixture
+async def _no_browser(app: App, mocker: MockerFixture):
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.platform import _get_unavailable_platforms
+
+    mocker.patch.object(plugin_config, "bison_use_browser", False)
+    mocker.patch("nonebot_bison.platform.unavailable_paltforms", _get_unavailable_platforms())

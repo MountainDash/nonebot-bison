@@ -147,10 +147,21 @@ async def do_dispatch_command(
     asyncio.create_task(new_matcher_ins.run(bot, event, state))
 
 
+no_permission_matcher = on_command(
+    "添加订阅", rule=configurable_to_me, aliases={"删除订阅", "群管理"}, priority=8, block=True
+)
+
+
+@no_permission_matcher.handle()
+async def send_no_permission():
+    await no_permission_matcher.finish("您没有权限进行此操作，请联系 Bot 管理员")
+
+
 __all__ = [
     "common_platform",
     "add_sub_matcher",
     "query_sub_matcher",
     "del_sub_matcher",
     "group_manage_matcher",
+    "no_permission_matcher",
 ]

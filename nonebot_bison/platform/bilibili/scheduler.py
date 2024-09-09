@@ -68,7 +68,7 @@ class BilibiliClientManager(ClientManager):
 
 class BilibiliSite(Site):
     name = "bilibili.com"
-    schedule_setting = {"seconds": 50}
+    schedule_setting = {"seconds": 60}
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True

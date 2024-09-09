@@ -5,8 +5,8 @@ from nonebot_plugin_saa import MessageFactory
 
 from ..config import config
 from ..utils import parse_text
+from ..platform import site_manager
 from .utils import gen_handle_cancel
-from ..platform import platform_manager
 
 
 def do_del_cookie(del_cookie: type[Matcher]):
@@ -21,9 +21,9 @@ def do_del_cookie(del_cookie: type[Matcher]):
         state["cookie_table"] = {}
         for index, cookie in enumerate(cookies, 1):
             state["cookie_table"][index] = cookie
-            client_mgr = platform_manager[cookie.platform_name].site.client_mgr
+            client_mgr = site_manager[cookie.site_name].client_mgr
             friendly_name = await client_mgr.get_cookie_friendly_name(cookie)
-            res += f"{index} {cookie.platform_name} {friendly_name} {len(cookie.targets)}个关联\n"
+            res += f"{index} {cookie.site_name} {friendly_name} {len(cookie.targets)}个关联\n"
             if res[-1] != "\n":
                 res += "\n"
         res += "请输入要删除的 Cookie 的序号\n输入'取消'中止"

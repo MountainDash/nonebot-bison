@@ -7,12 +7,11 @@ from datetime import datetime, timedelta
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
-from sqlalchemy.testing.suite.test_reflection import metadata
 
-from ..types import Target, RegistryMeta
 from ..config import config
 from .http import http_client
 from ..config.db_model import Cookie
+from ..types import Target, RegistryMeta
 
 
 class ClientManager(ABC):
@@ -46,6 +45,7 @@ class DefaultClientManager(ClientManager):
 def is_cookie_client_manager(manger: type[ClientManager]) -> bool:
     return hasattr(manger, "_cookie_client_manger_")
 
+
 class CookieClientManager(ClientManager):
     _cookie_client_manger_ = True
     _site_name: str
@@ -55,9 +55,7 @@ class CookieClientManager(ClientManager):
     async def init_universal_cookie(cls):
         """移除已有的匿名cookie，添加一个新的匿名cookie"""
         universal_cookies = await config.get_unviersal_cookie(cls._site_name)
-        universal_cookie = Cookie(
-            site_name=cls._site_name, content="{}", is_universal=True, tags={"temporary": True}
-        )
+        universal_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, tags={"temporary": True})
         for cookie in universal_cookies:
             if not cookie.tags.get("temporary"):
                 continue
@@ -95,10 +93,10 @@ class CookieClientManager(ClientManager):
 
         async def _response_hook(resp: httpx.Response):
             if resp.status_code == 200:
-                logger.debug(f"请求成功: {cookie.id} {resp.request.url}")
+                logger.trace(f"请求成功: {cookie.id} {resp.request.url}")
                 cookie.status = "success"
             else:
-                logger.error(f"请求失败:{cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
+                logger.warning(f"请求失败:{cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
                 cookie.status = "failed"
             cookie.last_usage = datetime.now()
             await config.update_cookie(cookie)
@@ -123,9 +121,9 @@ class CookieClientManager(ClientManager):
         client = http_client()
         cookie = await self._choose_cookie(target)
         if cookie.is_universal:
-            logger.debug(f"平台 {self._site_name} 未获取到用户cookie, 使用匿名cookie")
+            logger.trace(f"平台 {self._site_name} 未获取到用户cookie, 使用匿名cookie")
         else:
-            logger.debug(f"平台 {self._site_name} 获取到用户cookie: {cookie.id}")
+            logger.trace(f"平台 {self._site_name} 获取到用户cookie: {cookie.id}")
 
         return await self._assemble_client(client, cookie)
 
@@ -158,14 +156,13 @@ def create_cookie_client_manager(site_name: str) -> type[CookieClientManager]:
     )
 
 
-class Site(metaclass=RegistryMeta,base=True):
+class Site(metaclass=RegistryMeta, base=True):
     schedule_type: Literal["date", "interval", "cron"]
     schedule_setting: dict
     name: str
     client_mgr: type[ClientManager] = DefaultClientManager
     require_browser: bool = False
     registry: list[type["Site"]]
-
 
     def __str__(self):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"

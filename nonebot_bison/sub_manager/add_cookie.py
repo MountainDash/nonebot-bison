@@ -5,8 +5,6 @@ from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
 from nonebot.adapters import Message, MessageTemplate
 
-from ..config import config
-from ..config.db_model import Cookie
 from ..platform import platform_manager
 from .utils import common_platform, gen_handle_cancel
 from ..utils.site import CookieClientManager, is_cookie_client_manager
@@ -64,10 +62,8 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
-        cookie = Cookie(site_name=state["site"].name, content=state["cookie"])
         client_mgr = cast(CookieClientManager, platform_manager[state["platform"]].site.client_mgr)
-        cookie = await client_mgr.init_cookie(cookie)
-        await config.add_cookie(cookie)
+        await client_mgr.add_user_cookie(state["cookie"])
         await add_cookie.finish(
             f"已添加 Cookie: {state['cookie']} 到平台 {state['platform']}" + "\n请使用“关联cookie”为 Cookie 关联订阅"
         )

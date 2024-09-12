@@ -44,26 +44,27 @@ class DefaultClientManager(ClientManager):
 
 class CookieClientManager(ClientManager):
     _site_name: str
-    _cookie_cd: int = 10
+    _default_cd: int = timedelta(seconds=10)
 
     @classmethod
-    async def refresh_universal_cookie(cls):
+    async def refresh_anonymous_cookie(cls):
         """移除已有的匿名cookie，添加一个新的匿名cookie"""
-        universal_cookies = await config.get_unviersal_cookie(cls._site_name)
-        universal_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, tags={"temporary": True})
-        for cookie in universal_cookies:
-            if not cookie.tags.get("temporary"):
+        anonymous_cookies = await config.get_unviersal_cookie(cls._site_name)
+        anonymous_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, is_anonymous=True)
+        for cookie in anonymous_cookies:
+            if not cookie.is_anonymous:
                 continue
             await config.delete_cookie_by_id(cookie.id)
-            universal_cookie.id = cookie.id  # 保持原有的id
-        await config.add_cookie(universal_cookie)
+            anonymous_cookie.id = cookie.id  # 保持原有的id
+        anonymous_cookie.last_usage = datetime.now()  # 使得第一次请求优先使用用户 cookie
+        await config.add_cookie(anonymous_cookie)
 
     @classmethod
-    async def init_cookie(cls, cookie: Cookie) -> Cookie:
-        """初始化 cookie，添加用户 cookie 时使用"""
-        cookie.cd = cls._cookie_cd
-        cookie.last_usage = datetime.now()  # 使得优先使用用户 cookie
-        return cookie
+    async def add_user_cookie(cls, content: str):
+        """添加用户 cookie"""
+        cookie = Cookie(site_name=cls._site_name, content=content)
+        cookie.cd = cls._default_cd
+        config.add_cookie(cookie)
 
     @classmethod
     async def validate_cookie(cls, content: str) -> bool:
@@ -103,12 +104,8 @@ class CookieClientManager(ClientManager):
         cookies = await config.get_universal_cookie(self._site_name)
         if target:
             cookies += await config.get_cookie(self._site_name, target)
-        cookies = (cookie for cookie in cookies if cookie.last_usage + timedelta(seconds=cookie.cd) < datetime.now())
+        cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
         cookie = min(cookies, key=lambda x: x.last_usage)
-        return cookie
-
-    async def _check_cookie(self, cookie: Cookie) -> Cookie:
-        """检查Cookie，可以做一些自定义的逻辑，比如说Site的统一风控"""
         return cookie
 
     async def get_client(self, target: Target | None) -> AsyncClient:

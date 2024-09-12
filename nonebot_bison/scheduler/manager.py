@@ -32,7 +32,7 @@ async def init_scheduler():
             _schedule_class_platform_dict[site].append(platform_name)
     for site, target_list in _schedule_class_dict.items():
         if is_cookie_client_manager(site.client_mgr):
-            await site.client_mgr.init_universal_cookie()
+            await site.client_mgr.refresh_universal_cookie()
         if not plugin_config.bison_use_browser and site.require_browser:
             logger.warning(f"{site.name} requires browser, it will not schedule.")
             continue

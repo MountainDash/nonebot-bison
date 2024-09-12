@@ -52,7 +52,7 @@ class CookieClientManager(ClientManager):
     _cookie_cd: int = 10
 
     @classmethod
-    async def init_universal_cookie(cls):
+    async def refresh_universal_cookie(cls):
         """移除已有的匿名cookie，添加一个新的匿名cookie"""
         universal_cookies = await config.get_unviersal_cookie(cls._site_name)
         universal_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, tags={"temporary": True})
@@ -71,7 +71,7 @@ class CookieClientManager(ClientManager):
         return cookie
 
     @classmethod
-    async def valid_cookie(cls, content: str) -> bool:
+    async def validate_cookie(cls, content: str) -> bool:
         """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
         try:
             data = json.loads(content)
@@ -133,7 +133,6 @@ class CookieClientManager(ClientManager):
         if cookie:
             cookies.update(json.loads(cookie.content))
         client.cookies = cookies
-        client._bison_cookie = cookie
         client.event_hooks = {"response": [self._generate_hook(cookie)]}
         return client
 

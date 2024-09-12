@@ -79,13 +79,23 @@ class Cookie(Model):
     # Cookie 当前的状态
     status: Mapped[str] = mapped_column(String(20), default="")
     # 使用一次之后，需要的冷却时间
-    cd: Mapped[int] = mapped_column(default=0)
-    # 是否是通用 Cookie，默认用于匿名 Cookie
+    cd_milliseconds: Mapped[int] = mapped_column(default=0)
+    # 是否是通用 Cookie（对所有Target都有效）
     is_universal: Mapped[bool] = mapped_column(default=False)
+    # 是否是匿名 Cookie
+    is_anonymous: Mapped[bool] = mapped_column(default=False)
     # 标签，扩展用
     tags: Mapped[dict[str, Any]] = mapped_column(JSON().with_variant(JSONB, "postgresql"), default={})
 
     targets: Mapped[list["CookieTarget"]] = relationship(back_populates="cookie")
+
+    @property
+    def cd(self) -> datetime.timedelta:
+        return datetime.timedelta(milliseconds=self.cd_milliseconds)
+
+    @cd.setter
+    def cd(self, value: datetime.timedelta):
+        self.cd_milliseconds = int(value.total_seconds() * 1000)
 
 
 class CookieTarget(Model):

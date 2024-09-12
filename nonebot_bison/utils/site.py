@@ -42,12 +42,7 @@ class DefaultClientManager(ClientManager):
         pass
 
 
-def is_cookie_client_manager(manger: type[ClientManager]) -> bool:
-    return hasattr(manger, "_cookie_client_manger_")
-
-
 class CookieClientManager(ClientManager):
-    _cookie_client_manger_ = True
     _site_name: str
     _cookie_cd: int = 10
 
@@ -144,6 +139,10 @@ class CookieClientManager(ClientManager):
 
     async def refresh_client(self):
         pass
+
+
+def is_cookie_client_manager(manger: type[ClientManager]) -> bool:
+    return issubclass(manger, CookieClientManager)
 
 
 def create_cookie_client_manager(site_name: str) -> type[CookieClientManager]:

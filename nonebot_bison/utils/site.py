@@ -173,3 +173,7 @@ def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_
             "client_mgr": DefaultClientManager,
         },
     )
+
+
+class SkipRequestException(Exception):
+    pass

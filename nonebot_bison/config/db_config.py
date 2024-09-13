@@ -296,7 +296,7 @@ class DBConfig:
         async with create_session() as sess:
             cookie_in_db: Cookie | None = await sess.scalar(select(Cookie).where(Cookie.id == cookie.id))
             if not cookie_in_db:
-                return
+                raise ValueError(f"cookie {cookie.id} not found")
             cookie_in_db.content = cookie.content
             cookie_in_db.last_usage = cookie.last_usage
             cookie_in_db.status = cookie.status
@@ -333,9 +333,11 @@ class DBConfig:
             sess.add(cookie_target)
             await sess.commit()
 
-    async def delete_cookie_target(self, target: T_Target, site_name: str, cookie_id: int):
+    async def delete_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
         async with create_session() as sess:
-            target_obj = await sess.scalar(select(Target).where(Target.site_name == site_name, Target.target == target))
+            target_obj = await sess.scalar(
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
+            )
             cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
             await sess.execute(
                 delete(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie == cookie_obj)

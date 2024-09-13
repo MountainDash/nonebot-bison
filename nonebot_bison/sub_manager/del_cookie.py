@@ -14,7 +14,7 @@ def do_del_cookie(del_cookie: type[Matcher]):
 
     @del_cookie.handle()
     async def send_list(state: T_State):
-        cookies = await config.get_cookie()
+        cookies = await config.get_cookie(is_anonymous=False)
         if not cookies:
             await del_cookie.finish("暂无已添加 Cookie\n请使用“添加cookie”命令添加")
         res = "已添加的 Cookie 为：\n"

@@ -49,7 +49,7 @@ class CookieClientManager(ClientManager):
     @classmethod
     async def refresh_anonymous_cookie(cls):
         """移除已有的匿名cookie，添加一个新的匿名cookie"""
-        anonymous_cookies = await config.get_unviersal_cookie(cls._site_name)
+        anonymous_cookies = await config.get_cookie(cls._site_name, is_anonymous=True)
         anonymous_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, is_anonymous=True)
         for cookie in anonymous_cookies:
             if not cookie.is_anonymous:
@@ -99,11 +99,9 @@ class CookieClientManager(ClientManager):
 
         return _response_hook
 
-    async def _choose_cookie(self, target: Target) -> Cookie:
+    async def _choose_cookie(self, target: Target | None) -> Cookie:
         """选择 cookie 的具体算法"""
-        cookies = await config.get_universal_cookie(self._site_name)
-        if target:
-            cookies += await config.get_cookie(self._site_name, target)
+        cookies = await config.get_cookie(self._site_name, target)
         cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
         cookie = min(cookies, key=lambda x: x.last_usage)
         return cookie

@@ -36,10 +36,12 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     @add_cookie_target_matcher.handle()
     async def init_promote_cookie(state: T_State):
 
-        cookies = await config.get_cookie(site_name=state["site"].name)
+        # 获取 site 的所有用户 cookie，再排除掉已经关联的 cookie，剩下的就是可以关联的 cookie
+        cookies = await config.get_cookie(site_name=state["site"].name, is_anonymous=False)
         associated_cookies = await config.get_cookie(
             target=state["target"]["target"],
             site_name=state["site"].name,
+            is_anonymous=False,
         )
         associated_cookie_ids = {cookie.id for cookie in associated_cookies}
         cookies = [cookie for cookie in cookies if cookie.id not in associated_cookie_ids]

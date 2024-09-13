@@ -259,35 +259,31 @@ class DBConfig:
             )
         return res
 
-    async def get_cookie(self, site_name: str = None, target: T_Target = None) -> Sequence[Cookie]:
-        """根据 site_name 和 target 获取 cookie，不会返回匿名cookie"""
+    async def get_cookie(
+        self,
+        site_name: str | None = None,
+        target: T_Target | None = None,
+        is_universal: bool | None = None,
+        is_anonymous: bool | None = None,
+    ) -> Sequence[Cookie]:
+        """获取满足传入条件的所有 cookie"""
         async with create_session() as sess:
-            query = select(Cookie).distinct().where(Cookie.is_universal == False)  # noqa: E712
+            query = select(Cookie).distinct()
+            if is_universal is not None:
+                query = query.where(Cookie.is_universal == is_universal)
+            if is_anonymous is not None:
+                query = query.where(Cookie.is_anonymous == is_anonymous)
             if site_name:
                 query = query.where(Cookie.site_name == site_name)
             query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
             res = (await sess.scalars(query)).all()
             if target:
+                # 如果指定了 target，过滤掉不满足要求的cookie
                 query = select(CookieTarget.cookie_id).join(Target).where(Target.target == target)
                 ids = set((await sess.scalars(query)).all())
-                res = [cookie for cookie in res if cookie.id in ids]
+                # 如果指定了 target 且未指定 is_universal，则添加返回 universal cookie
+                res = [cookie for cookie in res if cookie.id in ids or cookie.is_universal]
             return res
-
-    async def get_unviersal_cookie(self, site_name: str = None) -> Sequence[Cookie]:
-        async with create_session() as sess:
-            query = select(Cookie).distinct().where(Cookie.is_universal == True)  # noqa: E712
-            if site_name:
-                query = query.where(Cookie.site_name == site_name)
-            res = (await sess.scalars(query)).all()
-            return res
-
-    async def add_cookie_with_content(self, site_name: str, content: str) -> int:
-        async with create_session() as sess:
-            cookie = Cookie(site_name=site_name, content=content)
-            sess.add(cookie)
-            await sess.commit()
-            await sess.refresh(cookie)
-            return cookie.id
 
     async def add_cookie(self, cookie: Cookie) -> int:
         async with create_session() as sess:
@@ -319,21 +315,6 @@ class DBConfig:
                 raise Exception(f"cookie {cookie.id} in use")
             await sess.execute(delete(Cookie).where(Cookie.id == cookie_id))
             await sess.commit()
-
-    async def get_cookie_by_target(self, target: T_Target, site_name: str) -> Sequence[Cookie]:
-        async with create_session() as sess:
-            query = (
-                select(Cookie)
-                .join(CookieTarget)
-                .join(Target)
-                .where(Target.site_name == site_name, Target.target == target)
-            )
-            return (await sess.scalars(query)).all()
-
-    async def get_universal_cookie(self, site_name: str) -> Sequence[Cookie]:
-        async with create_session() as sess:
-            query = select(Cookie).where(Cookie.site_name == site_name).where(Cookie.is_universal == True)  # noqa: E712
-            return (await sess.scalars(query)).all()
 
     async def add_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
         """通过 cookie_id 可以唯一确定一个 Cookie，通过 target 和 platform_name 可以唯一确定一个 Target"""

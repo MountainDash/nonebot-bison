@@ -108,7 +108,9 @@ async def generate_sub_list_text(
                 if sub.tags:
                     res += " {}".format(", ".join(sub.tags)) + "\n"
             if is_show_cookie:
-                target_cookies = await config.get_cookie(target=sub.target.target, site_name=platform.site.name)
+                target_cookies = await config.get_cookie(
+                    target=sub.target.target, site_name=platform.site.name, is_anonymous=False
+                )
                 if target_cookies:
                     res += "  关联的 Cookie：\n"
                     for cookie in target_cookies:

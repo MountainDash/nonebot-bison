@@ -16,7 +16,7 @@ def do_del_cookie(del_cookie: type[Matcher]):
     async def send_list(state: T_State):
         cookies = await config.get_cookie(is_anonymous=False)
         if not cookies:
-            await del_cookie.finish("暂无已添加 Cookie\n请使用“添加cookie”命令添加")
+            await del_cookie.finish("暂无已添加的 Cookie\n请使用“添加cookie”命令添加")
         res = "已添加的 Cookie 为：\n"
         state["cookie_table"] = {}
         for index, cookie in enumerate(cookies, 1):
@@ -40,6 +40,8 @@ def do_del_cookie(del_cookie: type[Matcher]):
             if cookie.targets:
                 await del_cookie.reject("只能删除未关联的 Cookie，请使用“取消关联cookie”命令取消关联")
             await config.delete_cookie_by_id(cookie.id)
+        except KeyError:
+            await del_cookie.reject("序号错误")
         except Exception:
             await del_cookie.reject("删除错误")
         else:

@@ -1,20 +1,20 @@
 import asyncio
 from collections import defaultdict
-from collections.abc import Callable, Sequence, Awaitable
 from datetime import time, datetime
+from collections.abc import Callable, Sequence, Awaitable
 
 from nonebot.compat import model_dump
-from nonebot_plugin_datastore import create_session
-from nonebot_plugin_saa import PlatformTarget
-from sqlalchemy import func, delete, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, delete, select
+from nonebot_plugin_saa import PlatformTarget
+from nonebot_plugin_datastore import create_session
 
-from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
-from .utils import NoSuchTargetException, DuplicateCookieTargetException
-from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 from ..types import Tag
 from ..types import Target as T_Target
+from .utils import NoSuchTargetException, DuplicateCookieTargetException
+from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
+from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 
 
 def _get_time():
@@ -332,18 +332,14 @@ class DBConfig:
 
     async def get_universal_cookie(self, site_name: str) -> Sequence[Cookie]:
         async with create_session() as sess:
-            query = (
-                select(Cookie)
-                .where(Cookie.site_name == site_name)
-                .where(Cookie.is_universal == True)  # noqa: E712
-            )
+            query = select(Cookie).where(Cookie.site_name == site_name).where(Cookie.is_universal == True)  # noqa: E712
             return (await sess.scalars(query)).all()
 
-    async def add_cookie_target(self, target: T_Target, site_name: str, cookie_id: int):
+    async def add_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
+        """通过 cookie_id 可以唯一确定一个 Cookie，通过 target 和 platform_name 可以唯一确定一个 Target"""
         async with create_session() as sess:
             target_obj = await sess.scalar(
-                select(Target).where(Target.target == target)
-                # TODO: 仅判断 target，可能会有重名现象，还要判断 platform_name
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
             # check if relation exists
             cookie_target = await sess.scalar(
@@ -358,9 +354,7 @@ class DBConfig:
 
     async def delete_cookie_target(self, target: T_Target, site_name: str, cookie_id: int):
         async with create_session() as sess:
-            target_obj = await sess.scalar(
-                select(Target).where(Target.site_name == site_name, Target.target == target)
-            )
+            target_obj = await sess.scalar(select(Target).where(Target.site_name == site_name, Target.target == target))
             cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
             await sess.execute(
                 delete(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie == cookie_obj)

@@ -8,7 +8,7 @@ from nonebot.internal.adapter import MessageTemplate
 
 from ..config import config
 from ..utils import parse_text
-from ..platform import platform_manager, site_manager
+from ..platform import platform_manager
 from ..utils.site import CookieClientManager
 from .utils import gen_handle_cancel, generate_sub_list_text
 
@@ -64,7 +64,7 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
 
     @add_cookie_target_matcher.handle()
     async def add_cookie_target_process(state: T_State):
-        await config.add_cookie_target(state["target"]["target"], state["site"].name, state["cookie"].id)
+        await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], state["cookie"].id)
         cookie = state["cookie"]
         client_mgr = cast(CookieClientManager, state["site"].client_mgr)
         await add_cookie_target_matcher.finish(

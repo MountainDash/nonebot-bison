@@ -13,8 +13,8 @@ from nonebot_plugin_saa import PlatformTarget, extract_target
 
 from ..config import config
 from ..types import Category
-from ..platform import platform_manager, site_manager
 from ..plugin_config import plugin_config
+from ..platform import site_manager, platform_manager
 from ..utils.site import CookieClientManager, is_cookie_client_manager
 
 
@@ -75,6 +75,7 @@ async def generate_sub_list_text(
     is_show_cookie=False,
     is_hide_no_cookie_platfrom=False,
 ):
+    """根据配置参数，生产订阅列表文本，同时将订阅信息存入state["sub_table"]"""
     if user_info:
         sub_list = await config.list_subscribe(user_info)
     else:
@@ -107,9 +108,7 @@ async def generate_sub_list_text(
                 if sub.tags:
                     res += " {}".format(", ".join(sub.tags)) + "\n"
             if is_show_cookie:
-                target_cookies = await config.get_cookie(
-                    target=sub.target.target, site_name=platform.site.name
-                )
+                target_cookies = await config.get_cookie(target=sub.target.target, site_name=platform.site.name)
                 if target_cookies:
                     res += "  关联的 Cookie：\n"
                     for cookie in target_cookies:

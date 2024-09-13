@@ -46,6 +46,7 @@ do_del_sub(del_sub_matcher)
 
 add_cookie_matcher = on_command(
     "添加cookie",
+    aliases={"添加Cookie"},
     rule=configurable_to_me,
     permission=SUPERUSER,
     priority=5,
@@ -55,6 +56,7 @@ do_add_cookie(add_cookie_matcher)
 
 add_cookie_target_matcher = on_command(
     "关联cookie",
+    aliases={"关联Cookie"},
     rule=configurable_to_me,
     permission=SUPERUSER,
     priority=5,
@@ -64,6 +66,7 @@ do_add_cookie_target(add_cookie_target_matcher)
 
 del_cookie_target_matcher = on_command(
     "取消关联cookie",
+    aliases={"取消关联Cookie"},
     rule=configurable_to_me,
     permission=SUPERUSER,
     priority=5,
@@ -73,13 +76,13 @@ do_del_cookie_target(del_cookie_target_matcher)
 
 del_cookie_matcher = on_command(
     "删除cookie",
+    aliases={"删除Cookie"},
     rule=configurable_to_me,
     permission=SUPERUSER,
     priority=5,
     block=True,
 )
 do_del_cookie(del_cookie_matcher)
-
 
 group_manage_matcher = on_command("群管理", rule=to_me(), permission=SUPERUSER, priority=4, block=True)
 

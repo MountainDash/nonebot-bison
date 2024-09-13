@@ -64,7 +64,7 @@ class CookieClientManager(ClientManager):
         """添加用户 cookie"""
         cookie = Cookie(site_name=cls._site_name, content=content)
         cookie.cd = cls._default_cd
-        config.add_cookie(cookie)
+        await config.add_cookie(cookie)
 
     @classmethod
     async def validate_cookie(cls, content: str) -> bool:

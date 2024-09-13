@@ -57,7 +57,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
         )
         cookie_text = cookie.extract_plain_text()
         if not await client_mgr.validate_cookie(cookie_text):
-            await add_cookie.reject("无效的 Cookie，请检查后重新输入，详情见<待添加的文档>")
+            await add_cookie.reject(state["site"].cookie_format_prompt)
         state["cookie"] = cookie_text
 
     @add_cookie.handle()

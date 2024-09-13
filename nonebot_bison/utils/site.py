@@ -156,6 +156,7 @@ class Site(metaclass=RegistryMeta, base=True):
     client_mgr: type[ClientManager] = DefaultClientManager
     require_browser: bool = False
     registry: list[type["Site"]]
+    cookie_format_prompt = "无效的 Cookie，请检查后重新输入，详情见<待添加的文档>"
 
     def __str__(self):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"

@@ -14,7 +14,7 @@ from httpx import URL as HttpxURL
 from nonebot_bison.types import Target
 
 from .models import DynRawPost
-from .fsm import FSM, Condition, StateGraph, Transition, ActionReturn
+from .fsm import FSM, Condition, StateGraph, Transition, ActionReturn, reset_on_exception
 
 if TYPE_CHECKING:
     from .platforms import Bilibili
@@ -217,6 +217,11 @@ class RetryFSM(FSM[RetryState, RetryEvent, RetryAddon[TBilibili]]):
     async def reset(self):
         self.addon.reset_all()
         await super().reset()
+
+    @override
+    @reset_on_exception
+    async def emit(self, event: RetryEvent):
+        await super().emit(event)
 
 
 # FIXME: 拿出来是方便测试了，但全局单例会导致所有被装饰的函数共享状态，有待改进

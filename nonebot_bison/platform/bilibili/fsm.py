@@ -2,10 +2,24 @@ import sys
 import asyncio
 import inspect
 from enum import Enum
+from functools import wraps
 from dataclasses import dataclass
 from collections.abc import Set as AbstractSet
 from collections.abc import Callable, Sequence, Awaitable, AsyncGenerator
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Protocol, TypeAlias, TypedDict, NamedTuple, runtime_checkable
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    TypeVar,
+    Protocol,
+    ParamSpec,
+    TypeAlias,
+    TypedDict,
+    NamedTuple,
+    Concatenate,
+    overload,
+    runtime_checkable,
+)
 
 from nonebot import logger
 
@@ -17,6 +31,7 @@ TAddon = TypeVar("TAddon", contravariant=True)
 TState = TypeVar("TState", contravariant=True)
 TEvent = TypeVar("TEvent", contravariant=True)
 TFSM = TypeVar("TFSM", bound="FSM", contravariant=True)
+P = ParamSpec("P")
 
 
 class StateError(Exception): ...
@@ -163,6 +178,52 @@ class FSM(Generic[TState, TEvent, TAddon]):
         self.started = False
 
         del self.machine
+        self.current_state = self.graph["initial"]
         self.machine = self._core()
 
         logger.trace("FSM closed")
+
+
+@overload
+def reset_on_exception(
+    func: Callable[Concatenate[TFSM, P], Awaitable[ActionReturn]],
+) -> Callable[Concatenate[TFSM, P], Awaitable[ActionReturn]]:
+    """自动在发生异常后重置 FSM"""
+
+
+@overload
+def reset_on_exception(
+    auto_start: bool = False,
+) -> Callable[
+    [Callable[Concatenate[TFSM, P], Awaitable[ActionReturn]]], Callable[Concatenate[TFSM, P], Awaitable[ActionReturn]]
+]:
+    """自动在异常后重置 FSM，当 auto_start 为 True 时，自动启动 FSM"""
+
+
+# 参考自 dataclasses.dataclass 的实现
+def reset_on_exception(func=None, /, *, auto_start=False):  # pyright: ignore[reportInconsistentOverload]
+    def warp(func: Callable[Concatenate[TFSM, P], Awaitable[ActionReturn]]):
+        return __reset_clear_up(func, auto_start)
+
+    # 判断调用的是 @reset_on_exception 还是 @reset_on_exception(...)
+    if func is None:
+        # 调用的是带括号的
+        return warp
+
+    # 调用的是不带括号的
+    return warp(func)
+
+
+def __reset_clear_up(func: Callable[Concatenate[TFSM, P], Awaitable[ActionReturn]], auto_start: bool):
+    @wraps(func)
+    async def wrapper(fsm_self: TFSM, *args: P.args, **kwargs: P.kwargs) -> ActionReturn:
+        try:
+            return await func(fsm_self, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"Exception in {func.__name__}: {e}")
+            await fsm_self.reset()
+            if auto_start and not fsm_self.started:
+                await fsm_self.start()
+            raise e
+
+    return wrapper

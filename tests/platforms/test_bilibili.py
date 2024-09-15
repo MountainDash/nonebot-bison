@@ -59,6 +59,92 @@ def without_dynamic(app: App):
 
 
 @pytest.mark.asyncio
+async def test_reset_on_exception(app: App):
+    from strenum import StrEnum
+
+    from nonebot_bison.platform.bilibili.fsm import FSM, StateGraph, Transition, ActionReturn, reset_on_exception
+
+    class State(StrEnum):
+        A = "A"
+        B = "B"
+        C = "C"
+
+    class Event(StrEnum):
+        A = "A"
+        B = "B"
+        C = "C"
+
+    class Addon:
+        pass
+
+    async def raction(from_: State, event: Event, to: State, addon: Addon) -> ActionReturn:
+        logger.info(f"action: {from_} -> {to}")
+        raise RuntimeError("test")
+
+    async def action(from_: State, event: Event, to: State, addon: Addon) -> ActionReturn:
+        logger.info(f"action: {from_} -> {to}")
+
+    graph: StateGraph[State, Event, Addon] = {
+        "transitions": {
+            State.A: {
+                Event.A: Transition(raction, State.B),
+                Event.B: Transition(action, State.C),
+            },
+            State.B: {
+                Event.B: Transition(action, State.C),
+            },
+            State.C: {
+                Event.C: Transition(action, State.A),
+            },
+        },
+        "initial": State.A,
+    }
+
+    addon = Addon()
+
+    class AFSM(FSM[State, Event, Addon]):
+        @reset_on_exception(auto_start=True)
+        async def emit(self, event: Event):
+            return await super().emit(event)
+
+    fsm = AFSM(graph, addon)
+
+    await fsm.start()
+    with pytest.raises(RuntimeError):
+        await fsm.emit(Event.A)
+
+    assert fsm.started is True
+    await fsm.emit(Event.B)
+    await fsm.emit(Event.C)
+
+    class BFSM(FSM[State, Event, Addon]):
+        @reset_on_exception
+        async def emit(self, event: Event):
+            return await super().emit(event)
+
+    fsm = BFSM(graph, addon)
+    await fsm.start()
+    with pytest.raises(RuntimeError):
+        await fsm.emit(Event.A)
+
+    assert fsm.started is False
+    with pytest.raises(TypeError, match="can't send non-None value to a just-started async generator"):
+        await fsm.emit(Event.B)
+
+    class CFSM(FSM[State, Event, Addon]): ...
+
+    fsm = CFSM(graph, addon)
+    await fsm.start()
+    with pytest.raises(RuntimeError):
+        await fsm.emit(Event.A)
+
+    assert fsm.started is True
+
+    with pytest.raises(StopAsyncIteration):
+        await fsm.emit(Event.B)
+
+
+@pytest.mark.asyncio
 async def test_retry_for_352(app: App, mocker: MockerFixture):
     from nonebot_bison.post import Post
     from nonebot_bison.types import Target, RawPost

@@ -6,14 +6,22 @@ class PlatformConfig(BaseModel):
     categories: dict[int, str]
     enabledTag: bool
     platformName: str
+    site_name: str
     hasTarget: bool
 
 
+class SiteConfig(BaseModel):
+    name: str
+    enable_cookie: bool
+
+
 AllPlatformConf = dict[str, PlatformConfig]
+AllSiteConf = dict[str, SiteConfig]
 
 
 class GlobalConf(BaseModel):
     platformConf: AllPlatformConf
+    siteConf: AllSiteConf
 
 
 class TokenResp(BaseModel):
@@ -50,3 +58,40 @@ class AddSubscribeReq(BaseModel):
 class StatusResp(BaseModel):
     ok: bool
     msg: str
+
+
+from typing import Any
+from datetime import datetime
+
+from pydantic import BaseModel
+
+
+class Target(BaseModel):
+    platform_name: str
+    target_name: str
+    target: str
+
+    class Config:
+        orm_mode = True
+
+
+class Cookie(BaseModel):
+    site_name: str
+    friendly_name: str
+    last_usage: datetime
+    status: str
+    cd_milliseconds: int
+    is_universal: bool
+    is_anonymous: bool
+    tags: dict[str, Any]
+
+    class Config:
+        orm_mode = True
+
+
+class CookieTarget(BaseModel):
+    target: Target
+    cookie: Cookie
+
+    class Config:
+        orm_mode = True

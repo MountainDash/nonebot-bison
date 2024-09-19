@@ -17,9 +17,11 @@ from .token_manager import token_manager
 from ..config.db_config import SubscribeDupException
 from ..config import NoSuchUserException, NoSuchTargetException, NoSuchSubscribeException, config
 from .types import (
+    Cookie,
     TokenResp,
     GlobalConf,
     StatusResp,
+    CookieTarget,
     SubscribeResp,
     PlatformConfig,
     AddSubscribeReq,
@@ -197,3 +199,33 @@ async def update_weigth_config(platformName: str, target: str, weight_config: We
     except NoSuchTargetException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "no such subscribe")
     return StatusResp(ok=True, msg="")
+
+
+@router.get("/cookie")
+async def get_cookie() -> list[Cookie]:
+    pass
+
+
+@router.post("/cookie")
+async def add_cookie(site_name: str, content: str) -> StatusResp:
+    pass
+
+
+@router.delete("/cookie")
+async def del_cookie(site_name: str, content: str) -> StatusResp:
+    pass
+
+
+@router.get("/cookie_target")
+async def get_cookie_target() -> list[CookieTarget]:
+    pass
+
+
+@router.post("/cookie_target")
+async def add_cookie_target(site_name: str, target: str) -> StatusResp:
+    pass
+
+
+@router.delete("/cookie_target")
+async def del_cookie_target(site_name: str, target: str) -> StatusResp:
+    pass

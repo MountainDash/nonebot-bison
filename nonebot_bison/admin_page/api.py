@@ -201,31 +201,31 @@ async def update_weigth_config(platformName: str, target: str, weight_config: We
     return StatusResp(ok=True, msg="")
 
 
-@router.get("/cookie")
+@router.get("/cookie", dependencies=[Depends(check_is_superuser)])
 async def get_cookie() -> list[Cookie]:
     pass
 
 
-@router.post("/cookie")
+@router.post("/cookie", dependencies=[Depends(check_is_superuser)])
 async def add_cookie(site_name: str, content: str) -> StatusResp:
     pass
 
 
-@router.delete("/cookie")
+@router.delete("/cookie", dependencies=[Depends(check_is_superuser)])
 async def del_cookie(site_name: str, content: str) -> StatusResp:
     pass
 
 
-@router.get("/cookie_target")
+@router.get("/cookie_target", dependencies=[Depends(check_is_superuser)])
 async def get_cookie_target() -> list[CookieTarget]:
     pass
 
 
-@router.post("/cookie_target")
+@router.post("/cookie_target", dependencies=[Depends(check_is_superuser)])
 async def add_cookie_target(site_name: str, target: str) -> StatusResp:
     pass
 
 
-@router.delete("/cookie_target")
+@router.delete("/cookie_target", dependencies=[Depends(check_is_superuser)])
 async def del_cookie_target(site_name: str, target: str) -> StatusResp:
     pass

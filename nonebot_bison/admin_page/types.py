@@ -71,11 +71,9 @@ class Target(BaseModel):
     target_name: str
     target: str
 
-    class Config:
-        orm_mode = True
-
 
 class Cookie(BaseModel):
+    id: int
     site_name: str
     friendly_name: str
     last_usage: datetime
@@ -85,13 +83,7 @@ class Cookie(BaseModel):
     is_anonymous: bool
     tags: dict[str, Any]
 
-    class Config:
-        orm_mode = True
-
 
 class CookieTarget(BaseModel):
     target: Target
-    cookie: Cookie
-
-    class Config:
-        orm_mode = True
+    cookie_id: int

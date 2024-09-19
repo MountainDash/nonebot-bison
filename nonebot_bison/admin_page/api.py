@@ -202,7 +202,7 @@ async def update_weigth_config(platformName: str, target: str, weight_config: We
 
 
 @router.get("/cookie", dependencies=[Depends(check_is_superuser)])
-async def get_cookie() -> list[Cookie]:
+async def get_cookie(site_name: str = None, target: str = None) -> list[Cookie]:
     pass
 
 
@@ -211,21 +211,21 @@ async def add_cookie(site_name: str, content: str) -> StatusResp:
     pass
 
 
-@router.delete("/cookie", dependencies=[Depends(check_is_superuser)])
-async def del_cookie(site_name: str, content: str) -> StatusResp:
+@router.delete("/cookie/{cookie_id}", dependencies=[Depends(check_is_superuser)])
+async def del_cookie(cookie_id: int) -> StatusResp:
     pass
 
 
 @router.get("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def get_cookie_target() -> list[CookieTarget]:
+async def get_cookie_target(site_name: str = None, target: str = None, cookie_id: int = None) -> list[CookieTarget]:
     pass
 
 
 @router.post("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def add_cookie_target(site_name: str, target: str) -> StatusResp:
+async def add_cookie_target(site_name: str, target: str, cookie_id: int) -> StatusResp:
     pass
 
 
 @router.delete("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def del_cookie_target(site_name: str, target: str) -> StatusResp:
+async def del_cookie_target(site_name: str, target: str, cookie_id: int) -> StatusResp:
     pass

@@ -1,3 +1,5 @@
+from typing import cast
+
 import nonebot
 from fastapi import status
 from fastapi.routing import APIRouter
@@ -12,14 +14,16 @@ from ..apis import check_sub_target
 from .jwt import load_jwt, pack_jwt
 from ..types import Target as T_Target
 from ..utils.get_bot import get_groups
-from ..platform import platform_manager
 from .token_manager import token_manager
 from ..config.db_config import SubscribeDupException
+from ..platform import site_manager, platform_manager
+from ..utils.site import CookieClientManager, is_cookie_client_manager
 from ..config import NoSuchUserException, NoSuchTargetException, NoSuchSubscribeException, config
 from .types import (
     Cookie,
     TokenResp,
     GlobalConf,
+    SiteConfig,
     StatusResp,
     CookieTarget,
     SubscribeResp,
@@ -56,16 +60,20 @@ async def check_is_superuser(token_obj: dict = Depends(get_jwt_obj)):
 
 @router.get("/global_conf")
 async def get_global_conf() -> GlobalConf:
-    res = {}
+    platform_res = {}
     for platform_name, platform in platform_manager.items():
-        res[platform_name] = PlatformConfig(
+        platform_res[platform_name] = PlatformConfig(
             platformName=platform_name,
             categories=platform.categories,
             enabledTag=platform.enable_tag,
+            site_name=platform.site.name,
             name=platform.name,
             hasTarget=getattr(platform, "has_target"),
         )
-    return GlobalConf(platformConf=res)
+    site_res = {}
+    for site_name, site in site_manager.items():
+        site_res[site_name] = SiteConfig(name=site_name, enable_cookie=is_cookie_client_manager(site.client_mgr))
+    return GlobalConf(platformConf=platform_res, siteConf=site_res)
 
 
 async def get_admin_groups(qq: int):
@@ -203,29 +211,60 @@ async def update_weigth_config(platformName: str, target: str, weight_config: We
 
 @router.get("/cookie", dependencies=[Depends(check_is_superuser)])
 async def get_cookie(site_name: str = None, target: str = None) -> list[Cookie]:
-    pass
+    cookies_in_db = await config.get_cookie(site_name, is_anonymous=False)
+    client_mgr = cast(CookieClientManager, site_manager[site_name].client_mgr)
+    friendly_names = [await client_mgr.get_cookie_friendly_name(x) for x in cookies_in_db]
+    return [
+        Cookie(
+            id=cookies_in_db[i].id,
+            friendly_name=friendly_names[i],
+            site_name=cookies_in_db[i].site_name,
+            last_usage=cookies_in_db[i].last_usage,
+            status=cookies_in_db[i].status,
+            cd_milliseconds=cookies_in_db[i].cd_milliseconds,
+            is_universal=cookies_in_db[i].is_universal,
+            is_anonymous=cookies_in_db[i].is_anonymous,
+            tags=cookies_in_db[i].tags,
+        )
+        for i in range(len(cookies_in_db))
+    ]
 
 
 @router.post("/cookie", dependencies=[Depends(check_is_superuser)])
 async def add_cookie(site_name: str, content: str) -> StatusResp:
-    pass
+    client_mgr = cast(CookieClientManager, site_manager[site_name].client_mgr)
+    await client_mgr.add_user_cookie(content)
+    return StatusResp(ok=True, msg="")
 
 
 @router.delete("/cookie/{cookie_id}", dependencies=[Depends(check_is_superuser)])
-async def del_cookie(cookie_id: int) -> StatusResp:
-    pass
+async def delete_cookie_by_id(cookie_id: int) -> StatusResp:
+    await config.delete_cookie_by_id(cookie_id)
+    return StatusResp(ok=True, msg="")
 
 
 @router.get("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def get_cookie_target(site_name: str = None, target: str = None, cookie_id: int = None) -> list[CookieTarget]:
-    pass
+async def get_cookie_target(
+    site_name: str | None = None, target: str | None = None, cookie_id: int | None = None
+) -> list[CookieTarget]:
+    cookie_targets = await config.get_cookie_target()
+    # TODO: filter in SQL
+    return [
+        x
+        for x in cookie_targets
+        if (site_name is None or x.cookie.site_name == site_name)
+        and (target is None or x.target.target == target)
+        and (cookie_id is None or x.cookie.id == cookie_id)
+    ]
 
 
 @router.post("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def add_cookie_target(site_name: str, target: str, cookie_id: int) -> StatusResp:
-    pass
+async def add_cookie_target(platform_name: str, target: str, cookie_id: int) -> StatusResp:
+    await config.add_cookie_target(target, platform_name, cookie_id)
+    return StatusResp(ok=True, msg="")
 
 
 @router.delete("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def del_cookie_target(site_name: str, target: str, cookie_id: int) -> StatusResp:
-    pass
+async def del_cookie_target(platform_name: str, target: str, cookie_id: int) -> StatusResp:
+    await config.delete_cookie_target(target, platform_name, cookie_id)
+    return StatusResp(ok=True, msg="")

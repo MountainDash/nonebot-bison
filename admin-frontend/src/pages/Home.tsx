@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { Breadcrumb, Layout, Menu } from '@arco-design/web-react';
-import { IconRobot, IconDashboard } from '@arco-design/web-react/icon';
+import { IconRobot, IconDashboard, IconUser } from '@arco-design/web-react/icon';
 import './Home.css';
 // import SubscribeManager from '../features/subsribeConfigManager/SubscribeManager';
 import {
@@ -23,6 +23,9 @@ export default function Home() {
     if (path !== '/home/groups' && !path.startsWith('/home/groups/') && path !== '/home/weight') {
       navigate('/home/groups');
     }
+    if (path === '/home/cookie') {
+      navigate('/home/cookie');
+    }
   }, [path]);
 
   let currentKey = '';
@@ -40,6 +43,8 @@ export default function Home() {
       navigate('/home/groups');
     } else if (tab === 'weight') {
       navigate('/home/weight');
+    } else if (tab === 'cookie') {
+      navigate('/home/cookie');
     }
   };
 
@@ -80,6 +85,15 @@ export default function Home() {
         </Breadcrumb.Item>
       </Breadcrumb>
     );
+  } else if (path === '/home/cookie') {
+    breadcrumbContent = (
+      <Breadcrumb style={{ margin: '16px 0' }}>
+        <Breadcrumb.Item>
+          <IconUser />
+          Cookie 管理
+        </Breadcrumb.Item>
+      </Breadcrumb>
+    );
   }
   return (
     <Layout className="layout-collapse-demo">
@@ -104,6 +118,10 @@ export default function Home() {
             <Menu.Item key="weight">
               <IconDashboard />
               调度权重
+            </Menu.Item>
+            <Menu.Item key="cookie">
+              <IconUser />
+              Cookie 管理
             </Menu.Item>
           </Menu>
         </Layout.Sider>

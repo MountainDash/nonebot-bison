@@ -19,7 +19,7 @@ export default function () {
   };
   const handleDelete = (record: CookieTarget) => () => {
     deleteCookieTarget({
-      cookieId,
+      cookieId: record.cookieId,
       target: record.target.target,
       platformName: record.target.platform_name,
     });

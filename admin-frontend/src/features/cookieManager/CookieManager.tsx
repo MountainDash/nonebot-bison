@@ -4,11 +4,13 @@ import {
   Card, Descriptions, Grid, List, Popconfirm, Popover, Typography,
 } from '@arco-design/web-react';
 import { Link } from 'react-router-dom';
+import { IconDelete, IconEdit } from '@arco-design/web-react/icon';
 import { selectSiteConf } from '../globalConf/globalConfSlice';
 import { useAppSelector } from '../../app/hooks';
 import { Cookie, SiteConfig } from '../../utils/type';
 import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice';
 import CookieModal from './CookieModal';
+import './CookieManager.css';
 
 interface CookieSite {
   site: SiteConfig;
@@ -82,22 +84,20 @@ export default function CookieManager() {
 
                       </Popover>
 
-                      <div>
+                      <div style={{ display: 'flex' }}>
 
                         <Link to={`/home/cookie/${cookie.id}`}>
-                          <Button
-                            type="primary"
-                            style={{ marginRight: '10px' }}
-                          >
-                            关联详情
-                          </Button>
+                          <span className="list-actions-icon">
+                            <IconEdit />
+                          </span>
                         </Link>
                         <Popconfirm
                           title={`确定删除 Cookie ${cookie.friendly_name} ？`}
                           onOk={handleDelCookie(cookie.id.toString())}
                         >
-
-                          <Button type="primary" status="danger">删除</Button>
+                          <span className="list-actions-icon">
+                            <IconDelete />
+                          </span>
                         </Popconfirm>
                       </div>
 

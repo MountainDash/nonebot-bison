@@ -1,8 +1,9 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { Breadcrumb, Layout, Menu } from '@arco-design/web-react';
-import { IconRobot, IconDashboard, IconUser } from '@arco-design/web-react/icon';
+import {
+  IconRobot, IconDashboard, IconIdcard,
+} from '@arco-design/web-react/icon';
 import './Home.css';
-// import SubscribeManager from '../features/subsribeConfigManager/SubscribeManager';
 import {
   Link, Navigate, Outlet, useLocation, useNavigate,
 } from 'react-router-dom';
@@ -95,7 +96,7 @@ export default function Home() {
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>
           <Link to="/home/cookie">
-            <IconUser />
+            <IconIdcard />
             Cookie 管理
           </Link>
         </Breadcrumb.Item>
@@ -116,25 +117,28 @@ export default function Home() {
         >
           <Menu
             defaultSelectedKeys={[selectedTab]}
-            onClickMenuItem={(key) => { handleTabSelect(key); }}
+            onClickMenuItem={(key) => {
+              handleTabSelect(key);
+            }}
           >
             <Menu.Item key="groups">
               <IconRobot />
               订阅管理
             </Menu.Item>
+            <Menu.Item key="cookie">
+              <IconIdcard />
+              Cookie 管理
+            </Menu.Item>
             <Menu.Item key="weight">
               <IconDashboard />
               调度权重
             </Menu.Item>
-            <Menu.Item key="cookie">
-              <IconUser />
-              Cookie 管理
-            </Menu.Item>
+
           </Menu>
         </Layout.Sider>
         <Layout.Content style={{ padding: '0 1em' }}>
           <Layout style={{ height: '100%' }}>
-            { breadcrumbContent }
+            {breadcrumbContent}
             <Layout.Content style={{ margin: '0.5em', padding: '2em' }}>
               <Outlet />
             </Layout.Content>

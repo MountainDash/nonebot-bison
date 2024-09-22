@@ -6,6 +6,7 @@ import { globalConfUrl } from '../../utils/urls';
 const initialState = {
   loaded: false,
   platformConf: {},
+  siteConf: {},
 } as GlobalConf;
 
 export const loadGlobalConf = createAsyncThunk(
@@ -24,6 +25,7 @@ export const globalConfSlice = createSlice({
     builder
       .addCase(loadGlobalConf.fulfilled, (state, payload) => {
         state.platformConf = payload.payload.platformConf;
+        state.siteConf = payload.payload.siteConf;
         state.loaded = true;
       });
   },
@@ -33,3 +35,4 @@ export default globalConfSlice.reducer;
 
 export const selectGlobalConfLoaded = (state: RootState) => state.globalConf.loaded;
 export const selectPlatformConf = (state: RootState) => state.globalConf.platformConf;
+export const selectSiteConf = (state: RootState) => state.globalConf.siteConf;

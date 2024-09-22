@@ -6,11 +6,16 @@ export interface TokenResp {
 }
 export interface GlobalConf {
   platformConf: AllPlatformConf;
+  siteConf: AllSiteConf;
   loaded: boolean;
 }
 
 export interface AllPlatformConf {
   [idx: string]: PlatformConfig;
+}
+
+export interface AllSiteConf {
+  [idx: string]: SiteConfig;
 }
 
 export interface CategoryConfig {
@@ -23,6 +28,11 @@ export interface PlatformConfig {
   enabledTag: boolean;
   platformName: string;
   hasTarget: boolean;
+}
+
+export interface SiteConfig {
+  name: string
+  enable_cookie: string
 }
 
 export interface SubscribeConfig {
@@ -68,4 +78,37 @@ export interface PlatformWeightConfigResp {
   target_name: string;
   platform_name: string;
   weight: WeightConfig;
+}
+
+export interface Target {
+  platform_name: string;
+  target_name: string;
+  target: string;
+}
+
+export interface Cookie {
+  id: number;
+  site_name: string;
+  friendly_name: string;
+  last_usage: Date;
+  status: string;
+  cd_milliseconds: number;
+  is_universal: boolean;
+  is_anonymous: boolean;
+  tags: { [key: string]: string };
+}
+
+export interface CookieTarget {
+  target: Target;
+  cookieId: number;
+}
+
+export interface NewCookieParam {
+  siteName: string
+  content: string
+}
+
+export interface DelCookieParam {
+  siteName: string
+  cookieId: string
 }

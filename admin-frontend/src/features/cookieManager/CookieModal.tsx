@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Modal } from '@arco-design/web-react';
+import { useNewCookieMutation } from './cookieConfigSlice';
 
 interface CookieModalProps {
   visible: boolean;
@@ -10,15 +11,26 @@ interface CookieModalProps {
 function CookieModal({ visible, setVisible, siteName }: CookieModalProps) {
   const FormItem = Form.Item;
   const [content, setContent] = useState<string>('');
-  // const [confirmLoading, setConfirmLoading] = useState(false);
-  const [confirmLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [newCoookie] = useNewCookieMutation();
+
+  const onSubmit = () => {
+    const postPromise: ReturnType<typeof newCoookie> = newCoookie({ siteName, content });
+    setConfirmLoading(true);
+    postPromise.then(() => {
+      setConfirmLoading(false);
+      setVisible(false);
+      setContent('');
+    });
+  };
+
   return (
     <Modal
       title="添加 Cookie"
       visible={visible}
       onCancel={() => setVisible(false)}
       confirmLoading={confirmLoading}
-      onOk={() => setVisible(false)}
+      onOk={onSubmit}
       style={{ maxWidth: '90vw' }}
     >
 

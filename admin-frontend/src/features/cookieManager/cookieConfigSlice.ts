@@ -21,9 +21,9 @@ export const cookieApi = createApi({
       invalidatesTags: ['Cookie'],
     }),
     deleteCookie: builder.mutation<StatusResp, DelCookieParam>({
-      query: ({ siteName, cookieId }) => ({
+      query: ({ cookieId }) => ({
         method: 'DELETE',
-        url: `/cookie/${cookieId}?site_name=${siteName}`,
+        url: `/cookie/${cookieId}`,
       }),
       invalidatesTags: ['Cookie'],
     }),

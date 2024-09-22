@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
   Button,
-  Card, Descriptions, Grid, List, Popover, Typography,
+  Card, Descriptions, Grid, List, Popconfirm, Popover, Typography,
 } from '@arco-design/web-react';
 import { selectSiteConf } from '../globalConf/globalConfSlice';
 import { useAppSelector } from '../../app/hooks';
 import { Cookie, SiteConfig } from '../../utils/type';
-import { useGetCookiesQuery } from './cookieConfigSlice';
+import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice';
 import CookieModal from './CookieModal';
 
 interface CookieSite {
@@ -25,11 +25,18 @@ export default function CookieManager() {
   }));
   const [showModal, setShowModal] = useState(false);
   const [siteName, setSiteName] = useState('');
+  const [deleteCookie] = useDeleteCookieMutation();
 
   const handleAddCookie = (newSiteName: string) => () => {
     console.log(newSiteName);
     setSiteName(newSiteName);
     setShowModal(true);
+  };
+  const handleDelCookie = (cookieId: string) => () => {
+    console.log(cookieId);
+    deleteCookie({
+      cookieId,
+    });
   };
   return (
     <>
@@ -53,27 +60,34 @@ export default function CookieManager() {
               {cookies.map((cookie) => (
                 <List>
 
-                  <Popover
-                    key={cookie.id}
-                    title={cookie.friendly_name}
-                    content={(
-                      <Descriptions
-                        column={1}
-                        title="Cookie 详情"
-                        data={Object.entries(cookie).map((entry) => ({
-                          label: entry[0].toString(),
-                          value: entry[1].toString(),
-                        }))}
-                      />
-                                        )}
-                  >
-                    <List.Item key={cookie.id}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <List.Item key={cookie.id}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+
+                      <Popover
+                        key={cookie.id}
+                        title={cookie.friendly_name}
+                        content={(
+                          <Descriptions
+                            column={1}
+                            title="Cookie 详情"
+                            data={Object.entries(cookie).map((entry) => ({
+                              label: entry[0].toString(),
+                              value: typeof (entry[1]) === 'object' ? JSON.stringify(entry[1]) : entry[1].toString(),
+                            }))}
+                          />
+                                                )}
+                      >
                         {cookie.friendly_name}
+                      </Popover>
+                      <Popconfirm
+                        title={`确定删除 Cookie ${cookie.friendly_name} ？`}
+                        onOk={handleDelCookie(cookie.id.toString())}
+                      >
+
                         <Button type="primary" status="danger">删除</Button>
-                      </div>
-                    </List.Item>
-                  </Popover>
+                      </Popconfirm>
+                    </div>
+                  </List.Item>
                 </List>
               ))}
             </Card>

@@ -109,6 +109,5 @@ export interface NewCookieParam {
 }
 
 export interface DelCookieParam {
-  siteName: string
   cookieId: string
 }

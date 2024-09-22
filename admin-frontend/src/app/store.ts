@@ -17,7 +17,7 @@ import globalConfReducer from '../features/globalConf/globalConfSlice';
 import { subscribeApi } from '../features/subsribeConfigManager/subscribeConfigSlice';
 import { targetNameApi } from '../features/targetName/targetNameSlice';
 import { weightApi } from '../features/weightConfig/weightConfigSlice';
-import { cookieApi } from '../features/cookieManager/cookieConfigSlice';
+import { cookieApi, cookieTargetApi } from '../features/cookieManager/cookieConfigSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -26,6 +26,7 @@ const rootReducer = combineReducers({
   [weightApi.reducerPath]: weightApi.reducer,
   [targetNameApi.reducerPath]: targetNameApi.reducer,
   [cookieApi.reducerPath]: cookieApi.reducer,
+  [cookieTargetApi.reducerPath]: cookieTargetApi.reducer,
 });
 
 const persistConfig = {
@@ -46,7 +47,9 @@ export const store = configureStore({
     .concat(subscribeApi.middleware)
     .concat(weightApi.middleware)
     .concat(targetNameApi.middleware)
-    .concat(cookieApi.middleware),
+    .concat(cookieApi.middleware)
+    .concat(cookieTargetApi.middleware),
+
 });
 
 export const persistor = persistStore(store);

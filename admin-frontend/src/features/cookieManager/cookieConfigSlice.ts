@@ -40,23 +40,21 @@ export const cookieTargetApi = createApi({
   baseQuery: baseQueryWithAuth,
   tagTypes: ['CookieTarget'],
   endpoints: (builder) => ({
-    getCookieTargets: builder.query<CookieTarget, { site_name: string, cookie_id: number }>({
-      query: () => '/cookie_target?site_name=site_name&cookie_id=cookie_id',
+    getCookieTargets: builder.query<CookieTarget[], {cookieId: number }>({
+      query: (cookieId) => `/cookie_target?cookie_id=${cookieId}`,
       providesTags: ['CookieTarget'],
     }),
     newCookieTarget: builder.mutation<StatusResp, NewCookieTargetParam>({
       query: ({ platformName, target, cookieId }) => ({
         method: 'POST',
-        url: '/cookie_target',
-        body: { platform_name: platformName, target, cookie_id: cookieId },
+        url: `/cookie_target?platform_name=${platformName}&target=${encodeURIComponent(target)}&cookie_id=${cookieId}`,
       }),
       invalidatesTags: ['CookieTarget'],
     }),
     deleteCookieTarget: builder.mutation<StatusResp, DelCookieTargetParam>({
       query: ({ platformName, target, cookieId }) => ({
         method: 'DELETE',
-        url: '/cookie_target',
-        body: { platform_name: platformName, target, cookie_id: cookieId },
+        url: `/cookie_target?platform_name=${platformName}&target=${encodeURIComponent(target)}&cookie_id=${cookieId}`,
       }),
       invalidatesTags: ['CookieTarget'],
     }),

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Button, Empty, Table, Typography,
+  Button, Empty, Space, Table, Typography,
 } from '@arco-design/web-react';
-import { useGetCookieTargetsQuery } from '../cookieManager/cookieConfigSlice';
-import { SubscribeConfig } from '../../utils/type';
-import { useDeleteSubMutation } from '../subsribeConfigManager/subscribeConfigSlice';
+import { useDeleteCookieTargetMutation, useGetCookieTargetsQuery } from '../cookieManager/cookieConfigSlice';
+import { CookieTarget } from '../../utils/type';
 import CookieTargetModal from './CookieTargetModal';
 
 export default function () {
@@ -13,11 +12,17 @@ export default function () {
   const { data: cookieTargets } = useGetCookieTargetsQuery(cookieId);
 
   console.log(cookieTargets);
-  const [{ isLoading: deleteIsLoading }] = useDeleteSubMutation();
-  const isLoading = deleteIsLoading;
   const [showModal, setShowModal] = useState(false);
+  const [deleteCookieTarget] = useDeleteCookieTargetMutation();
   const handleAdd = () => {
     setShowModal(true);
+  };
+  const handleDelete = (record: CookieTarget) => () => {
+    deleteCookieTarget({
+      cookieId,
+      target: record.target.target,
+      platformName: record.target.platform_name,
+    });
   };
   const columns = [
     {
@@ -33,6 +38,16 @@ export default function () {
       title: 'Cookie ID',
       dataIndex: 'cookie_id',
     },
+    {
+      title: '操作',
+      dataIndex: 'op',
+      render: (_: null, record: CookieTarget) => (
+        <Space size="small">
+          <Button type="text" status="danger" onClick={handleDelete(record)}>删除</Button>
+        </Space>
+      ),
+
+    },
   ];
   if (cookieId) {
     return (
@@ -44,8 +59,7 @@ export default function () {
         <Table
           columns={columns}
           data={cookieTargets}
-          rowKey={(record: SubscribeConfig) => `${record.platformName}-${record.target}`}
-          loading={isLoading}
+          rowKey={(record: CookieTarget) => `${record.target.platform_name}-${record.target.target}`}
           scroll={{ x: true }}
         />
         {

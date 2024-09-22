@@ -1,22 +1,25 @@
 import React
   from 'react';
 import { Modal, Select } from '@arco-design/web-react';
-import { SubscribeGroupDetail } from '../../utils/type';
+import { SubscribeConfig, SubscribeGroupDetail } from '../../utils/type';
 import { useNewCookieTargetMutation } from '../cookieManager/cookieConfigSlice';
 import { useGetSubsQuery } from '../subsribeConfigManager/subscribeConfigSlice';
 
 interface SubscribeModalProp {
+  cookieId: number;
   visible: boolean;
   setVisible: (arg0: boolean) => void;
-  cookieId: number;
 }
 
-export default function ({ visible, setVisible, cookieId }: SubscribeModalProp) {
+export default function ({ cookieId, visible, setVisible }: SubscribeModalProp) {
   const [newCookieTarget] = useNewCookieTargetMutation();
 
   const { data: subs } = useGetSubsQuery();
-  const pureSubs = subs ? Object.values(subs)
-    .reduce((pv:Array, cv:SubscribeGroupDetail) => pv.concat(cv.subscribes), []) : [];
+  const pureSubs:SubscribeConfig[] = subs ? Object.values(subs)
+    .reduce((
+      pv:Array<SubscribeConfig>,
+      cv:SubscribeGroupDetail,
+    ) => pv.concat(cv.subscribes), []) : [];
   const [index, setIndex] = React.useState(-1);
   const handleSubmit = (idx:number) => {
     const postPromise: ReturnType<typeof newCookieTarget> = newCookieTarget({
@@ -40,18 +43,16 @@ export default function ({ visible, setVisible, cookieId }: SubscribeModalProp) 
         placeholder="选择要关联的 target"
         style={{ width: '100%' }}
         onChange={setIndex}
-
       >
-        {
-          pureSubs.map((sub, idx) => (
+        {pureSubs.length
+          && pureSubs.map((sub, idx) => (
             <Option
               key={JSON.stringify(sub)}
               value={idx}
             >
               {JSON.stringify(sub)}
             </Option>
-          ))
-        }
+          ))}
       </Select>
 
     </Modal>

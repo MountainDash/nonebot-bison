@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Button, Empty, Space, Table, Typography,
+  Button, Space, Table, Typography,
 } from '@arco-design/web-react';
 import { useDeleteCookieTargetMutation, useGetCookieTargetsQuery } from '../cookieManager/cookieConfigSlice';
 import { CookieTarget } from '../../utils/type';
@@ -11,11 +11,12 @@ export default function () {
   const { cookieId } = useParams();
   const { data: cookieTargets } = useGetCookieTargetsQuery(cookieId);
 
-  console.log(cookieTargets);
   const [showModal, setShowModal] = useState(false);
   const [deleteCookieTarget] = useDeleteCookieTargetMutation();
   const handleAdd = () => {
+    console.log('before', showModal);
     setShowModal(true);
+    console.log('after', showModal);
   };
   const handleDelete = (record: CookieTarget) => () => {
     deleteCookieTarget({
@@ -49,31 +50,25 @@ export default function () {
 
     },
   ];
-  if (cookieId) {
-    return (
-      <>
-        <span>
-          <Typography.Title heading={3}>{`Cookie ${cookieId}`}</Typography.Title>
-        </span>
-        <Button style={{ width: '90px', margin: '20px 10px' }} type="primary" onClick={handleAdd}>添加</Button>
-        <Table
-          columns={columns}
-          data={cookieTargets}
-          rowKey={(record: CookieTarget) => `${record.target.platform_name}-${record.target.target}`}
-          scroll={{ x: true }}
-        />
-        {
-          cookieTargets && cookieTargets.length > 0
-        && (
-        <CookieTargetModal
-          visible={showModal}
-          setVisible={setShowModal}
-          cookieId={cookieId}
-        />
-        )
-        }
-      </>
-    );
-  }
-  return <Empty />;
+
+  return (
+    <>
+      <span>
+        <Typography.Title heading={3}>{`Cookie ${cookieId}`}</Typography.Title>
+      </span>
+      <Button style={{ width: '90px', margin: '20px 10px' }} type="primary" onClick={handleAdd}>添加</Button>
+      <Table
+        columns={columns}
+        data={cookieTargets}
+        rowKey={(record: CookieTarget) => `${record.target.platform_name}-${record.target.target}`}
+        scroll={{ x: true }}
+      />
+      <CookieTargetModal
+        key={cookieId}
+        visible={showModal}
+        setVisible={setShowModal}
+        cookieId={cookieId}
+      />
+    </>
+  );
 }

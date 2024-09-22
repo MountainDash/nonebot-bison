@@ -3,6 +3,7 @@ import {
   Button,
   Card, Descriptions, Grid, List, Popconfirm, Popover, Typography,
 } from '@arco-design/web-react';
+import { Link } from 'react-router-dom';
 import { selectSiteConf } from '../globalConf/globalConfSlice';
 import { useAppSelector } from '../../app/hooks';
 import { Cookie, SiteConfig } from '../../utils/type';
@@ -10,8 +11,8 @@ import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice
 import CookieModal from './CookieModal';
 
 interface CookieSite {
-    site: SiteConfig;
-    cookies: Cookie[];
+  site: SiteConfig;
+  cookies: Cookie[];
 }
 
 export default function CookieManager() {
@@ -54,7 +55,7 @@ export default function CookieManager() {
                 >
                   添加
                 </Button>
-                            )}
+              )}
             >
 
               {cookies.map((cookie) => (
@@ -75,17 +76,31 @@ export default function CookieManager() {
                               value: typeof (entry[1]) === 'object' ? JSON.stringify(entry[1]) : entry[1].toString(),
                             }))}
                           />
-                                                )}
+                        )}
                       >
                         {cookie.friendly_name}
-                      </Popover>
-                      <Popconfirm
-                        title={`确定删除 Cookie ${cookie.friendly_name} ？`}
-                        onOk={handleDelCookie(cookie.id.toString())}
-                      >
 
-                        <Button type="primary" status="danger">删除</Button>
-                      </Popconfirm>
+                      </Popover>
+
+                      <div>
+
+                        <Link to={`/home/cookie/${cookie.id}`}>
+                          <Button
+                            type="primary"
+                            style={{ marginRight: '10px' }}
+                          >
+                            关联详情
+                          </Button>
+                        </Link>
+                        <Popconfirm
+                          title={`确定删除 Cookie ${cookie.friendly_name} ？`}
+                          onOk={handleDelCookie(cookie.id.toString())}
+                        >
+
+                          <Button type="primary" status="danger">删除</Button>
+                        </Popconfirm>
+                      </div>
+
                     </div>
                   </List.Item>
                 </List>

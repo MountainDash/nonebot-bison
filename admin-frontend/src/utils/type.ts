@@ -4,6 +4,7 @@ export interface TokenResp {
   id: number;
   name: string;
 }
+
 export interface GlobalConf {
   platformConf: AllPlatformConf;
   siteConf: AllSiteConf;
@@ -110,4 +111,16 @@ export interface NewCookieParam {
 
 export interface DelCookieParam {
   cookieId: string
+}
+
+export interface NewCookieTargetParam {
+  platformName: string;
+  target: string;
+  cookieId: number;
+}
+
+export interface DelCookieTargetParam {
+  platformName: string;
+  target: string;
+  cookieId: number;
 }

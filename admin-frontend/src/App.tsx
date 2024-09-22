@@ -9,7 +9,8 @@ import SubscribeManager from './features/subsribeConfigManager/SubscribeManager'
 import WeightConfig from './features/weightConfig/WeightManager';
 import Home from './pages/Home';
 import Unauthed from './pages/Unauthed';
-import CookieManager from './features/cookieManager/cookieManager';
+import CookieManager from './features/cookieManager/CookieManager';
+import CookieTargetManager from './features/cookieTargetManager/CookieTargetManager';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -50,6 +51,10 @@ function App() {
         {
           path: 'cookie',
           element: <CookieManager />,
+        },
+        {
+          path: 'cookie/:cookieId',
+          element: <CookieTargetManager />,
         },
       ],
     },

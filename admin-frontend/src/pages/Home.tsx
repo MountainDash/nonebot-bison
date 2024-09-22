@@ -26,6 +26,9 @@ export default function Home() {
     if (path === '/home/cookie') {
       navigate('/home/cookie');
     }
+    if (path.startsWith('/home/cookie/')) {
+      navigate(path);
+    }
   }, [path]);
 
   let currentKey = '';
@@ -33,6 +36,8 @@ export default function Home() {
     currentKey = 'groups';
   } else if (path.startsWith('/home/groups/')) {
     currentKey = 'subs';
+  } else if (path.startsWith('/home/cookie/')) {
+    currentKey = 'cookie';
   }
 
   const [selectedTab, changeSelectTab] = useState(currentKey);
@@ -85,12 +90,14 @@ export default function Home() {
         </Breadcrumb.Item>
       </Breadcrumb>
     );
-  } else if (path === '/home/cookie') {
+  } else if (path.startsWith('/home/cookie')) {
     breadcrumbContent = (
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>
-          <IconUser />
-          Cookie 管理
+          <Link to="/home/cookie">
+            <IconUser />
+            Cookie 管理
+          </Link>
         </Breadcrumb.Item>
       </Breadcrumb>
     );

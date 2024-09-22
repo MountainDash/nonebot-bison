@@ -1,6 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import {
-  StatusResp, Cookie, NewCookieParam, DelCookieParam,
+  StatusResp, Cookie, NewCookieParam,
+  DelCookieParam, CookieTarget, NewCookieTargetParam, DelCookieTargetParam,
 } from '../../utils/type';
 import { baseQueryWithAuth } from '../auth/authQuery';
 
@@ -33,3 +34,35 @@ export const cookieApi = createApi({
 export const {
   useGetCookiesQuery, useNewCookieMutation, useDeleteCookieMutation,
 } = cookieApi;
+
+export const cookieTargetApi = createApi({
+  reducerPath: 'cookieTarget',
+  baseQuery: baseQueryWithAuth,
+  tagTypes: ['CookieTarget'],
+  endpoints: (builder) => ({
+    getCookieTargets: builder.query<CookieTarget, { site_name: string, cookie_id: number }>({
+      query: () => '/cookie_target?site_name=site_name&cookie_id=cookie_id',
+      providesTags: ['CookieTarget'],
+    }),
+    newCookieTarget: builder.mutation<StatusResp, NewCookieTargetParam>({
+      query: ({ platformName, target, cookieId }) => ({
+        method: 'POST',
+        url: '/cookie_target',
+        body: { platform_name: platformName, target, cookie_id: cookieId },
+      }),
+      invalidatesTags: ['CookieTarget'],
+    }),
+    deleteCookieTarget: builder.mutation<StatusResp, DelCookieTargetParam>({
+      query: ({ platformName, target, cookieId }) => ({
+        method: 'DELETE',
+        url: '/cookie_target',
+        body: { platform_name: platformName, target, cookie_id: cookieId },
+      }),
+      invalidatesTags: ['CookieTarget'],
+    }),
+  }),
+});
+
+export const {
+  useGetCookieTargetsQuery, useNewCookieTargetMutation, useDeleteCookieTargetMutation,
+} = cookieTargetApi;

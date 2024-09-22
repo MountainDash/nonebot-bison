@@ -61,9 +61,14 @@ export default function CookieManager() {
             >
 
               {cookies.map((cookie) => (
-                <List>
+                <List
+                  bordered={false}
+                >
 
-                  <List.Item key={cookie.id}>
+                  <List.Item
+                    key={cookie.id}
+                    style={{ padding: '20px 0', borderBottom: '1px solid var(--color-fill-3)' }}
+                  >
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
 
                       <Popover

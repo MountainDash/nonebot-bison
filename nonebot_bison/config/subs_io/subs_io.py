@@ -10,7 +10,7 @@ from nonebot.compat import type_validate_python
 from nonebot_plugin_datastore.db import create_session
 from sqlalchemy.orm.strategy_options import selectinload
 
-from .utils import NBESFVerMatchErr
+from .utils import NBESFVerMatchErr, row2dict
 from .nbesf_model import NBESFBase, v1, v2, v3
 from ..db_model import User, Cookie, Target, Subscribe, CookieTarget
 
@@ -59,7 +59,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
         )
         cookie_target_data = await sess.scalars(cookie_target_stmt)
 
-    cookie_target_dict = defaultdict(list)
+    cookie_target_dict: dict[Cookie, list[v3.Target]] = defaultdict(list)
     for cookie_target in cookie_target_data:
         target_payload = type_validate_python(v3.Target, cookie_target.target)
         cookie_target_dict[cookie_target.cookie].append(target_payload)
@@ -67,17 +67,10 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
     cookies: list[v3.Cookie] = []
     for cookie, targets in cookie_target_dict.items():
         assert isinstance(cookie, Cookie)
-        cookies.append(
-            v3.Cookie(
-                site_name=cookie.site_name,
-                content=cookie.content,
-                cookie_name=cookie.cookie_name,
-                cd_milliseconds=cookie.cd_milliseconds,
-                is_universal=cookie.is_universal,
-                tags=cookie.tags,
-                targets=targets,
-            )
-        )
+        cookie_dict = row2dict(cookie)
+        cookie_dict["tags"] = cookie.tags
+        cookie_dict["targets"] = targets
+        cookies.append(v3.Cookie(**cookie_dict))
 
     sub_group = v3.SubGroup(groups=groups, cookies=cookies)
 

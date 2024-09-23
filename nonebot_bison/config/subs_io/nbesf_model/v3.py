@@ -111,14 +111,7 @@ async def magic_cookie_gen(nbesf_data: SubGroup):
     logger.info("开始添加 Cookie 流程")
     for cookie in nbesf_data.cookies:
         try:
-            new_cookie = DBCookie(
-                site_name=cookie.site_name,
-                content=cookie.content,
-                cookie_name=cookie.cookie_name,
-                cd_milliseconds=cookie.cd_milliseconds,
-                is_universal=cookie.is_universal,
-                tags=cookie.tags,
-            )
+            new_cookie = DBCookie(**model_dump(cookie, exclude={"targets"}))
             cookie_id = await config.add_cookie(new_cookie)
             for target in cookie.targets:
                 await config.add_cookie_target(target.target, target.platform_name, cookie_id)

@@ -1,5 +1,3 @@
-from typing import cast
-
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import EventPlainText
@@ -8,8 +6,6 @@ from nonebot_plugin_saa import MessageFactory
 from ..config import config
 from ..utils import parse_text
 from .utils import gen_handle_cancel
-from ..platform import platform_manager
-from ..utils.site import CookieClientManager
 
 
 def do_del_cookie_target(del_cookie_target: type[Matcher]):
@@ -23,8 +19,7 @@ def do_del_cookie_target(del_cookie_target: type[Matcher]):
         res = "已关联的 Cookie 为：\n"
         state["cookie_target_table"] = {}
         for index, cookie_target in enumerate(cookie_targets, 1):
-            client_mgr = cast(CookieClientManager, platform_manager[cookie_target.target.platform_name].site.client_mgr)
-            friendly_name = await client_mgr.get_cookie_friendly_name(cookie_target.cookie)
+            friendly_name = cookie_target.cookie.cookie_name
             state["cookie_target_table"][index] = {
                 "platform_name": cookie_target.target.platform_name,
                 "target": cookie_target.target,

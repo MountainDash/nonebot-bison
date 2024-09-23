@@ -11,10 +11,10 @@ from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
+from ..utils import http_client
 from .platform import NewMessage
-from ..utils import Site, http_client
-from ..utils.site import create_cookie_client_manager
 from ..types import Tag, Target, RawPost, ApiError, Category
+from ..utils.site import CookieSite, create_cookie_client_manager
 
 _HEADER = {
     "accept": (
@@ -36,7 +36,7 @@ _HEADER = {
 }
 
 
-class WeiboSite(Site):
+class WeiboSite(CookieSite):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}

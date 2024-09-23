@@ -210,15 +210,13 @@ async def update_weigth_config(platformName: str, target: str, weight_config: We
 
 
 @router.get("/cookie", dependencies=[Depends(check_is_superuser)])
-async def get_cookie(site_name: str | None = None, target: str | None = None) -> list[Cookie]:
+async def get_cookie(site_name: str = None, target: str = None) -> list[Cookie]:
+    # todo: 调用 client_mgr 来添加cookie，以校验和获取cookie_name
     cookies_in_db = await config.get_cookie(site_name, is_anonymous=False)
-    # client_mgr = cast(CookieClientManager, site_manager[site_name].client_mgr)
-    # friendly_names = [await client_mgr.get_cookie_friendly_name(x) for x in cookies_in_db]
-    friendly_names = [x.content[:10] for x in cookies_in_db]
     return [
         Cookie(
             id=cookies_in_db[i].id,
-            friendly_name=friendly_names[i],
+            friendly_name=cookies_in_db[i].cookie_name,
             site_name=cookies_in_db[i].site_name,
             last_usage=cookies_in_db[i].last_usage,
             status=cookies_in_db[i].status,

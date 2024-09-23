@@ -9,11 +9,11 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, text_similarity
-from ..utils.site import create_cookie_client_manager
+from ..utils import text_similarity
+from ..utils.site import CookieSite, create_cookie_client_manager
 
 
-class RssSite(Site):
+class RssSite(CookieSite):
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}

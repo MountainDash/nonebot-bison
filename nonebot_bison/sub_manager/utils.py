@@ -1,7 +1,7 @@
 import contextlib
+from typing import Annotated
 from itertools import groupby
 from operator import attrgetter
-from typing import Annotated, cast
 
 from nonebot.rule import Rule
 from nonebot.adapters import Event
@@ -13,9 +13,9 @@ from nonebot_plugin_saa import PlatformTarget, extract_target
 
 from ..config import config
 from ..types import Category
+from ..platform import platform_manager
 from ..plugin_config import plugin_config
-from ..platform import site_manager, platform_manager
-from ..utils.site import CookieClientManager, is_cookie_client_manager
+from ..utils.site import is_cookie_client_manager
 
 
 def _configurable_to_me(to_me: bool = EventToMe()):
@@ -114,8 +114,7 @@ async def generate_sub_list_text(
                 if target_cookies:
                     res += "  关联的 Cookie：\n"
                     for cookie in target_cookies:
-                        client_mgr = cast(CookieClientManager, site_manager[platform.site.name].client_mgr)
-                        res += f"  \t{await client_mgr.get_cookie_friendly_name(cookie)}\n"
+                        res += f"  \t{cookie.cookie_name}\n"
 
         else:
             res += f" （平台 {sub.target.platform_name} 已失效，请删除此订阅）"

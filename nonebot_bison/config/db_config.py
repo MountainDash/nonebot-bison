@@ -298,6 +298,7 @@ class DBConfig:
             if not cookie_in_db:
                 raise ValueError(f"cookie {cookie.id} not found")
             cookie_in_db.content = cookie.content
+            cookie_in_db.cookie_name = cookie.cookie_name
             cookie_in_db.last_usage = cookie.last_usage
             cookie_in_db.status = cookie.status
             cookie_in_db.tags = cookie.tags

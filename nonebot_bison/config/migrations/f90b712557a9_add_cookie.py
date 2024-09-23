@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: ef796b74b0fe
+Revision ID: f90b712557a9
 Revises: f9baef347cc8
-Create Date: 2024-09-13 00:34:08.601438
+Create Date: 2024-09-23 10:03:30.593263
 
 """
 
@@ -12,7 +12,7 @@ from sqlalchemy import Text
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "ef796b74b0fe"
+revision = "f90b712557a9"
 down_revision = "f9baef347cc8"
 branch_labels = None
 depends_on = None
@@ -25,6 +25,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("site_name", sa.String(length=100), nullable=False),
         sa.Column("content", sa.String(length=1024), nullable=False),
+        sa.Column("cookie_name", sa.String(length=1024), nullable=False),
         sa.Column("last_usage", sa.DateTime(), nullable=False),
         sa.Column("status", sa.String(length=20), nullable=False),
         sa.Column("cd_milliseconds", sa.Integer(), nullable=False),

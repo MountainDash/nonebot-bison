@@ -74,6 +74,8 @@ class Cookie(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     site_name: Mapped[str] = mapped_column(String(100))
     content: Mapped[str] = mapped_column(String(1024))
+    # Cookie 的友好名字，类似于 Target 的 target_name，用于展示
+    cookie_name: Mapped[str] = mapped_column(String(1024), default="unnamed cookie")
     # 最后使用的时刻
     last_usage: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime(1970, 1, 1))
     # Cookie 当前的状态

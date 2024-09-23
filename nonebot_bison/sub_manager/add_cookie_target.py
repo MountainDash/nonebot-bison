@@ -1,5 +1,3 @@
-from typing import cast
-
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText
@@ -9,7 +7,6 @@ from nonebot.internal.adapter import MessageTemplate
 from ..config import config
 from ..utils import parse_text
 from ..platform import platform_manager
-from ..utils.site import CookieClientManager
 from .utils import gen_handle_cancel, generate_sub_list_text
 
 
@@ -51,9 +48,8 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
             )
         state["cookies"] = cookies
 
-        client_mgr = cast(CookieClientManager, state["site"].client_mgr)
         state["_prompt"] = "请选择一个 Cookie，已关联的 Cookie 不会显示\n" + "\n".join(
-            [f"{idx}. {await client_mgr.get_cookie_friendly_name(cookie)}" for idx, cookie in enumerate(cookies, 1)]
+            [f"{idx}. {cookie.cookie_name}" for idx, cookie in enumerate(cookies, 1)]
         )
 
     @add_cookie_target_matcher.got("cookie_idx", MessageTemplate("{_prompt}"), [handle_cancel])
@@ -68,8 +64,6 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     async def add_cookie_target_process(state: T_State):
         await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], state["cookie"].id)
         cookie = state["cookie"]
-        client_mgr = cast(CookieClientManager, state["site"].client_mgr)
         await add_cookie_target_matcher.finish(
-            f"已关联 Cookie: {await client_mgr.get_cookie_friendly_name(cookie)} "
-            f"到订阅 {state['site'].name} {state['target']['target']}"
+            f"已关联 Cookie: {cookie.cookie_name} " f"到订阅 {state['site'].name} {state['target']['target']}"
         )

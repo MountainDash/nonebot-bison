@@ -11,6 +11,7 @@ from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_js
 from ..utils import NBESFParseErr
 from ....types import Tag, Category
 from .base import NBESFBase, SubReceipt
+from ...db_model import Cookie as DBCookie
 from ...db_config import SubscribeDupException, config
 
 # ===== nbesf 定义格式 ====== #
@@ -48,6 +49,18 @@ class SubPayload(BaseModel):
             orm_mode = True
 
 
+class Cookie(BaseModel):
+    """Bison的魔法饼干"""
+
+    site_name: str
+    content: str
+    cookie_name: str
+    cd_milliseconds: int
+    is_universal: bool
+    tags: dict[str, str]
+    targets: list[Target]
+
+
 class SubPack(BaseModel):
     """Bison给指定用户派送的快递包"""
 
@@ -58,19 +71,21 @@ class SubPack(BaseModel):
 
 class SubGroup(NBESFBase):
     """
-    Bison的全部订单(按用户分组)
+    Bison的全部订单(按用户分组)和魔法饼干
 
     结构参见`nbesf_model`下的对应版本
     """
 
     version: int = NBESF_VERSION
     groups: list[SubPack] = []
+    cookies: list[Cookie] = []
 
 
 # ======================= #
 
 
 async def subs_receipt_gen(nbesf_data: SubGroup):
+    logger.info("开始添加订阅流程")
     for item in nbesf_data.groups:
         sub_receipt = partial(SubReceipt, user=item.user_target)
 
@@ -90,6 +105,27 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
                 logger.error(f"！添加订阅条目 {repr(receipt)} 失败: {repr(e)}")
             else:
                 logger.success(f"添加订阅条目 {repr(receipt)} 成功！")
+
+
+async def magic_cookie_gen(nbesf_data: SubGroup):
+    logger.info("开始添加 Cookie 流程")
+    for cookie in nbesf_data.cookies:
+        try:
+            new_cookie = DBCookie(
+                site_name=cookie.site_name,
+                content=cookie.content,
+                cookie_name=cookie.cookie_name,
+                cd_milliseconds=cookie.cd_milliseconds,
+                is_universal=cookie.is_universal,
+                tags=cookie.tags,
+            )
+            cookie_id = await config.add_cookie(new_cookie)
+            for target in cookie.targets:
+                await config.add_cookie_target(target.target, target.platform_name, cookie_id)
+        except Exception as e:
+            logger.error(f"！添加 Cookie 条目 {repr(cookie)} 失败: {repr(e)}")
+        else:
+            logger.success(f"添加 Cookie 条目 {repr(cookie)} 成功！")
 
 
 def nbesf_parser(raw_data: Any) -> SubGroup:

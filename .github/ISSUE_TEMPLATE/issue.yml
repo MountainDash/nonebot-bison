@@ -1,7 +1,6 @@
 name: 问题报告
 description: 我遇到了问题
 
-
 body:
   - type: markdown
     id: environment

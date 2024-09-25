@@ -246,7 +246,7 @@ async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinf
     assert post4.title == "[下播] 【Zc】从0挑战到15肉鸽！目前12难度"
     assert post4.url == "https://live.bilibili.com/3044248"
     assert post4.nickname == "魔法Zc目录 其他单机"
-    assert post4.images == ["https://i0.hdslb.com/bfs/live-key-frame/keyframe10170435000003044248mwowx0.jpg"]
+    assert post4.images == ["https://i0.hdslb.com/bfs/live/new_room_cover/fd357f0f3cbbb48e9acfbcda616b946c2454c56c.jpg"]
     assert post4.compress is True
 
 

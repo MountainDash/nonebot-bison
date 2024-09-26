@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Button, Space, Table, Typography,
+  Button, Empty, Space, Table, Typography,
 } from '@arco-design/web-react';
 import { useDeleteCookieTargetMutation, useGetCookieTargetsQuery } from '../cookieManager/cookieConfigSlice';
 import { CookieTarget } from '../../utils/type';
 import CookieTargetModal from './CookieTargetModal';
 
 export default function () {
-  const { cookieId } = useParams();
-  const { data: cookieTargets } = useGetCookieTargetsQuery(cookieId);
+  const { cookieId: cookieParam } = useParams();
+  if (cookieParam === undefined) {
+    return <Empty />;
+  }
+  const cookieId = parseInt(cookieParam, 10);
+
+  const { data: cookieTargets } = useGetCookieTargetsQuery({ cookieId });
 
   const [showModal, setShowModal] = useState(false);
   const [deleteCookieTarget] = useDeleteCookieTargetMutation();

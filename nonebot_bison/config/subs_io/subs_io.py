@@ -10,6 +10,7 @@ from nonebot.compat import type_validate_python
 from nonebot_plugin_datastore.db import create_session
 from sqlalchemy.orm.strategy_options import selectinload
 
+from .. import config
 from .utils import NBESFVerMatchErr, row2dict
 from .nbesf_model import NBESFBase, v1, v2, v3
 from ..db_model import User, Cookie, Target, Subscribe, CookieTarget
@@ -64,13 +65,22 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
         target_payload = type_validate_python(v3.Target, cookie_target.target)
         cookie_target_dict[cookie_target.cookie].append(target_payload)
 
-    cookies: list[v3.Cookie] = []
-    for cookie, targets in cookie_target_dict.items():
-        assert isinstance(cookie, Cookie)
+    def cookie_transform(cookie: Cookie, targets: [Target]) -> v3.Cookie:
         cookie_dict = row2dict(cookie)
         cookie_dict["tags"] = cookie.tags
         cookie_dict["targets"] = targets
-        cookies.append(v3.Cookie(**cookie_dict))
+        return v3.Cookie(**cookie_dict)
+
+    cookies: list[v3.Cookie] = []
+    cookie_set = set()
+    for cookie, targets in cookie_target_dict.items():
+        assert isinstance(cookie, Cookie)
+        cookies.append(cookie_transform(cookie, targets))
+        cookie_set.add(cookie.id)
+
+    # 添加未关联的cookie
+    all_cookies = await config.get_cookie(is_anonymous=False)
+    cookies.extend([cookie_transform(c, []) for c in all_cookies if c.id not in cookie_set])
 
     sub_group = v3.SubGroup(groups=groups, cookies=cookies)
 

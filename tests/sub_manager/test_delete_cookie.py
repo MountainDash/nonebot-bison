@@ -51,8 +51,7 @@ async def test_del_cookie_err(app: App):
         should_send_saa(
             ctx,
             MessageFactory(
-                '已添加的 Cookie 为：\n1 weibo.com weibo.com [{"cookie":] '
-                "1个关联\n请输入要删除的 Cookie 的序号\n输入'取消'中止"
+                "已添加的 Cookie 为：\n1 weibo.com unnamed cookie 1个关联\n请输入要删除的 Cookie 的序号\n输入'取消'中止"
             ),
             bot,
             event=event_1,
@@ -118,7 +117,7 @@ async def test_del_cookie(app: App):
         should_send_saa(
             ctx,
             MessageFactory(
-                '已添加的 Cookie 为：\n1 weibo.com weibo.com [{"cookie":]'
+                "已添加的 Cookie 为：\n1 weibo.com unnamed cookie"
                 " 0个关联\n请输入要删除的 Cookie 的序号\n输入'取消'中止"
             ),
             bot,

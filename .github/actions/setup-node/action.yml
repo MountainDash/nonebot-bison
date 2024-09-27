@@ -9,9 +9,9 @@ runs:
         node-version: "20"
 
     - name: Set Up Pnpm
-      uses: actions/pnpm-setup@v2
+      uses: pnpm/action-setup@v4
       with:
-        version: 9.10.0
+        version: 9
 
     - id: pnpm-cache-dir-path
       run: echo "::set-output name=dir::$(pnpm store path)"

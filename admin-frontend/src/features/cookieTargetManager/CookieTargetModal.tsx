@@ -11,7 +11,7 @@ interface SubscribeModalProp {
   setVisible: (arg0: boolean) => void;
 }
 
-export default function ({ cookieId, visible, setVisible }: SubscribeModalProp) {
+export default function CookieTargetModal({ cookieId, visible, setVisible }: SubscribeModalProp) {
   const [newCookieTarget] = useNewCookieTargetMutation();
 
   const { data: subs } = useGetSubsQuery();

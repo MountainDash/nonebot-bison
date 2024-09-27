@@ -31,12 +31,10 @@ export default function CookieManager() {
   const [deleteCookie] = useDeleteCookieMutation();
 
   const handleAddCookie = (newSiteName: string) => () => {
-    console.log(newSiteName);
     setSiteName(newSiteName);
     setShowModal(true);
   };
   const handleDelCookie = (cookieId: string) => () => {
-    console.log(cookieId);
     deleteCookie({
       cookieId,
     });

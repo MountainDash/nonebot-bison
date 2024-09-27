@@ -7,7 +7,7 @@ import { useDeleteCookieTargetMutation, useGetCookieTargetsQuery } from '../cook
 import { CookieTarget } from '../../utils/type';
 import CookieTargetModal from './CookieTargetModal';
 
-export default function () {
+export default function CookieTargetManager() {
   const { cookieId: cookieParam } = useParams();
   if (cookieParam === undefined) {
     return <Empty />;
@@ -19,9 +19,7 @@ export default function () {
   const [showModal, setShowModal] = useState(false);
   const [deleteCookieTarget] = useDeleteCookieTargetMutation();
   const handleAdd = () => {
-    console.log('before', showModal);
     setShowModal(true);
-    console.log('after', showModal);
   };
   const handleDelete = (record: CookieTarget) => () => {
     deleteCookieTarget({

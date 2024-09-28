@@ -5,6 +5,7 @@ from nonebot.compat import model_dump
 from .utils import get_json
 
 
+@pytest.mark.usefixtures("_clear_db")
 async def test_subs_export(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 

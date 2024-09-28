@@ -363,5 +363,16 @@ class DBConfig:
             res.sort(key=lambda x: (x.target.platform_name, x.cookie_id, x.target_id))
             return res
 
+    async def clear_db(self):
+        """清空数据库"""
+        async with create_session() as sess:
+            await sess.execute(delete(User))
+            await sess.execute(delete(Target))
+            await sess.execute(delete(ScheduleTimeWeight))
+            await sess.execute(delete(Subscribe))
+            await sess.execute(delete(Cookie))
+            await sess.execute(delete(CookieTarget))
+            await sess.commit()
+
 
 config = DBConfig()

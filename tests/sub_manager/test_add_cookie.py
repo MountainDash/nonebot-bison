@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from nonebug.app import App
 from pytest_mock import MockerFixture
 
@@ -30,7 +31,8 @@ async def test_add_cookie_rule(app: App, mocker: MockerFixture):
         ctx.should_pass_permission()
 
 
-async def test_add_cookie_target_no_cookie(app: App, mocker: MockerFixture):
+@pytest.mark.usefixtures("_clear_db")
+async def test_add_cookie_target_no_cookie(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
@@ -80,7 +82,8 @@ async def test_add_cookie_target_no_cookie(app: App, mocker: MockerFixture):
         )
 
 
-async def test_add_cookie(app: App, mocker: MockerFixture):
+@pytest.mark.usefixtures("_clear_db")
+async def test_add_cookie(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
@@ -192,7 +195,6 @@ async def test_add_cookie(app: App, mocker: MockerFixture):
 
 
 async def test_add_cookie_target_no_target(app: App, mocker: MockerFixture):
-
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 

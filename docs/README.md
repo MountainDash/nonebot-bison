@@ -70,7 +70,7 @@ highlights:
         details: 一个由玩家创造的幻想世界
         link: https://adsrff.web.sdo.com/web1/
 
-      - title: 小刻食堂 (即将支持)
+      - title: 小刻食堂
         details: 实时获取鹰角发的动态
         link: https://www.ceobecanteen.top
 

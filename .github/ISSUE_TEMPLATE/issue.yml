@@ -1,0 +1,61 @@
+name: 问题报告
+description: 我遇到了问题
+
+body:
+  - type: markdown
+    id: environment
+    attributes:
+      value: |
+        ## 环境
+
+  - type: input
+    id: nonebot_bison_version
+    attributes:
+      label: nonebot-bison 版本
+      description: 请填写 nonebot-bison 的版本
+
+  - type: input
+    id: nonebot_version
+    attributes:
+      label: nonebot 版本
+      description: 请填写 nonebot 的版本
+
+  - type: dropdown
+    id: installation_method
+    attributes:
+      label: 安装方式
+      description: 请选择安装方式
+      options:
+        - 通过 nb-cli 安装
+        - 使用 poetry/pdm 等现代包管理器安装
+        - 通过 pip install 安装
+        - 克隆或下载项目直接使用
+
+  - type: input
+    id: operating_system
+    attributes:
+      label: 操作系统
+      description: 请填写操作系统
+
+  - type: textarea
+    id: issue_description
+    attributes:
+      label: 问题
+      description: 请在这里描述你遇到的问题
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志
+      description: 请在这里粘贴你的日志
+      render: shell
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认
+      options:
+        - label: 我搜索过了 issue，但是并没有发现过与我类似的问题
+          required: true
+        - label: 我确认在日志中去掉了敏感信息
+          required: true

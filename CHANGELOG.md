@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+### 文档
+
 - 📝 小刻食堂剪彩文档 [@phidiaLam](https://github.com/phidiaLam) ([#636](https://github.com/MountainDash/nonebot-bison/pull/636))
 
 ## v0.9.4

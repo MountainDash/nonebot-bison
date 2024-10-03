@@ -1,7 +1,8 @@
 FROM node:20.17.0 as frontend
 ADD . /app
 WORKDIR /app/admin-frontend
-RUN yarn && yarn build
+RUN npm install -g pnpm
+RUN pnpm install && pnpm build
 
 FROM python:3.11
 RUN python3 -m pip install poetry && poetry config virtualenvs.create false

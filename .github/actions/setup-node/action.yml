@@ -8,11 +8,16 @@ runs:
       with:
         node-version: "20"
 
-    - id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - name: Set Up Pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - id: pnpm-cache-dir-path
+      run: echo "::set-output name=dir::$(pnpm store path)"
       shell: bash
 
     - uses: actions/cache@v4
       with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        path: ${{ steps.pnpm-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}

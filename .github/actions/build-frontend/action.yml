@@ -11,5 +11,5 @@ runs:
       shell: bash
       working-directory: ./admin-frontend
       run: |
-        yarn install
-        yarn build
+        pnpm install
+        pnpm build

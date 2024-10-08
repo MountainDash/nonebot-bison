@@ -10,5 +10,5 @@ runs:
     - name: Build Frontend
       shell: bash
       run: |
-        yarn install
-        yarn docs:build
+        pnpm install
+        pnpm docs:build

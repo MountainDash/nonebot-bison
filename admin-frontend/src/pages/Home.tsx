@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import { useAppSelector } from '../app/hooks';
 import { selectIsLogin } from '../features/auth/authSlice';
+import { selectSiteConf } from '../features/globalConf/globalConfSlice';
 
 export default function Home() {
   const location = useLocation();
@@ -103,6 +104,10 @@ export default function Home() {
       </Breadcrumb>
     );
   }
+  const MenuItem = Menu.Item;
+  const { SubMenu } = Menu;
+  const siteConf = useAppSelector(selectSiteConf);
+
   return (
     <Layout className="layout-collapse-demo">
       <Layout.Header>
@@ -125,10 +130,21 @@ export default function Home() {
               <IconRobot />
               订阅管理
             </Menu.Item>
-            <Menu.Item key="cookie">
-              <IconIdcard />
-              Cookie 管理
-            </Menu.Item>
+            <SubMenu
+              key="cookie"
+              title={(
+                <>
+                  <IconIdcard />
+                  Cookie 管理
+                </>
+              )}
+            >
+              {Object.values(siteConf).filter((site) => site.enable_cookie).map((site) => (
+                <MenuItem key={site.name}>
+                  {site.name}
+                </MenuItem>
+              ))}
+            </SubMenu>
             <Menu.Item key="weight">
               <IconDashboard />
               调度权重

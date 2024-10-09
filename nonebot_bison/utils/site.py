@@ -68,7 +68,7 @@ class CookieClientManager(ClientManager):
         if not await cls.validate_cookie(content):
             raise ValueError()
         cookie = Cookie(site_name=cls._site_name, content=content)
-        cookie.cookie_name = cookie_site.get_cookie_name(content)
+        cookie.cookie_name = await cookie_site.get_cookie_name(content)
         cookie.cd = cls._default_cd
         await config.add_cookie(cookie)
 
@@ -166,7 +166,7 @@ class CookieSite(Site):
     cookie_format_prompt = "无效的 Cookie，请检查后重新输入，详情见<待添加的文档>"
 
     @classmethod
-    def get_cookie_name(cls, content: str) -> str:
+    async def get_cookie_name(cls, content: str) -> str:
         """从cookie内容中获取cookie的友好名字，添加cookie时调用，持久化在数据库中"""
         from . import text_fletten
 

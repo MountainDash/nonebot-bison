@@ -1,3 +1,5 @@
+from typing import cast
+
 from nonebot.log import logger
 
 from ..utils import Site
@@ -7,6 +9,7 @@ from ..config.db_model import Target
 from ..types import Target as T_Target
 from ..platform import platform_manager
 from ..plugin_config import plugin_config
+from ..utils.site import CookieClientManager, is_cookie_client_manager
 
 scheduler_dict: dict[type[Site], Scheduler] = {}
 
@@ -30,6 +33,9 @@ async def init_scheduler():
         else:
             _schedule_class_platform_dict[site].append(platform_name)
     for site, target_list in _schedule_class_dict.items():
+        if is_cookie_client_manager(site.client_mgr):
+            client_mgr = cast(CookieClientManager, site.client_mgr)
+            await client_mgr.refresh_anonymous_cookie()
         if not plugin_config.bison_use_browser and site.require_browser:
             logger.warning(f"{site.name} requires browser, it will not schedule.")
             continue

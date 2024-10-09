@@ -40,6 +40,7 @@ def test_cli_help(app: App):
 async def test_subs_export(app: App, tmp_path: Path):
     from nonebot_plugin_saa import TargetQQGroup
 
+    from nonebot_bison.config.db_model import Cookie
     from nonebot_bison.config.db_config import config
     from nonebot_bison.types import Target as TTarget
     from nonebot_bison.script.cli import cli, run_sync
@@ -70,6 +71,14 @@ async def test_subs_export(app: App, tmp_path: Path):
         cats=[1, 2],
         tags=[],
     )
+    cookie_id = await config.add_cookie(
+        Cookie(
+            site_name="weibo.com",
+            content='{"cookie": "test"}',
+            cookie_name="test cookie",
+        )
+    )
+    await config.add_cookie_target("weibo_id", "weibo", cookie_id)
 
     assert len(await config.list_subs_with_all_info()) == 3
 
@@ -84,8 +93,9 @@ async def test_subs_export(app: App, tmp_path: Path):
             assert result.exit_code == 0
             file_path = Path.cwd() / "bison_subscribes_export_1.json"
             assert file_path.exists()
-            assert '"version": 2' in file_path.read_text()
+            assert '"version": 3' in file_path.read_text()
             assert '"group_id": 123' in file_path.read_text()
+            assert '"content": "{\\"cookie\\": \\"test\\"}",\n' in file_path.read_text()
 
         # 是否导出到指定已存在文件夹
         data_dir = tmp_path / "data"
@@ -94,8 +104,9 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert result.exit_code == 0
         file_path2 = data_dir / "bison_subscribes_export_1.json"
         assert file_path2.exists()
-        assert '"version": 2' in file_path2.read_text()
+        assert '"version": 3' in file_path2.read_text()
         assert '"group_id": 123' in file_path2.read_text()
+        assert '"content": "{\\"cookie\\": \\"test\\"}",\n' in file_path.read_text()
 
         # 是否拒绝导出到不存在的文件夹
         result = await run_sync(runner.invoke)(cli, ["export", "-p", str(tmp_path / "data2")])
@@ -106,9 +117,10 @@ async def test_subs_export(app: App, tmp_path: Path):
         assert result.exit_code == 0
         file_path3 = tmp_path / "bison_subscribes_export_1.yaml"
         assert file_path3.exists()
-        assert "version: 2" in file_path3.read_text()
+        assert "version: 3" in file_path3.read_text()
         assert "group_id: 123" in file_path3.read_text()
         assert "platform_type: QQ Group" in file_path3.read_text()
+        assert '"content": "{\\"cookie\\": \\"test\\"}",\n' in file_path.read_text()
 
         # 是否允许以未支持的格式导出
         result = await run_sync(runner.invoke)(cli, ["export", "-p", str(tmp_path), "--format", "toml"])

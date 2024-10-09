@@ -11,9 +11,10 @@ from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
+from ..utils import http_client
 from .platform import NewMessage
-from ..utils import Site, http_client
 from ..types import Tag, Target, RawPost, ApiError, Category
+from ..utils.site import CookieSite, create_cookie_client_manager
 
 _HEADER = {
     "accept": (
@@ -35,10 +36,11 @@ _HEADER = {
 }
 
 
-class WeiboSite(Site):
+class WeiboSite(CookieSite):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
+    client_mgr = create_cookie_client_manager(name)
 
 
 class Weibo(NewMessage):
@@ -78,9 +80,11 @@ class Weibo(NewMessage):
             raise cls.ParseTargetException(prompt="正确格式:\n1. 用户数字UID\n2. https://weibo.com/u/xxxx")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        client = await self.ctx.get_client()
+        client = await self.ctx.get_client(target)
+        header = {"Referer": f"https://m.weibo.cn/u/{target}", "MWeibo-Pwa": "1", "X-Requested-With": "XMLHttpRequest"}
+        # 获取 cookie 见 https://docs.rsshub.app/zh/deploy/config#%E5%BE%AE%E5%8D%9A
         params = {"containerid": "107603" + target}
-        res = await client.get("https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0)
+        res = await client.get("https://m.weibo.cn/api/container/getIndex?", headers=header, params=params, timeout=4.0)
         res_data = json.loads(res.text)
         if not res_data["ok"] and res_data["msg"] != "这里还没有内容":
             raise ApiError(res.request.url)

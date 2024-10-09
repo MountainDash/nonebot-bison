@@ -1,0 +1,48 @@
+version: 3
+groups:
+  - subs:
+      - categories: []
+        tags: []
+        target:
+          default_schedule_weight: 10
+          platform_name: weibo
+          target: weibo_id
+          target_name: weibo_name
+    user_target:
+      platform_type: QQ Group
+      group_id: 123552
+  - subs:
+      - categories: []
+        tags:
+          - kaltsit
+          - amiya
+        target:
+          default_schedule_weight: 10
+          platform_name: weibo
+          target: weibo_id
+          target_name: weibo_name
+      - categories:
+          - 1
+          - 2
+        tags: []
+        target:
+          default_schedule_weight: 10
+          platform_name: bilibili
+          target: bilibili_id
+          target_name: bilibili_name
+    user_target:
+      platform_type: QQ Group
+      group_id: 234662
+
+cookies:
+  - site_name: weibo.com
+    content: '{"cookie": "test"}'
+    cookie_name: test cookie
+    cd_milliseconds: 0
+    is_universal: false
+    tags: {}
+    targets:
+      - target_name: weibo_name
+        target: weibo_id
+        platform_name: weibo
+        default_schedule_weight: 10

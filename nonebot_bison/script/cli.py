@@ -11,7 +11,7 @@ from nonebot.log import logger
 from nonebot.compat import model_dump
 
 from ..scheduler.manager import init_scheduler
-from ..config.subs_io.nbesf_model import v1, v2
+from ..config.subs_io.nbesf_model import v1, v2, v3
 from ..config.subs_io import subscribes_export, subscribes_import
 
 try:
@@ -151,6 +151,8 @@ async def subs_import(path: str, format: str):
                 nbesf_data = v1.nbesf_parser(import_items)
             case 2:
                 nbesf_data = v2.nbesf_parser(import_items)
+            case 3:
+                nbesf_data = v3.nbesf_parser(import_items)
             case _:
                 raise NotImplementedError("不支持的NBESF版本")
 

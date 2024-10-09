@@ -22,8 +22,9 @@ class ProcessContext:
         async def _log_to_ctx(r: Response):
             self._log_response(r)
 
+        existing_hooks = client.event_hooks["response"]
         hooks = {
-            "response": [_log_to_ctx],
+            "response": [*existing_hooks, _log_to_ctx],
         }
         client.event_hooks = hooks
 

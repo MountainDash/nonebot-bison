@@ -12,6 +12,7 @@ from ..send import send_msgs
 from ..types import Target, SubUnit
 from ..platform import platform_manager
 from ..utils import Site, ProcessContext
+from ..utils.site import SkipRequestException
 
 
 @dataclass
@@ -107,6 +108,8 @@ class Scheduler:
                     schedulable.platform_name, schedulable.target
                 )
                 to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
+        except SkipRequestException as err:
+            logger.debug(f"skip request: {err}")
         except Exception as err:
             records = context.gen_req_records()
             for record in records:

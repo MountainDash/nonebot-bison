@@ -7,7 +7,7 @@ from nonebot.adapters import Message, MessageTemplate
 
 from ..platform import platform_manager
 from .utils import common_platform, gen_handle_cancel
-from ..utils.site import CookieClientManager, is_cookie_client_manager
+from ..utils.site import CookieSite, CookieClientManager, is_cookie_client_manager
 
 
 def do_add_cookie(add_cookie: type[Matcher]):
@@ -52,11 +52,9 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.got("cookie", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_cookie(state: T_State, cookie: Message = Arg()):
-        client_mgr: type[CookieClientManager] = cast(
-            type[CookieClientManager], platform_manager[state["platform"]].site.client_mgr
-        )
+        cookie_site = cast(type[CookieSite], platform_manager[state["platform"]].site)
         cookie_text = cookie.extract_plain_text()
-        if not await client_mgr.validate_cookie(cookie_text):
+        if not await cookie_site.validate_cookie(cookie_text):
             await add_cookie.reject(state["site"].cookie_format_prompt)
         state["cookie"] = cookie_text
 

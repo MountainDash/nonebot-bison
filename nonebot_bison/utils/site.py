@@ -65,24 +65,12 @@ class CookieClientManager(ClientManager):
         from ..platform import site_manager
 
         cookie_site = cast(type[CookieSite], site_manager[cls._site_name])
-        if not await cls.validate_cookie(content):
+        if not await cookie_site.validate_cookie(content):
             raise ValueError()
         cookie = Cookie(site_name=cls._site_name, content=content)
         cookie.cookie_name = await cookie_site.get_cookie_name(content)
         cookie.cd = cls._default_cd
         await config.add_cookie(cookie)
-
-    @classmethod
-    async def validate_cookie(cls, content: str) -> bool:
-        """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
-        # todo: 考虑移动到 cookie site 中
-        try:
-            data = json.loads(content)
-            if not isinstance(data, dict):
-                return False
-        except JSONDecodeError:
-            return False
-        return True
 
     def _generate_hook(self, cookie: Cookie) -> callable:
         """hook 函数生成器，用于回写请求状态到数据库"""
@@ -171,6 +159,17 @@ class CookieSite(Site):
         from . import text_fletten
 
         return text_fletten(f"{cls.name} [{content[:10]}]")
+
+    @classmethod
+    async def validate_cookie(cls, content: str) -> bool:
+        """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
+        try:
+            data = json.loads(content)
+            if not isinstance(data, dict):
+                return False
+        except JSONDecodeError:
+            return False
+        return True
 
 
 def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[Site]:

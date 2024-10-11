@@ -28,6 +28,7 @@ export interface PlatformConfig {
   categories: CategoryConfig;
   enabledTag: boolean;
   platformName: string;
+  siteName: string;
   hasTarget: boolean;
 }
 

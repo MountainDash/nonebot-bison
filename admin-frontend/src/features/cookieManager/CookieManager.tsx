@@ -12,6 +12,7 @@ import { selectPlatformConf, selectSiteConf } from '../globalConf/globalConfSlic
 import { Cookie, PlatformConfig } from '../../utils/type';
 import CookieTargetModal from '../cookieTargetManager/CookieTargetModal';
 import CookieAddModal from './CookieAddModal';
+import CookieEditModal from './CookieEditModal';
 
 export default function CookieManager() {
   const { siteName } = useParams();
@@ -21,9 +22,9 @@ export default function CookieManager() {
   const cookiesList = cookieDict ? Object.values(cookieDict) : [];
 
   // 添加cookie
-  const [showModal, setShowModal] = React.useState(false);
+  const [showAddModal, setShowAddModal] = React.useState(false);
   const handleAddCookie = () => () => {
-    setShowModal(true);
+    setShowAddModal(true);
   };
 
   // 删除cookie
@@ -32,6 +33,14 @@ export default function CookieManager() {
     deleteCookie({
       cookieId,
     });
+  };
+
+  // 编辑cookie
+  const [showEditModal, setShowEditModal] = React.useState(false);
+  const [editCookie, setEditCookie] = React.useState<Cookie | null>(null);
+  const handleEditCookie = (cookie: Cookie) => () => {
+    setEditCookie(cookie);
+    setShowEditModal(true);
   };
 
   let data = [
@@ -50,7 +59,6 @@ export default function CookieManager() {
   if (siteName) {
     data = cookiesList.filter((tSite) => tSite.site_name === siteName);
   }
-  console.log(Object.values(platformConf));
   const platformThatSiteSupport: Record<string, string> = Object.values(platformConf).reduce((p, c) => {
     p[c.siteName] = c.platformName;
     return p;
@@ -93,6 +101,7 @@ export default function CookieManager() {
               <Button type="text" status="danger">删除</Button>
             </span>
           </Popconfirm>
+          <Button type="text" onClick={handleEditCookie(record)}>编辑</Button>
         </Space>
       ),
 
@@ -116,7 +125,8 @@ export default function CookieManager() {
       </div>
 
       <Table columns={columns} data={data} />
-      <CookieAddModal visible={showModal} setVisible={setShowModal} siteName={siteName || ''} />
+      <CookieAddModal visible={showAddModal} setVisible={setShowAddModal} siteName={siteName || ''} />
+      <CookieEditModal visible={showEditModal} setVisible={setShowEditModal} cookie={editCookie} />
     </>
   );
 }

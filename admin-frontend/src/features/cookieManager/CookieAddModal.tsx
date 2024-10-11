@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Form, Input, Modal } from '@arco-design/web-react';
 import { useNewCookieMutation } from './cookieConfigSlice';
 
-interface CookieModalProps {
+interface CookieAddModalProps {
   visible: boolean;
   setVisible: (arg0: boolean) => void;
   siteName: string;
 }
 
-function CookieAddModal({ visible, setVisible, siteName }: CookieModalProps) {
+function CookieAddModal({ visible, setVisible, siteName }: CookieAddModalProps) {
   const FormItem = Form.Item;
   const [content, setContent] = useState<string>('');
   const [confirmLoading, setConfirmLoading] = useState(false);

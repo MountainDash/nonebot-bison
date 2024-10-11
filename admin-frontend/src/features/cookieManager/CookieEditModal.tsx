@@ -1,28 +1,17 @@
 import React, { useState } from 'react';
 import { Form, Input, Modal } from '@arco-design/web-react';
 import { useNewCookieMutation } from './cookieConfigSlice';
+import { Cookie } from '../../utils/type';
 
-interface CookieModalProps {
+interface CookieEditModalProps {
   visible: boolean;
   setVisible: (arg0: boolean) => void;
-  siteName: string;
+  cookie: Cookie | null
 }
 
-function CookieEditModal({ visible, setVisible, siteName }: CookieModalProps) {
+function CookieEditModal({ visible, setVisible, cookie }: CookieEditModalProps) {
   const FormItem = Form.Item;
-  const [content, setContent] = useState<string>('');
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [newCoookie] = useNewCookieMutation();
-
-  const onSubmit = () => {
-    const postPromise: ReturnType<typeof newCoookie> = newCoookie({ siteName, content });
-    setConfirmLoading(true);
-    postPromise.then(() => {
-      setConfirmLoading(false);
-      setVisible(false);
-      setContent('');
-    });
-  };
 
   return (
     <Modal
@@ -30,23 +19,41 @@ function CookieEditModal({ visible, setVisible, siteName }: CookieModalProps) {
       visible={visible}
       onCancel={() => setVisible(false)}
       confirmLoading={confirmLoading}
-      onOk={onSubmit}
-      style={{ maxWidth: '90vw' }}
+      // onOk={onSubmit}
+      style={{ maxWidth: '90vw', minWidth: '50vw' }}
     >
-
+      {cookie
+      && (
       <Form autoComplete="off">
-        <FormItem label="Site Name" required>
-          <Input placeholder="Please enter site name" value={siteName} disabled />
+        <FormItem label="Cookie ID">
+          <Input disabled value={cookie.id.toString()} />
         </FormItem>
-        <FormItem label="Content" required>
+        <FormItem label="Cookie 名称">
+          <Input value={cookie.friendly_name} disabled />
+        </FormItem>
+        <FormItem label="所属站点">
+          <Input value={cookie.site_name} disabled />
+        </FormItem>
+
+        <FormItem label="标签">
           <Input.TextArea
-            placeholder="Please enter content"
-            value={content}
-            onChange={setContent}
+            value={JSON.stringify(cookie.tags)}
+            disabled
           />
         </FormItem>
 
+        <FormItem label="最后使用时间">
+          <Input value={cookie.last_usage.toString()} disabled />
+        </FormItem>
+        <FormItem label="状态">
+          <Input value={cookie.status} disabled />
+        </FormItem>
+        <FormItem label="冷却时间（毫秒）">
+          <Input value={cookie.cd_milliseconds.toString()} disabled />
+        </FormItem>
+
       </Form>
+      )}
     </Modal>
   );
 }

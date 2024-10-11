@@ -1,118 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Button,
-  Card, Descriptions, Grid, List, Popconfirm, Popover, Typography,
+  Table, TableColumnProps, Typography,
 } from '@arco-design/web-react';
-import { Link } from 'react-router-dom';
-import { IconDelete, IconEdit } from '@arco-design/web-react/icon';
-import { selectSiteConf } from '../globalConf/globalConfSlice';
-import { useAppSelector } from '../../app/hooks';
-import { Cookie, SiteConfig } from '../../utils/type';
-import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice';
-import CookieModal from './CookieModal';
+import { useParams } from 'react-router-dom';
+
 import './CookieManager.css';
 
-interface CookieSite {
-  site: SiteConfig;
-  cookies: Cookie[];
-}
-
 export default function CookieManager() {
-  const siteConf = useAppSelector(selectSiteConf);
-  const { data: cookieDict } = useGetCookiesQuery();
-  const cookiesList = cookieDict ? Object.values(cookieDict) : [];
-  const cookieSite = Object.values(siteConf).filter((site) => site.enable_cookie);
-  const cookieSiteList: CookieSite[] = cookieSite.map((site) => ({
-    site,
-    cookies: cookiesList.filter((cookie) => cookie.site_name === site.name),
-  }));
-  const [showModal, setShowModal] = useState(false);
-  const [siteName, setSiteName] = useState('');
-  const [deleteCookie] = useDeleteCookieMutation();
+  const { siteName } = useParams();
 
-  const handleAddCookie = (newSiteName: string) => () => {
-    setSiteName(newSiteName);
-    setShowModal(true);
-  };
-  const handleDelCookie = (cookieId: string) => () => {
-    deleteCookie({
-      cookieId,
-    });
-  };
+  let data = [
+    {
+      id: 3,
+      site_name: 'rss',
+      friendly_name: 'rss [{"ewqe":"e]',
+      last_usage: '1970-01-01T00:00:00',
+      status: '',
+      cd_milliseconds: 10000,
+      is_universal: false,
+      is_anonymous: false,
+      tags: {},
+    },
+  ];
+  if (siteName) {
+    data = data.filter((tSite) => tSite.site_name === siteName);
+  }
+
+  const columns: TableColumnProps[] = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+    },
+    {
+      title: 'Cookie 名称',
+      dataIndex: 'friendly_name',
+    },
+    {
+      title: '所属站点',
+      dataIndex: 'site_name',
+    },
+
+  ];
+  console.log(data);
+
   return (
     <>
       <Typography.Title heading={4} style={{ margin: '15px' }}>Cookie 管理</Typography.Title>
 
-      <Grid.Row gutter={20}>
-        {cookieSiteList && cookieSiteList.map(({ cookies, site }) => (
-          <Grid.Col xs={24} sm={12} md={8} lg={6} key={site.name} style={{ margin: '1em 0' }}>
-            <Card
-              title={site.name}
-              extra={(
-                <Button
-                  type="primary"
-                  onClick={handleAddCookie(site.name)}
-                >
-                  添加
-                </Button>
-              )}
-            >
-
-              {cookies.map((cookie) => (
-                <List
-                  bordered={false}
-                >
-
-                  <List.Item
-                    key={cookie.id}
-                    style={{ padding: '20px 0', borderBottom: '1px solid var(--color-fill-3)' }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-
-                      <Popover
-                        key={cookie.id}
-                        title={cookie.friendly_name}
-                        content={(
-                          <Descriptions
-                            column={1}
-                            title="Cookie 详情"
-                            data={Object.entries(cookie).map((entry) => ({
-                              label: entry[0].toString(),
-                              value: typeof (entry[1]) === 'object' ? JSON.stringify(entry[1]) : entry[1].toString(),
-                            }))}
-                          />
-                        )}
-                      >
-                        {cookie.friendly_name}
-
-                      </Popover>
-
-                      <div style={{ display: 'flex' }}>
-
-                        <Link to={`/home/cookie/${cookie.id}`}>
-                          <span className="list-actions-icon">
-                            <IconEdit />
-                          </span>
-                        </Link>
-                        <Popconfirm
-                          title={`确定删除 Cookie ${cookie.friendly_name} ？`}
-                          onOk={handleDelCookie(cookie.id.toString())}
-                        >
-                          <span className="list-actions-icon">
-                            <IconDelete />
-                          </span>
-                        </Popconfirm>
-                      </div>
-
-                    </div>
-                  </List.Item>
-                </List>
-              ))}
-            </Card>
-          </Grid.Col>
-        ))}
-      </Grid.Row>
-      <CookieModal visible={showModal} setVisible={setShowModal} siteName={siteName} />
+      <Table columns={columns} data={data} />
     </>
   );
 }

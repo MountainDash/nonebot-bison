@@ -39,7 +39,7 @@ export default function Home() {
   } else if (path.startsWith('/home/groups/')) {
     currentKey = 'subs';
   } else if (path.startsWith('/home/cookie/')) {
-    currentKey = 'cookie';
+    currentKey = path.substring(6);
   }
 
   const [selectedTab, changeSelectTab] = useState(currentKey);
@@ -52,6 +52,8 @@ export default function Home() {
       navigate('/home/weight');
     } else if (tab === 'cookie') {
       navigate('/home/cookie');
+    } else if (tab.startsWith('cookie/')) {
+      navigate(`/home/${tab}`);
     }
   };
 
@@ -140,7 +142,7 @@ export default function Home() {
               )}
             >
               {Object.values(siteConf).filter((site) => site.enable_cookie).map((site) => (
-                <MenuItem key={site.name}>
+                <MenuItem key={`cookie/${site.name}`}>
                   {site.name}
                 </MenuItem>
               ))}
@@ -149,7 +151,6 @@ export default function Home() {
               <IconDashboard />
               调度权重
             </Menu.Item>
-
           </Menu>
         </Layout.Sider>
         <Layout.Content style={{ padding: '0 1em' }}>

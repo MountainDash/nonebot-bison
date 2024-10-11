@@ -6,7 +6,7 @@ class PlatformConfig(BaseModel):
     categories: dict[int, str]
     enabledTag: bool
     platformName: str
-    site_name: str
+    siteName: str
     hasTarget: bool
 
 

@@ -66,7 +66,7 @@ async def get_global_conf() -> GlobalConf:
             platformName=platform_name,
             categories=platform.categories,
             enabledTag=platform.enable_tag,
-            site_name=platform.site.name,
+            siteName=platform.site.name,
             name=platform.name,
             hasTarget=getattr(platform, "has_target"),
         )

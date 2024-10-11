@@ -1,15 +1,17 @@
 import React from 'react';
 import {
   Button,
-  Table, TableColumnProps, Typography,
+  Table, TableColumnProps, Typography, Space, Popconfirm,
 } from '@arco-design/web-react';
 import { useParams } from 'react-router-dom';
-import { useAppSelector } from '../../app/hooks'; import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice';
+import { IconDelete, IconEdit } from '@arco-design/web-react/icon';
+import { useAppSelector } from '../../app/hooks';
+import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice';
 import './CookieManager.css';
 import { selectPlatformConf, selectSiteConf } from '../globalConf/globalConfSlice';
-import { PlatformConfig } from '../../utils/type';
+import { Cookie, PlatformConfig } from '../../utils/type';
 import CookieTargetModal from '../cookieTargetManager/CookieTargetModal';
-import CookieModal from './CookieModal';
+import CookieAddModal from './CookieAddModal';
 
 export default function CookieManager() {
   const { siteName } = useParams();
@@ -18,9 +20,18 @@ export default function CookieManager() {
   const { data: cookieDict } = useGetCookiesQuery();
   const cookiesList = cookieDict ? Object.values(cookieDict) : [];
 
+  // 添加cookie
   const [showModal, setShowModal] = React.useState(false);
   const handleAddCookie = () => () => {
     setShowModal(true);
+  };
+
+  // 删除cookie
+  const [deleteCookie] = useDeleteCookieMutation();
+  const handleDelCookie = (cookieId: string) => () => {
+    deleteCookie({
+      cookieId,
+    });
   };
 
   let data = [
@@ -68,6 +79,23 @@ export default function CookieManager() {
     {
       title: 'CD',
       dataIndex: 'cd_milliseconds',
+    }, {
+      title: '操作',
+      dataIndex: 'op',
+      render: (_: null, record: Cookie) => (
+        <Space size="small">
+          <Popconfirm
+            title={`确定删除 Cookie ${record.friendly_name} ？`}
+            onOk={handleDelCookie(record.id.toString())}
+          >
+            <span className="list-actions-icon">
+              {/* <IconDelete /> */}
+              <Button type="text" status="danger">删除</Button>
+            </span>
+          </Popconfirm>
+        </Space>
+      ),
+
     },
 
   ];
@@ -78,11 +106,17 @@ export default function CookieManager() {
 
         <Typography.Title heading={4} style={{ margin: '15px' }}>Cookie 管理</Typography.Title>
 
-        <Button style={{ width: '90px', margin: '20px 10px' }} type="primary" onClick={handleAddCookie()}>添加</Button>
+        <Button
+          style={{ width: '90px', margin: '20px 10px' }}
+          type="primary"
+          onClick={handleAddCookie()}
+        >
+          添加
+        </Button>
       </div>
 
       <Table columns={columns} data={data} />
-      <CookieModal visible={showModal} setVisible={setShowModal} siteName={siteName || ''} />
+      <CookieAddModal visible={showModal} setVisible={setShowModal} siteName={siteName || ''} />
     </>
   );
 }

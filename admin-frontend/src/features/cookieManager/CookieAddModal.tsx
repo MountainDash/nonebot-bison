@@ -8,7 +8,7 @@ interface CookieModalProps {
   siteName: string;
 }
 
-function CookieModal({ visible, setVisible, siteName }: CookieModalProps) {
+function CookieAddModal({ visible, setVisible, siteName }: CookieModalProps) {
   const FormItem = Form.Item;
   const [content, setContent] = useState<string>('');
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -51,4 +51,4 @@ function CookieModal({ visible, setVisible, siteName }: CookieModalProps) {
   );
 }
 
-export default CookieModal;
+export default CookieAddModal;

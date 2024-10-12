@@ -41,7 +41,7 @@ export const cookieTargetApi = createApi({
   tagTypes: ['CookieTarget'],
   endpoints: (builder) => ({
     getCookieTargets: builder.query<CookieTarget[], {cookieId: number }>({
-      query: (cookieId) => `/cookie_target?cookie_id=${cookieId}`,
+      query: ({ cookieId }) => `/cookie_target?cookie_id=${cookieId}`,
       providesTags: ['CookieTarget'],
     }),
     newCookieTarget: builder.mutation<StatusResp, NewCookieTargetParam>({

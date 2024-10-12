@@ -1,18 +1,40 @@
 import React
   from 'react';
-import { Modal, Select } from '@arco-design/web-react';
-import { SubscribeConfig, SubscribeGroupDetail } from '../../utils/type';
+import {
+  Empty, Form, Modal, Select,
+} from '@arco-design/web-react';
+import { Cookie, SubscribeConfig, SubscribeGroupDetail } from '../../utils/type';
 import { useNewCookieTargetMutation } from '../cookieManager/cookieConfigSlice';
 import { useGetSubsQuery } from '../subsribeConfigManager/subscribeConfigSlice';
+import { useAppSelector } from '../../app/hooks';
+import { selectPlatformConf } from '../globalConf/globalConfSlice';
 
 interface SubscribeModalProp {
-  cookieId: number;
+  cookie:Cookie| null
   visible: boolean;
   setVisible: (arg0: boolean) => void;
 }
 
-export default function CookieTargetModal({ cookieId, visible, setVisible }: SubscribeModalProp) {
+export default function CookieTargetModal({
+  cookie, visible, setVisible,
+}: SubscribeModalProp) {
+  if (!cookie) {
+    return <Empty />;
+  }
   const [newCookieTarget] = useNewCookieTargetMutation();
+  const FormItem = Form.Item;
+
+  // 筛选出当前Cookie支持的平台
+  const platformConf = useAppSelector(selectPlatformConf);
+  const platformThatSiteSupport = Object.values(platformConf).reduce((p, c) => {
+    if (c.siteName in p) {
+      p[c.siteName].push(c.platformName);
+    } else {
+      p[c.siteName] = [c.platformName];
+    }
+    return p;
+  }, {} as Record<string, string[]>);
+  const supportedPlatform = platformThatSiteSupport[cookie.site_name];
 
   const { data: subs } = useGetSubsQuery();
   const pureSubs:SubscribeConfig[] = subs ? Object.values(subs)
@@ -20,18 +42,21 @@ export default function CookieTargetModal({ cookieId, visible, setVisible }: Sub
       pv:Array<SubscribeConfig>,
       cv:SubscribeGroupDetail,
     ) => pv.concat(cv.subscribes), []) : [];
+  const filteredSubs = pureSubs.filter((sub) => supportedPlatform.includes(sub.platformName));
   const [index, setIndex] = React.useState(-1);
+
   const handleSubmit = (idx:number) => {
     const postPromise: ReturnType<typeof newCookieTarget> = newCookieTarget({
-      cookieId,
-      platformName: pureSubs[idx].platformName,
-      target: pureSubs[idx].target,
+      cookieId: cookie.id,
+      platformName: filteredSubs[idx].platformName,
+      target: filteredSubs[idx].target,
     });
     postPromise.then(() => {
       setVisible(false);
     });
   };
   const { Option } = Select;
+
   return (
     <Modal
       title="关联 Cookie"
@@ -39,22 +64,46 @@ export default function CookieTargetModal({ cookieId, visible, setVisible }: Sub
       onCancel={() => setVisible(false)}
       onOk={() => handleSubmit(index)}
     >
-      <Select
-        placeholder="选择要关联的 target"
-        style={{ width: '100%' }}
-        onChange={setIndex}
-      >
-        {pureSubs.length
-          && pureSubs.map((sub, idx) => (
+
+      <Form>
+        <FormItem label="平台" required>
+
+          <Select
+            placeholder="选择要关联的平台"
+            style={{ width: '100%' }}
+            onChange={setIndex}
+          >
+            {supportedPlatform.length
+          && supportedPlatform.map((sub, idx) => (
             <Option
               key={JSON.stringify(sub)}
               value={idx}
             >
-              {JSON.stringify(sub)}
+              {sub}
             </Option>
           ))}
-      </Select>
+          </Select>
 
+        </FormItem>
+        <FormItem label="订阅目标" required>
+          <Select
+            placeholder="选择要关联的订阅目标"
+            style={{ width: '100%' }}
+            onChange={setIndex}
+          >
+            {filteredSubs.length
+          && filteredSubs.map((sub, idx) => (
+            <Option
+              key={JSON.stringify(sub)}
+              value={idx}
+            >
+              {sub.targetName}
+            </Option>
+          ))}
+          </Select>
+        </FormItem>
+
+      </Form>
     </Modal>
   );
 }

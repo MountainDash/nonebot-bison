@@ -4,20 +4,14 @@ import {
   Table, TableColumnProps, Typography, Space, Popconfirm,
 } from '@arco-design/web-react';
 import { useParams } from 'react-router-dom';
-import { IconDelete, IconEdit } from '@arco-design/web-react/icon';
-import { useAppSelector } from '../../app/hooks';
 import { useGetCookiesQuery, useDeleteCookieMutation } from './cookieConfigSlice';
 import './CookieManager.css';
-import { selectPlatformConf, selectSiteConf } from '../globalConf/globalConfSlice';
-import { Cookie, PlatformConfig } from '../../utils/type';
-import CookieTargetModal from '../cookieTargetManager/CookieTargetModal';
+import { Cookie } from '../../utils/type';
 import CookieAddModal from './CookieAddModal';
 import CookieEditModal from './CookieEditModal';
 
 export default function CookieManager() {
   const { siteName } = useParams();
-  const siteConf = useAppSelector(selectSiteConf);
-  const platformConf = useAppSelector(selectPlatformConf);
   const { data: cookieDict } = useGetCookiesQuery();
   const cookiesList = cookieDict ? Object.values(cookieDict) : [];
 
@@ -59,10 +53,7 @@ export default function CookieManager() {
   if (siteName) {
     data = cookiesList.filter((tSite) => tSite.site_name === siteName);
   }
-  const platformThatSiteSupport: Record<string, string> = Object.values(platformConf).reduce((p, c) => {
-    p[c.siteName] = c.platformName;
-    return p;
-  }, {} as Record<string, string>);
+
   const columns: TableColumnProps[] = [
     {
       title: 'ID',

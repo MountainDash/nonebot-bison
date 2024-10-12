@@ -66,7 +66,7 @@ export default function CookieTargetModal({
     >
 
       <Form>
-        <FormItem label="平台" required>
+        <FormItem label="平台">
 
           <Select
             placeholder="选择要关联的平台"

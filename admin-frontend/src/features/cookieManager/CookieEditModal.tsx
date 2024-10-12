@@ -22,6 +22,7 @@ function CookieEditModal({ visible, setVisible, cookie }: CookieEditModalProps) 
   // 获取 Cookie Target
   const { data: cookieTargets } = useGetCookieTargetsQuery({ cookieId: cookie.id });
 
+  console.log(cookieTargets);
   // 添加 Cookie Target
   const [showAddCookieTargetModal, setShowAddCookieTargetModal] = useState(false);
   const handleAddCookieTarget = () => () => {
@@ -31,7 +32,7 @@ function CookieEditModal({ visible, setVisible, cookie }: CookieEditModalProps) 
   // 删除 Cookie Target
   const handleDelete = (record: CookieTarget) => () => {
     deleteCookieTarget({
-      cookieId: record.cookieId,
+      cookieId: record.cookie_id,
       target: record.target.target,
       platformName: record.target.platform_name,
     });
@@ -68,7 +69,7 @@ function CookieEditModal({ visible, setVisible, cookie }: CookieEditModalProps) 
         visible={visible}
         onCancel={() => setVisible(false)}
         // confirmLoading={confirmLoading}
-      // onOk={onSubmit}
+        onOk={() => setVisible(false)}
         style={{ maxWidth: '90vw', minWidth: '50vw' }}
       >
         <Form autoComplete="off">

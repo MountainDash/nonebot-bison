@@ -102,7 +102,7 @@ export interface Cookie {
 
 export interface CookieTarget {
   target: Target;
-  cookieId: number;
+  cookie_id: number;
 }
 
 export interface NewCookieParam {

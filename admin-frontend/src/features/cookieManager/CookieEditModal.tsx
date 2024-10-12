@@ -22,7 +22,6 @@ function CookieEditModal({ visible, setVisible, cookie }: CookieEditModalProps) 
   // 获取 Cookie Target
   const { data: cookieTargets } = useGetCookieTargetsQuery({ cookieId: cookie.id });
 
-  console.log(cookieTargets);
   // 添加 Cookie Target
   const [showAddCookieTargetModal, setShowAddCookieTargetModal] = useState(false);
   const handleAddCookieTarget = () => () => {

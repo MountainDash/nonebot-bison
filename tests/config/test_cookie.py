@@ -1,6 +1,7 @@
 import json
 from typing import cast
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from nonebug import App
@@ -33,10 +34,11 @@ async def test_cookie(app: App, init_scheduler):
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 1
-
-    # 添加用户cookie
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "1"}))
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "2"}))
+    with patch("nonebot_bison.platform.weibo.WeiboSite._get_current_user_name") as mock:
+        mock.return_value = "test_name"
+        # 添加用户cookie
+        await client_mgr.add_user_cookie(json.dumps({"test_cookie": "1"}))
+        await client_mgr.add_user_cookie(json.dumps({"test_cookie": "2"}))
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 3
@@ -67,7 +69,10 @@ async def test_cookie(app: App, init_scheduler):
         cats=[],
         tags=[],
     )
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "3"}))
+
+    with patch("nonebot_bison.platform.weibo.WeiboSite._get_current_user_name") as mock:
+        mock.return_value = "test_name"
+        await client_mgr.add_user_cookie(json.dumps({"test_cookie": "3"}))
     cookies = await config.get_cookie(site_name=site.name, is_anonymous=False)
 
     # 多个target，多个cookie

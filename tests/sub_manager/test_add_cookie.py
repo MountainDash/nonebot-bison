@@ -134,7 +134,7 @@ async def test_add_cookie(app: App):
         ctx.receive_event(bot, event_4_ok)
         ctx.should_pass_rule()
         ctx.should_call_send(
-            event_4_ok, '已添加 Cookie: {"cookie": "test"} 到平台 weibo\n请使用“关联cookie”为 Cookie 关联订阅', True
+            event_4_ok, "已添加 Cookie: weibo: [suyiiyii] 到平台 weibo\n请使用“关联cookie”为 Cookie 关联订阅", True
         )
 
     async with app.test_matcher(add_cookie_target_matcher) as ctx:
@@ -179,7 +179,9 @@ async def test_add_cookie(app: App):
         )
         ctx.receive_event(bot, event_2_ok)
         ctx.should_pass_rule()
-        ctx.should_call_send(event_2_ok, '请选择一个 Cookie，已关联的 Cookie 不会显示\n1. weibo.com [{"cookie":]', True)
+        ctx.should_call_send(
+            event_2_ok, "请选择一个 Cookie，已关联的 Cookie 不会显示\n1. weibo.com weibo: [suyiiyii]", True
+        )
         event_3_err = fake_private_message_event(
             message=Message("2"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
         )
@@ -191,7 +193,7 @@ async def test_add_cookie(app: App):
         )
         ctx.receive_event(bot, event_3_ok)
         ctx.should_pass_rule()
-        ctx.should_call_send(event_3_ok, '已关联 Cookie: weibo.com [{"cookie":] 到订阅 weibo.com weibo_id', True)
+        ctx.should_call_send(event_3_ok, "已关联 Cookie: weibo.com weibo: [suyiiyii] 到订阅 weibo.com weibo_id", True)
 
 
 async def test_add_cookie_target_no_target(app: App, mocker: MockerFixture):

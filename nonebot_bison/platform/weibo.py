@@ -11,8 +11,8 @@ from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
 
 from ..post import Post
-from ..utils import http_client
 from .platform import NewMessage
+from ..utils import http_client, text_fletten
 from ..types import Tag, Target, RawPost, ApiError, Category
 from ..utils.site import CookieSite, create_cookie_client_manager
 
@@ -41,6 +41,22 @@ class WeiboSite(CookieSite):
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
     client_mgr = create_cookie_client_manager(name)
+
+    @classmethod
+    async def _get_current_user_name(cls, cookies: dict) -> str:
+        url = "https://m.weibo.cn/setup/nick/detail"
+        async with http_client() as client:
+            r = await client.get(url, headers=_HEADER, cookies=cookies)
+            data = json.loads(r.text)
+            name = data["data"]["user"]["screen_name"]
+            return name
+
+    @classmethod
+    async def get_cookie_name(cls, content: str) -> str:
+        """从cookie内容中获取cookie的友好名字，添加cookie时调用，持久化在数据库中"""
+        name = await cls._get_current_user_name(json.loads(content))
+
+        return text_fletten(f"weibo: [{name[:10]}]")
 
 
 class Weibo(NewMessage):

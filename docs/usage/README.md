@@ -1,6 +1,6 @@
 ---
 prev: /usage/install
-next: /usage/easy-use
+next: /usage/cookie
 ---
 
 # 全方位了解 Bison 的自行车

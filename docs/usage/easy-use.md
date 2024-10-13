@@ -149,35 +149,3 @@ Bison 所给的链接中的 ip 和 port 是`BISON_OUTER_URL`配置决定的，�
 :bug:
 在浏览器输入网址进入网页时，第一次进入可能会出现 unauthorized，请再输入网址重新进入一次，而**不能**简单的刷新页面
 :::
-
-## :children_crossing: 魔法饼干
-
-Bison 支持携带 Cookie 进行请求。
-
-如果需要让 Bison 携带 Cookie 进行请求，需要先使用 `添加cookie` 命令添加 Cookie，然后使用 `添加关联cookie` 命令将 Cookie 关联到订阅上。
-
-只有 `superuser` 可以管理 Cookie，只支持私聊。
-
-打开 Bison 的私聊，发送 `添加cookie` 命令，Bison 会开始添加 Cookie 流程。
-![add cookie](/images/add-cookie.png)
-
-然后，依次输入平台名称和 Cookie 内容。
-![add cookie 2](/images/add-cookie.png)
-
-看到 Bison 的回复之后，Cookie 就添加成功啦！
-
-接下来要关联 Cookie 到一个具体的订阅。
-
-> 待添加的图片。
-
-输入 `添加关联cookie` 命令，Bison 就会列出当前所有的订阅。
-
-我们选择一个订阅，Bison 会列出所有的可以选择的 Cookie。
-
-> 待添加的图片。
-
-选择需要关联的 Cookie。
-
-> 待添加的图片。
-
-至此，Bison 便会携带我们的 Cookie 去请求订阅目标啦！

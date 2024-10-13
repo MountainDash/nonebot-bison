@@ -285,6 +285,11 @@ class DBConfig:
                 res = [cookie for cookie in res if cookie.id in ids or cookie.is_universal]
             return res
 
+    async def get_cookie_by_id(self, cookie_id: int) -> Cookie:
+        async with create_session() as sess:
+            cookie = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            return cookie
+
     async def add_cookie(self, cookie: Cookie) -> int:
         async with create_session() as sess:
             sess.add(cookie)

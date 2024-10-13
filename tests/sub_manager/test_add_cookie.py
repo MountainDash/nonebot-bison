@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 import pytest
 from nonebug.app import App
@@ -90,52 +91,54 @@ async def test_add_cookie(app: App):
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import common_platform, add_cookie_matcher, add_cookie_target_matcher
 
-    async with app.test_matcher(add_cookie_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event_1 = fake_private_message_event(
-            message=Message("添加Cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
-        )
-        ctx.receive_event(bot, event_1)
-        ctx.should_pass_rule()
-        ctx.should_call_send(
-            event_1,
-            BotReply.add_reply_on_add_cookie(platform_manager, common_platform),
-            True,
-        )
-        event_2 = fake_private_message_event(
-            message=Message("全部"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
-        )
-        ctx.receive_event(bot, event_2)
-        ctx.should_pass_rule()
-        ctx.should_rejected()
-        ctx.should_call_send(
-            event_2,
-            BotReply.add_reply_on_add_cookie_input_allplatform(platform_manager),
-            True,
-        )
-        event_3 = fake_private_message_event(
-            message=Message("weibo"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
-        )
-        ctx.receive_event(bot, event_3)
-        ctx.should_pass_rule()
-        ctx.should_call_send(event_3, BotReply.add_reply_on_input_cookie)
-        event_4_err = fake_private_message_event(
-            message=Message("test"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
-        )
-        ctx.receive_event(bot, event_4_err)
-        ctx.should_call_send(event_4_err, "无效的 Cookie，请检查后重新输入，详情见<待添加的文档>", True)
-        ctx.should_rejected()
-        event_4_ok = fake_private_message_event(
-            message=Message(json.dumps({"cookie": "test"})),
-            sender=fake_superuser,
-            to_me=True,
-            user_id=fake_superuser.user_id,
-        )
-        ctx.receive_event(bot, event_4_ok)
-        ctx.should_pass_rule()
-        ctx.should_call_send(
-            event_4_ok, "已添加 Cookie: weibo: [suyiiyii] 到平台 weibo\n请使用“关联cookie”为 Cookie 关联订阅", True
-        )
+    with patch("nonebot_bison.platform.weibo.WeiboSite._get_current_user_name") as mock:
+        mock.return_value = "test_name"
+        async with app.test_matcher(add_cookie_matcher) as ctx:
+            bot = ctx.create_bot(base=Bot)
+            event_1 = fake_private_message_event(
+                message=Message("添加Cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+            )
+            ctx.receive_event(bot, event_1)
+            ctx.should_pass_rule()
+            ctx.should_call_send(
+                event_1,
+                BotReply.add_reply_on_add_cookie(platform_manager, common_platform),
+                True,
+            )
+            event_2 = fake_private_message_event(
+                message=Message("全部"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+            )
+            ctx.receive_event(bot, event_2)
+            ctx.should_pass_rule()
+            ctx.should_rejected()
+            ctx.should_call_send(
+                event_2,
+                BotReply.add_reply_on_add_cookie_input_allplatform(platform_manager),
+                True,
+            )
+            event_3 = fake_private_message_event(
+                message=Message("weibo"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+            )
+            ctx.receive_event(bot, event_3)
+            ctx.should_pass_rule()
+            ctx.should_call_send(event_3, BotReply.add_reply_on_input_cookie)
+            event_4_err = fake_private_message_event(
+                message=Message("test"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+            )
+            ctx.receive_event(bot, event_4_err)
+            ctx.should_call_send(event_4_err, "无效的 Cookie，请检查后重新输入，详情见<待添加的文档>", True)
+            ctx.should_rejected()
+            event_4_ok = fake_private_message_event(
+                message=Message(json.dumps({"cookie": "test"})),
+                sender=fake_superuser,
+                to_me=True,
+                user_id=fake_superuser.user_id,
+            )
+            ctx.receive_event(bot, event_4_ok)
+            ctx.should_pass_rule()
+            ctx.should_call_send(
+                event_4_ok, "已添加 Cookie: weibo: [test_name] 到平台 weibo\n请使用“关联cookie”为 Cookie 关联订阅", True
+            )
 
     async with app.test_matcher(add_cookie_target_matcher) as ctx:
         from nonebug_saa import should_send_saa
@@ -179,9 +182,7 @@ async def test_add_cookie(app: App):
         )
         ctx.receive_event(bot, event_2_ok)
         ctx.should_pass_rule()
-        ctx.should_call_send(
-            event_2_ok, "请选择一个 Cookie，已关联的 Cookie 不会显示\n1. weibo.com weibo: [suyiiyii]", True
-        )
+        ctx.should_call_send(event_2_ok, "请选择一个 Cookie，已关联的 Cookie 不会显示\n1. weibo: [test_name]", True)
         event_3_err = fake_private_message_event(
             message=Message("2"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
         )
@@ -193,7 +194,7 @@ async def test_add_cookie(app: App):
         )
         ctx.receive_event(bot, event_3_ok)
         ctx.should_pass_rule()
-        ctx.should_call_send(event_3_ok, "已关联 Cookie: weibo.com weibo: [suyiiyii] 到订阅 weibo.com weibo_id", True)
+        ctx.should_call_send(event_3_ok, "已关联 Cookie: weibo: [test_name] 到订阅 weibo.com weibo_id", True)
 
 
 async def test_add_cookie_target_no_target(app: App, mocker: MockerFixture):

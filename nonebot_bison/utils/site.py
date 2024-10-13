@@ -70,7 +70,8 @@ class CookieClientManager(ClientManager):
         cookie = Cookie(site_name=cls._site_name, content=content)
         cookie.cookie_name = await cookie_site.get_cookie_name(content)
         cookie.cd = cls._default_cd
-        await config.add_cookie(cookie)
+        cookie_id = await config.add_cookie(cookie)
+        return await config.get_cookie_by_id(cookie_id)
 
     def _generate_hook(self, cookie: Cookie) -> callable:
         """hook 函数生成器，用于回写请求状态到数据库"""

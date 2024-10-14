@@ -43,7 +43,7 @@ class DefaultClientManager(ClientManager):
 
 
 class CookieClientManager(ClientManager):
-    _site_name: str
+    _site_name: str  # 绑定的 site_name，需要使用 create_cookie_client_manager 创建 Client_mgr 时绑定
     _default_cd: int = timedelta(seconds=10)
 
     @classmethod

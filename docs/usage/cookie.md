@@ -46,7 +46,7 @@ Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，�
 ![add cookie](/images/add-cookie.png)
 
 然后，依次输入平台名称和 Cookie 内容。
-![add cookie 2](/images/add-cookie.png)
+![add cookie 2](/images/add-cookie-2.png)
 
 看到 Bison 的回复之后，Cookie 就添加成功啦！
 
@@ -86,11 +86,11 @@ Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，�
 
 这是 `添加cookie` 的逆向操作。
 
-## globe_with_meridians: 使用 WebUI 管理 Cookie
+## :globe_with_meridians: 使用 WebUI 管理 Cookie
 
 同样的，Bison 提供了一个网页管理 Cookie 的功能，即 WebUI，你可以在网页上查看、添加、删除 Cookie。
 
-使用方法参见 [使用网页管理订阅](/usage/easy-usage#:globe_with_meridians: \u4f7f\u7528\u7f51\u9875\u7ba1\u7406\u8ba2\u9605)。
+使用方法参见 [使用网页管理订阅](/usage/easy-use#使用网页管理订阅)。
 
 ## :tada: 完成！
 

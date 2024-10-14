@@ -1,5 +1,6 @@
 import { defineUserConfig } from "vuepress";
 import theme from "./theme.js";
+import { mdEnhancePlugin } from "vuepress-plugin-md-enhance";
 
 export default defineUserConfig({
   base: "/",
@@ -7,6 +8,11 @@ export default defineUserConfig({
   lang: "zh-CN",
   title: "NoneBot Bison",
   description: "NoneBot Bison 文档",
+  plugins: [
+    mdEnhancePlugin({
+      mermaid: true,
+    }),
+  ],
 
   theme,
 

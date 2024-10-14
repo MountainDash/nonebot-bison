@@ -65,4 +65,33 @@ graph TD
     A[获取订阅] --> B[获取订阅的Cookie]
     B --> C[验证Cookie]
     C --> D[返回Cookie]
+
+```
+
+```mermaid
+
+zenuml
+    title 一份快递是如何投递的
+    Scheduler #661ae6
+    Platform #2b2d30
+    ClientManager #FFEBE6
+    DB #f26522
+    Internet #0747A6
+    @Starter(Scheduler)
+    Scheduler.exec_fetch{
+      Post = Platform.do_fetch_new_post(SubUnit) {
+        Platform.get_sub_list(Target){
+            client = ClientManager.get_client(Target){
+                choose(){
+                    cookies = DB.get_cookies()
+
+                }
+            }
+            res = Internet.client.get(Target)
+            ClientManager.submit_status(){
+                DB.update()
+            }
+        }
+      }
+    }
 ```

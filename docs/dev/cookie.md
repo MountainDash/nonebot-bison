@@ -30,19 +30,19 @@ class WeiboSite(Site):
 
 ```python {1}
 class WeiboSite(CookieSite):
-    name = "weibo.com"
-    schedule_type = "interval"
-    schedule_setting = {"seconds": 3}
+  name = "weibo.com"
+  schedule_type = "interval"
+  schedule_setting = {"seconds": 3}
 ```
 
 2. 为你的 Site 类添加一个`client_mgr`属性
 
 ```python {5}
 class WeiboSite(CookieSite):
-    name = "weibo.com"
-    schedule_type = "interval"
-    schedule_setting = {"seconds": 3}
-    client_mgr = create_cookie_client_manager(name)
+  name = "weibo.com"
+  schedule_type = "interval"
+  schedule_setting = {"seconds": 3}
+  client_mgr = create_cookie_client_manager(name)
 ```
 
 至此，你的站点就可以使用 Cookie 了！
@@ -61,35 +61,27 @@ class WeiboSite(CookieSite):
 目前整体的调度逻辑是：
 
 ```mermaid
-graph TD
-    A[获取订阅] --> B[获取订阅的Cookie]
-    B --> C[验证Cookie]
-    C --> D[返回Cookie]
-
-```
-
-```mermaid
 
 zenuml
-    title 一份快递是如何投递的
+    title Cookie调度逻辑
     Scheduler #661ae6
     Platform #2b2d30
-    ClientManager #FFEBE6
+    CookieClientManager #FFEBE6
     DB #f26522
     Internet #0747A6
     @Starter(Scheduler)
     Scheduler.exec_fetch{
       Post = Platform.do_fetch_new_post(SubUnit) {
         Platform.get_sub_list(Target){
-            client = ClientManager.get_client(Target){
-                choose(){
+            client = CookieClientManager.get_client(Target){
+                cookie = CookieClientManager._choose_cookie(Target) {
                     cookies = DB.get_cookies()
-
                 }
+                client = CookieClientManager._assemble_client(Target, cookie)
             }
             res = Internet.client.get(Target)
-            ClientManager.submit_status(){
-                DB.update()
+            CookieClientManager._response_hook(){
+                DB.update_cookie()
             }
         }
       }

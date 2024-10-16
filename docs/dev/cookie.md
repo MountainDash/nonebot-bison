@@ -67,58 +67,25 @@ class WeiboSite(CookieSite):
 
 目前整体的调度逻辑是：
 
-<script type="module" >
-  import mermaid from "mermaid";
-  import zenuml from "@mermaid-js/mermaid-zenuml";
-async function initializeMermaid() {
-  await mermaid.registerExternalDiagrams([zenuml]);
-}
-initializeMermaid();
-</script>
-
-<pre class="mermaid">zenuml
-  title Cookie调度逻辑
-  Scheduler #661ae6
-  Platform #2b2d30
-  CookieClientManager #FFEBE6
-  DB #f26522
-  Internet #0747A6
-  @Starter(Scheduler)
-  Scheduler.exec_fetch{
-    Post = Platform.do_fetch_new_post(SubUnit) {
-      Platform.get_sub_list(Target){
-          client = CookieClientManager.get_client(Target){
-              cookie = CookieClientManager._choose_cookie(Target) {
-                  cookies = DB.get_cookies()
-              }
-              client = CookieClientManager._assemble_client(Target, cookie)
-          }
-          res = Internet.client.get(Target)
-          CookieClientManager._response_hook(){
-              DB.update_cookie()
-          }
-      }
-    }
-  }
-</pre>
-
 ```mermaid
-flowchart TB
-  init[初始化] --> schedule_pool[调度池]
-  schedule_pool((调度池)) --> choose_platform[选择Platform]
-  choose_platform --> get_targets[获取Target列表]
-  get_targets --> get_rawposts[获取Target的RawPost列表]
-  get_rawposts --> compare_with_old[(与上次状态对比)]
-  compare_with_old -- 有新增 --> dispatch[分发到对应用户]
-  compare_with_old -- 无新增 --> schedule_pool
-  dispatch --> user_filter[用户订阅过滤]
-  user_filter -- 不匹配 --> schedule_pool
-  user_filter -- 匹配 --> parse[选择Post解析方式]
-  parse -.-> to_text((文本Post))
-  parse -.-> to_pic((图片Post))
-  parse -.-> to_other((...))
-  to_text -.-> message_render[消息渲染]
-  to_pic -.-> message_render
-  to_other -.-> message_render
-  message_render --> send_to[发送到对应用户]
+sequenceDiagram
+    participant Scheduler
+    participant Platform
+    participant CookieClientManager
+    participant DB
+    participant Internet
+
+    Scheduler->>Platform: exec_fetch
+    Platform->>Platform: do_fetch_new_post(SubUnit)
+    Platform->>Platform: get_sub_list(Target)
+    Platform->>CookieClientManager: get_client(Target)
+    CookieClientManager->>DB: get_cookies()
+    CookieClientManager->>CookieClientManager: _choose_cookie(Target)
+    CookieClientManager->>CookieClientManager: _assemble_client(Target, cookie)
+    CookieClientManager->>Platform: client
+    Platform->>Internet: client.get(Target)
+    Internet->>Platform: response
+    Platform->>CookieClientManager: _response_hook()
+    CookieClientManager->>DB: update_cookie()
+
 ```

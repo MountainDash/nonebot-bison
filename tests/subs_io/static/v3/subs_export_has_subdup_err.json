@@ -1,0 +1,97 @@
+{
+  "version": 3,
+  "groups": [
+    {
+      "user_target": {
+        "platform_type": "QQ Group",
+        "group_id": 1232
+      },
+      "subs": [
+        {
+          "categories": [],
+          "tags": [],
+          "target": {
+            "target_name": "weibo_name",
+            "target": "weibo_id",
+            "platform_name": "weibo",
+            "default_schedule_weight": 10
+          }
+        }
+      ]
+    },
+    {
+      "user_target": {
+        "platform_type": "QQ Group",
+        "group_id": 2342
+      },
+      "subs": [
+        {
+          "categories": [],
+          "tags": ["kaltsit", "amiya"],
+          "target": {
+            "target_name": "weibo_name",
+            "target": "weibo_id",
+            "platform_name": "weibo",
+            "default_schedule_weight": 10
+          }
+        },
+        {
+          "categories": [1, 2],
+          "tags": [],
+          "target": {
+            "target_name": "bilibili_name",
+            "target": "bilibili_id",
+            "platform_name": "bilibili",
+            "default_schedule_weight": 10
+          }
+        }
+      ]
+    },
+    {
+      "user_target": {
+        "platform_type": "QQ Group",
+        "group_id": 1232
+      },
+      "subs": [
+        {
+          "categories": [],
+          "tags": [],
+          "target": {
+            "target_name": "weibo_name",
+            "target": "weibo_id",
+            "platform_name": "weibo",
+            "default_schedule_weight": 10
+          }
+        },
+        {
+          "categories": [2, 6],
+          "tags": ["poca"],
+          "target": {
+            "target_name": "weibo_name2",
+            "target": "weibo_id2",
+            "platform_name": "weibo",
+            "default_schedule_weight": 10
+          }
+        }
+      ]
+    }
+  ],
+  "cookies": [
+    {
+      "site_name": "weibo.com",
+      "content": "{\"cookie\": \"test\"}",
+      "cookie_name": "test cookie",
+      "cd_milliseconds": 0,
+      "is_universal": false,
+      "tags": {},
+      "targets": [
+        {
+          "target_name": "weibo_name",
+          "target": "weibo_id",
+          "platform_name": "weibo",
+          "default_schedule_weight": 10
+        }
+      ]
+    }
+  ]
+}

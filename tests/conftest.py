@@ -123,3 +123,13 @@ async def _no_browser(app: App, mocker: MockerFixture):
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
     mocker.patch("nonebot_bison.platform.unavailable_paltforms", _get_unavailable_platforms())
+
+
+@pytest.fixture
+async def _clear_db():
+    from nonebot_bison.config import config
+
+    await config.clear_db()
+    yield
+    await config.clear_db()
+    return

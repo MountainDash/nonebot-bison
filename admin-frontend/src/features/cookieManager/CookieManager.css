@@ -1,0 +1,13 @@
+.list-actions-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all 0.1s;
+}
+
+.list-actions-icon:hover {
+  background-color: var(--color-fill-3);
+}

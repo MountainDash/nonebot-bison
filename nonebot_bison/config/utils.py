@@ -8,3 +8,7 @@ class NoSuchSubscribeException(Exception):
 
 class NoSuchTargetException(Exception):
     pass
+
+
+class DuplicateCookieTargetException(Exception):
+    pass

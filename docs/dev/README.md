@@ -1,3 +1,8 @@
+---
+prev: /usage/install
+next: /dev/cookie
+---
+
 # 基本开发须知
 
 ## 语言以及工具

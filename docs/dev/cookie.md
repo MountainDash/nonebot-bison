@@ -67,14 +67,9 @@ class WeiboSite(CookieSite):
 
 目前整体的调度逻辑是：
 
-```mermaid
-
-
-```
-
-<script type="module">
-import mermaid from "mermaid";
-import zenuml from "@mermaid-js/mermaid-zenuml";
+<script type="module" >
+  import mermaid from "mermaid";
+  import zenuml from "@mermaid-js/mermaid-zenuml";
 async function initializeMermaid() {
   await mermaid.registerExternalDiagrams([zenuml]);
 }

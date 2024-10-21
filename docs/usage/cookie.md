@@ -40,6 +40,22 @@ Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，�
 - **添加 Cookie**: 将 Cookie 发给 Bison
 - **关联 Cookie**: 告诉 Bison，你希望在什么时候使用这个 Cookie
 
+## :nerd_face: 如何获取 Cookie？
+
+对于大部分平台，Bison支持JSON格式的Cookie，你可以通过浏览器的开发者工具获取。
+
+- RSS: 对于各种RSS订阅，你需要自行准备需要的Cookie，以JSON格式添加即可
+- 微博: Bison兼容RSSHub的Cookie，以下方法引用自[RSSHub的文档](https://docs.rsshub.app/zh/deploy/config#%E5%BE%AE%E5%8D%9A)
+  > 1. 打开并登录 https://m.weibo.cn （确保打开页面为手机版，如果强制跳转电脑端可尝试使用可更改 UserAgent 的浏览器插件）
+  > 2. 按下F12打开控制台，切换至Network（网络）面板
+  > 3. 在该网页切换至任意关注分组，并在面板打开最先捕获到的请求 （该情形下捕获到的请求路径应包含/feed/group）
+  > 4. 查看该请求的Headers（请求头）, 找到Cookie字段并复制内容
+- Bilibili: Bison兼容RSSHub的Cookie，以下方法引用自[RSSHub的文档](https://docs.rsshub.app/zh/deploy/config#bilibili)
+  > 1. 打开 https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=0&type=8
+  > 2. 打开控制台，切换到 Network 面板，刷新
+  > 3. 点击 dynamic_new 请求，找到 Cookie
+  > 4. 视频和专栏，UP 主粉丝及关注只要求 SESSDATA 字段，动态需复制整段 Cookie
+
 ## :sparkles: 给 Bison 添加 Cookie
 
 打开 Bison 的私聊，发送 `添加cookie` 命令，Bison 会开始添加 Cookie 流程。

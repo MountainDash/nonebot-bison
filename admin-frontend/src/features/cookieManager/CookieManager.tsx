@@ -37,19 +37,7 @@ export default function CookieManager() {
     setShowEditModal(true);
   };
 
-  let data = [
-    {
-      id: 3,
-      site_name: 'rss',
-      friendly_name: 'rss [{"ewqe":"e]',
-      last_usage: '1970-01-01T00:00:00',
-      status: '',
-      cd_milliseconds: 10000,
-      is_universal: false,
-      is_anonymous: false,
-      tags: {},
-    },
-  ];
+  let data = [];
   if (siteName) {
     data = cookiesList.filter((tSite) => tSite.site_name === siteName);
   }
@@ -61,7 +49,7 @@ export default function CookieManager() {
     },
     {
       title: 'Cookie 名称',
-      dataIndex: 'friendly_name',
+      dataIndex: 'cookie_name',
     },
     {
       title: '所属站点',
@@ -84,7 +72,7 @@ export default function CookieManager() {
       render: (_: null, record: Cookie) => (
         <Space size="small">
           <Popconfirm
-            title={`确定删除 Cookie ${record.friendly_name} ？`}
+            title={`确定删除 Cookie ${record.cookie_name} ？`}
             onOk={handleDelCookie(record.id.toString())}
           >
             <span className="list-actions-icon">

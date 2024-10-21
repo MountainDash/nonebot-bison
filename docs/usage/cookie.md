@@ -3,7 +3,7 @@ prev: /usage/
 next: /usage/install
 ---
 
-# 🍪 Bison 的自行车电助力装置
+# :cookie: Bison 的自行车电助力装置
 
 Bison 支持 Cookie 啦，你可以将 Cookie 关联到订阅以获得更好的体验。
 
@@ -26,7 +26,7 @@ nonebot-bison 开发者及 MountainDash 社区不对因使用 Cookie 导致的�
 ::: warning 使用须知
 Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，可能会被共享给其他用户。
 
-当然，Bison 不会将你的 Cookie 透露给其他用户，包括管理员。
+当然，Bison 不会将你的 Cookie 透露给其他用户。但是，管理员或其他可以接触的数据库的人员可以看到**所有 Cookie**的内容。所以，在上传 Cookie 之前，请确保管理人员可信。
 :::
 
 ## :wheelchair: 我该怎么使用 Cookie？

@@ -91,7 +91,8 @@ export interface Target {
 export interface Cookie {
   id: number;
   site_name: string;
-  friendly_name: string;
+  content: string;
+  cookie_name: string;
   last_usage: Date;
   status: string;
   cd_milliseconds: number;

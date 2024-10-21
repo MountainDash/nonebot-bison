@@ -75,7 +75,8 @@ class Target(BaseModel):
 class Cookie(BaseModel):
     id: int
     site_name: str
-    friendly_name: str
+    content: str
+    cookie_name: str
     last_usage: datetime
     status: str
     cd_milliseconds: int

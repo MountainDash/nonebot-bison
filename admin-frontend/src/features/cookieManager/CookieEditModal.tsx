@@ -76,10 +76,16 @@ function CookieEditModal({ visible, setVisible, cookie }: CookieEditModalProps) 
             <Input disabled value={cookie.id.toString()} />
           </FormItem>
           <FormItem label="Cookie 名称">
-            <Input value={cookie.friendly_name} disabled />
+            <Input value={cookie.cookie_name} disabled />
           </FormItem>
           <FormItem label="所属站点">
             <Input value={cookie.site_name} disabled />
+          </FormItem>
+          <FormItem label="内容">
+            <Input.TextArea
+              value={cookie.content}
+              disabled
+            />
           </FormItem>
 
           <FormItem label="标签">

@@ -17,7 +17,7 @@ from ..utils.get_bot import get_groups
 from .token_manager import token_manager
 from ..config.db_config import SubscribeDupException
 from ..platform import site_manager, platform_manager
-from ..utils.site import CookieClientManager, is_cookie_client_manager
+from ..utils.site import CookieSite, CookieClientManager, is_cookie_client_manager
 from ..config import NoSuchUserException, NoSuchTargetException, NoSuchSubscribeException, config
 from .types import (
     Cookie,
@@ -267,3 +267,12 @@ async def add_cookie_target(platform_name: str, target: str, cookie_id: int) -> 
 async def del_cookie_target(platform_name: str, target: str, cookie_id: int) -> StatusResp:
     await config.delete_cookie_target(target, platform_name, cookie_id)
     return StatusResp(ok=True, msg="")
+
+
+@router.post("/cookie/validate", dependencies=[Depends(check_is_superuser)])
+async def get_cookie_valid(site_name: str, content: str) -> StatusResp:
+    site = cast(CookieSite, site_manager[site_name])
+    if await site.validate_cookie(content):
+        return StatusResp(ok=True, msg="")
+    else:
+        return StatusResp(ok=False, msg="")

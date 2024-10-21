@@ -49,15 +49,13 @@ class CookieClientManager(ClientManager):
     @classmethod
     async def refresh_anonymous_cookie(cls):
         """移除已有的匿名cookie，添加一个新的匿名cookie"""
-        anonymous_cookies = await config.get_cookie(cls._site_name, is_anonymous=True)
-        anonymous_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, is_anonymous=True)
-        for cookie in anonymous_cookies:
-            if not cookie.is_anonymous:
-                continue
+        existing_anonymous_cookies = await config.get_cookie(cls._site_name, is_anonymous=True)
+        new_anonymous_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, is_anonymous=True)
+        for cookie in existing_anonymous_cookies:
             await config.delete_cookie_by_id(cookie.id)
-            anonymous_cookie.id = cookie.id  # 保持原有的id
-        anonymous_cookie.last_usage = datetime.now()  # 使得第一次请求优先使用用户 cookie
-        await config.add_cookie(anonymous_cookie)
+            new_anonymous_cookie.id = cookie.id  # 保持原有的id
+        new_anonymous_cookie.last_usage = datetime.now()  # 使得第一次请求优先使用用户 cookie
+        await config.add_cookie(new_anonymous_cookie)
 
     @classmethod
     async def add_user_cookie(cls, content: str):
@@ -81,7 +79,7 @@ class CookieClientManager(ClientManager):
                 logger.trace(f"请求成功: {cookie.id} {resp.request.url}")
                 cookie.status = "success"
             else:
-                logger.warning(f"请求失败:{cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
+                logger.warning(f"请求失败: {cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
                 cookie.status = "failed"
             cookie.last_usage = datetime.now()
             await config.update_cookie(cookie)

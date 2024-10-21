@@ -33,8 +33,8 @@ export interface PlatformConfig {
 }
 
 export interface SiteConfig {
-  name: string
-  enable_cookie: string
+  name: string;
+  enable_cookie: string;
 }
 
 export interface SubscribeConfig {
@@ -106,12 +106,12 @@ export interface CookieTarget {
 }
 
 export interface NewCookieParam {
-  siteName: string
-  content: string
+  siteName: string;
+  content: string;
 }
 
 export interface DelCookieParam {
-  cookieId: string
+  cookieId: string;
 }
 
 export interface NewCookieTargetParam {

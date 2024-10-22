@@ -47,15 +47,31 @@ class CookieClientManager(ClientManager):
     _default_cd: int = timedelta(seconds=10)
 
     @classmethod
+    async def _generate_anonymous_cookie(cls) -> Cookie:
+        return Cookie(
+            cookie_name=f"{cls._site_name} anonymous",
+            site_name=cls._site_name,
+            content="{}",
+            is_universal=True,
+            is_anonymous=True,
+            last_usage=datetime.now(),
+            cd_milliseconds=0,
+            tags="{}",
+            status="",
+        )
+
+    @classmethod
     async def refresh_anonymous_cookie(cls):
-        """移除已有的匿名cookie，添加一个新的匿名cookie"""
+        """更新已有的匿名cookie，若不存在则添加"""
         existing_anonymous_cookies = await config.get_cookie(cls._site_name, is_anonymous=True)
-        new_anonymous_cookie = Cookie(site_name=cls._site_name, content="{}", is_universal=True, is_anonymous=True)
-        for cookie in existing_anonymous_cookies:
-            await config.delete_cookie_by_id(cookie.id)
-            new_anonymous_cookie.id = cookie.id  # 保持原有的id
-        new_anonymous_cookie.last_usage = datetime.now()  # 使得第一次请求优先使用用户 cookie
-        await config.add_cookie(new_anonymous_cookie)
+        if existing_anonymous_cookies:
+            for cookie in existing_anonymous_cookies:
+                new_anonymous_cookie = await cls._generate_anonymous_cookie()
+                new_anonymous_cookie.id = cookie.id  # 保持原有的id
+                await config.update_cookie(new_anonymous_cookie)
+        else:
+            new_anonymous_cookie = await cls._generate_anonymous_cookie()
+            await config.add_cookie(new_anonymous_cookie)
 
     @classmethod
     async def add_user_cookie(cls, content: str):
@@ -120,7 +136,7 @@ class CookieClientManager(ClientManager):
         return http_client()
 
     async def refresh_client(self):
-        pass
+        self.refresh_anonymous_cookie()
 
 
 def is_cookie_client_manager(manger: type[ClientManager]) -> bool:

@@ -10,8 +10,6 @@ class TokenManager:
         self.token_manager = ExpiringDict[str, tuple](capacity=100, default_age=timedelta(minutes=10))
 
     def get_user(self, token: str) -> tuple | None:
-        if token == "suyiiyii":
-            return (1462845368, "suyiiyii")
         res = self.token_manager.get(token)
         assert res is None or isinstance(res, tuple)
         return res

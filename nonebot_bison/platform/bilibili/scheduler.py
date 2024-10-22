@@ -1,13 +1,17 @@
+import json
 import random
 from typing_extensions import override
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, TypeVar
 
 from httpx import AsyncClient
 from nonebot import logger, require
 from playwright.async_api import Cookie
 
-from nonebot_bison.types import Target
-from nonebot_bison.utils import Site, ClientManager, http_client
+from nonebot_bison.utils import Site, http_client
+
+from ...config.db_model import Cookie as CookieModel
+from ...utils.site import CookieSite, CookieClientManager
 
 if TYPE_CHECKING:
     from .platforms import Bilibili
@@ -18,13 +22,17 @@ from nonebot_plugin_htmlrender import get_browser
 B = TypeVar("B", bound="Bilibili")
 
 
-class BilibiliClientManager(ClientManager):
+class BilibiliClientManager(CookieClientManager):
     _client: AsyncClient
     _inited: bool = False
+
+    _site_name: str = "bilibili.com"
+    _default_cd: int = timedelta(seconds=120)
 
     def __init__(self) -> None:
         self._client = http_client()
 
+    @classmethod
     async def _get_cookies(self) -> list[Cookie]:
         browser = await get_browser()
         async with await browser.new_page() as page:
@@ -43,19 +51,34 @@ class BilibiliClientManager(ClientManager):
                 path=cookie.get("path", "/"),
             )
 
+    @classmethod
+    def _gen_json_cookie(self, cookies: list[Cookie]):
+        cookie_dict = {}
+        for cookie in cookies:
+            cookie_dict[cookie.get("name", "")] = cookie.get("value", "")
+        return cookie_dict
+
+    @classmethod
     @override
-    async def refresh_client(self):
-        cookies = await self._get_cookies()
-        await self._reset_client_cookies(cookies)
-        logger.debug("刷新B站客户端的cookie")
+    async def _generate_anonymous_cookie(cls) -> CookieModel:
+        cookies = await cls._get_cookies()
+        cookie = CookieModel(
+            cookie_name=f"{cls._site_name} anonymous",
+            site_name=cls._site_name,
+            content=json.dumps(cls._gen_json_cookie(cookies)),
+            is_universal=True,
+            is_anonymous=True,
+            last_usage=datetime.now(),
+            cd_milliseconds=0,
+            tags="{}",
+            status="",
+        )
+        return cookie
 
     @override
-    async def get_client(self, target: Target | None) -> AsyncClient:
-        if not self._inited:
-            logger.debug("初始化B站客户端")
-            await self.refresh_client()
-            self._inited = True
-        return self._client
+    async def refresh_client(self):
+        self.refresh_anonymous_cookie()
+        logger.debug("刷新B站客户端的cookie")
 
     @override
     async def get_client_for_static(self) -> AsyncClient:
@@ -66,7 +89,7 @@ class BilibiliClientManager(ClientManager):
         return http_client()
 
 
-class BilibiliSite(Site):
+class BilibiliSite(CookieSite):
     name = "bilibili.com"
     schedule_setting = {"seconds": 60}
     schedule_type = "interval"

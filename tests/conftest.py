@@ -133,3 +133,27 @@ async def _clear_db():
     yield
     await config.clear_db()
     return
+
+
+@pytest.fixture(autouse=True)
+def _patch_refresh_anonymous_cookie(app: App, mocker: MockerFixture):
+    from datetime import datetime
+
+    from nonebot_bison.config.db_config import Cookie
+    from nonebot_bison.utils.site import CookieClientManager
+
+    mock_anonymous_cookie = Cookie(
+        cookie_name="test anonymous",
+        site_name="test",
+        content="{}",
+        is_universal=True,
+        is_anonymous=True,
+        last_usage=datetime.now(),
+        cd_milliseconds=0,
+        tags="{}",
+        status="",
+    )
+    mocker.patch.object(CookieClientManager, "_generate_anonymous_cookie", return_value=mock_anonymous_cookie)
+
+    yield
+    mocker.stopall()

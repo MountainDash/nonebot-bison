@@ -29,8 +29,9 @@ class BilibiliClientManager(ClientManager):
         browser = await get_browser()
         async with await browser.new_page() as page:
             await page.goto(f"https://space.bilibili.com/{random.randint(1, 1000)}/dynamic")
-            await page.wait_for_load_state("load")
-            await page.wait_for_function('document.cookie.includes("bili_ticket")')
+            await page.wait_for_load_state("load")  # 等待基本加载完成
+            await page.wait_for_function('document.cookie.includes("bili_ticket")')  # 期望保证 GenWebTicket 请求完成
+            await page.wait_for_load_state("networkidle")  # 期望保证 ExClimbWuzhi 请求完成
             cookies = await page.context.cookies()
 
         return cookies

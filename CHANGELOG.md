@@ -2,6 +2,10 @@
 
 ## 最近更新
 
+### 新功能
+
+- :sparkles: 更新默认UA为Windows平台 [@suyiiyii](https://github.com/suyiiyii) ([#643](https://github.com/MountainDash/nonebot-bison/pull/643))
+
 ### 文档
 
 - 📝 小刻食堂剪彩文档 [@phidiaLam](https://github.com/phidiaLam) ([#636](https://github.com/MountainDash/nonebot-bison/pull/636))

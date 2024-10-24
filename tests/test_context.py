@@ -17,7 +17,8 @@ async def test_http_error(app: App):
 
     assert ctx.gen_req_records() == [
         "https://example.com Headers({'host': 'example.com', 'accept': '*/*', 'accept-encoding': 'gzip, deflate',"
-        " 'connection': 'keep-alive', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like"
-        " Gecko) Chrome/51.0.2704.103 Safari/537.36'}) | [403] Headers({'content-length': '15', 'content-type':"
+        " 'connection': 'keep-alive', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        " (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0'}) | [403] Headers({'content-length': '"
+        "15', 'content-type':"
         ' \'application/json\'}) {"error": "gg"}'
     ]

@@ -38,6 +38,7 @@ class BilibiliClientManager(CookieClientManager):
         async with await browser.new_page() as page:
             await page.goto(f"https://space.bilibili.com/{random.randint(1, 1000)}/dynamic")
             await page.wait_for_load_state("load")
+            await page.wait_for_function('document.cookie.includes("bili_ticket")')
             cookies = await page.context.cookies()
 
         return cookies

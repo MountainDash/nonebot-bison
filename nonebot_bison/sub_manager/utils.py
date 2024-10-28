@@ -120,3 +120,12 @@ async def generate_sub_list_text(
             res += f" （平台 {sub.target.platform_name} 已失效，请删除此订阅）"
 
     return res
+
+
+async def only_allow_private(
+    event: Event,
+    matcher: type[Matcher],
+):
+    # if not issubclass(PrivateMessageEvent, event.__class__):
+    if event.message_type != "private":
+        await matcher.finish("请在私聊中使用此命令")

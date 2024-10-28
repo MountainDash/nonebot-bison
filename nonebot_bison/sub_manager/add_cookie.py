@@ -5,11 +5,11 @@ from nonebot.log import logger
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
+from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.adapters import Message, MessageTemplate
-from nonebot.adapters.onebot.v11 import MessageEvent, PrivateMessageEvent
 
 from ..platform import platform_manager
-from .utils import common_platform, gen_handle_cancel
+from .utils import common_platform, gen_handle_cancel, only_allow_private
 from ..utils.site import CookieSite, CookieClientManager, is_cookie_client_manager
 
 
@@ -18,8 +18,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.handle()
     async def init_promote(state: T_State, event: MessageEvent):
-        if not issubclass(PrivateMessageEvent, event.__class__):
-            await add_cookie.finish("请在私聊中使用此命令")
+        await only_allow_private(event, add_cookie)
         state["_prompt"] = (
             "请输入想要添加 Cookie 的平台，目前支持，请输入冒号左边的名称：\n"
             + "".join(

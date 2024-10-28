@@ -151,7 +151,11 @@ async def do_dispatch_command(
 
 
 no_permission_matcher = on_command(
-    "添加订阅", rule=configurable_to_me, aliases={"删除订阅", "群管理"}, priority=8, block=True
+    "添加订阅",
+    rule=configurable_to_me,
+    aliases={"删除订阅", "群管理", "管理后台", "添加cookie", "删除cookie", "关联cookie", "取消关联cookie"},
+    priority=8,
+    block=True,
 )
 
 

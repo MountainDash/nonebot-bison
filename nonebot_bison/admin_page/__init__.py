@@ -61,7 +61,7 @@ def init_fastapi(driver: "Driver"):
 
 
 def register_get_token_handler():
-    get_token = on_command("后台管理", rule=to_me(), priority=5, aliases={"管理后台"})
+    get_token = on_command("后台管理", rule=to_me(), priority=5, aliases={"管理后台"}, block=True)
 
     @get_token.handle()
     async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):

@@ -1,5 +1,7 @@
 from typing import cast
+from json import JSONDecodeError
 
+from nonebot.log import logger
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
@@ -42,7 +44,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
             await add_cookie.finish("已中止添加cookie")
         elif platform in platform_manager:
             state["platform"] = platform
-            state["site"] = platform_manager[platform].site
+            state["site"] = cast(CookieSite, platform_manager[platform].site)
         else:
             await add_cookie.reject("平台输入错误")
 
@@ -58,12 +60,20 @@ def do_add_cookie(add_cookie: type[Matcher]):
             await add_cookie.reject(
                 "无效的 Cookie，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
             )
-        state["cookie"] = cookie_text
+        try:
+            cookie_name = await cookie_site.get_cookie_name(cookie_text)
+            state["cookie"] = cookie_text
+            state["cookie_name"] = cookie_name
+        except JSONDecodeError as e:
+            logger.error("获取 Cookie 名称失败" + str(e))
+            await add_cookie.reject(
+                "获取 Cookie 名称失败，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
+            )
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
         client_mgr = cast(CookieClientManager, platform_manager[state["platform"]].site.client_mgr)
-        new_cookie = await client_mgr.add_user_cookie(state["cookie"])
+        new_cookie = await client_mgr.add_user_cookie(state["cookie"], state["cookie_name"])
         await add_cookie.finish(
             f"已添加 Cookie: {new_cookie.cookie_name} 到平台 {state['platform']}"
             + "\n请使用“关联cookie”为 Cookie 关联订阅"

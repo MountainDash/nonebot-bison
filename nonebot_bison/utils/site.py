@@ -74,7 +74,7 @@ class CookieClientManager(ClientManager):
             await config.add_cookie(new_anonymous_cookie)
 
     @classmethod
-    async def add_user_cookie(cls, content: str):
+    async def add_user_cookie(cls, content: str, cookie_name=str | None) -> Cookie:
         """添加用户 cookie"""
         from ..platform import site_manager
 
@@ -82,7 +82,7 @@ class CookieClientManager(ClientManager):
         if not await cookie_site.validate_cookie(content):
             raise ValueError()
         cookie = Cookie(site_name=cls._site_name, content=content)
-        cookie.cookie_name = await cookie_site.get_cookie_name(content)
+        cookie.cookie_name = cookie_name if cookie_name else await cookie_site.get_cookie_name(content)
         cookie.cd = cls._default_cd
         cookie_id = await config.add_cookie(cookie)
         return await config.get_cookie_by_id(cookie_id)

@@ -27,7 +27,6 @@ class BilibiliClientManager(CookieClientManager):
     _inited: bool = False
 
     _site_name: str = "bilibili.com"
-    _default_cd: int = timedelta(seconds=120)
 
     def __init__(self) -> None:
         self._client = http_client()
@@ -97,6 +96,7 @@ class BilibiliSite(CookieSite):
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True
+    default_cd: int = timedelta(seconds=120)
 
 
 class BililiveSite(Site):

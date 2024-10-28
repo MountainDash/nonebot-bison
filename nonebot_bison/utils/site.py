@@ -44,7 +44,6 @@ class DefaultClientManager(ClientManager):
 
 class CookieClientManager(ClientManager):
     _site_name: str  # 绑定的 site_name，需要使用 create_cookie_client_manager 创建 Client_mgr 时绑定
-    _default_cd: int = timedelta(seconds=10)
 
     @classmethod
     async def _generate_anonymous_cookie(cls) -> Cookie:
@@ -83,7 +82,7 @@ class CookieClientManager(ClientManager):
             raise ValueError()
         cookie = Cookie(site_name=cls._site_name, content=content)
         cookie.cookie_name = cookie_name if cookie_name else await cookie_site.get_cookie_name(content)
-        cookie.cd = cls._default_cd
+        cookie.cd = cookie_site.default_cd
         cookie_id = await config.add_cookie(cookie)
         return await config.get_cookie_by_id(cookie_id)
 
@@ -166,6 +165,7 @@ class Site(metaclass=RegistryMeta, base=True):
 
 class CookieSite(Site):
     client_mgr: type[CookieClientManager] = CookieClientManager
+    default_cd: int = timedelta(seconds=10)
 
     @classmethod
     async def get_cookie_name(cls, content: str) -> str:

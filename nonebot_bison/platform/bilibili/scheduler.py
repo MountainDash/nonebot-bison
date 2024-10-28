@@ -96,7 +96,7 @@ class BilibiliSite(CookieSite):
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True
-    default_cd: int = timedelta(seconds=120)
+    default_cookie_cd: int = timedelta(seconds=120)
 
 
 class BililiveSite(Site):

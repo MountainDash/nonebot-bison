@@ -82,7 +82,7 @@ class CookieClientManager(ClientManager):
             raise ValueError()
         cookie = Cookie(site_name=cls._site_name, content=content)
         cookie.cookie_name = cookie_name if cookie_name else await cookie_site.get_cookie_name(content)
-        cookie.cd = cookie_site.default_cd
+        cookie.cd = cookie_site.default_cookie_cd
         cookie_id = await config.add_cookie(cookie)
         return await config.get_cookie_by_id(cookie_id)
 
@@ -165,7 +165,7 @@ class Site(metaclass=RegistryMeta, base=True):
 
 class CookieSite(Site):
     client_mgr: type[CookieClientManager] = CookieClientManager
-    default_cd: int = timedelta(seconds=10)
+    default_cookie_cd: int = timedelta(seconds=10)
 
     @classmethod
     async def get_cookie_name(cls, content: str) -> str:

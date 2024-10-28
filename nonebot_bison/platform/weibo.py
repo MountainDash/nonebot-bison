@@ -41,7 +41,7 @@ class WeiboSite(CookieSite):
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
     client_mgr = create_cookie_client_manager(name)
-    default_cd: int = timedelta(seconds=15)
+    default_cookie_cd: int = timedelta(seconds=15)
 
     @classmethod
     async def _get_current_user_name(cls, cookies: dict) -> str:

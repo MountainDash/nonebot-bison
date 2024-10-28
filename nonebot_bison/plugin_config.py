@@ -36,7 +36,8 @@ class PlugConfig(BaseModel):
     bison_resend_times: int = 0
     bison_proxy: str | None = None
     bison_ua: str = Field(
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+        " Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
         description="默认UA",
     )
     bison_show_network_warning: bool = True

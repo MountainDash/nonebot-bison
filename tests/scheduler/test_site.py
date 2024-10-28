@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock
 from nonebug import App
 from pytest_mock import MockerFixture
 
+from tests.conftest import patch_refresh_bilibili_anonymous_cookie
+
 if typing.TYPE_CHECKING:
     from nonebot_bison.utils import Site
 
@@ -199,6 +201,7 @@ async def test_scheduler_skip_browser(mocker: MockerFixture):
         site = MockSite
 
     mocker.patch.dict(platform_manager, {"mock_platform": MockPlatform})
+    patch_refresh_bilibili_anonymous_cookie(mocker)
 
     await init_scheduler()
 
@@ -229,6 +232,7 @@ async def test_scheduler_no_skip_not_require_browser(mocker: MockerFixture):
         site = MockSite
 
     mocker.patch.dict(platform_manager, {"mock_platform": MockPlatform})
+    patch_refresh_bilibili_anonymous_cookie(mocker)
 
     await init_scheduler()
 

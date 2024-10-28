@@ -6,6 +6,10 @@
 
 - :sparkles: 更新默认UA为Windows平台 [@suyiiyii](https://github.com/suyiiyii) ([#643](https://github.com/MountainDash/nonebot-bison/pull/643))
 
+### Bug 修复
+
+- :bug: 修复B站获取匿名Cookie逻辑 [@suyiiyii](https://github.com/suyiiyii) ([#644](https://github.com/MountainDash/nonebot-bison/pull/644))
+
 ### 文档
 
 - 📝 小刻食堂剪彩文档 [@phidiaLam](https://github.com/phidiaLam) ([#636](https://github.com/MountainDash/nonebot-bison/pull/636))

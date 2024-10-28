@@ -2,6 +2,7 @@ from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import EventPlainText
 from nonebot_plugin_saa import MessageFactory
+from nonebot.adapters.onebot.v11 import MessageEvent, PrivateMessageEvent
 
 from ..config import config
 from ..utils import parse_text
@@ -12,7 +13,9 @@ def do_del_cookie(del_cookie: type[Matcher]):
     handle_cancel = gen_handle_cancel(del_cookie, "删除中止")
 
     @del_cookie.handle()
-    async def send_list(state: T_State):
+    async def send_list(state: T_State, event: MessageEvent):
+        if not issubclass(PrivateMessageEvent, event.__class__):
+            await del_cookie.finish("请在私聊中使用此命令")
         cookies = await config.get_cookie(is_anonymous=False)
         if not cookies:
             await del_cookie.finish("暂无已添加的 Cookie\n请使用“添加cookie”命令添加")

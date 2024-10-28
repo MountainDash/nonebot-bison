@@ -3,6 +3,7 @@ from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText
 from nonebot_plugin_saa import MessageFactory
 from nonebot.internal.adapter import MessageTemplate
+from nonebot.adapters.onebot.v11 import MessageEvent, PrivateMessageEvent
 
 from ..config import config
 from ..utils import parse_text
@@ -14,7 +15,9 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     handle_cancel = gen_handle_cancel(add_cookie_target_matcher, "已中止关联 cookie")
 
     @add_cookie_target_matcher.handle()
-    async def init_promote(state: T_State):
+    async def init_promote(state: T_State, event: MessageEvent):
+        if not issubclass(PrivateMessageEvent, event.__class__):
+            await add_cookie_target_matcher.finish("请在私聊中使用此命令")
         res = await generate_sub_list_text(
             add_cookie_target_matcher, state, is_index=True, is_show_cookie=True, is_hide_no_cookie_platfrom=True
         )

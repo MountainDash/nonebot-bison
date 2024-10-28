@@ -166,7 +166,6 @@ class Site(metaclass=RegistryMeta, base=True):
 
 class CookieSite(Site):
     client_mgr: type[CookieClientManager] = CookieClientManager
-    cookie_format_prompt = "无效的 Cookie，请检查后重新输入，详情见<待添加的文档>"
 
     @classmethod
     async def get_cookie_name(cls, content: str) -> str:

@@ -126,7 +126,11 @@ async def test_add_cookie(app: App):
                 message=Message("test"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
             )
             ctx.receive_event(bot, event_4_err)
-            ctx.should_call_send(event_4_err, "无效的 Cookie，请检查后重新输入，详情见<待添加的文档>", True)
+            ctx.should_call_send(
+                event_4_err,
+                "无效的 Cookie，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html",
+                True,
+            )
             ctx.should_rejected()
             event_4_ok = fake_private_message_event(
                 message=Message(json.dumps({"cookie": "test"})),

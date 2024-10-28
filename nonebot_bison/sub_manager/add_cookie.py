@@ -55,7 +55,9 @@ def do_add_cookie(add_cookie: type[Matcher]):
         cookie_site = cast(type[CookieSite], platform_manager[state["platform"]].site)
         cookie_text = cookie.extract_plain_text()
         if not await cookie_site.validate_cookie(cookie_text):
-            await add_cookie.reject(state["site"].cookie_format_prompt)
+            await add_cookie.reject(
+                "无效的 Cookie，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
+            )
         state["cookie"] = cookie_text
 
     @add_cookie.handle()

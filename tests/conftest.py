@@ -29,7 +29,7 @@ def load_adapters(nonebug_init: None):
     return driver
 
 
-def _patch_refresh_bilibili_anonymous_cookie(mocker: MockerFixture):
+def patch_refresh_bilibili_anonymous_cookie(mocker: MockerFixture):
     # patch 掉bilibili的匿名cookie生成函数，避免真实请求
 
     from nonebot_bison.platform.bilibili.scheduler import BilibiliClientManager
@@ -63,7 +63,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
 
     # 如果在 app 前调用会报错“无法找到调用者”
     # 而在后面调用又来不及mock，所以只能在中间mock
-    _patch_refresh_bilibili_anonymous_cookie(mocker)
+    patch_refresh_bilibili_anonymous_cookie(mocker)
 
     if not param.get("no_init_db"):
         await init_db()
@@ -153,6 +153,6 @@ async def _clear_db(app: App):
 def _patch_weibo_get_cookie_name(app: App, mocker: MockerFixture):
     from nonebot_bison.platform import weibo
 
-    mocker.patch.object(weibo.WeiboSite, "get_cookie_name", return_value="weibo_cookie_name")
+    mocker.patch.object(weibo.WeiboSite, "_get_current_user_name", return_value="test_name")
     yield
     mocker.stopall()

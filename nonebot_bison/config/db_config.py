@@ -369,7 +369,7 @@ class DBConfig:
             return res
 
     async def clear_db(self):
-        """清空数据库"""
+        """清空数据库，用于单元测试清理环境"""
         async with create_session() as sess:
             await sess.execute(delete(User))
             await sess.execute(delete(Target))

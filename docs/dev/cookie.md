@@ -94,11 +94,10 @@ sequenceDiagram
 
 - `refresh_anonymous_cookie(cls)` 移除已有的匿名 cookie，添加一个新的匿名 cookie，应该在 CCM 初始化时调用
 - `add_user_cookie(cls, content: str)` 添加用户 cookie，在这里对 Cookie 进行检查并获取 cookie_name，写入数据库
-- `valid_cookie(cls, content: str) -> bool` 验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写
-- `get_cookie_friendly_name(cls, cookie: Cookie) -> str` 获取 cookie 的友好名字，用于展示
 - `_generate_hook(self, cookie: Cookie) -> callable` hook 函数生成器，用于回写请求状态到数据库
 - `_choose_cookie(self, target: Target) -> Cookie` 选择 cookie 的具体算法
-- `get_client(self, target: Target | None) -> AsyncClient` 获取 client，根据 target 选择 cookie
+- `add_user_cookie(cls, content: str, cookie_name: str | None = None) -> Cookie` 对外的接口，添加用户 cookie，内部会调用 Site 的方法进行检查
+- `get_client(self, target: Target | None) -> AsyncClient` 对外的接口，获取 client，根据 target 选择 cookie
 - `_assemble_client(self, client, cookie) -> AsyncClient` 组装 client，可以自定义 cookie 对象的 content 装配到 client 中的方式
 
 CookieSite 的方法见上文
@@ -145,7 +144,7 @@ CookieSite 的方法见上文
 
 - **is_universal**：用于标记 Cookie 是否为通用 Cookie，即对所有 Target 都有效。可以理解为是一种特殊的 target，添加 Cookie 和获取 Cookie 时通过传入参数进行设置。
 
-- **is_anonymous**：用于标记 Cookie 是否为匿名 Cookie，目前的定义是：可以由程序自动生成的，适用于所有 Target 的 Cookie。目前的逻辑是 bison 启动时，删除原有的匿名 cookie，再生成一个新的匿名 cookie。
+- **is_anonymous**：用于标记 Cookie 是否为匿名 Cookie，目前的定义是：可以由程序自动生成的，适用于所有 Target 的 Cookie。目前的逻辑是 bison 启动时，生成一个新的匿名 Cookie 并替换掉原有的匿名 Cookie。
 
 - **无 Target 平台的 Cookie 处理方式**
 

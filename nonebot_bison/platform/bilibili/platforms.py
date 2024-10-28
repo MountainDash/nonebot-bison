@@ -16,7 +16,7 @@ from nonebot_bison.compat import model_rebuild
 from nonebot_bison.utils import text_similarity, decode_unicode_escapes
 from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
 
-from .retry import ApiCode352Error
+from .retry import ApiCode352Error, retry_for_352
 from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
 from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 from .models import (
@@ -68,21 +68,6 @@ class Bilibili(NewMessage):
     has_target = True
     parse_target_promot = "请输入用户主页的链接"
 
-    _HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
-        "Sec-Fetch-User": "?1",
-        "Priority": "u=0, i",
-        "Pragma": "no-cache",
-        "Cache-Control": "no-cache",
-    }
-
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
         res = await client.get("https://api.bilibili.com/x/web-interface/card", params={"mid": target})
@@ -105,14 +90,13 @@ class Bilibili(NewMessage):
                 prompt="正确格式:\n1. 用户纯数字id\n2. UID:<用户id>\n3. 用户主页链接: https://space.bilibili.com/xxxx"
             )
 
-    # @retry_for_352
+    @retry_for_352
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
         client = await self.ctx.get_client(target)
         params = {"host_mid": target, "timezone_offset": -480, "offset": ""}
         res = await client.get(
             "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space",
             params=params,
-            headers=self._HEADERS,
             timeout=4.0,
         )
         res.raise_for_status()

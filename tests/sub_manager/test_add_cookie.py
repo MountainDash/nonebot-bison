@@ -96,7 +96,7 @@ async def test_add_cookie(app: App):
         async with app.test_matcher(add_cookie_matcher) as ctx:
             bot = ctx.create_bot(base=Bot)
             event_1 = fake_private_message_event(
-                message=Message("添加Cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+                message=Message("添加cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
             )
             ctx.receive_event(bot, event_1)
             ctx.should_pass_rule()

@@ -29,6 +29,16 @@ def load_adapters(nonebug_init: None):
     return driver
 
 
+def _patch_refresh_bilibili_anonymous_cookie(mocker: MockerFixture):
+    # patch 掉bilibili的匿名cookie生成函数，避免真实请求
+
+    from nonebot_bison.platform.bilibili.scheduler import BilibiliClientManager
+
+    mocker.patch.object(
+        BilibiliClientManager, "_get_cookies", return_value=[{"name": "test anonymous", "content": "test"}]
+    )
+
+
 @pytest.fixture
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
@@ -50,6 +60,10 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     datastore_config.datastore_data_dir = tmp_path / "data"
 
     param: AppReq = getattr(request, "param", AppReq())
+
+    # 如果在 app 前调用会报错“无法找到调用者”
+    # 而在后面调用又来不及mock，所以只能在中间mock
+    _patch_refresh_bilibili_anonymous_cookie(mocker)
 
     if not param.get("no_init_db"):
         await init_db()
@@ -126,7 +140,7 @@ async def _no_browser(app: App, mocker: MockerFixture):
 
 
 @pytest.fixture
-async def _clear_db():
+async def _clear_db(app: App):
     from nonebot_bison.config import config
 
     await config.clear_db()
@@ -135,25 +149,10 @@ async def _clear_db():
     return
 
 
-@pytest.fixture(autouse=True)
-def _patch_refresh_anonymous_cookie(app: App, mocker: MockerFixture):
-    from datetime import datetime
+@pytest.fixture
+def _patch_weibo_get_cookie_name(app: App, mocker: MockerFixture):
+    from nonebot_bison.platform import weibo
 
-    from nonebot_bison.config.db_config import Cookie
-    from nonebot_bison.utils.site import CookieClientManager
-
-    mock_anonymous_cookie = Cookie(
-        cookie_name="test anonymous",
-        site_name="test",
-        content="{}",
-        is_universal=True,
-        is_anonymous=True,
-        last_usage=datetime.now(),
-        cd_milliseconds=0,
-        tags="{}",
-        status="",
-    )
-    mocker.patch.object(CookieClientManager, "_generate_anonymous_cookie", return_value=mock_anonymous_cookie)
-
+    mocker.patch.object(weibo.WeiboSite, "get_cookie_name", return_value="weibo_cookie_name")
     yield
     mocker.stopall()

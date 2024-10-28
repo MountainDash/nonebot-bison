@@ -67,6 +67,7 @@ async def test_del_cookie(app: App):
 
 
 @pytest.mark.usefixtures("_clear_db")
+@pytest.mark.usefixtures("_patch_weibo_get_cookie_name")
 async def test_del_cookie_err(app: App):
     from nonebug_saa import should_send_saa
     from nonebot.adapters.onebot.v11.bot import Bot

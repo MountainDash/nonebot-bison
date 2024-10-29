@@ -40,8 +40,8 @@ class Scheduler:
             logger.error(f"scheduler config [{self.name}] not found, exiting")
             raise RuntimeError(f"{self.name} not found")
         self.scheduler_config = scheduler_config
-        self.scheduler_config_obj = self.scheduler_config()
         self.client_mgr = scheduler_config.client_mgr()
+        self.scheduler_config_obj = self.scheduler_config()
 
         self.schedulable_list = []
         self.batch_platform_name_targets_cache = defaultdict(list)

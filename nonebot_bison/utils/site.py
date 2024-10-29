@@ -2,6 +2,7 @@ import json
 from typing import Literal
 from json import JSONDecodeError
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from datetime import datetime, timedelta
 
 import httpx
@@ -42,8 +43,14 @@ class DefaultClientManager(ClientManager):
         pass
 
 
+class SkipRequestException(Exception):
+    """跳过请求异常，如果需要在选择 Cookie 时跳过此次请求，可以抛出此异常"""
+
+    pass
+
+
 class CookieClientManager(ClientManager):
-    _default_cookie_cd: int = timedelta(seconds=15)
+    _default_cookie_cd = timedelta(seconds=15)
     _site_name: str = ""
 
     async def _generate_anonymous_cookie(self) -> Cookie:
@@ -98,7 +105,7 @@ class CookieClientManager(ClientManager):
             return False
         return True
 
-    def _generate_hook(self, cookie: Cookie) -> callable:
+    def _generate_hook(self, cookie: Cookie) -> Callable:
         """hook 函数生成器，用于回写请求状态到数据库"""
 
         async def _response_hook(resp: httpx.Response):
@@ -132,7 +139,7 @@ class CookieClientManager(ClientManager):
         return await self._assemble_client(client, cookie)
 
     async def _assemble_client(self, client, cookie) -> AsyncClient:
-        """组装 client，可以自定义 cookie 对象的 content 装配到 client 中的方式"""
+        """组装 client，可以自定义 cookie 对象装配到 client 中的方式"""
         cookies = httpx.Cookies()
         if cookie:
             cookies.update(json.loads(cookie.content))
@@ -185,7 +192,3 @@ def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_
             "client_mgr": DefaultClientManager,
         },
     )
-
-
-class SkipRequestException(Exception):
-    pass

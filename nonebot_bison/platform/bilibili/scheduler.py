@@ -24,9 +24,8 @@ B = TypeVar("B", bound="Bilibili")
 
 class BilibiliClientManager(CookieClientManager):
 
-    _default_cookie_cd: int = timedelta(seconds=120)
+    _default_cookie_cd = timedelta(seconds=120)
 
-    @classmethod
     async def _get_cookies(self) -> list[Cookie]:
         browser = await get_browser()
         async with await browser.new_page() as page:
@@ -38,7 +37,6 @@ class BilibiliClientManager(CookieClientManager):
 
         return cookies
 
-    @classmethod
     def _gen_json_cookie(self, cookies: list[Cookie]):
         cookie_dict = {}
         for cookie in cookies:

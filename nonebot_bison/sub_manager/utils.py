@@ -70,7 +70,7 @@ def admin_permission():
 async def generate_sub_list_text(
     matcher: type[Matcher],
     state: T_State,
-    user_info: PlatformTarget = None,
+    user_info: PlatformTarget | None = None,
     is_index=False,
     is_show_cookie=False,
     is_hide_no_cookie_platfrom=False,

@@ -23,8 +23,6 @@ B = TypeVar("B", bound="Bilibili")
 
 
 class BilibiliClientManager(CookieClientManager):
-    _inited: bool = False
-    _site_name: str = "bilibili.com"
 
     @classmethod
     async def _get_cookies(self) -> list[Cookie]:
@@ -45,13 +43,12 @@ class BilibiliClientManager(CookieClientManager):
             cookie_dict[cookie.get("name", "")] = cookie.get("value", "")
         return cookie_dict
 
-    @classmethod
     @override
     async def _generate_anonymous_cookie(self) -> CookieModel:
         cookies = await self._get_cookies()
         cookie = CookieModel(
-            cookie_name=f"{self._site_name} anonymous",
-            site_name=self._site_name,
+            cookie_name=f"{self._site.name} anonymous",
+            site_name=self._site.name,
             content=json.dumps(self._gen_json_cookie(cookies)),
             is_universal=True,
             is_anonymous=True,

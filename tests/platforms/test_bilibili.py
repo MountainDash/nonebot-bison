@@ -32,7 +32,7 @@ def bilibili(app: App) -> "Bilibili":
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import BilibiliClientManager
 
-    return platform_manager["bilibili"](ProcessContext(BilibiliClientManager(platform_manager["bilibili"].site)))  # type: ignore
+    return platform_manager["bilibili"](ProcessContext(BilibiliClientManager()))  # type: ignore
 
 
 @pytest.fixture

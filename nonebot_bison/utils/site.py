@@ -44,10 +44,7 @@ class DefaultClientManager(ClientManager):
 
 class CookieClientManager(ClientManager):
     _default_cookie_cd: int = timedelta(seconds=15)
-
-    def __init__(self, site: "Site") -> None:
-        self._site = site
-        self._site_name = site.name
+    _site_name: str = ""
 
     async def _generate_anonymous_cookie(self) -> Cookie:
         return Cookie(

@@ -49,8 +49,8 @@ class BilibiliClientManager(CookieClientManager):
     async def _generate_anonymous_cookie(self) -> CookieModel:
         cookies = await self._get_cookies()
         cookie = CookieModel(
-            cookie_name=f"{self._site.name} anonymous",
-            site_name=self._site.name,
+            cookie_name=f"{self._site_name} anonymous",
+            site_name=self._site_name,
             content=json.dumps(self._gen_json_cookie(cookies)),
             is_universal=True,
             is_anonymous=True,

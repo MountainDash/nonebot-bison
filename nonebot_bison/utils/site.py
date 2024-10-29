@@ -45,11 +45,12 @@ class DefaultClientManager(ClientManager):
 class CookieClientManager(ClientManager):
     def __init__(self, site: "Site") -> None:
         self._site = site
+        self._site_name = site.name
 
     async def _generate_anonymous_cookie(self) -> Cookie:
         return Cookie(
-            cookie_name=f"{self._site.name} anonymous",
-            site_name=self._site.name,
+            cookie_name=f"{self._site_name} anonymous",
+            site_name=self._site_name,
             content="{}",
             is_universal=True,
             is_anonymous=True,
@@ -61,7 +62,7 @@ class CookieClientManager(ClientManager):
 
     async def _refresh_anonymous_cookie(self):
         """更新已有的匿名cookie，若不存在则添加"""
-        existing_anonymous_cookies = await config.get_cookie(self._site.name, is_anonymous=True)
+        existing_anonymous_cookies = await config.get_cookie(self._site_name, is_anonymous=True)
         if existing_anonymous_cookies:
             for cookie in existing_anonymous_cookies:
                 new_anonymous_cookie = await self._generate_anonymous_cookie()
@@ -75,10 +76,10 @@ class CookieClientManager(ClientManager):
         """添加用户 cookie"""
         from ..platform import site_manager
 
-        cookie_site = cast(type[CookieSite], site_manager[self._site.name])
+        cookie_site = cast(type[CookieSite], site_manager[self._site_name])
         if not await cookie_site.validate_cookie(content):
             raise ValueError()
-        cookie = Cookie(site_name=self._site.name, content=content)
+        cookie = Cookie(site_name=self._site_name, content=content)
         cookie.cookie_name = cookie_name if cookie_name else await cookie_site.get_cookie_name(content)
         cookie.cd = cookie_site.default_cookie_cd
         cookie_id = await config.add_cookie(cookie)
@@ -101,7 +102,7 @@ class CookieClientManager(ClientManager):
 
     async def _choose_cookie(self, target: Target | None) -> Cookie:
         """选择 cookie 的具体算法"""
-        cookies = await config.get_cookie(self._site.name, target)
+        cookies = await config.get_cookie(self._site_name, target)
         cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
         cookie = min(cookies, key=lambda x: x.last_usage)
         return cookie
@@ -111,9 +112,9 @@ class CookieClientManager(ClientManager):
         client = http_client()
         cookie = await self._choose_cookie(target)
         if cookie.is_universal:
-            logger.trace(f"平台 {self._site.name} 未获取到用户cookie, 使用匿名cookie")
+            logger.trace(f"平台 {self._site_name} 未获取到用户cookie, 使用匿名cookie")
         else:
-            logger.trace(f"平台 {self._site.name} 获取到用户cookie: {cookie.id}")
+            logger.trace(f"平台 {self._site_name} 获取到用户cookie: {cookie.id}")
 
         return await self._assemble_client(client, cookie)
 

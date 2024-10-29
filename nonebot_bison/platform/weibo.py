@@ -13,8 +13,8 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..utils import http_client, text_fletten
+from ..utils.site import CookieSite, CookieClientManager
 from ..types import Tag, Target, RawPost, ApiError, Category
-from ..utils.site import CookieSite, create_cookie_client_manager
 
 _HEADER = {
     "accept": (
@@ -40,7 +40,7 @@ class WeiboSite(CookieSite):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
-    client_mgr = create_cookie_client_manager(name)
+    client_mgr = CookieClientManager
     default_cookie_cd: int = timedelta(seconds=15)
 
     @classmethod

@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..utils import http_client, text_fletten
-from ..utils.site import CookieSite, CookieClientManager
+from ..utils.site import Site, CookieClientManager
 from ..types import Tag, Target, RawPost, ApiError, Category
 
 _HEADER = {
@@ -55,11 +55,11 @@ class WeiboClientManager(CookieClientManager):
         return text_fletten(f"weibo: [{name[:10]}]")
 
 
-class WeiboSite(CookieSite):
+class WeiboSite(Site):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
-    client_mgr = CookieClientManager
+    client_mgr = WeiboClientManager
 
 
 class Weibo(NewMessage):

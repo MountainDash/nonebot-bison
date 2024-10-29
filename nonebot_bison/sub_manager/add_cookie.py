@@ -10,8 +10,8 @@ from nonebot.adapters import Message, MessageTemplate
 
 from ..scheduler import scheduler_dict
 from ..platform import platform_manager
+from ..utils.site import CookieClientManager, is_cookie_client_manager
 from .utils import common_platform, gen_handle_cancel, only_allow_private
-from ..utils.site import CookieSite, CookieClientManager, is_cookie_client_manager
 
 
 def do_add_cookie(add_cookie: type[Matcher]):
@@ -56,8 +56,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.got("cookie", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_cookie(state: T_State, cookie: Message = Arg()):
-        cookie_site = cast(type[CookieSite], platform_manager[state["platform"]].site)
-        client_mgr = cast(CookieClientManager, scheduler_dict[cookie_site].client_mgr)
+        client_mgr = cast(CookieClientManager, scheduler_dict[platform_manager[state["platform"]].site].client_mgr)
         cookie_text = cookie.extract_plain_text()
         if not await client_mgr.validate_cookie(cookie_text):
             await add_cookie.reject(
@@ -75,8 +74,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
 
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
-        cookie_site = cast(type[CookieSite], platform_manager[state["platform"]].site)
-        client_mgr = cast(CookieClientManager, scheduler_dict[cookie_site].client_mgr)
+        client_mgr = cast(CookieClientManager, scheduler_dict[platform_manager[state["platform"]].site].client_mgr)
         new_cookie = await client_mgr.add_user_cookie(state["cookie"], state["cookie_name"])
         await add_cookie.finish(
             f"已添加 Cookie: {new_cookie.cookie_name} 到平台 {state['platform']}"

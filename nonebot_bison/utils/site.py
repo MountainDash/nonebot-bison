@@ -178,10 +178,6 @@ def create_cookie_client_manager(site_name: str) -> type[CookieClientManager]:
     )
 
 
-class CookieSite(Site):
-    pass
-
-
 def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[Site]:
     return type(
         "AnonymousSite",

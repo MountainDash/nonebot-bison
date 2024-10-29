@@ -10,8 +10,8 @@ from playwright.async_api import Cookie
 
 from nonebot_bison.utils import Site, http_client
 
+from ...utils.site import CookieClientManager
 from ...config.db_model import Cookie as CookieModel
-from ...utils.site import CookieSite, CookieClientManager
 
 if TYPE_CHECKING:
     from .platforms import Bilibili
@@ -23,6 +23,8 @@ B = TypeVar("B", bound="Bilibili")
 
 
 class BilibiliClientManager(CookieClientManager):
+
+    _default_cookie_cd: int = timedelta(seconds=120)
 
     @classmethod
     async def _get_cookies(self) -> list[Cookie]:
@@ -73,13 +75,12 @@ class BilibiliClientManager(CookieClientManager):
         return http_client()
 
 
-class BilibiliSite(CookieSite):
+class BilibiliSite(Site):
     name = "bilibili.com"
     schedule_setting = {"seconds": 60}
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True
-    default_cookie_cd: int = timedelta(seconds=120)
 
 
 class BililiveSite(Site):

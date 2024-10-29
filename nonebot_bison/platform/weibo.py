@@ -1,8 +1,8 @@
 import re
 import json
-from typing import Any
+from datetime import datetime
+from typing import Any, override
 from urllib.parse import unquote
-from datetime import datetime, timedelta
 
 from yarl import URL
 from lxml.etree import HTML
@@ -36,15 +36,10 @@ _HEADER = {
 }
 
 
-class WeiboSite(CookieSite):
-    name = "weibo.com"
-    schedule_type = "interval"
-    schedule_setting = {"seconds": 3}
-    client_mgr = CookieClientManager
-    default_cookie_cd: int = timedelta(seconds=15)
+class WeiboClientManager(CookieClientManager):
+    _site_name = "weibo.com"
 
-    @classmethod
-    async def _get_current_user_name(cls, cookies: dict) -> str:
+    async def _get_current_user_name(self, cookies: dict) -> str:
         url = "https://m.weibo.cn/setup/nick/detail"
         async with http_client() as client:
             r = await client.get(url, headers=_HEADER, cookies=cookies)
@@ -52,12 +47,19 @@ class WeiboSite(CookieSite):
             name = data["data"]["user"]["screen_name"]
             return name
 
-    @classmethod
-    async def get_cookie_name(cls, content: str) -> str:
+    @override
+    async def get_cookie_name(self, content: str) -> str:
         """从cookie内容中获取cookie的友好名字，添加cookie时调用，持久化在数据库中"""
-        name = await cls._get_current_user_name(json.loads(content))
+        name = await self._get_current_user_name(json.loads(content))
 
         return text_fletten(f"weibo: [{name[:10]}]")
+
+
+class WeiboSite(CookieSite):
+    name = "weibo.com"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 3}
+    client_mgr = CookieClientManager
 
 
 class Weibo(NewMessage):

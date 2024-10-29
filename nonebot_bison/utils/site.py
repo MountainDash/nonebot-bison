@@ -1,6 +1,6 @@
 import json
+from typing import Literal
 from json import JSONDecodeError
-from typing import Literal, cast
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
@@ -43,6 +43,8 @@ class DefaultClientManager(ClientManager):
 
 
 class CookieClientManager(ClientManager):
+    _default_cookie_cd: int = timedelta(seconds=15)
+
     def __init__(self, site: "Site") -> None:
         self._site = site
         self._site_name = site.name
@@ -74,16 +76,30 @@ class CookieClientManager(ClientManager):
 
     async def add_user_cookie(self, content: str, cookie_name: str | None = None) -> Cookie:
         """添加用户 cookie"""
-        from ..platform import site_manager
 
-        cookie_site = cast(type[CookieSite], site_manager[self._site_name])
-        if not await cookie_site.validate_cookie(content):
+        if not await self.validate_cookie(content):
             raise ValueError()
         cookie = Cookie(site_name=self._site_name, content=content)
-        cookie.cookie_name = cookie_name if cookie_name else await cookie_site.get_cookie_name(content)
-        cookie.cd = cookie_site.default_cookie_cd
+        cookie.cookie_name = cookie_name if cookie_name else await self.get_cookie_name(content)
+        cookie.cd = self._default_cookie_cd
         cookie_id = await config.add_cookie(cookie)
         return await config.get_cookie_by_id(cookie_id)
+
+    async def get_cookie_name(self, content: str) -> str:
+        """从cookie内容中获取cookie的友好名字，添加cookie时调用，持久化在数据库中"""
+        from . import text_fletten
+
+        return text_fletten(f"{self._site_name} [{content[:10]}]")
+
+    async def validate_cookie(self, content: str) -> bool:
+        """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
+        try:
+            data = json.loads(content)
+            if not isinstance(data, dict):
+                return False
+        except JSONDecodeError:
+            return False
+        return True
 
     def _generate_hook(self, cookie: Cookie) -> callable:
         """hook 函数生成器，用于回写请求状态到数据库"""
@@ -153,27 +169,17 @@ class Site(metaclass=RegistryMeta, base=True):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"
 
 
+def create_cookie_client_manager(site_name: str) -> type[CookieClientManager]:
+    """创建一个平台特化的 CookieClientManger"""
+    return type(
+        "CookieClientManager",
+        (CookieClientManager,),
+        {"_site_name": site_name},
+    )
+
+
 class CookieSite(Site):
-    client_mgr: type[CookieClientManager] = CookieClientManager
-    default_cookie_cd: int = timedelta(seconds=10)
-
-    @classmethod
-    async def get_cookie_name(cls, content: str) -> str:
-        """从cookie内容中获取cookie的友好名字，添加cookie时调用，持久化在数据库中"""
-        from . import text_fletten
-
-        return text_fletten(f"{cls.name} [{content[:10]}]")
-
-    @classmethod
-    async def validate_cookie(cls, content: str) -> bool:
-        """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
-        try:
-            data = json.loads(content)
-            if not isinstance(data, dict):
-                return False
-        except JSONDecodeError:
-            return False
-        return True
+    pass
 
 
 def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[Site]:

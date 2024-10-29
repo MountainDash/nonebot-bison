@@ -57,13 +57,14 @@ def do_add_cookie(add_cookie: type[Matcher]):
     @add_cookie.got("cookie", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_cookie(state: T_State, cookie: Message = Arg()):
         cookie_site = cast(type[CookieSite], platform_manager[state["platform"]].site)
+        client_mgr = cast(CookieClientManager, scheduler_dict[cookie_site].client_mgr)
         cookie_text = cookie.extract_plain_text()
-        if not await cookie_site.validate_cookie(cookie_text):
+        if not await client_mgr.validate_cookie(cookie_text):
             await add_cookie.reject(
                 "无效的 Cookie，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
             )
         try:
-            cookie_name = await cookie_site.get_cookie_name(cookie_text)
+            cookie_name = await client_mgr.get_cookie_name(cookie_text)
             state["cookie"] = cookie_text
             state["cookie_name"] = cookie_name
         except JSONDecodeError as e:

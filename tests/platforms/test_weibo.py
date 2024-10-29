@@ -221,7 +221,10 @@ async def test_parse_target(weibo: "Weibo"):
 
 @respx.mock
 async def test_get_cookie_name(weibo: "Weibo"):
+    from nonebot_bison.platform.weibo import WeiboClientManager
+
     router = respx.get("https://m.weibo.cn/setup/nick/detail")
     router.mock(return_value=Response(200, json=get_json("weibo_get-cookie-name.json")))
-    name = await weibo.site.get_cookie_name("{}")
+    weibo_client_mgr = WeiboClientManager()
+    name = await weibo_client_mgr.get_cookie_name("{}")
     assert name == "weibo: [suyiiyii]"

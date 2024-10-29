@@ -153,6 +153,6 @@ async def _clear_db(app: App):
 def _patch_weibo_get_cookie_name(app: App, mocker: MockerFixture):
     from nonebot_bison.platform import weibo
 
-    mocker.patch.object(weibo.WeiboSite, "_get_current_user_name", return_value="test_name")
+    mocker.patch.object(weibo.WeiboClientManager, "_get_current_user_name", return_value="test_name")
     yield
     mocker.stopall()

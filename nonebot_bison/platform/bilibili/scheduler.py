@@ -78,7 +78,7 @@ class BilibiliClientManager(CookieClientManager):
 
     @override
     async def refresh_client(self):
-        self.refresh_anonymous_cookie()
+        await self._refresh_anonymous_cookie()
         logger.debug("刷新B站客户端的cookie")
 
     @override

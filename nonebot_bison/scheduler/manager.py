@@ -35,7 +35,7 @@ async def init_scheduler():
     for site, target_list in _schedule_class_dict.items():
         if is_cookie_client_manager(site.client_mgr):
             client_mgr = cast(CookieClientManager, site.client_mgr)
-            await client_mgr.refresh_anonymous_cookie()
+            await client_mgr.refresh_client()
         if not plugin_config.bison_use_browser and site.require_browser:
             logger.warning(f"{site.name} requires browser, it will not schedule.")
             continue

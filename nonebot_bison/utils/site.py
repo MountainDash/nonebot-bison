@@ -60,7 +60,7 @@ class CookieClientManager(ClientManager):
         )
 
     @classmethod
-    async def refresh_anonymous_cookie(cls):
+    async def _refresh_anonymous_cookie(cls):
         """更新已有的匿名cookie，若不存在则添加"""
         existing_anonymous_cookies = await config.get_cookie(cls._site_name, is_anonymous=True)
         if existing_anonymous_cookies:
@@ -135,7 +135,7 @@ class CookieClientManager(ClientManager):
         return http_client()
 
     async def refresh_client(self):
-        self.refresh_anonymous_cookie()
+        await self._refresh_anonymous_cookie()
 
 
 def is_cookie_client_manager(manger: type[ClientManager]) -> bool:

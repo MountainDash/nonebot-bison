@@ -30,7 +30,7 @@ async def test_cookie(app: App, init_scheduler):
     client_mgr = cast(CookieClientManager, site.client_mgr)
 
     # 刷新匿名cookie
-    await client_mgr.refresh_anonymous_cookie()
+    await client_mgr.refresh_client()
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 1

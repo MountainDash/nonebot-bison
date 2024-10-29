@@ -12,6 +12,7 @@ async def test_cookie(app: App, init_scheduler):
 
     from nonebot_bison.platform import site_manager
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
     from nonebot_bison.utils.site import CookieClientManager
     from nonebot_bison.config.utils import DuplicateCookieTargetException
@@ -27,7 +28,7 @@ async def test_cookie(app: App, init_scheduler):
         tags=[],
     )
     site = site_manager["weibo.com"]
-    client_mgr = cast(CookieClientManager, site.client_mgr)
+    client_mgr = cast(CookieClientManager, scheduler_dict[site].client_mgr)
 
     # 刷新匿名cookie
     await client_mgr.refresh_client()

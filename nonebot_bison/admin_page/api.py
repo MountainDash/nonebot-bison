@@ -12,6 +12,7 @@ from fastapi.security.oauth2 import OAuth2PasswordBearer
 from ..types import WeightConfig
 from ..apis import check_sub_target
 from .jwt import load_jwt, pack_jwt
+from ..scheduler import scheduler_dict
 from ..types import Target as T_Target
 from ..utils.get_bot import get_groups
 from .token_manager import token_manager
@@ -231,7 +232,7 @@ async def get_cookie(site_name: str = None, target: str = None) -> list[Cookie]:
 
 @router.post("/cookie", dependencies=[Depends(check_is_superuser)])
 async def add_cookie(site_name: str, content: str) -> StatusResp:
-    client_mgr = cast(CookieClientManager, site_manager[site_name].client_mgr)
+    client_mgr = cast(CookieClientManager, scheduler_dict[site_manager[site_name]].client_mgr)
     await client_mgr.add_user_cookie(content)
     return StatusResp(ok=True, msg="")
 

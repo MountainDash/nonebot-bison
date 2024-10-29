@@ -33,9 +33,6 @@ async def init_scheduler():
         else:
             _schedule_class_platform_dict[site].append(platform_name)
     for site, target_list in _schedule_class_dict.items():
-        if is_cookie_client_manager(site.client_mgr):
-            client_mgr = cast(CookieClientManager, site.client_mgr)
-            await client_mgr.refresh_client()
         if not plugin_config.bison_use_browser and site.require_browser:
             logger.warning(f"{site.name} requires browser, it will not schedule.")
             continue
@@ -47,6 +44,9 @@ async def init_scheduler():
             )
         platform_name_list = _schedule_class_platform_dict[site]
         scheduler_dict[site] = Scheduler(site, schedulable_args, platform_name_list)
+        if is_cookie_client_manager(site.client_mgr):
+            client_mgr = cast(CookieClientManager, scheduler_dict[site].client_mgr)
+            await client_mgr.refresh_client()
     config.register_add_target_hook(handle_insert_new_target)
     config.register_delete_target_hook(handle_delete_target)
 

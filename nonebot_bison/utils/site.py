@@ -45,6 +45,9 @@ class DefaultClientManager(ClientManager):
 class CookieClientManager(ClientManager):
     _site_name: str  # 绑定的 site_name，需要使用 create_cookie_client_manager 创建 Client_mgr 时绑定
 
+    def __init__(self, site: "Site") -> None:
+        self._site = site
+
     @classmethod
     async def _generate_anonymous_cookie(cls) -> Cookie:
         return Cookie(

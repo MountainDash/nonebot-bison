@@ -1,3 +1,4 @@
+from typing import cast
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -12,7 +13,7 @@ from ..send import send_msgs
 from ..types import Target, SubUnit
 from ..platform import platform_manager
 from ..utils import Site, ProcessContext
-from ..utils.site import SkipRequestException
+from ..utils.site import CookieClientManager, SkipRequestException, is_cookie_client_manager
 
 
 @dataclass
@@ -40,8 +41,12 @@ class Scheduler:
             logger.error(f"scheduler config [{self.name}] not found, exiting")
             raise RuntimeError(f"{self.name} not found")
         self.scheduler_config = scheduler_config
-        self.client_mgr = scheduler_config.client_mgr()
         self.scheduler_config_obj = self.scheduler_config()
+        if is_cookie_client_manager(scheduler_config.client_mgr):
+            cookie_client_mgr = cast(type[CookieClientManager], scheduler_config.client_mgr)
+            self.client_mgr = cookie_client_mgr(self.scheduler_config_obj)
+        else:
+            self.client_mgr = scheduler_config.client_mgr()
 
         self.schedulable_list = []
         self.batch_platform_name_targets_cache = defaultdict(list)

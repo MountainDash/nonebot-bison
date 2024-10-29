@@ -18,7 +18,6 @@ prev: /usage/
 - `nonebot_bison.config.db_model.Cookie`: 用于存储 Cookie 的实体类，包含了 Cookie 的名称、内容、状态等信息
 - `nonebot_bison.config.db_model.CookieTarget`: 用于存储 Cookie 与订阅的关联关系
 - `nonebot_bison.utils.site.CookieClientManager`: 添加了 Cookie 功能的 ClientManager，是 Cookie 管理功能的核心，调度 Cookie 的功能就在这里实现
-- `nonebot_bison.utils.site.CookieSite`: 添加了 Cookie 功能的 Site 类，根据需求添加了和 Site 强相关的 Cookie 功能实现方法
 
 ## 快速上手
 
@@ -33,19 +32,10 @@ class WeiboSite(Site):
 
 简而言之，要让你的站点获得 Cookie 能力，只需要：
 
-1. 将父类从`Site`改为`CookieSite`
-
-```python {1}
-class WeiboSite(CookieSite):
-  name = "weibo.com"
-  schedule_type = "interval"
-  schedule_setting = {"seconds": 3}
-```
-
-2. 为你的 Site 类添加一个`client_mgr`属性，值为`create_cookie_client_manager(name)`，其中`name`为你的站点名称，这是默认的 Cookie 管理器。
+为你的 Site 类添加一个`client_mgr`属性，值为`create_cookie_client_manager(name)`，其中`name`为你的站点名称，这是默认的 Cookie 管理器。
 
 ```python {5}
-class WeiboSite(CookieSite):
+class WeiboSite(Site):
   name = "weibo.com"
   schedule_type = "interval"
   schedule_setting = {"seconds": 3}
@@ -56,7 +46,7 @@ class WeiboSite(CookieSite):
 
 ## 更好的体验
 
-为了给用户提供更好的体验，你还可以为你的 Site 重写`validate_cookie`和`get_target_name`方法。
+为了给用户提供更好的体验，你还可以创建自己的 `ClientManager`：继承 `CookieClientManager` 并重写`validate_cookie`和`get_target_name`方法。
 
 - `async def validate_cookie(cls, content: str) -> bool`该方法将会在 Cookie 添加时被调用，你可以在这里验证 Cookie 的有效性
 - `async def get_cookie_name(cls, content: str) -> str`该方法将会在验证 Cookie 成功后被调用，你可以在这里设置 Cookie 的名字并展示给用户
@@ -100,8 +90,6 @@ sequenceDiagram
 - `get_client(self, target: Target | None) -> AsyncClient` 对外的接口，获取 client，根据 target 选择 cookie
 - `_assemble_client(self, client, cookie) -> AsyncClient` 组装 client，可以自定义 cookie 对象的 content 装配到 client 中的方式
 
-CookieSite 的方法见上文
-
 ::: details 大致流程
 
 1. `Platfrom` 调用 `CookieClientManager.get_client` 方法，传入 `Target` 对象
@@ -116,6 +104,7 @@ CookieSite 的方法见上文
 - 如果你需要修改选择 Cookie 的逻辑，可以重写`_choose_cookie`方法，使用你自己的算法选择合适的 Cookie 并返回
 - 如果你需要自定义 Cookie 的格式，可以重写`valid_cookie`方法，自定义验证 Cookie 的逻辑，并重写`_assemble_client`方法，自定义将 Cookie 装配到 Client 中的逻辑
 - 如果你要在请求结束后做一些操作（例如保存此次请求的结果/状态），可以重写`_response_hook`方法，自定义请求结束后的行为
+- 如果你需要跳过一次请求，可以在 `get_client` 方法中抛出 `SkipRequestException` 异常，调度器会捕获该异常并跳过此次请求
 
 ## 实名 Cookie 和匿名 Cookie
 

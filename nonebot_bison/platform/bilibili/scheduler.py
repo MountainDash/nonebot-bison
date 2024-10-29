@@ -23,13 +23,8 @@ B = TypeVar("B", bound="Bilibili")
 
 
 class BilibiliClientManager(CookieClientManager):
-    _client: AsyncClient
     _inited: bool = False
-
     _site_name: str = "bilibili.com"
-
-    def __init__(self) -> None:
-        self._client = http_client()
 
     @classmethod
     async def _get_cookies(self) -> list[Cookie]:
@@ -42,15 +37,6 @@ class BilibiliClientManager(CookieClientManager):
             cookies = await page.context.cookies()
 
         return cookies
-
-    async def _reset_client_cookies(self, cookies: list[Cookie]):
-        for cookie in cookies:
-            self._client.cookies.set(
-                name=cookie.get("name", ""),
-                value=cookie.get("value", ""),
-                domain=cookie.get("domain", ""),
-                path=cookie.get("path", "/"),
-            )
 
     @classmethod
     def _gen_json_cookie(self, cookies: list[Cookie]):

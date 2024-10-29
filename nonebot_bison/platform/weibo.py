@@ -1,8 +1,9 @@
 import re
 import json
+from typing import Any
 from datetime import datetime
-from typing import Any, override
 from urllib.parse import unquote
+from typing_extensions import override
 
 from yarl import URL
 from lxml.etree import HTML

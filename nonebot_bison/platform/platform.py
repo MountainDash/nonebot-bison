@@ -16,7 +16,7 @@ from nonebot_plugin_saa import PlatformTarget
 from ..post import Post
 from ..utils import Site, ProcessContext
 from ..plugin_config import plugin_config
-from ..types import Tag, Target, RawPost, SubUnit, Category, RegistryMeta
+from ..types import Tag, Target, RawPost, SubUnit, Category
 
 
 class CategoryNotSupport(Exception):
@@ -27,6 +27,21 @@ class CategoryNotSupport(Exception):
 
 class CategoryNotRecognize(Exception):
     """raise in get_category, when you don't know the category of post"""
+
+
+class RegistryMeta(type):
+    def __new__(cls, name, bases, namespace, **kwargs):
+        return super().__new__(cls, name, bases, namespace)
+
+    def __init__(cls, name, bases, namespace, **kwargs):
+        if kwargs.get("base"):
+            # this is the base class
+            cls.registry = []
+        elif not kwargs.get("abstract"):
+            # this is the subclass
+            cls.registry.append(cls)
+
+        super().__init__(name, bases, namespace, **kwargs)
 
 
 P = ParamSpec("P")

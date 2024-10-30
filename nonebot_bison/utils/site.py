@@ -147,6 +147,15 @@ class CookieClientManager(ClientManager):
         client.event_hooks = {"response": [self._generate_hook(cookie)]}
         return client
 
+    @classmethod
+    def from_name(cls, site_name: str) -> type["CookieClientManager"]:
+        """创建一个平台特化的 CookieClientManger"""
+        return type(
+            "CookieClientManager",
+            (CookieClientManager,),
+            {"_site_name": site_name},
+        )
+
     async def get_client_for_static(self) -> AsyncClient:
         return http_client()
 
@@ -181,15 +190,6 @@ class Site(metaclass=SiteMeta):
 
     def __str__(self):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"
-
-
-def create_cookie_client_manager(site_name: str) -> type[CookieClientManager]:
-    """创建一个平台特化的 CookieClientManger"""
-    return type(
-        "CookieClientManager",
-        (CookieClientManager,),
-        {"_site_name": site_name},
-    )
 
 
 def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_setting: dict) -> type[Site]:

@@ -10,14 +10,14 @@ from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
 from ..utils import text_similarity
-from ..utils.site import Site, create_cookie_client_manager
+from ..utils.site import Site, CookieClientManager
 
 
 class RssSite(Site):
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
-    client_mgr = create_cookie_client_manager(name)
+    client_mgr = CookieClientManager.from_name(name)
 
 
 class RssPost(Post):

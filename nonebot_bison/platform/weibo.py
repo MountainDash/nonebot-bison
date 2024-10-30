@@ -152,7 +152,7 @@ class Weibo(NewMessage):
         try:
             client = await self.ctx.get_client()
             weibo_info = await client.get(
-                "https://m.weibo.cn/statuses/show",
+                "https://m.weibo.cn/statuses/extend",
                 params={"id": weibo_id},
                 headers=_HEADER,
             )
@@ -166,7 +166,7 @@ class Weibo(NewMessage):
 
     async def _parse_weibo(self, info: dict) -> Post:
         if info["isLongText"] or info["pic_num"] > 9:
-            info["text"] = (await self._get_long_weibo(info["mid"]))["text"]
+            info["text"] = (await self._get_long_weibo(info["mid"]))["longTextContent"]
         parsed_text = self._get_text(info["text"])
         raw_pics_list = info.get("pics", [])
         pic_urls = [img["large"]["url"] for img in raw_pics_list]

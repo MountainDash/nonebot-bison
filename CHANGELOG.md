@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- 🐛 修复微博更换长内容接口 [@phidiaLam](https://github.com/phidiaLam) ([#645](https://github.com/MountainDash/nonebot-bison/pull/645))
 - :bug: 修复B站获取匿名Cookie逻辑 [@suyiiyii](https://github.com/suyiiyii) ([#644](https://github.com/MountainDash/nonebot-bison/pull/644))
 
 ### 文档

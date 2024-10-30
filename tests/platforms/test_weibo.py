@@ -45,7 +45,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
     from nonebot_bison.types import Target, SubUnit
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
-    detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4649031014551911")
+    detail_router = respx.get("https://m.weibo.cn/statuses/extend?id=4649031014551911")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_list_0.json")))
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4649031014551911")))
     image_cdn_router.mock(Response(200, content=b""))
@@ -77,7 +77,7 @@ async def test_fetch_new(weibo, dummy_user_subinfo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_repost(weibo):
-    repost_detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
+    repost_detail_router = respx.get("https://m.weibo.cn/statuses/extend?id=4645748019299849")
     repost_detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     image_cdn_router.mock(Response(200, content=b""))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][3]
@@ -121,7 +121,7 @@ async def test_fetch_repost(weibo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_video_cover(weibo):
-    router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
+    router = respx.get("https://m.weibo.cn/statuses/extend?id=4645748019299849")
     router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     image_cdn_router.mock(Response(200, content=b""))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
@@ -152,7 +152,7 @@ async def test_classification(weibo):
 @pytest.mark.asyncio
 @respx.mock
 async def test_parse_long(weibo):
-    detail_router = respx.get("https://m.weibo.cn/statuses/show?id=4645748019299849")
+    detail_router = respx.get("https://m.weibo.cn/statuses/extend?id=4645748019299849")
     detail_router.mock(return_value=Response(200, text=get_file("weibo_detail_4645748019299849")))
     raw_post = get_json("weibo_ak_list_1.json")["data"]["cards"][0]
     post = await weibo.parse(raw_post)

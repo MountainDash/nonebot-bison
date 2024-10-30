@@ -15,10 +15,10 @@ from .jwt import load_jwt, pack_jwt
 from ..scheduler import scheduler_dict
 from ..types import Target as T_Target
 from ..utils.get_bot import get_groups
+from ..platform import platform_manager
 from .token_manager import token_manager
 from ..config.db_config import SubscribeDupException
-from ..platform import site_manager, platform_manager
-from ..utils.site import CookieClientManager, is_cookie_client_manager
+from ..utils.site import CookieClientManager, site_manager, is_cookie_client_manager
 from ..config import NoSuchUserException, NoSuchTargetException, NoSuchSubscribeException, config
 from .types import (
     Cookie,

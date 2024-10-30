@@ -3,7 +3,6 @@ from pkgutil import iter_modules
 from collections import defaultdict
 from importlib import import_module
 
-from ..utils import Site
 from ..plugin_config import plugin_config
 from .platform import Platform, make_no_target_group
 
@@ -36,10 +35,3 @@ def _get_unavailable_platforms() -> dict[str, str]:
 
 # platform => reason for not available
 unavailable_paltforms: dict[str, str] = _get_unavailable_platforms()
-
-
-site_manager: dict[str, type[Site]] = {}
-for site in Site.registry:
-    if not hasattr(site, "name"):
-        continue
-    site_manager[site.name] = site

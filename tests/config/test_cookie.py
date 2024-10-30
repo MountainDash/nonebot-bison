@@ -10,12 +10,11 @@ from nonebug import App
 async def test_cookie(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.platform import site_manager
     from nonebot_bison.config.db_config import config
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
-    from nonebot_bison.utils.site import CookieClientManager
     from nonebot_bison.config.utils import DuplicateCookieTargetException
+    from nonebot_bison.utils.site import CookieClientManager, site_manager
 
     target = T_Target("weibo_id")
     platform_name = "weibo"

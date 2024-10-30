@@ -9,10 +9,10 @@ import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 
+from ..types import Target
 from ..config import config
 from .http import http_client
 from ..config.db_model import Cookie
-from ..types import Target, RegistryMeta
 
 
 class ClientManager(ABC):
@@ -161,7 +161,17 @@ def is_cookie_client_manager(manger: type[ClientManager]) -> bool:
     return issubclass(manger, CookieClientManager)
 
 
-class Site(metaclass=RegistryMeta, base=True):
+site_manager: dict[str, type["Site"]] = {}
+
+
+class SiteMeta(type):
+    def __init__(cls, *args, **kwargs):
+        if hasattr(cls, "name"):
+            site_manager[cls.name] = cls
+        super().__init__(*args, **kwargs)
+
+
+class Site(metaclass=SiteMeta):
     schedule_type: Literal["date", "interval", "cron"]
     schedule_setting: dict
     name: str

@@ -174,10 +174,18 @@ site_manager: dict[str, type["Site"]] = {}
 
 
 class SiteMeta(type):
-    def __init__(cls, *args, **kwargs):
-        if hasattr(cls, "name"):
-            site_manager[cls.name] = cls
-        super().__init__(*args, **kwargs)
+    def __new__(cls, name, bases, namespace, **kwargs):
+        return super().__new__(cls, name, bases, namespace)
+
+    def __init__(cls, name, bases, namespace, **kwargs):
+        if kwargs.get("base"):
+            # this is the base class
+            cls._key = kwargs.get("key")
+        elif not kwargs.get("abstract"):
+            # this is the subclass
+            if hasattr(cls, "name"):
+                site_manager[cls.name] = cls
+        super().__init__(name, bases, namespace, **kwargs)
 
 
 class Site(metaclass=SiteMeta):

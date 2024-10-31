@@ -29,6 +29,16 @@ def load_adapters(nonebug_init: None):
     return driver
 
 
+def patch_refresh_bilibili_anonymous_cookie(mocker: MockerFixture):
+    # patch 掉bilibili的匿名cookie生成函数，避免真实请求
+
+    from nonebot_bison.platform.bilibili.scheduler import BilibiliClientManager
+
+    mocker.patch.object(
+        BilibiliClientManager, "_get_cookies", return_value=[{"name": "test anonymous", "content": "test"}]
+    )
+
+
 @pytest.fixture
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
@@ -50,6 +60,10 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     datastore_config.datastore_data_dir = tmp_path / "data"
 
     param: AppReq = getattr(request, "param", AppReq())
+
+    # 如果在 app 前调用会报错“无法找到调用者”
+    # 而在后面调用又来不及mock，所以只能在中间mock
+    patch_refresh_bilibili_anonymous_cookie(mocker)
 
     if not param.get("no_init_db"):
         await init_db()
@@ -123,3 +137,22 @@ async def _no_browser(app: App, mocker: MockerFixture):
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
     mocker.patch("nonebot_bison.platform.unavailable_paltforms", _get_unavailable_platforms())
+
+
+@pytest.fixture
+async def _clear_db(app: App):
+    from nonebot_bison.config import config
+
+    await config.clear_db()
+    yield
+    await config.clear_db()
+    return
+
+
+@pytest.fixture
+def _patch_weibo_get_cookie_name(app: App, mocker: MockerFixture):
+    from nonebot_bison.platform import weibo
+
+    mocker.patch.object(weibo.WeiboClientManager, "_get_current_user_name", return_value="test_name")
+    yield
+    mocker.stopall()

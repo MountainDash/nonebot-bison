@@ -3,6 +3,7 @@ import json
 from typing import Any
 from datetime import datetime
 from urllib.parse import unquote
+from typing_extensions import override
 
 from yarl import URL
 from lxml.etree import HTML
@@ -12,7 +13,8 @@ from bs4 import BeautifulSoup as bs
 
 from ..post import Post
 from .platform import NewMessage
-from ..utils import Site, http_client
+from ..utils import http_client, text_fletten
+from ..utils.site import Site, CookieClientManager
 from ..types import Tag, Target, RawPost, ApiError, Category
 
 _HEADER = {
@@ -35,10 +37,30 @@ _HEADER = {
 }
 
 
+class WeiboClientManager(CookieClientManager):
+    _site_name = "weibo.com"
+
+    async def _get_current_user_name(self, cookies: dict) -> str:
+        url = "https://m.weibo.cn/setup/nick/detail"
+        async with http_client() as client:
+            r = await client.get(url, headers=_HEADER, cookies=cookies)
+            data = json.loads(r.text)
+            name = data["data"]["user"]["screen_name"]
+            return name
+
+    @override
+    async def get_cookie_name(self, content: str) -> str:
+        """从cookie内容中获取cookie的友好名字，添加cookie时调用，持久化在数据库中"""
+        name = await self._get_current_user_name(json.loads(content))
+
+        return text_fletten(f"weibo: [{name[:10]}]")
+
+
 class WeiboSite(Site):
     name = "weibo.com"
     schedule_type = "interval"
     schedule_setting = {"seconds": 3}
+    client_mgr = WeiboClientManager
 
 
 class Weibo(NewMessage):
@@ -78,9 +100,11 @@ class Weibo(NewMessage):
             raise cls.ParseTargetException(prompt="正确格式:\n1. 用户数字UID\n2. https://weibo.com/u/xxxx")
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        client = await self.ctx.get_client()
+        client = await self.ctx.get_client(target)
+        header = {"Referer": f"https://m.weibo.cn/u/{target}", "MWeibo-Pwa": "1", "X-Requested-With": "XMLHttpRequest"}
+        # 获取 cookie 见 https://docs.rsshub.app/zh/deploy/config#%E5%BE%AE%E5%8D%9A
         params = {"containerid": "107603" + target}
-        res = await client.get("https://m.weibo.cn/api/container/getIndex?", params=params, timeout=4.0)
+        res = await client.get("https://m.weibo.cn/api/container/getIndex?", headers=header, params=params, timeout=4.0)
         res_data = json.loads(res.text)
         if not res_data["ok"] and res_data["msg"] != "这里还没有内容":
             raise ApiError(res.request.url)

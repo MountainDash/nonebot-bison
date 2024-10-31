@@ -1,3 +1,5 @@
+from typing import cast
+
 from nonebot.log import logger
 
 from ..utils import Site
@@ -7,6 +9,7 @@ from ..config.db_model import Target
 from ..types import Target as T_Target
 from ..platform import platform_manager
 from ..plugin_config import plugin_config
+from ..utils.site import CookieClientManager, is_cookie_client_manager
 
 scheduler_dict: dict[type[Site], Scheduler] = {}
 
@@ -41,6 +44,9 @@ async def init_scheduler():
             )
         platform_name_list = _schedule_class_platform_dict[site]
         scheduler_dict[site] = Scheduler(site, schedulable_args, platform_name_list)
+        if is_cookie_client_manager(site.client_mgr):
+            client_mgr = cast(CookieClientManager, scheduler_dict[site].client_mgr)
+            await client_mgr.refresh_client()
     config.register_add_target_hook(handle_insert_new_target)
     config.register_delete_target_hook(handle_delete_target)
 

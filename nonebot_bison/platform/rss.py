@@ -9,13 +9,15 @@ from bs4 import BeautifulSoup as bs
 from ..post import Post
 from .platform import NewMessage
 from ..types import Target, RawPost
-from ..utils import Site, text_similarity
+from ..utils import text_similarity
+from ..utils.site import Site, CookieClientManager
 
 
 class RssSite(Site):
     name = "rss"
     schedule_type = "interval"
     schedule_setting = {"seconds": 30}
+    client_mgr = CookieClientManager.from_name(name)
 
 
 class RssPost(Post):
@@ -63,7 +65,7 @@ class Rss(NewMessage):
         return post.id
 
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-        client = await self.ctx.get_client()
+        client = await self.ctx.get_client(target)
         res = await client.get(target, timeout=10.0)
         feed = feedparser.parse(res)
         entries = feed.entries

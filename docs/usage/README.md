@@ -1,6 +1,6 @@
 ---
 prev: /usage/install
-next: /usage/easy-use
+next: /usage/cookie
 ---
 
 # 全方位了解 Bison 的自行车
@@ -271,6 +271,21 @@ Bison 在处理每条推送时，会按照以下规则顺序检查推送中的 T
    - 如果推送中的每一个 Tag 都不存在于 **需订阅 Tag** 列表中，则**丢弃**该推送，检查结束
 3. **需订阅 Tag** 列表为空
    - **发送**该推送到群中，检查结束
+
+#### Cookie 功能
+
+Bison 支持携带 Cookie 进行请求。
+
+目前支持的平台有：
+
+- `rss`: RSS
+- `weibo`: 新浪微博
+
+::: warning 使用须知
+Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，可能会被发给其他用户。
+:::
+
+管理员可以通过**命令**或**管理后台**给 Bison 设置 Cookie。
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';

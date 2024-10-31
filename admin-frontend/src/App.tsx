@@ -9,6 +9,7 @@ import SubscribeManager from './features/subsribeConfigManager/SubscribeManager'
 import WeightConfig from './features/weightConfig/WeightManager';
 import Home from './pages/Home';
 import Unauthed from './pages/Unauthed';
+import CookieManager from './features/cookieManager/CookieManager';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -45,6 +46,14 @@ function App() {
         {
           path: 'weight',
           element: <WeightConfig />,
+        },
+        {
+          path: 'cookie',
+          element: <CookieManager />,
+        },
+        {
+          path: 'cookie/:siteName',
+          element: <CookieManager />,
         },
       ],
     },

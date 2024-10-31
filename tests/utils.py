@@ -89,6 +89,7 @@ add_reply_on_id_input_search = (
 
 
 class BotReply:
+
     @staticmethod
     def add_reply_on_platform(platform_manager, common_platform):
         return (
@@ -159,3 +160,33 @@ class BotReply:
     add_reply_on_tags_need_more_info = "订阅标签直接输入标签内容\n屏蔽标签请在标签名称前添加~号\n详见https://nonebot-bison.netlify.app/usage/#%E5%B9%B3%E5%8F%B0%E8%AE%A2%E9%98%85%E6%A0%87%E7%AD%BE-tag"
     add_reply_abort = "已中止订阅"
     no_permission = "您没有权限进行此操作，请联系 Bot 管理员"
+
+    @staticmethod
+    def add_reply_on_add_cookie(platform_manager, common_platform):
+        from nonebot_bison.utils.site import is_cookie_client_manager
+
+        return (
+            "请输入想要添加 Cookie 的平台，目前支持，请输入冒号左边的名称：\n"
+            + "".join(
+                [
+                    f"{platform_name}: {platform_manager[platform_name].name}\n"
+                    for platform_name in common_platform
+                    if is_cookie_client_manager(platform_manager[platform_name].site.client_mgr)
+                ]
+            )
+            + "要查看全部平台请输入：“全部”\n中止添加cookie过程请输入：“取消”"
+        )
+
+    @staticmethod
+    def add_reply_on_add_cookie_input_allplatform(platform_manager):
+        from nonebot_bison.utils.site import is_cookie_client_manager
+
+        return "全部平台\n" + "\n".join(
+            [
+                f"{platform_name}: {platform.name}"
+                for platform_name, platform in platform_manager.items()
+                if is_cookie_client_manager(platform.site.client_mgr)
+            ]
+        )
+
+    add_reply_on_input_cookie = "请输入 Cookie"

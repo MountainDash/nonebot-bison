@@ -12,8 +12,8 @@ from nonebot_plugin_datastore import create_session
 
 from ..types import Tag
 from ..types import Target as T_Target
-from .utils import NoSuchTargetException
-from .db_model import User, Target, Subscribe, ScheduleTimeWeight
+from .utils import NoSuchTargetException, DuplicateCookieTargetException
+from .db_model import User, Cookie, Target, Subscribe, CookieTarget, ScheduleTimeWeight
 from ..types import Category, UserSubInfo, WeightConfig, TimeWeightConfig, PlatformWeightConfigResp
 
 
@@ -258,6 +258,126 @@ class DBConfig:
                 )
             )
         return res
+
+    async def get_cookie(
+        self,
+        site_name: str | None = None,
+        target: T_Target | None = None,
+        is_universal: bool | None = None,
+        is_anonymous: bool | None = None,
+    ) -> Sequence[Cookie]:
+        """获取满足传入条件的所有 cookie"""
+        async with create_session() as sess:
+            query = select(Cookie).distinct()
+            if is_universal is not None:
+                query = query.where(Cookie.is_universal == is_universal)
+            if is_anonymous is not None:
+                query = query.where(Cookie.is_anonymous == is_anonymous)
+            if site_name:
+                query = query.where(Cookie.site_name == site_name)
+            query = query.outerjoin(CookieTarget).options(selectinload(Cookie.targets))
+            res = (await sess.scalars(query)).all()
+            if target:
+                # 如果指定了 target，过滤掉不满足要求的cookie
+                query = select(CookieTarget.cookie_id).join(Target).where(Target.target == target)
+                ids = set((await sess.scalars(query)).all())
+                # 如果指定了 target 且未指定 is_universal，则添加返回 universal cookie
+                res = [cookie for cookie in res if cookie.id in ids or cookie.is_universal]
+            return res
+
+    async def get_cookie_by_id(self, cookie_id: int) -> Cookie:
+        async with create_session() as sess:
+            cookie = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            return cookie
+
+    async def add_cookie(self, cookie: Cookie) -> int:
+        async with create_session() as sess:
+            sess.add(cookie)
+            await sess.commit()
+            await sess.refresh(cookie)
+            return cookie.id
+
+    async def update_cookie(self, cookie: Cookie):
+        async with create_session() as sess:
+            cookie_in_db: Cookie | None = await sess.scalar(select(Cookie).where(Cookie.id == cookie.id))
+            if not cookie_in_db:
+                raise ValueError(f"cookie {cookie.id} not found")
+            cookie_in_db.content = cookie.content
+            cookie_in_db.cookie_name = cookie.cookie_name
+            cookie_in_db.last_usage = cookie.last_usage
+            cookie_in_db.status = cookie.status
+            cookie_in_db.tags = cookie.tags
+            await sess.commit()
+
+    async def delete_cookie_by_id(self, cookie_id: int):
+        async with create_session() as sess:
+            cookie = await sess.scalar(
+                select(Cookie)
+                .where(Cookie.id == cookie_id)
+                .outerjoin(CookieTarget)
+                .options(selectinload(Cookie.targets))
+            )
+            if len(cookie.targets) > 0:
+                raise Exception(f"cookie {cookie.id} in use")
+            await sess.execute(delete(Cookie).where(Cookie.id == cookie_id))
+            await sess.commit()
+
+    async def add_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
+        """通过 cookie_id 可以唯一确定一个 Cookie，通过 target 和 platform_name 可以唯一确定一个 Target"""
+        async with create_session() as sess:
+            target_obj = await sess.scalar(
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
+            )
+            # check if relation exists
+            cookie_target = await sess.scalar(
+                select(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie_id == cookie_id)
+            )
+            if cookie_target:
+                raise DuplicateCookieTargetException()
+            cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            cookie_target = CookieTarget(target=target_obj, cookie=cookie_obj)
+            sess.add(cookie_target)
+            await sess.commit()
+
+    async def delete_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
+        async with create_session() as sess:
+            target_obj = await sess.scalar(
+                select(Target).where(Target.platform_name == platform_name, Target.target == target)
+            )
+            cookie_obj = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            await sess.execute(
+                delete(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie == cookie_obj)
+            )
+            await sess.commit()
+
+    async def delete_cookie_target_by_id(self, cookie_target_id: int):
+        async with create_session() as sess:
+            await sess.execute(delete(CookieTarget).where(CookieTarget.id == cookie_target_id))
+            await sess.commit()
+
+    async def get_cookie_target(self) -> list[CookieTarget]:
+        async with create_session() as sess:
+            query = (
+                select(CookieTarget)
+                .outerjoin(Target)
+                .options(selectinload(CookieTarget.target))
+                .outerjoin(Cookie)
+                .options(selectinload(CookieTarget.cookie))
+            )
+            res = list((await sess.scalars(query)).all())
+            res.sort(key=lambda x: (x.target.platform_name, x.cookie_id, x.target_id))
+            return res
+
+    async def clear_db(self):
+        """清空数据库，用于单元测试清理环境"""
+        async with create_session() as sess:
+            await sess.execute(delete(User))
+            await sess.execute(delete(Target))
+            await sess.execute(delete(ScheduleTimeWeight))
+            await sess.execute(delete(Subscribe))
+            await sess.execute(delete(Cookie))
+            await sess.execute(delete(CookieTarget))
+            await sess.commit()
 
 
 config = DBConfig()

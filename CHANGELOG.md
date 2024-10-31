@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### 新功能
+
+- :sparkles: 添加 Cookie 组件 [@suyiiyii](https://github.com/suyiiyii) ([#633](https://github.com/MountainDash/nonebot-bison/pull/633))
+
 ## v0.9.5
 
 ### 新功能

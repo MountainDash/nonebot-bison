@@ -414,7 +414,7 @@ async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_d
 
     target = Target("161775300")
     post_router = respx.get(
-        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset=&features=itemOpusStyle"
     )
     post_router.mock(return_value=Response(200, json=without_dynamic))
     res = await bilibili.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
@@ -433,7 +433,7 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
     target = Target("161775300")
 
     post_router = respx.get(
-        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset=&features=itemOpusStyle"
     )
     post_list = type_validate_python(PostAPI, get_json("bilibili-new.json"))
     assert post_list.data
@@ -477,7 +477,7 @@ async def test_fetch_new_live_rcmd(bilibili: "Bilibili", dummy_user_subinfo):
     target = Target("13164144")
 
     post_router = respx.get(
-        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset="
+        f"https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?host_mid={target}&timezone_offset=-480&offset=&features=itemOpusStyle"
     )
     post_list = type_validate_python(PostAPI, get_json("bilibili-dynamic-live-rcmd.json"))
     assert post_list.data

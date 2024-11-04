@@ -93,7 +93,7 @@ class Bilibili(NewMessage):
     @retry_for_352
     async def get_sub_list(self, target: Target) -> list[DynRawPost]:
         client = await self.ctx.get_client(target)
-        params = {"host_mid": target, "timezone_offset": -480, "offset": ""}
+        params = {"host_mid": target, "timezone_offset": -480, "offset": "", "features": "itemOpusStyle"}
         res = await client.get(
             "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space",
             params=params,

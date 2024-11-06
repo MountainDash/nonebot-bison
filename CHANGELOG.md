@@ -4,7 +4,12 @@
 
 ### 新功能
 
+- :sparkles: B站获取OPUS格式动态 [@AzideCupric](https://github.com/AzideCupric) ([#651](https://github.com/MountainDash/nonebot-bison/pull/651))
 - :sparkles: 添加 Cookie 组件 [@suyiiyii](https://github.com/suyiiyii) ([#633](https://github.com/MountainDash/nonebot-bison/pull/633))
+
+### Bug 修复
+
+- :bug: 小刻食堂cdn使用https [@phidiaLam](https://github.com/phidiaLam) ([#650](https://github.com/MountainDash/nonebot-bison/pull/650))
 
 ## v0.9.5
 

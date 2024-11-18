@@ -80,7 +80,7 @@ jobs:
         run: poetry run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare and not render' -n auto
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: smoke-test
@@ -114,7 +114,7 @@ jobs:
         run: poetry run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare' -n auto
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: all-test

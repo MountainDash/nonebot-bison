@@ -5,6 +5,15 @@ from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
+from nonebot_bison.utils import ClientManager
+from nonebot_bison.metrics import sent_counter, request_counter, success_counter
+
+from ..config import config
+from ..send import send_msgs
+from ..types import Target, SubUnit
+from ..platform import platform_manager
+from ..utils import Site, ProcessContext
+from ..utils.site import SkipRequestException
 from nonebot_bison.config import config
 from nonebot_bison.platform import platform_manager
 from nonebot_bison.send import send_msgs
@@ -91,6 +100,7 @@ class Scheduler:
         logger.trace(f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}")
 
         context = ProcessContext(self.client_mgr)
+        request_counter.inc()
 
         try:
             platform_obj = platform_manager[schedulable.platform_name](context)
@@ -114,10 +124,10 @@ class Scheduler:
                 logger.warning("API request record: " + record)
             err.args += (records,)
             raise
-
+        success_counter.inc()
         if not to_send:
             return
-
+        sent_counter.inc()
         for user, send_list in to_send:
             for send_post in send_list:
                 logger.info(f"send to {user}: {send_post}")

@@ -57,6 +57,7 @@ def logger_custom_warning(_msg: str) -> None:
     else:
         return logger.warning(_msg)
 
+
 async def catch_network_error(func: Callable[P, Awaitable[R]], *args: P.args, **kwargs: P.kwargs) -> R | None:
     try:
         return await func(*args, **kwargs)

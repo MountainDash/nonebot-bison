@@ -53,28 +53,27 @@ def logger_custom_warning(_msg: str) -> None:
     if plugin_config.bison_collapse_network_warning:
         _msg = re.sub(r"[\r\n]+", "", _msg)
         _max_length = plugin_config.bison_collapse_network_warning_length
-        return logger.warning(_msg if len(_msg) < _max_length else f"{_msg[:_max_length]}...")
+        logger.warning(_msg if len(_msg) < _max_length else f"{_msg[:_max_length]}...")
+        return None
     else:
-        return logger.warning(_msg)
+        logger.warning(_msg)
+        return None
 
 
 async def catch_network_error(func: Callable[P, Awaitable[R]], *args: P.args, **kwargs: P.kwargs) -> R | None:
-    try:
+    if plugin_config.bison_show_network_warning:
+        try:
+            return await func(*args, **kwargs)
+        except httpx.RequestError as err:
+            return logger_custom_warning(f"network connection error: {type(err)}, url: {err.request.url}")
+        except ssl.SSLError as err:
+            return logger_custom_warning(f"ssl error: {err}")
+        except json.JSONDecodeError as err:
+            return logger_custom_warning(f"json error, parsing: {err.doc}")
+        except Exception as err:
+            return logger_custom_warning(f"unmatched exception: {err}")
+    else:
         return await func(*args, **kwargs)
-    except Exception as err:
-        if plugin_config.bison_show_network_warning:
-            match err:
-                case httpx.RequestError():
-                    logger_custom_warning(f"network connection error: {type(err)}, url: {err.request.url}")
-                case ssl.SSLError():
-                    logger_custom_warning(f"ssl error: {err}")
-                case json.JSONDecodeError():
-                    logger_custom_warning(f"json error, parsing: {err.doc}")
-                case _:
-                    logger_custom_warning(f"unmatched exception: {err}")
-            return None
-        else:
-            raise err
 
 
 class PlatformMeta(RegistryMeta):

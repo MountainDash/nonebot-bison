@@ -127,5 +127,5 @@ async def only_allow_private(
     event: Event,
     matcher: type[Matcher],
 ):
-    if event.__getattr__("message_type") != "private":
+    if not (hasattr(event, "message_type") and getattr(event, "message_type") == "private"):
         await matcher.finish("请在私聊中使用此命令")

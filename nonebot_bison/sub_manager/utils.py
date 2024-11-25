@@ -8,11 +8,13 @@ from nonebot.adapters import Event
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.permission import SUPERUSER
+from nonebot.adapters.onebot.v11 import PrivateMessageEvent
 from nonebot.params import Depends, EventToMe, EventPlainText
 from nonebot_plugin_saa import PlatformTarget, extract_target
 
 from ..config import config
 from ..types import Category
+from ..types import Target as T_Target
 from ..platform import platform_manager
 from ..plugin_config import plugin_config
 from ..utils.site import is_cookie_client_manager
@@ -88,7 +90,7 @@ async def generate_sub_list_text(
         sub_list = [
             sub
             for sub in sub_list
-            if is_cookie_client_manager(platform_manager.get(sub.target.platform_name).site.client_mgr)
+            if is_cookie_client_manager(platform_manager[sub.target.platform_name].site.client_mgr)
         ]
     if not sub_list:
         await matcher.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")
@@ -109,7 +111,7 @@ async def generate_sub_list_text(
                     res += " {}".format(", ".join(sub.tags)) + "\n"
             if is_show_cookie:
                 target_cookies = await config.get_cookie(
-                    target=sub.target.target, site_name=platform.site.name, is_anonymous=False
+                    target=T_Target(sub.target.target), site_name=platform.site.name, is_anonymous=False
                 )
                 if target_cookies:
                     res += "  关联的 Cookie：\n"
@@ -126,6 +128,5 @@ async def only_allow_private(
     event: Event,
     matcher: type[Matcher],
 ):
-    # if not issubclass(PrivateMessageEvent, event.__class__):
-    if event.message_type != "private":
+    if not issubclass(PrivateMessageEvent, event.__class__):
         await matcher.finish("请在私聊中使用此命令")

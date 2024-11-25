@@ -65,7 +65,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
         target_payload = type_validate_python(v3.Target, cookie_target.target)
         cookie_target_dict[cookie_target.cookie].append(target_payload)
 
-    def cookie_transform(cookie: Cookie, targets: [Target]) -> v3.Cookie:
+    def cookie_transform(cookie: Cookie, targets: list[v3.Target]) -> v3.Cookie:
         cookie_dict = row2dict(cookie)
         cookie_dict["tags"] = cookie.tags
         cookie_dict["targets"] = targets

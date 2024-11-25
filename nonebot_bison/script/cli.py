@@ -83,7 +83,7 @@ async def subs_export(path: Path, format: str):
     export_file = path / f"bison_subscribes_export_{int(time.time())}.{format}"
 
     logger.info("正在获取订阅信息...")
-    export_data: v2.SubGroup = await subscribes_export(lambda x: x)
+    export_data: v3.SubGroup = await subscribes_export(lambda x: x)
 
     with export_file.open("w", encoding="utf-8") as f:
         match format:

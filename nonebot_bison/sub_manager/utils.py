@@ -8,7 +8,6 @@ from nonebot.adapters import Event
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.permission import SUPERUSER
-from nonebot.adapters.onebot.v11 import PrivateMessageEvent
 from nonebot.params import Depends, EventToMe, EventPlainText
 from nonebot_plugin_saa import PlatformTarget, extract_target
 
@@ -128,5 +127,5 @@ async def only_allow_private(
     event: Event,
     matcher: type[Matcher],
 ):
-    if not issubclass(PrivateMessageEvent, event.__class__):
+    if event.__getattr__("message_type") != "private":
         await matcher.finish("请在私聊中使用此命令")

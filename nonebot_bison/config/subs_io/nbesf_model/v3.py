@@ -8,9 +8,11 @@ from pydantic import BaseModel
 from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_json, type_validate_python
 
+from ....types import Tag
+from ....types import Category
 from ..utils import NBESFParseErr
-from ....types import Tag, Category
 from .base import NBESFBase, SubReceipt
+from ....types import Target as T_Target
 from ...db_model import Cookie as DBCookie
 from ...db_config import SubscribeDupException, config
 
@@ -114,7 +116,7 @@ async def magic_cookie_gen(nbesf_data: SubGroup):
             new_cookie = DBCookie(**model_dump(cookie, exclude={"targets"}))
             cookie_id = await config.add_cookie(new_cookie)
             for target in cookie.targets:
-                await config.add_cookie_target(target.target, target.platform_name, cookie_id)
+                await config.add_cookie_target(T_Target(target.target), target.platform_name, cookie_id)
         except Exception as e:
             logger.error(f"！添加 Cookie 条目 {repr(cookie)} 失败: {repr(e)}")
         else:

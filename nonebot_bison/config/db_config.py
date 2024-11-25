@@ -288,6 +288,8 @@ class DBConfig:
     async def get_cookie_by_id(self, cookie_id: int) -> Cookie:
         async with create_session() as sess:
             cookie = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
+            if not cookie:
+                raise NoSuchTargetException(f"cookie {cookie_id} not found")
             return cookie
 
     async def add_cookie(self, cookie: Cookie) -> int:
@@ -317,6 +319,8 @@ class DBConfig:
                 .outerjoin(CookieTarget)
                 .options(selectinload(Cookie.targets))
             )
+            if not cookie:
+                raise NoSuchTargetException(f"cookie {cookie_id} not found")
             if len(cookie.targets) > 0:
                 raise Exception(f"cookie {cookie.id} in use")
             await sess.execute(delete(Cookie).where(Cookie.id == cookie_id))

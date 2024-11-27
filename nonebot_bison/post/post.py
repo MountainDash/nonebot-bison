@@ -2,6 +2,7 @@ import reprlib
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
+from collections.abc import Sequence
 from dataclasses import fields, dataclass
 
 from nonebot.log import logger
@@ -30,7 +31,7 @@ class Post(AbstractPost, PlainContentSupport):
     """文本内容"""
     title: str | None = None
     """标题"""
-    images: list[str | bytes | Path | BytesIO] | None = None
+    images: Sequence[str | bytes | Path | BytesIO] | None = None
     """图片列表"""
     timestamp: float | None = None
     """发布/获取时间戳, 秒"""

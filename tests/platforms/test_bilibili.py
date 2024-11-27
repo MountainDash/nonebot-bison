@@ -406,6 +406,7 @@ async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
     assert len(rp.images) == 9
     assert rp.url == "https://t.bilibili.com/915793667264872453"
 
+
 async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list):
     from nonebot_bison.post import Post
 

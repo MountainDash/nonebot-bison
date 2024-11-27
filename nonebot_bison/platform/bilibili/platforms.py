@@ -20,7 +20,6 @@ from .retry import ApiCode352Error, retry_for_352
 from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
 from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 from .models import (
-    DeletedMajor,
     PostAPI,
     UserAPI,
     PGCMajor,
@@ -33,6 +32,7 @@ from .models import (
     DynamicType,
     ArticleMajor,
     CoursesMajor,
+    DeletedMajor,
     UnknownMajor,
     LiveRecommendMajor,
 )

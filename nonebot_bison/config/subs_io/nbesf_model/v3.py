@@ -8,11 +8,12 @@ from pydantic import BaseModel
 from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_json, type_validate_python
 
-from ....types import Tag
-from ....types import Category
+from nonebot_bison.types import Tag
+from nonebot_bison.types import Category
+from nonebot_bison.types import Target as T_Target
+
 from ..utils import NBESFParseErr
 from .base import NBESFBase, SubReceipt
-from ....types import Target as T_Target
 from ...db_model import Cookie as DBCookie
 from ...db_config import SubscribeDupException, config
 

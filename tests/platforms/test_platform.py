@@ -1,5 +1,6 @@
 from time import time
-from typing import Any, Iterator
+from typing import Any
+from collections.abc import Iterator
 
 import pytest
 from loguru import logger
@@ -17,16 +18,16 @@ raw_post_list_2 = raw_post_list_1 + [
     {"id": 4, "text": "p4", "date": now, "tags": ["tag2"], "category": 3},
 ]
 
+
 @pytest.fixture
 def caplog(caplog: LogCaptureFixture) -> Iterator[LogCaptureFixture]:
     def filter_(record):
         return record["level"].no >= caplog.handler.level
 
-    handler_id = logger.add(
-        caplog.handler, level=0, format="{message}", filter=filter_
-    )
+    handler_id = logger.add(caplog.handler, level=0, format="{message}", filter=filter_)
     yield caplog
     logger.remove(handler_id)
+
 
 def test_logger_custom_warning_enable(app: App, caplog):
     from nonebot_bison.plugin_config import plugin_config

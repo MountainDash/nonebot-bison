@@ -1,8 +1,10 @@
 from time import time
-from typing import Any
+from typing import Any, Iterator
 
 import pytest
+from loguru import logger
 from nonebug.app import App
+from _pytest.logging import LogCaptureFixture
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -14,6 +16,69 @@ raw_post_list_2 = raw_post_list_1 + [
     {"id": 3, "text": "p3", "date": now, "tags": ["tag2"], "category": 2},
     {"id": 4, "text": "p4", "date": now, "tags": ["tag2"], "category": 3},
 ]
+
+@pytest.fixture
+def caplog(caplog: LogCaptureFixture) -> Iterator[LogCaptureFixture]:
+    def filter_(record):
+        return record["level"].no >= caplog.handler.level
+
+    handler_id = logger.add(
+        caplog.handler, level=0, format="{message}", filter=filter_
+    )
+    yield caplog
+    logger.remove(handler_id)
+
+def test_logger_custom_warning_enable(app: App, caplog):
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.platform.platform import logger_custom_warning
+
+    plugin_config.bison_collapse_network_warning = True
+    plugin_config.bison_collapse_network_warning_length = 100
+
+    test_message = """
+    <h1>502 Bad Gateway</h1>
+    <p>The proxy server received an invalid response from an upstream server. Sorry for the inconvenience.<br/>
+    Please report this message and include the following information to us.<br/>
+    Thank you very much!</p>
+    """  # 沟槽的微博
+    logger_custom_warning(test_message)
+    assert (
+        "<h1>502 Bad Gateway</h1><p>The proxy server received an invalid response from an upstream server. So..."
+        in caplog.text
+    )
+
+
+def test_logger_custom_warning_disable(app: App, caplog):
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.platform.platform import logger_custom_warning
+
+    plugin_config.bison_collapse_network_warning = False
+    plugin_config.bison_collapse_network_warning_length = 100
+
+    test_message = """
+    <h1>502 Bad Gateway</h1>
+    <p>The proxy server received an invalid response from an upstream server. Sorry for the inconvenience.<br/>
+    Please report this message and include the following information to us.<br/>
+    Thank you very much!</p>
+    """
+    logger_custom_warning(test_message)
+    assert test_message in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_catch_network_error_unmatched_exception(app: App, caplog):
+    from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.platform.platform import catch_network_error
+
+    plugin_config.bison_collapse_network_warning = True
+
+    async def mock_exception():
+        raise Exception("unmatched exception")
+
+    result = await catch_network_error(mock_exception)
+
+    assert result is None
+    assert "unmatched exception: unmatched exception" in caplog.text
 
 
 @pytest.fixture

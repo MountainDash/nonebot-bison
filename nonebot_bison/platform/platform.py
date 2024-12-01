@@ -51,7 +51,7 @@ R = TypeVar("R")
 
 def logger_custom_warning(_msg: str) -> None:
     if plugin_config.bison_collapse_network_warning:
-        _msg = re.sub(r"[\r\n]+", "", _msg)
+        _msg = re.sub(r"\s*[\r\n]+\s*", "", _msg)
         _max_length = plugin_config.bison_collapse_network_warning_length
         logger.warning(_msg if len(_msg) < _max_length else f"{_msg[:_max_length]}...")
         return None

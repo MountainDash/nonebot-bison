@@ -7,7 +7,7 @@ ci:
   autoupdate_commit_msg: ":arrow_up: auto update by pre-commit hooks"
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.2
+    rev: v0.8.1
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -34,7 +34,7 @@ repos:
         stages: [pre-commit]
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.14.0
+    rev: v9.16.0
     hooks:
       - id: eslint
         additional_dependencies:

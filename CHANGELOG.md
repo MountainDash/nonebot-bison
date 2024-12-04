@@ -9,6 +9,7 @@
 
 ### Bug 修复
 
+- :bug: B站转发动态补充 DeletedItem 类型解析 [@AzideCupric](https://github.com/AzideCupric) ([#659](https://github.com/MountainDash/nonebot-bison/pull/659))
 - :bug: 小刻食堂cdn使用https [@phidiaLam](https://github.com/phidiaLam) ([#650](https://github.com/MountainDash/nonebot-bison/pull/650))
 
 ## v0.9.5

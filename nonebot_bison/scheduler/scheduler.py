@@ -14,6 +14,7 @@ from ..platform import platform_manager
 from ..utils import Site, ProcessContext
 from ..utils.site import SkipRequestException
 
+from .statistic import runtime_statistic
 
 @dataclass
 class Schedulable:
@@ -71,6 +72,7 @@ class Scheduler:
             for target in targets:
                 self.batch_api_target_cache[platform_name][target] = targets
 
+    @runtime_statistic.statistic_schedule_count
     async def get_next_schedulable(self) -> Schedulable | None:
         if not self.schedulable_list:
             return None
@@ -124,6 +126,7 @@ class Scheduler:
             for send_post in send_list:
                 logger.info(f"send to {user}: {send_post}")
                 try:
+                    runtime_statistic.statistic_post_send(send_post.platform.name)
                     await send_msgs(
                         user,
                         await send_post.generate_messages(),
@@ -131,6 +134,7 @@ class Scheduler:
                 except NoBotFound:
                     logger.warning("no bot connected")
 
+    @runtime_statistic.statistic_record("insert_new")
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000
         new_schedulable = Schedulable(platform_name, target, 1000, platform_manager[platform_name].use_batch)
@@ -142,6 +146,7 @@ class Scheduler:
         self.schedulable_list.append(new_schedulable)
         logger.info(f"insert [{platform_name}]{target} to Schduler({self.scheduler_config.name})")
 
+    @runtime_statistic.statistic_record("delete")
     def delete_schedulable(self, platform_name, target: Target):
         if platform_manager[platform_name].use_batch:
             self.batch_platform_name_targets_cache[platform_name].remove(target)
@@ -157,3 +162,5 @@ class Scheduler:
         if to_find_idx is not None:
             deleted_schdulable = self.schedulable_list.pop(to_find_idx)
             self.pre_weight_val -= deleted_schdulable.current_weight
+
+        logger.info(f"delete [{platform_name}]{target} from Schduler({self.scheduler_config.name})")

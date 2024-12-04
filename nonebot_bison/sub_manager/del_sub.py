@@ -1,3 +1,4 @@
+from loguru import logger
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, EventPlainText
@@ -50,6 +51,7 @@ def do_del_sub(del_sub: type[Matcher]):
             index = int(index_str)
             await config.del_subscribe(user_info, **state["sub_table"][index])
         except Exception:
+            logger.exception("删除订阅错误")
             await del_sub.reject("删除错误")
         else:
             await del_sub.finish("删除成功")

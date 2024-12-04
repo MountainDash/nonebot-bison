@@ -1,6 +1,7 @@
 import re
 import sys
 import difflib
+from typing import Any
 
 import nonebot
 from nonebot.plugin import require
@@ -114,3 +115,34 @@ def decode_unicode_escapes(s: str):
 def text_fletten(text: str, *, banned: str = "\n\r\t", replace: str = " ") -> str:
     """将文本中的格式化字符去除"""
     return "".join(c if c not in banned else replace for c in text)
+
+def dict_to_str(__dict: dict[str, Any]) -> str:
+    """根据 dict 生成带缩进的文本，
+    缩进层级由 dict 的嵌套关系决定，
+    每层的 key 为标题，value 为内容，
+    内容为列表时每个元素为一行，内容为字典时递归生成，内容为其他类型时直接输出，
+    生成的报告字符串应该是一个完整的文档，包含标题和内容
+    每层缩进 2 个空格
+    例如：{"a": ["b", "c"], "d": {"e": ["f", "g"]}} 生成的报告为：
+    a:
+        b
+        c
+    d:
+        e:
+        f
+        g
+    """
+    def generate_report(_d, level=0):
+        res = ""
+        for key, value in _d.items():
+            res += "  " * level + key + ":\n"
+            if isinstance(value, list):
+                for item in value:
+                    res += "  " * (level + 1) + item + "\n"
+            elif isinstance(value, dict):
+                res += generate_report(value, level + 1)
+            else:
+                res += "  " * (level + 1) + str(value) + "\n"
+        return res
+
+    return generate_report(__dict)

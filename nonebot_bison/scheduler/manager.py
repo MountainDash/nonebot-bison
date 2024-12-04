@@ -1,16 +1,21 @@
 from typing import cast
 
 from nonebot.log import logger
+from nonebot import on_command
+from nonebot.rule import to_me
+from nonebot.permission import SUPERUSER
 
 from ..utils import Site
 from ..config import config
 from .scheduler import Scheduler
+from .statistic import runtime_statistic
 from ..config.db_model import Target
 from ..types import Target as T_Target
 from ..platform import platform_manager
 from ..plugin_config import plugin_config
 from ..utils.site import CookieClientManager, is_cookie_client_manager
 
+inspect_scheduler = on_command("inspect-bison", priority=5, rule=to_me(), permission=SUPERUSER)
 scheduler_dict: dict[type[Site], Scheduler] = {}
 
 
@@ -63,3 +68,9 @@ async def handle_delete_target(platform_name: str, target: T_Target):
     platform = platform_manager[platform_name]
     scheduler_obj = scheduler_dict[platform.site]
     scheduler_obj.delete_schedulable(platform_name, target)
+
+@inspect_scheduler.handle()
+async def inspect_scheduler_handle():
+    report = runtime_statistic.generate_report(scheduler_dict)
+    await inspect_scheduler.send("统计数据仅为本次启动后的数据，不包含历史数据")
+    await inspect_scheduler.finish(report)

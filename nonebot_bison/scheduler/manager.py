@@ -1,17 +1,17 @@
 from typing import cast
 
-from nonebot.log import logger
 from nonebot import on_command
+from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.permission import SUPERUSER
 
 from ..utils import Site
 from ..config import config
 from .scheduler import Scheduler
-from .statistic import runtime_statistic
 from ..config.db_model import Target
 from ..types import Target as T_Target
 from ..platform import platform_manager
+from .statistic import runtime_statistic
 from ..plugin_config import plugin_config
 from ..utils.site import CookieClientManager, is_cookie_client_manager
 
@@ -68,6 +68,7 @@ async def handle_delete_target(platform_name: str, target: T_Target):
     platform = platform_manager[platform_name]
     scheduler_obj = scheduler_dict[platform.site]
     scheduler_obj.delete_schedulable(platform_name, target)
+
 
 @inspect_scheduler.handle()
 async def inspect_scheduler_handle():

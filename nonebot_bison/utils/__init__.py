@@ -116,6 +116,7 @@ def text_fletten(text: str, *, banned: str = "\n\r\t", replace: str = " ") -> st
     """将文本中的格式化字符去除"""
     return "".join(c if c not in banned else replace for c in text)
 
+
 def dict_to_str(__dict: dict[str, Any]) -> str:
     """根据 dict 生成带缩进的文本，
     缩进层级由 dict 的嵌套关系决定，
@@ -132,6 +133,7 @@ def dict_to_str(__dict: dict[str, Any]) -> str:
         f
         g
     """
+
     def generate_report(_d, level=0):
         res = ""
         for key, value in _d.items():

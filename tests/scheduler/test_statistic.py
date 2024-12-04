@@ -1,9 +1,10 @@
-from collections import defaultdict
-from typing import TYPE_CHECKING
-import pytest
-from unittest.mock import AsyncMock, Mock, patch
-from datetime import datetime
 from textwrap import dedent
+from datetime import datetime
+from typing import TYPE_CHECKING
+from collections import defaultdict
+from unittest.mock import Mock, AsyncMock, patch
+
+import pytest
 
 if TYPE_CHECKING:
     from nonebot_bison.scheduler.statistic import RuntimeStatistic
@@ -66,8 +67,8 @@ async def test_statistic_record_delete(app, runtime_statistic: "RuntimeStatistic
 
 @pytest.mark.asyncio
 async def test_statistic_record_report_generate(app, runtime_statistic: "RuntimeStatistic"):
-    from nonebot_bison.scheduler.scheduler import Scheduler
     from nonebot_bison.utils import Site
+    from nonebot_bison.scheduler.scheduler import Scheduler
 
     class MockSite(Site):
         name = "test_site"
@@ -88,12 +89,14 @@ async def test_statistic_record_report_generate(app, runtime_statistic: "Runtime
         "删除订阅hook调用记录": [f"test_platform-test_target: {datetime(2023, 1, 1).strftime('%Y-%m-%d %H:%M:%S')}"],
         "调度统计": {"test_platform": ["test_target: 1 次"]},
         "所有调度对象": {"test_site": []},
-        "发送消息统计": {}
+        "发送消息统计": {},
     }
 
     repost_str = runtime_statistic.generate_report(scheduler_dict)
-    assert repost_str == dedent(
-        """
+    assert (
+        repost_str
+        == dedent(
+            """
         新增订阅hook调用记录:
           test_platform-test_target: 2023-01-01 00:00:00
         删除订阅hook调用记录:
@@ -105,4 +108,5 @@ async def test_statistic_record_report_generate(app, runtime_statistic: "Runtime
         所有调度对象:
           test_site:
         """
-    )[1:] # 不要第一个换行符
+        )[1:]
+    )  # 不要第一个换行符

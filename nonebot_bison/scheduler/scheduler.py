@@ -12,9 +12,9 @@ from ..send import send_msgs
 from ..types import Target, SubUnit
 from ..platform import platform_manager
 from ..utils import Site, ProcessContext
+from .statistic import runtime_statistic
 from ..utils.site import SkipRequestException
 
-from .statistic import runtime_statistic
 
 @dataclass
 class Schedulable:

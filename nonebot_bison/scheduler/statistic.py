@@ -1,16 +1,16 @@
-from collections.abc import Callable, Coroutine
+from functools import wraps
 from datetime import datetime
 from collections import defaultdict
-from functools import wraps
-from typing import Any, Literal, TypedDict, TYPE_CHECKING, TypeVar
+from collections.abc import Callable, Coroutine
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, TypedDict
 
 from nonebot_bison.utils import dict_to_str
 
-from ..types import Target
 from ..utils import Site
+from ..types import Target
 
 if TYPE_CHECKING:
-    from .scheduler import Schedulable, Scheduler
+    from .scheduler import Scheduler, Schedulable
 
 
 TSchd = TypeVar("TSchd", bound="Scheduler")

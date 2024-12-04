@@ -131,7 +131,7 @@ class PostAPI(APIBase):
         basic: "PostAPI.Basic"
         id_str: str
         modules: "PostAPI.Modules"
-        orig: "PostAPI.Item | None" = None
+        orig: "PostAPI.Item | PostAPI.DeletedItem | None" = None
         topic: "PostAPI.Topic | None" = None
         type: DynamicType
 
@@ -140,6 +140,14 @@ class PostAPI(APIBase):
         id_str: None
         modules: "PostAPI.Modules"
         type: Literal["DYNAMIC_TYPE_NONE"]
+
+        def to_item(self) -> "PostAPI.Item":
+            return PostAPI.Item(
+                basic=self.basic,
+                id_str="",
+                modules=self.modules,
+                type=self.type,
+            )
 
     class Data(Base):
         items: "list[PostAPI.Item | PostAPI.DeletedItem] | None" = None

@@ -4053,6 +4053,210 @@
         },
         "type": "DYNAMIC_TYPE_DRAW",
         "visible": true
+      },
+      {
+        "basic": {
+          "comment_id_str": "965806534205374473",
+          "comment_type": 17,
+          "like_icon": {
+            "action_url": "https://i0.hdslb.com/bfs/garb/item/8860c7c01179f9984f88fb61bc55cab9dc1d28cb.bin",
+            "end_url": "",
+            "id": 33772,
+            "start_url": ""
+          },
+          "rid_str": "965806534205374473"
+        },
+        "id_str": "965806534205374473",
+        "modules": {
+          "module_author": {
+            "avatar": {
+              "container_size": {
+                "height": 1.35,
+                "width": 1.35
+              },
+              "fallback_layers": {
+                "is_critical_group": true,
+                "layers": [
+                  {
+                    "general_spec": {
+                      "pos_spec": {
+                        "axis_x": 0.675,
+                        "axis_y": 0.675,
+                        "coordinate_pos": 2
+                      },
+                      "render_spec": {
+                        "opacity": 1
+                      },
+                      "size_spec": {
+                        "height": 1,
+                        "width": 1
+                      }
+                    },
+                    "layer_config": {
+                      "is_critical": true,
+                      "tags": {
+                        "AVATAR_LAYER": {},
+                        "GENERAL_CFG": {
+                          "config_type": 1,
+                          "general_config": {
+                            "web_css_style": {
+                              "borderRadius": "50%"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "resource": {
+                      "res_image": {
+                        "image_src": {
+                          "placeholder": 6,
+                          "remote": {
+                            "bfs_style": "widget-layer-avatar",
+                            "url": "https://i0.hdslb.com/bfs/face/5d255a47deae6c5214f93cdbbf3b01f23cac4a5e.jpg"
+                          },
+                          "src_type": 1
+                        }
+                      },
+                      "res_type": 3
+                    },
+                    "visible": true
+                  }
+                ]
+              },
+              "mid": "6050499"
+            },
+            "face": "https://i0.hdslb.com/bfs/face/5d255a47deae6c5214f93cdbbf3b01f23cac4a5e.jpg",
+            "face_nft": false,
+            "following": null,
+            "jump_url": "//space.bilibili.com/6050499/dynamic",
+            "label": "",
+            "mid": 6050499,
+            "name": "血毒嘿咻",
+            "official_verify": {
+              "desc": "",
+              "type": -1
+            },
+            "pendant": {
+              "expire": 0,
+              "image": "",
+              "image_enhance": "",
+              "image_enhance_frame": "",
+              "n_pid": 0,
+              "name": "",
+              "pid": 0
+            },
+            "pub_action": "",
+            "pub_location_text": "",
+            "pub_time": "08月15日",
+            "pub_ts": 1723707757,
+            "type": "AUTHOR_TYPE_NORMAL",
+            "vip": {
+              "avatar_subscript": 0,
+              "avatar_subscript_url": "",
+              "due_date": 1648224000000,
+              "label": {
+                "bg_color": "",
+                "bg_style": 0,
+                "border_color": "",
+                "img_label_uri_hans": "",
+                "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/d7b702ef65a976b20ed854cbd04cb9e27341bb79.png",
+                "img_label_uri_hant": "",
+                "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/KJunwh19T5.png",
+                "label_theme": "",
+                "path": "",
+                "text": "",
+                "text_color": "",
+                "use_img_label": true
+              },
+              "nickname_color": "",
+              "status": 0,
+              "theme_type": 0,
+              "type": 1
+            }
+          },
+          "module_dynamic": {
+            "additional": null,
+            "desc": {
+              "rich_text_nodes": [
+                {
+                  "orig_text": "转发动态",
+                  "text": "转发动态",
+                  "type": "RICH_TEXT_NODE_TYPE_TEXT"
+                }
+              ],
+              "text": "转发动态"
+            },
+            "major": null,
+            "topic": null
+          },
+          "module_more": {
+            "three_point_items": [
+              {
+                "label": "举报",
+                "type": "THREE_POINT_REPORT"
+              }
+            ]
+          },
+          "module_stat": {
+            "comment": {
+              "count": 0,
+              "forbidden": false
+            },
+            "forward": {
+              "count": 0,
+              "forbidden": false
+            },
+            "like": {
+              "count": 0,
+              "forbidden": false,
+              "status": false
+            }
+          }
+        },
+        "orig": {
+          "basic": {
+            "comment_id_str": "",
+            "comment_type": 0,
+            "like_icon": {
+              "action_url": "",
+              "end_url": "",
+              "id": 0,
+              "start_url": ""
+            },
+            "rid_str": ""
+          },
+          "id_str": null,
+          "modules": {
+            "module_author": {
+              "face": "",
+              "face_nft": false,
+              "following": false,
+              "jump_url": "",
+              "label": "",
+              "mid": 0,
+              "name": "",
+              "pub_action": "",
+              "pub_time": "",
+              "pub_ts": 0,
+              "type": "AUTHOR_TYPE_NORMAL"
+            },
+            "module_dynamic": {
+              "additional": null,
+              "desc": null,
+              "major": {
+                "none": {
+                  "tips": "源动态已被作者删除"
+                },
+                "type": "MAJOR_TYPE_NONE"
+              },
+              "topic": null
+            }
+          },
+          "type": "DYNAMIC_TYPE_NONE",
+          "visible": true
+        },
+        "type": "DYNAMIC_TYPE_FORWARD",
+        "visible": true
       }
     ],
     "offset": "915793667264872453",

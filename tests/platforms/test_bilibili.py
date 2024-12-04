@@ -407,6 +407,18 @@ async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
     assert rp.url == "https://t.bilibili.com/915793667264872453"
 
 
+async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list):
+    from nonebot_bison.post import Post
+
+    post: Post = await bilibili.parse(bing_dy_list[12])
+    assert post.content == "转发动态"
+    assert post.url == "https://t.bilibili.com/965806534205374473"
+    assert (repost := post.repost)
+    assert repost.url is None
+    assert not repost.title
+    assert repost.content == "源动态已被作者删除"
+
+
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_dynamic):

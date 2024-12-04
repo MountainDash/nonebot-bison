@@ -32,6 +32,7 @@ from .models import (
     DynamicType,
     ArticleMajor,
     CoursesMajor,
+    DeletedMajor,
     UnknownMajor,
     LiveRecommendMajor,
 )
@@ -243,6 +244,13 @@ class Bilibili(NewMessage):
                     pics=[courses.cover],
                     url=URL(courses.jump_url).with_scheme("https").human_repr(),
                 )
+            case DeletedMajor(none=none):
+                return _ParsedMojarPost(
+                    title="",
+                    content=none.tips,
+                    pics=[],
+                    url=None,
+                )
             case UnknownMajor(type=unknown_type):
                 raise CategoryNotSupport(unknown_type)
             case None:  # 没有major的情况
@@ -259,10 +267,13 @@ class Bilibili(NewMessage):
         parsed_raw_post = self.pre_parse_by_mojar(raw_post)
         parsed_raw_repost = None
         if self._do_get_category(raw_post.type) == Category(5):
-            if raw_post.orig:
-                parsed_raw_repost = self.pre_parse_by_mojar(raw_post.orig)
-            else:
-                logger.warning(f"转发动态{raw_post.id_str}没有原动态")
+            match raw_post.orig:
+                case PostAPI.Item() as orig:
+                    parsed_raw_repost = self.pre_parse_by_mojar(orig)
+                case PostAPI.DeletedItem() as orig:
+                    parsed_raw_repost = self.pre_parse_by_mojar(orig.to_item())
+                case None:
+                    logger.warning(f"转发动态{raw_post.id_str}没有原动态")
 
         post = Post(
             self,
@@ -275,8 +286,14 @@ class Bilibili(NewMessage):
             nickname=raw_post.modules.module_author.name,
         )
         if parsed_raw_repost:
-            orig = raw_post.orig
-            assert orig
+            match raw_post.orig:
+                case PostAPI.Item() as orig:
+                    orig = orig
+                case PostAPI.DeletedItem() as orig:
+                    orig = orig.to_item()
+                case None:
+                    raise ValueError("转发动态没有原动态")
+
             post.repost = Post(
                 self,
                 content=decode_unicode_escapes(parsed_raw_repost.content),

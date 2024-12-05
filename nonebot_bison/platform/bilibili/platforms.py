@@ -443,7 +443,11 @@ class Bilibililive(StatusChange):
 
     async def parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
-        pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
+        pic = (
+            [raw_post.cover]
+            if (raw_post.category == Category(1) or raw_post.category == Category(3))
+            else [raw_post.keyframe]
+        )
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(

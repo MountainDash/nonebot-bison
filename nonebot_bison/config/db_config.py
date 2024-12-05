@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import time, datetime
 from collections.abc import Callable, Sequence, Awaitable
 
+from loguru import logger
 from nonebot.compat import model_dump
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
@@ -32,9 +33,11 @@ class DBConfig:
         self.delete_target_hook: list[Callable[[str, T_Target], Awaitable]] = []
 
     def register_add_target_hook(self, fun: Callable[[str, T_Target], Awaitable]):
+        logger.debug(f"register add target hook {fun.__name__}")
         self.add_target_hook.append(fun)
 
     def register_delete_target_hook(self, fun: Callable[[str, T_Target], Awaitable]):
+        logger.debug(f"register delete target hook {fun.__name__}")
         self.delete_target_hook.append(fun)
 
     async def add_subscribe(
@@ -55,8 +58,10 @@ class DBConfig:
             db_target_stmt = select(Target).where(Target.platform_name == platform_name).where(Target.target == target)
             db_target: Target | None = await session.scalar(db_target_stmt)
             if not db_target:
+                logger.debug(f"add sub get db_target: {db_target}")
                 db_target = Target(target=target, platform_name=platform_name, target_name=target_name)
-                await asyncio.gather(*[hook(platform_name, target) for hook in self.add_target_hook])
+                hook_resp = await asyncio.gather(*[hook(platform_name, target) for hook in self.add_target_hook])
+                logger.debug(f"add hook response: {hook_resp}")
             else:
                 db_target.target_name = target_name
             subscribe = Subscribe(
@@ -106,7 +111,10 @@ class DBConfig:
             )
             if target_count == 0:
                 # delete empty target
-                await asyncio.gather(*[hook(platform_name, T_Target(target)) for hook in self.delete_target_hook])
+                hook_resp = await asyncio.gather(
+                    *[hook(platform_name, T_Target(target)) for hook in self.delete_target_hook]
+                )
+                logger.debug(f"del hook response: {hook_resp}")
             await session.commit()
 
     async def update_subscribe(

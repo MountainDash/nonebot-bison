@@ -16,7 +16,7 @@ async def test_subs_export(app: App, init_scheduler):
 
     await config.add_subscribe(
         TargetQQGroup(group_id=1232),
-        target=TTarget("weibo_id"),
+        target=TTarget(TTarget("weibo_id")),
         target_name="weibo_name",
         platform_name="weibo",
         cats=[],
@@ -24,7 +24,7 @@ async def test_subs_export(app: App, init_scheduler):
     )
     await config.add_subscribe(
         TargetQQGroup(group_id=2342),
-        target=TTarget("weibo_id"),
+        target=TTarget(TTarget("weibo_id")),
         target_name="weibo_name",
         platform_name="weibo",
         cats=[],
@@ -45,7 +45,7 @@ async def test_subs_export(app: App, init_scheduler):
             cookie_name="test cookie",
         )
     )
-    await config.add_cookie_target("weibo_id", "weibo", cookie_id)
+    await config.add_cookie_target(TTarget("weibo_id"), "weibo", cookie_id)
 
     data = await config.list_subs_with_all_info()
     assert len(data) == 3

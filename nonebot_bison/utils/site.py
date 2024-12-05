@@ -123,8 +123,8 @@ class CookieClientManager(ClientManager):
     async def _choose_cookie(self, target: Target | None) -> Cookie:
         """选择 cookie 的具体算法"""
         cookies = await config.get_cookie(self._site_name, target)
-        cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
-        cookie = min(cookies, key=lambda x: x.last_usage)
+        avaliable_cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
+        cookie = min(avaliable_cookies, key=lambda x: x.last_usage)
         return cookie
 
     async def get_client(self, target: Target | None) -> AsyncClient:
@@ -183,8 +183,8 @@ class SiteMeta(type):
             cls._key = kwargs.get("key")
         elif not kwargs.get("abstract"):
             # this is the subclass
-            if hasattr(cls, "name"):
-                site_manager[cls.name] = cls
+            if "name" in namespace:
+                site_manager[namespace["name"]] = cls
         super().__init__(name, bases, namespace, **kwargs)
 
 

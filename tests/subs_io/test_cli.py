@@ -78,7 +78,7 @@ async def test_subs_export(app: App, tmp_path: Path):
             cookie_name="test cookie",
         )
     )
-    await config.add_cookie_target("weibo_id", "weibo", cookie_id)
+    await config.add_cookie_target(TTarget("weibo_id"), "weibo", cookie_id)
 
     assert len(await config.list_subs_with_all_info()) == 3
 

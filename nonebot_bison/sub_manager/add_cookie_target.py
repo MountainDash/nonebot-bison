@@ -26,8 +26,7 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     @add_cookie_target_matcher.got("target_idx", parameterless=[handle_cancel])
     async def got_target_idx(state: T_State, target_idx: str = ArgPlainText()):
         try:
-            target_idx = int(target_idx)
-            state["target"] = state["sub_table"][target_idx]
+            state["target"] = state["sub_table"][int(target_idx)]
             state["site"] = platform_manager[state["target"]["platform_name"]].site
         except Exception:
             await add_cookie_target_matcher.reject("序号错误")
@@ -57,8 +56,7 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
     @add_cookie_target_matcher.got("cookie_idx", MessageTemplate("{_prompt}"), [handle_cancel])
     async def got_cookie_idx(state: T_State, cookie_idx: str = ArgPlainText()):
         try:
-            cookie_idx = int(cookie_idx)
-            state["cookie"] = state["cookies"][cookie_idx - 1]
+            state["cookie"] = state["cookies"][int(cookie_idx) - 1]
         except Exception:
             await add_cookie_target_matcher.reject("序号错误")
 

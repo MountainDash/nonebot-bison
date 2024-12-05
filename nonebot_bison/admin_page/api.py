@@ -22,6 +22,7 @@ from ..utils.site import CookieClientManager, site_manager, is_cookie_client_man
 from ..config import NoSuchUserException, NoSuchTargetException, NoSuchSubscribeException, config
 from .types import (
     Cookie,
+    Target,
     TokenResp,
     GlobalConf,
     SiteConfig,
@@ -211,7 +212,7 @@ async def update_weigth_config(platformName: str, target: str, weight_config: We
 
 
 @router.get("/cookie", dependencies=[Depends(check_is_superuser)])
-async def get_cookie(site_name: str = None, target: str = None) -> list[Cookie]:
+async def get_cookie(site_name: str | None = None, target: str | None = None) -> list[Cookie]:
     cookies_in_db = await config.get_cookie(site_name, is_anonymous=False)
     return [
         Cookie(
@@ -250,7 +251,12 @@ async def get_cookie_target(
     cookie_targets = await config.get_cookie_target()
     # TODO: filter in SQL
     return [
-        x
+        CookieTarget(
+            target=Target(
+                platform_name=x.target.platform_name, target_name=x.target.target_name, target=x.target.target
+            ),
+            cookie_id=x.cookie.id,
+        )
         for x in cookie_targets
         if (site_name is None or x.cookie.site_name == site_name)
         and (target is None or x.target.target == target)
@@ -259,13 +265,13 @@ async def get_cookie_target(
 
 
 @router.post("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def add_cookie_target(platform_name: str, target: str, cookie_id: int) -> StatusResp:
+async def add_cookie_target(platform_name: str, target: T_Target, cookie_id: int) -> StatusResp:
     await config.add_cookie_target(target, platform_name, cookie_id)
     return StatusResp(ok=True, msg="")
 
 
 @router.delete("/cookie_target", dependencies=[Depends(check_is_superuser)])
-async def del_cookie_target(platform_name: str, target: str, cookie_id: int) -> StatusResp:
+async def del_cookie_target(platform_name: str, target: T_Target, cookie_id: int) -> StatusResp:
     await config.delete_cookie_target(target, platform_name, cookie_id)
     return StatusResp(ok=True, msg="")
 

@@ -112,7 +112,8 @@ class Bilibili(NewMessage):
         if res_obj.code == 0:
             if (data := res_obj.data) and (items := data.items):
                 logger.trace(f"获取用户{target}的动态列表成功，共{len(items)}条动态")
-                logger.trace(f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
+                logger.trace(
+                    f"用户{target}的动态列表: {':'.join(x.id_str or x.basic.rid_str for x in items)}")
                 return [item for item in items if item.type != "DYNAMIC_TYPE_NONE"]
 
             logger.trace(f"获取用户{target}的动态列表成功，但是没有动态")
@@ -163,13 +164,16 @@ class Bilibili(NewMessage):
     def _text_process(self, dynamic: str, desc: str, title: str) -> _ProcessedText:
 
         # 计算视频标题和视频描述相似度
-        title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
+        title_similarity = 0.0 if len(title) == 0 or len(
+            desc) == 0 else text_similarity(title, desc[: len(title)])
         if title_similarity > 0.9:
-            desc = desc[len(title) :].lstrip()
+            desc = desc[len(title):].lstrip()
         # 计算视频描述和动态描述相似度
-        content_similarity = 0.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
+        content_similarity = 0.0 if len(dynamic) == 0 or len(
+            desc) == 0 else text_similarity(dynamic, desc)
         if content_similarity > 0.8:
-            return _ProcessedText(title, desc if len(dynamic) < len(desc) else dynamic)  # 选择较长的描述
+            # 选择较长的描述
+            return _ProcessedText(title, desc if len(dynamic) < len(desc) else dynamic)
         else:
             return _ProcessedText(title, f"{desc}" + (f"\n=================\n{dynamic}" if dynamic else ""))
 
@@ -179,20 +183,24 @@ class Bilibili(NewMessage):
         match raw_post.modules.module_dynamic.major:
             case VideoMajor(archive=archive):
                 desc_text = dyn.desc.text if dyn.desc else ""
-                parsed = self._text_process(desc_text, archive.desc, archive.title)
+                parsed = self._text_process(
+                    desc_text, archive.desc, archive.title)
                 return _ParsedMojarPost(
                     title=parsed.title,
                     content=parsed.content,
                     pics=[archive.cover],
-                    url=URL(archive.jump_url).with_scheme("https").human_repr(),
+                    url=URL(archive.jump_url).with_scheme(
+                        "https").human_repr(),
                 )
             case LiveRecommendMajor(live_rcmd=live_rcmd):
-                live_play_info = type_validate_json(LiveRecommendMajor.Content, live_rcmd.content).live_play_info
+                live_play_info = type_validate_json(
+                    LiveRecommendMajor.Content, live_rcmd.content).live_play_info
                 return _ParsedMojarPost(
                     title=live_play_info.title,
                     content=f"{live_play_info.parent_area_name} {live_play_info.area_name}",
                     pics=[live_play_info.cover],
-                    url=URL(live_play_info.link).with_scheme("https").with_query(None).human_repr(),
+                    url=URL(live_play_info.link).with_scheme(
+                        "https").with_query(None).human_repr(),
                 )
             case LiveMajor(live=live):
                 return _ParsedMojarPost(
@@ -206,7 +214,8 @@ class Bilibili(NewMessage):
                     title=article.title,
                     content=article.desc,
                     pics=article.covers,
-                    url=URL(article.jump_url).with_scheme("https").human_repr(),
+                    url=URL(article.jump_url).with_scheme(
+                        "https").human_repr(),
                 )
             case DrawMajor(draw=draw):
                 return _ParsedMojarPost(
@@ -241,7 +250,8 @@ class Bilibili(NewMessage):
                     title=courses.title,
                     content=f"{courses.sub_title}\n{courses.desc}",
                     pics=[courses.cover],
-                    url=URL(courses.jump_url).with_scheme("https").human_repr(),
+                    url=URL(courses.jump_url).with_scheme(
+                        "https").human_repr(),
                 )
             case UnknownMajor(type=unknown_type):
                 raise CategoryNotSupport(unknown_type)
@@ -426,11 +436,7 @@ class Bilibililive(StatusChange):
 
     async def parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
-        pic = (
-            [raw_post.cover]
-            if (raw_post.category == Category(1) or raw_post.category == Category(3))
-            else [raw_post.keyframe]
-        )
+        pic = [raw_post.cover] if raw_post.keyframe == "" else [raw_post.keyframe]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(

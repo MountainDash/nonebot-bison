@@ -10,19 +10,9 @@ repos:
     rev: v0.8.1
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
         stages: [pre-commit]
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        stages: [pre-commit]
-
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
+      - id: ruff-format
         stages: [pre-commit]
 
   - repo: https://github.com/pre-commit/mirrors-prettier

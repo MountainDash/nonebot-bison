@@ -44,13 +44,11 @@ expiringdictx = "^1.1.0"
 rapidfuzz = "^3.9.7"
 
 [tool.poetry.group.dev.dependencies]
-black = ">=24.8.0,<25.0"
 ipdb = "^0.13.13"
-isort = "^5.13.2"
 nonemoji = "^0.1.4"
 nb-cli = "^1.4.2"
 pre-commit = "^4.0.1"
-ruff = "^0.6.5"
+ruff = "^0.8.2"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.8.1"

@@ -3,7 +3,7 @@ from typing import Literal, overload
 from nonebot.compat import PYDANTIC_V2
 from pydantic import BaseModel
 
-__all__ = ("model_validator", "model_rebuild")
+__all__ = ("model_rebuild", "model_validator")
 
 
 if PYDANTIC_V2:

@@ -374,7 +374,7 @@ async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
         "「2024明日方舟音律联觉-不觅浪尘」将于12:00正式开启预售票！预售票购票链接：https://m.damai.cn/shows/item.html?itemId=778626949623"
     )
     assert post.url == "https://t.bilibili.com/917092495452536836"
-    assert (rp := post.repost)  # noqa: RUF018
+    assert (rp := post.repost)
     assert rp.content == (
         "互动抽奖 #明日方舟##音律联觉#\n\n"
         "「2024音律联觉」票务信息公开！\n\n\n\n"
@@ -413,7 +413,7 @@ async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list)
     post: Post = await bilibili.parse(bing_dy_list[12])
     assert post.content == "转发动态"
     assert post.url == "https://t.bilibili.com/965806534205374473"
-    assert (repost := post.repost)  # noqa: RUF018
+    assert (repost := post.repost)
     assert repost.url is None
     assert not repost.title
     assert repost.content == "源动态已被作者删除"

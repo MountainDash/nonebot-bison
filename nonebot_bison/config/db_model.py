@@ -1,15 +1,15 @@
 import datetime
-from typing import Any
 from pathlib import Path
+from typing import Any
 
-from nonebot_plugin_saa import PlatformTarget
-from sqlalchemy.dialects.postgresql import JSONB
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 from nonebot_plugin_datastore import get_plugin_data
-from sqlalchemy.orm import Mapped, relationship, mapped_column
-from sqlalchemy import JSON, String, DateTime, ForeignKey, UniqueConstraint
+from nonebot_plugin_saa import PlatformTarget
+from sqlalchemy import JSON, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..types import Tag, Category
+from nonebot_bison.types import Category, Tag
 
 Model = get_plugin_data().Model
 get_plugin_data().set_migration_dir(Path(__file__).parent / "migrations")

@@ -1,19 +1,20 @@
+from collections.abc import Sequence
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
-import jinja2
-from yarl import URL
 from httpx import AsyncClient
-from pydantic import BaseModel
+import jinja2
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 from PIL import Image as PILImage
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+from pydantic import BaseModel
+from yarl import URL
 
 from nonebot_bison.compat import model_validator
-from nonebot_bison.utils import pic_merge, is_pics_mergable
-from nonebot_bison.theme.utils import convert_to_qr, web_embed_image
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
+from nonebot_bison.theme.utils import convert_to_qr, web_embed_image
+from nonebot_bison.utils import is_pics_mergable, pic_merge
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -122,7 +123,7 @@ class CeobeCanteenTheme(Theme):
 
     @staticmethod
     async def merge_pics(
-        images: list[str | bytes | Path | BytesIO],
+        images: Sequence[str | bytes | Path | BytesIO],
         client: AsyncClient,
     ) -> list[str | bytes | Path | BytesIO]:
         if is_pics_mergable(images):
@@ -224,7 +225,7 @@ class CeobeCanteenTheme(Theme):
             text += f"详情: {post.url}"
         msgs.append(Text(text))
 
-        pics_group: list[list[str | bytes | Path | BytesIO]] = []
+        pics_group: list[Sequence[str | bytes | Path | BytesIO]] = []
         if post.images:
             pics_group.append(post.images)
         if post.repost and post.repost.images:

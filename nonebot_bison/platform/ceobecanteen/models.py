@@ -1,4 +1,4 @@
-from typing import Literal, TypeVar, NamedTuple
+from typing import Literal, NamedTuple, TypeVar
 
 from pydantic import BaseModel
 

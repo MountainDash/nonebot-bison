@@ -1,7 +1,7 @@
 from typing import Literal, overload
 
-from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2
+from pydantic import BaseModel
 
 __all__ = ("model_validator", "model_rebuild")
 

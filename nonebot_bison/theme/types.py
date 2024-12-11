@@ -1,14 +1,14 @@
-from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from nonebot import logger, require
-from pydantic import BaseModel, PrivateAttr
 from nonebot_plugin_saa import MessageSegmentFactory
+from pydantic import BaseModel, PrivateAttr
 
-from ..plugin_config import plugin_config
+from nonebot_bison.plugin_config import plugin_config
 
 if TYPE_CHECKING:
-    from ..post.abstract_post import AbstractPost
+    from nonebot_bison.post.abstract_post import AbstractPost
 
 
 class Theme(ABC, BaseModel):

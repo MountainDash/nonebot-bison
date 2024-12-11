@@ -1,11 +1,11 @@
-from nonebot.log import logger
 from nonebot.compat import model_dump
+from nonebot.log import logger
 from nonebot_plugin_datastore.db import get_engine
-from sqlalchemy.ext.asyncio.session import AsyncSession
 from nonebot_plugin_saa import TargetQQGroup, TargetQQPrivate
+from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from .db_model import User, Target, Subscribe
 from .config_legacy import Config, ConfigContent, drop
+from .db_model import Subscribe, Target, User
 
 
 async def data_migrate():

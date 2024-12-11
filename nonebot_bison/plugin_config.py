@@ -1,8 +1,8 @@
 import nonebot
-from yarl import URL
 from nonebot import get_plugin_config
-from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
+from pydantic import BaseModel, Field
+from yarl import URL
 
 global_config = nonebot.get_driver().config
 PlatformName = str

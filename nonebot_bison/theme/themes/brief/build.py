@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Literal
 
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 
-from nonebot_bison.utils import pic_merge, is_pics_mergable
 from nonebot_bison.theme import Theme, ThemeRenderUnsupportError
+from nonebot_bison.utils import is_pics_mergable, pic_merge
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post

@@ -1,22 +1,22 @@
-import ssl
-import json
-import time
-import typing
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, TypeVar, ParamSpec
-from collections.abc import Callable, Awaitable, Collection
+from collections.abc import Awaitable, Callable, Collection
+from dataclasses import dataclass
+import json
+import ssl
+import time
+import typing
+from typing import Any, ParamSpec, TypeVar
 
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 from nonebot_plugin_saa import PlatformTarget
 
-from ..post import Post
-from ..utils import Site, ProcessContext
-from ..plugin_config import plugin_config
-from ..types import Tag, Target, RawPost, SubUnit, Category
+from nonebot_bison.plugin_config import plugin_config
+from nonebot_bison.post import Post
+from nonebot_bison.types import Category, RawPost, SubUnit, Tag, Target
+from nonebot_bison.utils import ProcessContext, Site
 
 
 class CategoryNotSupport(Exception):

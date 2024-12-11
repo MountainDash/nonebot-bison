@@ -1,11 +1,12 @@
+from collections.abc import Sequence
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 
 from nonebot_bison.theme import Theme
-from nonebot_bison.utils import pic_merge, is_pics_mergable
+from nonebot_bison.utils import is_pics_mergable, pic_merge
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -50,7 +51,7 @@ class BasicTheme(Theme):
         client = await post.platform.ctx.get_client_for_static()
         msgs: list[MessageSegmentFactory] = [Text(text)]
 
-        pics_group: list[list[str | bytes | Path | BytesIO]] = []
+        pics_group: list[Sequence[str | bytes | Path | BytesIO]] = []
         if post.images:
             pics_group.append(post.images)
         if rp and rp.images:

@@ -2,14 +2,15 @@ from typing import cast
 
 from nonebot.log import logger
 
-from ..utils import Site
-from ..config import config
+from nonebot_bison.config import config
+from nonebot_bison.config.db_model import Target
+from nonebot_bison.platform import platform_manager
+from nonebot_bison.plugin_config import plugin_config
+from nonebot_bison.types import Target as T_Target
+from nonebot_bison.utils import Site
+from nonebot_bison.utils.site import CookieClientManager, is_cookie_client_manager
+
 from .scheduler import Scheduler
-from ..config.db_model import Target
-from ..types import Target as T_Target
-from ..platform import platform_manager
-from ..plugin_config import plugin_config
-from ..utils.site import CookieClientManager, is_cookie_client_manager
 
 scheduler_dict: dict[type[Site], Scheduler] = {}
 

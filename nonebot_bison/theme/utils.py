@@ -1,10 +1,10 @@
+from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
-from base64 import b64encode
 
 from qrcode import constants
-from qrcode.main import QRCode
 from qrcode.image.pil import PilImage
+from qrcode.main import QRCode
 
 
 def convert_to_qr(data: str, **kwarg) -> bytes:

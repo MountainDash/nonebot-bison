@@ -1,10 +1,10 @@
 from abc import ABC
 
-from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 from nonebot_plugin_saa.registries import AllSupportedPlatformTarget as UserInfo
+from pydantic import BaseModel
 
-from ....types import Tag, Category
+from nonebot_bison.types import Category, Tag
 
 
 class NBESFBase(BaseModel, ABC):

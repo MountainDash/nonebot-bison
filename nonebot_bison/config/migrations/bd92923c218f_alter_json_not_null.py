@@ -6,11 +6,11 @@ Create Date: 2023-03-02 14:04:16.492133
 
 """
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
 
 # revision identifiers, used by Alembic.
 revision = "bd92923c218f"

@@ -1,6 +1,6 @@
 import httpx
 
-from ..plugin_config import plugin_config
+from nonebot_bison.plugin_config import plugin_config
 
 http_args = {
     "proxies": plugin_config.bison_proxy or None,

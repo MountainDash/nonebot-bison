@@ -1,18 +1,19 @@
-import json
-from typing import Literal
-from json import JSONDecodeError
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from datetime import datetime, timedelta
+import json
+from json import JSONDecodeError
+from typing import Literal
 
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 
-from ..types import Target
-from ..config import config
+from nonebot_bison.config import config
+from nonebot_bison.config.db_model import Cookie
+from nonebot_bison.types import Target
+
 from .http import http_client
-from ..config.db_model import Cookie
 
 
 class ClientManager(ABC):

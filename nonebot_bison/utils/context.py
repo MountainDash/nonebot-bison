@@ -1,6 +1,6 @@
 from base64 import b64encode
 
-from httpx import Response, AsyncClient
+from httpx import AsyncClient, Response
 
 from nonebot_bison.types import Target
 

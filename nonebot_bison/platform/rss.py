@@ -1,22 +1,23 @@
-import time
 import calendar
-from typing import Any
+import time
+from typing import Any, ClassVar
 
+from bs4 import BeautifulSoup as bs
 import feedparser
 from httpx import AsyncClient
-from bs4 import BeautifulSoup as bs
 
-from ..post import Post
+from nonebot_bison.post import Post
+from nonebot_bison.types import Category, RawPost, Target
+from nonebot_bison.utils import text_similarity
+from nonebot_bison.utils.site import CookieClientManager, Site
+
 from .platform import NewMessage
-from ..types import Target, RawPost
-from ..utils import text_similarity
-from ..utils.site import Site, CookieClientManager
 
 
 class RssSite(Site):
     name = "rss"
     schedule_type = "interval"
-    schedule_setting = {"seconds": 30}
+    schedule_setting: ClassVar[dict] = {"seconds": 30}
     client_mgr = CookieClientManager.from_name(name)
 
 
@@ -38,7 +39,7 @@ class RssPost(Post):
 
 
 class Rss(NewMessage):
-    categories = {}
+    categories: ClassVar[dict[Category, str]] = {}
     enable_tag = False
     platform_name = "rss"
     name = "Rss"

@@ -1,11 +1,12 @@
-from nonebot.typing import T_State
+from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.matcher import Matcher
 from nonebot.params import EventPlainText
+from nonebot.typing import T_State
 from nonebot_plugin_saa import MessageFactory
-from nonebot.adapters.onebot.v11 import MessageEvent
 
-from ..config import config
-from ..utils import parse_text
+from nonebot_bison.config import config
+from nonebot_bison.utils import parse_text
+
 from .utils import gen_handle_cancel, only_allow_private
 
 

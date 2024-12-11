@@ -1,18 +1,19 @@
-import re
-import html
-from typing import Any
 from functools import partial
+import html
+import re
+from typing import Any, ClassVar
 
-from yarl import URL
-from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
-from pydantic import Field, BaseModel
+from httpx import AsyncClient
 from nonebot.compat import type_validate_python
+from pydantic import BaseModel, Field
+from yarl import URL
 
-from ..post import Post
-from ..utils import Site
-from ..types import Target, RawPost, Category
-from ..post.protocol import HTMLContentSupport
+from nonebot_bison.post import Post
+from nonebot_bison.post.protocol import HTMLContentSupport
+from nonebot_bison.types import Category, RawPost, Target
+from nonebot_bison.utils import Site
+
 from .platform import NewMessage, StatusChange
 
 
@@ -58,7 +59,7 @@ class ArkBulletinResponse(ArkResponseBase):
 class ArknightsSite(Site):
     name = "arknights"
     schedule_type = "interval"
-    schedule_setting = {"seconds": 30}
+    schedule_setting: ClassVar[dict] = {"seconds": 30}
 
 
 class ArknightsPost(Post, HTMLContentSupport):
@@ -95,7 +96,7 @@ class ArknightsPost(Post, HTMLContentSupport):
 
 
 class Arknights(NewMessage):
-    categories = {1: "游戏公告"}
+    categories: ClassVar[dict[Category, str]] = {1: "游戏公告"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
     enable_tag = False
@@ -157,7 +158,7 @@ class Arknights(NewMessage):
 
 
 class AkVersion(StatusChange):
-    categories = {2: "更新信息"}
+    categories: ClassVar[dict[Category, str]] = {2: "更新信息"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
     enable_tag = False
@@ -202,7 +203,7 @@ class AkVersion(StatusChange):
 
 
 class MonsterSiren(NewMessage):
-    categories = {3: "塞壬唱片新闻"}
+    categories: ClassVar[dict[Category, str]] = {3: "塞壬唱片新闻"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
     enable_tag = False
@@ -250,7 +251,7 @@ class MonsterSiren(NewMessage):
 
 
 class TerraHistoricusComic(NewMessage):
-    categories = {4: "泰拉记事社漫画"}
+    categories: ClassVar[dict[Category, str]] = {4: "泰拉记事社漫画"}
     platform_name = "arknights"
     name = "明日方舟游戏信息"
     enable_tag = False

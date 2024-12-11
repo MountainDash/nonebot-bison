@@ -1,6 +1,6 @@
+from datetime import timedelta
 import random
 import string
-from datetime import timedelta
 
 from expiringdictx import ExpiringDict
 

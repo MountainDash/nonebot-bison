@@ -1,17 +1,16 @@
+from datetime import datetime, timedelta
 import json
 import random
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 from typing_extensions import override
-from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, TypeVar
 
 from httpx import AsyncClient
 from nonebot import logger, require
 from playwright.async_api import Cookie
 
+from nonebot_bison.config.db_model import Cookie as CookieModel
 from nonebot_bison.utils import Site, http_client
-
-from ...utils.site import CookieClientManager
-from ...config.db_model import Cookie as CookieModel
+from nonebot_bison.utils.site import CookieClientManager
 
 if TYPE_CHECKING:
     from .platforms import Bilibili
@@ -75,7 +74,7 @@ class BilibiliClientManager(CookieClientManager):
 
 class BilibiliSite(Site):
     name = "bilibili.com"
-    schedule_setting = {"seconds": 60}
+    schedule_setting: ClassVar[dict] = {"seconds": 60}
     schedule_type = "interval"
     client_mgr = BilibiliClientManager
     require_browser = True
@@ -83,11 +82,11 @@ class BilibiliSite(Site):
 
 class BililiveSite(Site):
     name = "live.bilibili.com"
-    schedule_setting = {"seconds": 5}
+    schedule_setting: ClassVar[dict] = {"seconds": 5}
     schedule_type = "interval"
 
 
 class BiliBangumiSite(Site):
     name = "bilibili.com/bangumi"
-    schedule_setting = {"seconds": 30}
+    schedule_setting: ClassVar[dict] = {"seconds": 30}
     schedule_type = "interval"

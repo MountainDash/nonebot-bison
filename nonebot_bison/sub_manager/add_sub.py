@@ -1,17 +1,18 @@
 import contextlib
 
-from nonebot.typing import T_State
+from nonebot.adapters import Message, MessageTemplate
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
-from nonebot.adapters import Message, MessageTemplate
-from nonebot_plugin_saa import Text, PlatformTarget, SupportedAdapters
+from nonebot.typing import T_State
+from nonebot_plugin_saa import PlatformTarget, SupportedAdapters, Text
 
-from ..types import Target
-from ..config import config
-from ..apis import check_sub_target
-from ..config.db_config import SubscribeDupException
+from nonebot_bison.apis import check_sub_target
+from nonebot_bison.config import config
+from nonebot_bison.config.db_config import SubscribeDupException
+from nonebot_bison.platform import Platform, platform_manager, unavailable_paltforms
+from nonebot_bison.types import Target
+
 from .utils import common_platform, ensure_user_info, gen_handle_cancel
-from ..platform import Platform, platform_manager, unavailable_paltforms
 
 
 def do_add_sub(add_sub: type[Matcher]):

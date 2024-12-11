@@ -134,7 +134,7 @@ async def subs_import(path: str, format: str):
                 logger.info("正在从yaml导入...")
 
                 pyyaml = import_yaml_module()
-                import_items = pyyaml.safe_load(f)
+                import_items = pyyaml.safe_load(await f.read())
 
             case "json":
                 logger.info("正在从json导入...")

@@ -1,15 +1,21 @@
 from datetime import datetime, timedelta
 import json
 import random
+from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 from typing_extensions import override
 
-from httpx import AsyncClient
 from nonebot import logger, require
+from httpx import Response, AsyncClient
 from playwright.async_api import Cookie
 
 from nonebot_bison.config.db_model import Cookie as CookieModel
 from nonebot_bison.utils import Site, http_client
+
+from ...config import config
+from ...config.db_model import Target
+from ...utils.site import CookieClientManager
+from ...config.db_model import Cookie as CookieModel
 from nonebot_bison.utils.site import CookieClientManager
 
 if TYPE_CHECKING:
@@ -23,6 +29,7 @@ B = TypeVar("B", bound="Bilibili")
 
 class BilibiliClientManager(CookieClientManager):
     _default_cookie_cd = timedelta(seconds=120)
+    _current_user_cookie: CookieModel | None = None
 
     async def _get_cookies(self) -> list[Cookie]:
         browser = await get_browser()
@@ -56,6 +63,39 @@ class BilibiliClientManager(CookieClientManager):
             status="",
         )
         return cookie
+
+    def _generate_hook(self, cookie: Cookie) -> Callable:
+        """hook 函数生成器，用于回写请求状态到数据库"""
+
+        async def _response_hook(resp: Response):
+            if resp.status_code == 200:
+                logger.trace(f"请求成功: {cookie.id} {resp.request.url}")
+                cookie.status = "success"
+            else:
+                logger.warning(f"请求失败: {cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
+                cookie.status = "failed"
+                self._current_user_cookie = None
+            cookie.last_usage = datetime.now()
+            await config.update_cookie(cookie)
+
+        return _response_hook
+
+    async def _get_next_user_cookie(self) -> CookieModel | None:
+        """选择下一个用户 cookie"""
+        cookies = await config.get_cookie(self._site_name, is_anonymous=False)
+        available_cookies = [cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now()]
+        if not available_cookies:
+            return None
+        cookie = min(available_cookies, key=lambda x: x.last_usage)
+        return cookie
+
+    async def _choose_cookie(self, target: Target | None) -> Cookie:
+        """选择 cookie 的具体算法"""
+        if self._current_user_cookie is None:
+            self._current_user_cookie = await self._get_next_user_cookie()
+        if self._current_user_cookie:
+            return self._current_user_cookie
+        return await config.get_cookie(self._site_name, is_anonymous=True)
 
     @override
     async def refresh_client(self):

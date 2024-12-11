@@ -124,8 +124,8 @@ class CookieClientManager(ClientManager):
     async def _choose_cookie(self, target: Target | None) -> Cookie:
         """选择 cookie 的具体算法"""
         cookies = await config.get_cookie(self._site_name, target)
-        avaliable_cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
-        cookie = min(avaliable_cookies, key=lambda x: x.last_usage)
+        available_cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
+        cookie = min(available_cookies, key=lambda x: x.last_usage)
         return cookie
 
     async def get_client(self, target: Target | None) -> AsyncClient:

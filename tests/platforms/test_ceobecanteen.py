@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-import respx
-import pytest
 from httpx import Response
-from nonebug.app import App
 from nonebot.compat import type_validate_python
+from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_json
 
@@ -24,9 +24,9 @@ def dummy_only_open_user_subinfo(app: App):
 
 @pytest.fixture
 def ceobecanteen(app: App):
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.ceobecanteen.platform import CeobeCanteenClientManager
+    from nonebot_bison.utils import ProcessContext
 
     return platform_manager["ceobecanteen"](ProcessContext(CeobeCanteenClientManager()))
 
@@ -71,7 +71,7 @@ def ceobecanteen_cookies_1() -> dict:
     return get_json("ceobecanteen_cookies_1.json")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_parse_retweet(app: App):
     from nonebot_bison.platform.ceobecanteen.models import CookiesResponse
 
@@ -79,7 +79,7 @@ async def test_parse_retweet(app: App):
     assert cookie_with_retweet.data.cookies[0].item.retweeted
 
 
-@pytest.mark.render()
+@pytest.mark.render
 async def test_ceobe_snapshot(app: App, ceobecanteen: "CeobeCanteen"):
     from nonebot_bison.platform.ceobecanteen.models import CeobeCookie
 
@@ -113,7 +113,7 @@ async def test_ceobe_snapshot(app: App, ceobecanteen: "CeobeCanteen"):
 
 
 @pytest.mark.skip("极限测试, 不在CI中运行")
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_parse_crazy(app: App, ceobecanteen):
     from nonebot_plugin_saa import Image
 
@@ -139,7 +139,7 @@ async def test_parse_crazy(app: App, ceobecanteen):
     show(ext((await post4.generate_messages())[0][0]))  # type: ignore
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @respx.mock
 async def test_batch_fetch_new_with_single(
     app: App,
@@ -220,7 +220,7 @@ async def test_batch_fetch_new_with_single(
     await post3.generate_messages()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @respx.mock
 async def test_parse_target_fuzzy(app: App, ceobecanteen: "CeobeCanteen", dummy_target, ceobecanteen_targets):
     from nonebot_bison.platform.ceobecanteen import CeobeCanteen

@@ -1,9 +1,9 @@
 async def test_migration(use_legacy_config):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot_plugin_datastore.db import init_db
+    from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.config.db_config import config
     from nonebot_bison.config.config_legacy import Config
+    from nonebot_bison.config.db_config import config
 
     config_legacy = Config()
     config_legacy.add_subscribe(
@@ -57,11 +57,11 @@ async def test_migration(use_legacy_config):
 
 
 async def test_migrate_dup(use_legacy_config):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot_plugin_datastore.db import init_db
+    from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.config.db_config import config
     from nonebot_bison.config.config_legacy import Config
+    from nonebot_bison.config.db_config import config
 
     config_legacy = Config()
     config_legacy.add_subscribe(

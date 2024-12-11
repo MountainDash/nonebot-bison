@@ -1,5 +1,5 @@
-import typing
 from datetime import time
+import typing
 from unittest.mock import AsyncMock
 
 from nonebug import App
@@ -28,10 +28,10 @@ async def test_scheduler_without_time(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.platform.ncm import NcmSite
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.config.db_config import WeightConfig
+    from nonebot_bison.platform.ncm import NcmSite
     from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "ncm-artist", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "ncm-artist", [], [])
@@ -57,12 +57,12 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.types import UserSubInfo
-    from nonebot_bison.scheduler import scheduler_dict
-    from nonebot_bison.types import Target as T_Target
-    from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.platform.bilibili import BililiveSite
+    from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.types import UserSubInfo
+    from nonebot_bison.utils import DefaultClientManager
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili-live", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target2", "bilibili-live", [], [])
@@ -96,11 +96,11 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
 async def test_scheduler_with_time(app: App, init_scheduler, mocker: MockerFixture):
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.platform.ncm import NcmSite
     from nonebot_bison.config import config, db_config
-    from nonebot_bison.types import Target as T_Target
+    from nonebot_bison.config.db_config import TimeWeightConfig, WeightConfig
+    from nonebot_bison.platform.ncm import NcmSite
     from nonebot_bison.scheduler.manager import init_scheduler
-    from nonebot_bison.config.db_config import WeightConfig, TimeWeightConfig
+    from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "ncm-artist", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "ncm-artist", [], [])
@@ -140,9 +140,9 @@ async def test_scheduler_add_new(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
 
@@ -158,9 +158,9 @@ async def test_schedule_delete(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.platform.bilibili import BilibiliSite
     from nonebot_bison.scheduler.manager import init_scheduler
+    from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t1"), "target1", "bilibili", [], [])
     await config.add_subscribe(TargetQQGroup(group_id=123), T_Target("t2"), "target1", "bilibili", [], [])
@@ -177,18 +177,18 @@ async def test_schedule_delete(init_scheduler):
 
 
 async def test_scheduler_skip_browser(mocker: MockerFixture):
-    from nonebot_bison.scheduler.scheduler import Site
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.scheduler import init_scheduler, scheduler_dict
+    from nonebot_bison.scheduler.scheduler import Site
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
 
     class MockSite(Site):
         name = "mock_site"
         schedule_type = "interval"
-        schedule_setting = {"seconds": 100}
+        schedule_setting: typing.ClassVar[dict] = {"seconds": 100}
         require_browser = True
 
     class MockPlatform(NewMessage):
@@ -209,18 +209,18 @@ async def test_scheduler_skip_browser(mocker: MockerFixture):
 
 
 async def test_scheduler_no_skip_not_require_browser(mocker: MockerFixture):
-    from nonebot_bison.scheduler.scheduler import Site
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.scheduler import init_scheduler, scheduler_dict
+    from nonebot_bison.scheduler.scheduler import Site
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
 
     class MockSite(Site):
         name = "mock_site"
         schedule_type = "interval"
-        schedule_setting = {"seconds": 100}
+        schedule_setting: typing.ClassVar[dict] = {"seconds": 100}
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"

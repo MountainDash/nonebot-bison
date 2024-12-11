@@ -1,9 +1,9 @@
+from datetime import datetime
 import json
 from typing import cast
-from datetime import datetime
 
-import pytest
 from nonebug import App
+import pytest
 
 
 @pytest.mark.usefixtures("_patch_weibo_get_cookie_name")
@@ -11,9 +11,9 @@ async def test_cookie(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.config.utils import DuplicateCookieTargetException
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
-    from nonebot_bison.config.utils import DuplicateCookieTargetException
     from nonebot_bison.utils.site import CookieClientManager, site_manager
 
     target = T_Target("weibo_id")

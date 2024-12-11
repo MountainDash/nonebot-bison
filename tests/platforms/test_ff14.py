@@ -1,7 +1,7 @@
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_json
 
@@ -9,7 +9,7 @@ from .utils import get_json
 @pytest.fixture
 def ff14(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["ff14"](ProcessContext(DefaultClientManager()))
 
@@ -28,7 +28,7 @@ def ff14_newdata_json_1():
 @respx.mock
 async def test_fetch_new(ff14, dummy_user_subinfo, ff14_newdata_json_0, ff14_newdata_json_1):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     newdata = respx.get(
         "https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5309,5310,5311,5312,5313&pageIndex=0&pageSize=5"

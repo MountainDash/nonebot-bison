@@ -1,16 +1,16 @@
-import pytest
 from nonebug.app import App
+import pytest
 
 
 async def test_add_subscribe(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.sql.expression import select
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.expression import select
 
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.config.db_model import Subscribe, Target, User
     from nonebot_bison.types import Target as TTarget
-    from nonebot_bison.config.db_model import User, Target, Subscribe
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),
@@ -69,8 +69,8 @@ async def test_add_subscribe(app: App, init_scheduler):
 async def test_add_dup_sub(init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.types import Target as TTarget
     from nonebot_bison.config.db_config import SubscribeDupException, config
+    from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),
@@ -93,15 +93,15 @@ async def test_add_dup_sub(init_scheduler):
 
 
 async def test_del_subsribe(init_scheduler):
-    from sqlalchemy.sql.functions import func
-    from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.sql.expression import select
     from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_saa import TargetQQGroup
     from sqlalchemy.ext.asyncio.session import AsyncSession
+    from sqlalchemy.sql.expression import select
+    from sqlalchemy.sql.functions import func
 
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.config.db_model import Subscribe, Target
     from nonebot_bison.types import Target as TTarget
-    from nonebot_bison.config.db_model import Target, Subscribe
 
     await config.add_subscribe(
         TargetQQGroup(group_id=123),

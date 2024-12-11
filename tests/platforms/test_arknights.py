@@ -1,10 +1,10 @@
 from time import time
 
-import respx
-import pytest
 from httpx import Response
-from nonebug.app import App
 from nonebot.compat import model_dump, type_validate_python
+from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_file, get_json
 
@@ -12,7 +12,7 @@ from .utils import get_file, get_json
 @pytest.fixture
 def arknights(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["arknights"](ProcessContext(DefaultClientManager()))
 
@@ -44,8 +44,8 @@ def monster_siren_list_1():
 
 @respx.mock
 async def test_url_parse(app: App):
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
-    from nonebot_bison.platform.arknights import Arknights, BulletinData, BulletinListItem, ArkBulletinResponse
+    from nonebot_bison.platform.arknights import ArkBulletinResponse, Arknights, BulletinData, BulletinListItem
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     cid_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/1")
 
@@ -110,10 +110,10 @@ async def test_url_parse(app: App):
     assert p4.url == "http://www.baidu.com/"
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_get_date_in_bulletin(app: App):
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     arknights = Arknights(ProcessContext(DefaultClientManager()))
     assert (
@@ -131,11 +131,11 @@ async def test_get_date_in_bulletin(app: App):
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @respx.mock
 async def test_parse_with_breakline(app: App):
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     detail = get_json("arknights-detail-805")
     detail["data"]["header"] = ""
@@ -158,7 +158,7 @@ async def test_parse_with_breakline(app: App):
     assert post.title == "【公开招募】 - 标签刷新通知"
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(
     arknights,
@@ -168,9 +168,9 @@ async def test_fetch_new(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.platform.arknights import ArknightsPost
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import SubUnit, Target
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/5716")
@@ -229,7 +229,7 @@ async def test_fetch_new(
     assert "brief" == post3.get_priority_themes()[0]
 
 
-@pytest.mark.render()
+@pytest.mark.render
 @respx.mock
 async def test_send_with_render(
     arknights,
@@ -239,8 +239,8 @@ async def test_send_with_render(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.platform.arknights import ArknightsPost
+    from nonebot_bison.types import SubUnit, Target
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")
@@ -284,13 +284,13 @@ async def test_send_with_render(
     assert r
 
 
-@pytest.mark.render()
+@pytest.mark.render
 @respx.mock
 async def test_parse_title(
     app: App,
 ):
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
     from nonebot_bison.platform.arknights import Arknights, BulletinListItem
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     detail_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletin/8397")
 

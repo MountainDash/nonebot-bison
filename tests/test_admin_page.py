@@ -1,8 +1,8 @@
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 from nonebug import App
+import pytest
 
 from .utils import fake_admin_user, fake_private_message_event
 
@@ -12,9 +12,9 @@ async def test_command(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.admin_page import register_get_token_handler
     from nonebot_bison.admin_page.token_manager import token_manager as tm
+    from nonebot_bison.plugin_config import plugin_config
 
     with patch.object(tm, "get_user_token", return_value="test_token"):
         register_get_token_handler()
@@ -39,12 +39,12 @@ async def test_command(app: App):
 
 @pytest.mark.asyncio
 async def test_log(app: App, tmp_path: Path):
-    import io
     import contextlib
+    import io
 
     from nonebot import get_driver
     from nonebot.drivers.fastapi import Driver
-    from nonebot.log import logger, default_format
+    from nonebot.log import default_format, logger
 
     from nonebot_bison.admin_page import init_fastapi
 

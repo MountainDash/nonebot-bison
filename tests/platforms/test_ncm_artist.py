@@ -1,10 +1,10 @@
 import time
 import typing
 
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_json
 
@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 def ncm_artist(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["ncm-artist"](ProcessContext(DefaultClientManager()))
 
@@ -41,7 +41,7 @@ def ncm_artist_1(ncm_artist_raw: dict):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new(ncm_artist, ncm_artist_0, ncm_artist_1, dummy_user_subinfo):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
     ncm_router.mock(return_value=Response(200, json=ncm_artist_0))

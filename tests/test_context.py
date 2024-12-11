@@ -1,11 +1,11 @@
 import httpx
-import respx
 from nonebug.app import App
+import respx
 
 
 @respx.mock
 async def test_http_error(app: App):
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager, http_client
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext, http_client
 
     example_route = respx.get("https://example.com")
     example_route.mock(httpx.Response(403, json={"error": "gg"}))

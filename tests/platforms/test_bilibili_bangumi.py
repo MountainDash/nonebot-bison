@@ -1,9 +1,9 @@
 import typing
 
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_json
 
@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 def bili_bangumi(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["bilibili-bangumi"](ProcessContext(DefaultClientManager()))
 
@@ -38,7 +38,7 @@ async def test_parse_target(bili_bangumi: "BilibiliBangumi"):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bilibili_bangumi_status(bili_bangumi: "BilibiliBangumi", dummy_user_subinfo):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     bili_bangumi_router = respx.get("https://api.bilibili.com/pgc/review/user?media_id=28235413")
     bili_bangumi_detail_router = respx.get("https://api.bilibili.com/pgc/view/web/season?season_id=39719")

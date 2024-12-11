@@ -1,7 +1,7 @@
-import pytest
 from nonebug import App
+import pytest
 
-from ..utils import BotReply, fake_admin_user, fake_group_message_event
+from tests.utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio

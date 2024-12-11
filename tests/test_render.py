@@ -1,5 +1,5 @@
-import pytest
 from nonebug.app import App
+import pytest
 from pytest_mock import MockerFixture
 
 
@@ -8,8 +8,8 @@ from pytest_mock import MockerFixture
 async def test_render(app: App, mocker: MockerFixture):
     from nonebot_plugin_saa import Image
 
-    from nonebot_bison.utils import parse_text
     from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.utils import parse_text
 
     mocker.patch.object(plugin_config, "bison_use_pic", True)
 
@@ -26,10 +26,10 @@ async def test_render(app: App, mocker: MockerFixture):
 @pytest.mark.asyncio
 @pytest.mark.render
 async def test_convert(app: App, mocker: MockerFixture):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
-    from nonebot_bison.utils import text_to_image
     from nonebot_bison.plugin_config import plugin_config
+    from nonebot_bison.utils import text_to_image
 
     mocker.patch.object(plugin_config, "bison_use_pic", True)
 

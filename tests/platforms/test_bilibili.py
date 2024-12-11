@@ -1,16 +1,16 @@
+from datetime import datetime
 import random
 from time import time
-from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import respx
-import pytest
-from loguru import logger
-from nonebug.app import App
-from httpx import URL, Response
 from freezegun import freeze_time
-from pytest_mock import MockerFixture
+from httpx import URL, Response
+from loguru import logger
 from nonebot.compat import model_dump, type_validate_python
+from nonebug.app import App
+import pytest
+from pytest_mock import MockerFixture
+import respx
 
 from .utils import get_json
 
@@ -28,9 +28,9 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def bilibili(app: App) -> "Bilibili":
-    from nonebot_bison.utils import ProcessContext
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import BilibiliClientManager
+    from nonebot_bison.utils import ProcessContext
 
     return platform_manager["bilibili"](ProcessContext(BilibiliClientManager()))  # type: ignore
 
@@ -62,7 +62,7 @@ def without_dynamic(app: App):
 async def test_reset_on_exception(app: App):
     from strenum import StrEnum
 
-    from nonebot_bison.platform.bilibili.fsm import FSM, StateGraph, Transition, ActionReturn, reset_on_exception
+    from nonebot_bison.platform.bilibili.fsm import FSM, ActionReturn, StateGraph, Transition, reset_on_exception
 
     class State(StrEnum):
         A = "A"
@@ -146,12 +146,12 @@ async def test_reset_on_exception(app: App):
 
 @pytest.mark.asyncio
 async def test_retry_for_352(app: App, mocker: MockerFixture):
-    from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, RawPost
-    from nonebot_bison.platform.platform import NewMessage
     from nonebot_bison.platform.bilibili.platforms import ApiCode352Error
-    from nonebot_bison.utils import ClientManager, ProcessContext, http_client
     from nonebot_bison.platform.bilibili.retry import RetryAddon, RetryState, _retry_fsm, retry_for_352
+    from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import RawPost, Target
+    from nonebot_bison.utils import ClientManager, ProcessContext, http_client
 
     mocker.patch.object(random, "random", return_value=0.0)  # 稳定触发RAISE阶段的随缘刷新
 
@@ -166,7 +166,7 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
         is_common = True
         schedule_interval = 10
         enable_tag = False
-        categories = {}
+        categories: ClassVar[dict] = {}
         has_target = True
 
         raise352 = False
@@ -374,7 +374,7 @@ async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
         "「2024明日方舟音律联觉-不觅浪尘」将于12:00正式开启预售票！预售票购票链接：https://m.damai.cn/shows/item.html?itemId=778626949623"
     )
     assert post.url == "https://t.bilibili.com/917092495452536836"
-    assert (rp := post.repost)
+    assert (rp := post.repost)  # noqa: RUF018
     assert rp.content == (
         "互动抽奖 #明日方舟##音律联觉#\n\n"
         "「2024音律联觉」票务信息公开！\n\n\n\n"
@@ -413,7 +413,7 @@ async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list)
     post: Post = await bilibili.parse(bing_dy_list[12])
     assert post.content == "转发动态"
     assert post.url == "https://t.bilibili.com/965806534205374473"
-    assert (repost := post.repost)
+    assert (repost := post.repost)  # noqa: RUF018
     assert repost.url is None
     assert not repost.title
     assert repost.content == "源动态已被作者删除"
@@ -422,7 +422,7 @@ async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list)
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_dynamic):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     target = Target("161775300")
     post_router = respx.get(
@@ -439,8 +439,8 @@ async def test_fetch_new_without_dynamic(bilibili, dummy_user_subinfo, without_d
 async def test_fetch_new(bilibili, dummy_user_subinfo):
     from nonebot.compat import model_dump, type_validate_python
 
-    from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.platform.bilibili.models import PostAPI
+    from nonebot_bison.types import SubUnit, Target
 
     target = Target("161775300")
 
@@ -483,8 +483,8 @@ async def test_fetch_new(bilibili, dummy_user_subinfo):
 async def test_fetch_new_live_rcmd(bilibili: "Bilibili", dummy_user_subinfo):
     from nonebot.compat import model_dump, type_validate_python
 
-    from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.platform.bilibili.models import PostAPI
+    from nonebot_bison.types import SubUnit, Target
 
     target = Target("13164144")
 

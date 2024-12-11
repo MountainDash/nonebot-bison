@@ -1,4 +1,5 @@
 import datetime
+from datetime import datetime, timedelta, timezone
 import random
 import string
 
@@ -9,7 +10,7 @@ _key = "".join(random.SystemRandom().choice(string.ascii_letters) for _ in range
 
 def pack_jwt(obj: dict) -> str:
     return jwt.encode(
-        {"exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1), **obj},
+        {"exp": datetime.now(timezone.utc) + timedelta(hours=1), **obj},
         _key,
         algorithm="HS256",
     )

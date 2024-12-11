@@ -115,8 +115,7 @@ class RetryAddon(Generic[TBilibili]):
 
     def record_backoff_finish_time(self):
         self.backoff_finish_time = (
-            datetime.now()
-            + self.backoff_timedelta * self.backoff_count**2
+            datetime.now() + self.backoff_timedelta * self.backoff_count**2
             # + timedelta(seconds=random.randint(1, 60)) # jitter
         )
         logger.trace(f"set backoff finish time: {self.backoff_finish_time}")

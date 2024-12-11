@@ -162,7 +162,6 @@ class Bilibili(NewMessage):
         return tags
 
     def _text_process(self, dynamic: str, desc: str, title: str) -> _ProcessedText:
-
         # 计算视频标题和视频描述相似度
         title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
         if title_similarity > 0.9:

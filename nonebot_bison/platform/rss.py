@@ -22,7 +22,6 @@ class RssSite(Site):
 
 
 class RssPost(Post):
-
     async def get_plain_content(self) -> str:
         soup = bs(self.content, "html.parser")
 

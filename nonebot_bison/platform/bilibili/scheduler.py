@@ -22,7 +22,6 @@ B = TypeVar("B", bound="Bilibili")
 
 
 class BilibiliClientManager(CookieClientManager):
-
     _default_cookie_cd = timedelta(seconds=120)
 
     async def _get_cookies(self) -> list[Cookie]:

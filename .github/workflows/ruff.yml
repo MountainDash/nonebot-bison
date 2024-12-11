@@ -25,4 +25,3 @@ jobs:
             nonebot_bison/
             extra_plugins/
             tests/
-            bot.py

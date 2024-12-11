@@ -213,7 +213,9 @@ class CeobeCanteen(NewMessage):
         logger.debug(f"snapshot official website url: {url}")
 
         # /html/body/div[1]/div[1]/div/div[1]/div[1]/div
-        snapshot_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div"  # noqa: E501
+        snapshot_selector = (
+            "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div"
+        )
         # /html/body/div[1]/div[1]/div/div[1]/div[1]/div/div[4]/div/div/div
         calculate_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(4) > div > div > div"  # noqa: E501
         viewport = {"width": 1024, "height": 19990}

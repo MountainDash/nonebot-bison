@@ -6,6 +6,7 @@ from fastapi.routing import APIRouter
 from fastapi.param_functions import Depends
 from fastapi.exceptions import HTTPException
 from nonebot_plugin_saa import TargetQQGroup
+from nonebot.drivers import Request, Response
 from nonebot_plugin_saa.auto_select_bot import get_bot
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 
@@ -38,6 +39,10 @@ from .types import (
 router = APIRouter(prefix="/api", tags=["api"])
 
 oath_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+async def handle_http(request: Request) -> Response:
+    return Response(200, content="ok")
 
 
 async def get_jwt_obj(token: str = Depends(oath_scheme)):

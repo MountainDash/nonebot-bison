@@ -1,4 +1,4 @@
-FROM node:22.11.0 as frontend
+FROM node:22.11.0 AS frontend
 ADD . /app
 WORKDIR /app/admin-frontend
 RUN npm install -g pnpm

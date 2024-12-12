@@ -10,6 +10,10 @@ request_counter = Counter(
 # Sent counter
 sent_counter = Counter("bison_sent_counter", "The number of sent messages", ["site_name", "platform_name", "target"])
 
+cookie_choose_counter = Counter(
+    "bison_cookie_choose_counter", "The number of cookie choose", ["site_name", "target", "cookie_id"]
+)
+
 metrics_router = APIRouter(prefix="/api/metrics", tags=["metrics"])
 
 

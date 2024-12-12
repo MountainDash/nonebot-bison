@@ -4,7 +4,6 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from starlette.responses import Response
 from fastapi.param_functions import Depends
 from fastapi.exceptions import HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordBearer
@@ -12,7 +11,6 @@ import nonebot
 from nonebot_plugin_saa import TargetQQGroup
 from nonebot_plugin_saa.auto_select_bot import get_bot
 from fastapi.security.oauth2 import OAuth2PasswordBearer
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from nonebot_bison.apis import check_sub_target
 from nonebot_bison.config import NoSuchSubscribeException, NoSuchTargetException, NoSuchUserException, config
@@ -289,11 +287,3 @@ async def get_cookie_valid(site_name: str, content: str) -> StatusResp:
         return StatusResp(ok=True, msg="")
     else:
         return StatusResp(ok=False, msg="")
-
-
-metrics_router = APIRouter(prefix="/api/metrics", tags=["metrics"])
-
-
-@metrics_router.get("")
-async def metrics():
-    return Response(media_type=CONTENT_TYPE_LATEST, content=generate_latest())

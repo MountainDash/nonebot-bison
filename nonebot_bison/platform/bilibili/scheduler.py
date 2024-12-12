@@ -30,6 +30,7 @@ B = TypeVar("B", bound="Bilibili")
 class BilibiliClientManager(CookieClientManager):
     _default_cookie_cd = timedelta(seconds=120)
     _current_user_cookie: CookieModel | None = None
+    _site_name = "bilibili.com"
 
     async def _get_cookies(self) -> list[Cookie]:
         browser = await get_browser()
@@ -64,11 +65,12 @@ class BilibiliClientManager(CookieClientManager):
         )
         return cookie
 
-    def _generate_hook(self, cookie: Cookie) -> Callable:
+    def _generate_hook(self, cookie: CookieModel) -> Callable:
         """hook 函数生成器，用于回写请求状态到数据库"""
 
         async def _response_hook(resp: Response):
-            if resp.status_code == 200:
+            await resp.aread()
+            if resp.status_code == 200 and "-352" not in resp.text:
                 logger.trace(f"请求成功: {cookie.id} {resp.request.url}")
                 cookie.status = "success"
             else:
@@ -89,13 +91,13 @@ class BilibiliClientManager(CookieClientManager):
         cookie = min(available_cookies, key=lambda x: x.last_usage)
         return cookie
 
-    async def _choose_cookie(self, target: Target | None) -> Cookie:
+    async def _choose_cookie(self, target: Target | None) -> CookieModel:
         """选择 cookie 的具体算法"""
         if self._current_user_cookie is None:
             self._current_user_cookie = await self._get_next_user_cookie()
         if self._current_user_cookie:
             return self._current_user_cookie
-        return await config.get_cookie(self._site_name, is_anonymous=True)
+        return (await config.get_cookie(self._site_name, is_anonymous=True))[0]
 
     @override
     async def refresh_client(self):

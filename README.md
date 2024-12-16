@@ -17,9 +17,6 @@ _✨ 通用订阅推送插件 ✨_
     <img src="https://img.shields.io/pypi/v/nonebot-bison?logo=python&logoColor=edb641" alt="pypi">
 </a>
 <img src="https://img.shields.io/badge/python-3.10+-blue?logo=python&logoColor=edb641" alt="python">
-<a href="https://github.com/psf/black">
-    <img src="https://img.shields.io/badge/code%20style-black-000000.svg?logo=python&logoColor=edb641" alt="black">
-</a>
 <a href="https://github.com/astral-sh/ruff">
     <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="ruff">
 </a>

@@ -13,6 +13,7 @@ from ..types import Target
 from ..config import config
 from .http import http_client
 from ..config.db_model import Cookie
+from ..metrics import cookie_choose_counter
 
 
 class ClientManager(ABC):
@@ -131,6 +132,7 @@ class CookieClientManager(ClientManager):
         """获取 client，根据 target 选择 cookie"""
         client = http_client()
         cookie = await self._choose_cookie(target)
+        cookie_choose_counter.labels(site_name=self._site_name, target=target, cookie_id=cookie.id).inc()
         if cookie.is_universal:
             logger.trace(f"平台 {self._site_name} 未获取到用户cookie, 使用匿名cookie")
         else:

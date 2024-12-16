@@ -42,6 +42,7 @@ yarl = ">=1.11.1"
 hishel = "^0.0.30"
 expiringdictx = "^1.1.0"
 rapidfuzz = "^3.9.7"
+prometheus-client = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=24.8.0,<25.0"

@@ -1,21 +1,18 @@
+from collections.abc import Callable
 from datetime import datetime, timedelta
 import json
 import random
-from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 from typing_extensions import override
 
+from httpx import AsyncClient, Response
 from nonebot import logger, require
-from httpx import Response, AsyncClient
 from playwright.async_api import Cookie
 
+from nonebot_bison.config import config
 from nonebot_bison.config.db_model import Cookie as CookieModel
+from nonebot_bison.config.db_model import Target
 from nonebot_bison.utils import Site, http_client
-
-from ...config import config
-from ...config.db_model import Target
-from ...utils.site import CookieClientManager
-from ...config.db_model import Cookie as CookieModel
 from nonebot_bison.utils.site import CookieClientManager
 
 if TYPE_CHECKING:

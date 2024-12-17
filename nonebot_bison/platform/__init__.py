@@ -1,9 +1,10 @@
-from pathlib import Path
-from pkgutil import iter_modules
 from collections import defaultdict
 from importlib import import_module
+from pathlib import Path
+from pkgutil import iter_modules
 
-from ..plugin_config import plugin_config
+from nonebot_bison.plugin_config import plugin_config
+
 from .platform import Platform, make_no_target_group
 
 _package_dir = str(Path(__file__).resolve().parent)

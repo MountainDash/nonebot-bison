@@ -1,15 +1,16 @@
 from time import time
-from typing import Any
+from typing import Any, ClassVar
 
-import pytest
 from nonebug.app import App
+import pytest
 
 now = time()
 passed = now - 3 * 60 * 60
 
 raw_post_list_1 = [{"id": 1, "text": "p1", "date": now, "tags": ["tag1"], "category": 1}]
 
-raw_post_list_2 = raw_post_list_1 + [
+raw_post_list_2 = [
+    *raw_post_list_1,
     {"id": 2, "text": "p2", "date": now, "tags": ["tag1"], "category": 1},
     {"id": 3, "text": "p3", "date": now, "tags": ["tag2"], "category": 2},
     {"id": 4, "text": "p4", "date": now, "tags": ["tag2"], "category": 3},
@@ -36,9 +37,9 @@ def user_info_factory(app: App, dummy_user):
 
 @pytest.fixture
 def mock_platform_without_cats_tags(app: App):
-    from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import RawPost, Target
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -47,7 +48,7 @@ def mock_platform_without_cats_tags(app: App):
         is_common = True
         schedule_interval = 10
         enable_tag = False
-        categories = {}
+        categories: ClassVar[dict] = {}
         has_target = True
 
         sub_index = 0
@@ -83,15 +84,15 @@ def mock_platform_without_cats_tags(app: App):
 
 @pytest.fixture
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
-    from nonebot_bison.utils import Site
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
+    from nonebot_bison.utils import Site
 
     class MockSite(Site):
         name = "mock_site"
         schedule_type = "interval"
-        schedule_setting = {"seconds": 100}
+        schedule_setting: ClassVar[dict] = {"seconds": 100}
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -101,7 +102,7 @@ def mock_platform(app: App):
         enable_tag = True
         has_target = True
         site = MockSite
-        categories = {
+        categories: ClassVar[dict] = {
             Category(1): "转发",
             Category(2): "视频",
         }
@@ -150,16 +151,16 @@ def mock_site(app):
     class MockSite(Site):
         name = "mock_site"
         schedule_type = "interval"
-        schedule_setting = {"seconds": 100}
+        schedule_setting: ClassVar[dict] = {"seconds": 100}
 
     return MockSite
 
 
 @pytest.fixture
 def mock_platform_no_target(app: App, mock_site):
+    from nonebot_bison.platform.platform import CategoryNotSupport, NewMessage
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Tag, Target, RawPost, Category
-    from nonebot_bison.platform.platform import NewMessage, CategoryNotSupport
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -169,7 +170,7 @@ def mock_platform_no_target(app: App, mock_site):
         site = mock_site
         enable_tag = True
         has_target = False
-        categories = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
+        categories: ClassVar[dict] = {Category(1): "转发", Category(2): "视频", Category(3): "不支持"}
 
         sub_index = 0
 
@@ -212,9 +213,9 @@ def mock_platform_no_target(app: App, mock_site):
 
 @pytest.fixture
 def mock_platform_no_target_2(app: App, mock_site):
-    from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import NewMessage
-    from nonebot_bison.types import Tag, Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Tag, Target
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -224,7 +225,7 @@ def mock_platform_no_target_2(app: App, mock_site):
         is_common = True
         enable_tag = True
         has_target = False
-        categories = {
+        categories: ClassVar[dict] = {
             Category(4): "leixing4",
             Category(5): "leixing5",
         }
@@ -259,7 +260,8 @@ def mock_platform_no_target_2(app: App, mock_site):
         async def get_sub_list(cls, _: "Target"):
             list_1 = [{"id": 5, "text": "p5", "date": now, "tags": ["tag1"], "category": 4}]
 
-            list_2 = list_1 + [
+            list_2 = [
+                *list_1,
                 {"id": 6, "text": "p6", "date": now, "tags": ["tag1"], "category": 4},
                 {"id": 7, "text": "p7", "date": now, "tags": ["tag2"], "category": 5},
             ]
@@ -274,9 +276,9 @@ def mock_platform_no_target_2(app: App, mock_site):
 
 @pytest.fixture
 def mock_status_change(app: App):
-    from nonebot_bison.post import Post
     from nonebot_bison.platform.platform import StatusChange
-    from nonebot_bison.types import Target, RawPost, Category
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, Target
 
     class MockPlatform(StatusChange):
         platform_name = "mock_platform"
@@ -285,9 +287,9 @@ def mock_status_change(app: App):
         is_common = True
         enable_tag = False
         schedule_type = "interval"
-        schedule_kw = {"seconds": 10}
+        schedule_kw: ClassVar[dict] = {"seconds": 10}
         has_target = False
-        categories = {
+        categories: ClassVar[dict] = {
             Category(1): "转发",
             Category(2): "视频",
         }
@@ -323,8 +325,8 @@ def mock_status_change(app: App):
 
 @pytest.mark.asyncio
 async def test_new_message_target_without_cats_tags(mock_platform_without_cats_tags, user_info_factory):
-    from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.types import SubUnit, Target
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     res1 = await mock_platform_without_cats_tags(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -344,8 +346,8 @@ async def test_new_message_target_without_cats_tags(mock_platform_without_cats_t
 
 @pytest.mark.asyncio
 async def test_new_message_target(mock_platform, user_info_factory):
-    from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.types import SubUnit, Target
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     res1 = await mock_platform(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -379,8 +381,8 @@ async def test_new_message_target(mock_platform, user_info_factory):
 
 @pytest.mark.asyncio
 async def test_new_message_no_target(mock_platform_no_target, user_info_factory):
-    from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.types import SubUnit, Target
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     res1 = await mock_platform_no_target(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -418,8 +420,8 @@ async def test_new_message_no_target(mock_platform_no_target, user_info_factory)
 
 @pytest.mark.asyncio
 async def test_status_change(mock_status_change, user_info_factory):
-    from nonebot_bison.types import Target, SubUnit
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.types import SubUnit, Target
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     res1 = await mock_status_change(ProcessContext(DefaultClientManager())).fetch_new_post(
         SubUnit(Target("dummy"), [user_info_factory([1, 2], [])])
@@ -458,9 +460,9 @@ async def test_group(
     mock_platform_no_target_2,
     user_info_factory,
 ):
-    from nonebot_bison.types import Target, SubUnit
     from nonebot_bison.platform.platform import make_no_target_group
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.types import SubUnit, Target
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     dummy = Target("dummy")
 
@@ -482,11 +484,11 @@ async def test_group(
 async def test_batch_fetch_new_message(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.post import Post
-    from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import RawPost, SubUnit, Target, UserSubInfo
+    from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.utils.context import ProcessContext
-    from nonebot_bison.types import Target, RawPost, SubUnit, UserSubInfo
 
     class BatchNewMessage(NewMessage):
         platform_name = "mock_platform"
@@ -495,7 +497,7 @@ async def test_batch_fetch_new_message(app: App):
         is_common = True
         schedule_interval = 10
         enable_tag = False
-        categories = {}
+        categories: ClassVar[dict] = {}
         has_target = True
 
         sub_index = 0
@@ -569,11 +571,11 @@ async def test_batch_fetch_new_message(app: App):
 async def test_batch_fetch_compare_status(app: App):
     from nonebot_plugin_saa import TargetQQGroup
 
+    from nonebot_bison.platform.platform import StatusChange
     from nonebot_bison.post import Post
+    from nonebot_bison.types import Category, RawPost, SubUnit, Target, UserSubInfo
     from nonebot_bison.utils import DefaultClientManager
     from nonebot_bison.utils.context import ProcessContext
-    from nonebot_bison.platform.platform import StatusChange
-    from nonebot_bison.types import Target, RawPost, SubUnit, Category, UserSubInfo
 
     class BatchStatusChange(StatusChange):
         platform_name = "mock_platform"
@@ -582,9 +584,9 @@ async def test_batch_fetch_compare_status(app: App):
         is_common = True
         enable_tag = False
         schedule_type = "interval"
-        schedule_kw = {"seconds": 10}
+        schedule_kw: ClassVar[dict] = {"seconds": 10}
         has_target = True
-        categories = {
+        categories: ClassVar[dict] = {
             Category(1): "转发",
             Category(2): "视频",
         }

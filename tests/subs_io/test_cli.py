@@ -1,10 +1,10 @@
-from typing import cast
 from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 
-from nonebug.app import App
 from click.core import BaseCommand
 from click.testing import CliRunner
+from nonebug.app import App
 
 from .utils import get_file
 
@@ -40,10 +40,10 @@ def test_cli_help(app: App):
 async def test_subs_export(app: App, tmp_path: Path):
     from nonebot_plugin_saa import TargetQQGroup
 
-    from nonebot_bison.config.db_model import Cookie
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.types import Target as TTarget
+    from nonebot_bison.config.db_model import Cookie
     from nonebot_bison.script.cli import cli, run_sync
+    from nonebot_bison.types import Target as TTarget
 
     cli = cast(BaseCommand, cli)
 

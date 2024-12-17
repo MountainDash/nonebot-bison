@@ -1,7 +1,7 @@
-import pytest
 from nonebug import App
+import pytest
 
-from ..utils import fake_superuser, fake_group_message_event, fake_private_message_event
+from tests.utils import fake_group_message_event, fake_private_message_event, fake_superuser
 
 
 @pytest.mark.asyncio

@@ -1,11 +1,14 @@
+from typing import ClassVar
+
 from nonebot import logger
 
-from ..plugin_config import plugin_config
+from nonebot_bison.plugin_config import plugin_config
+
 from .types import Theme, ThemeRegistrationError
 
 
 class ThemeManager:
-    __themes: dict[str, Theme] = {}
+    __themes: ClassVar[dict[str, Theme]] = {}
 
     def register(self, theme: Theme):
         logger.trace(f"Registering theme: {theme}")

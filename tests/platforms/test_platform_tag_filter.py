@@ -1,5 +1,5 @@
-import pytest
 from nonebug.app import App
+import pytest
 
 from .utils import get_json
 
@@ -13,7 +13,7 @@ def test_cases():
 @pytest.mark.asyncio
 async def test_filter_user_custom_tag(app: App, test_cases):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     bilibili = platform_manager["bilibili"](ProcessContext(DefaultClientManager()))
     for case in test_cases:
@@ -25,7 +25,7 @@ async def test_filter_user_custom_tag(app: App, test_cases):
 @pytest.mark.asyncio
 async def test_tag_separator(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     bilibili = platform_manager["bilibili"](ProcessContext(DefaultClientManager()))
     tags = ["~111", "222", "333", "~444", "555"]

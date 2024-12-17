@@ -1,17 +1,18 @@
 """nbesf is Nonebot Bison Enchangable Subscribes File! ver.2"""
 
-from typing import Any
 from functools import partial
+from typing import Any
 
-from nonebot.log import logger
-from pydantic import BaseModel
-from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, type_validate_json, type_validate_python
+from nonebot.log import logger
+from nonebot_plugin_saa.registries import AllSupportedPlatformTarget
+from pydantic import BaseModel, Field
 
-from ..utils import NBESFParseErr
-from ....types import Tag, Category
+from nonebot_bison.config.db_config import SubscribeDupException, config
+from nonebot_bison.config.subs_io.utils import NBESFParseErr
+from nonebot_bison.types import Category, Tag
+
 from .base import NBESFBase, SubReceipt
-from ...db_config import SubscribeDupException, config
 
 # ===== nbesf 定义格式 ====== #
 NBESF_VERSION = 2
@@ -64,7 +65,7 @@ class SubGroup(NBESFBase):
     """
 
     version: int = NBESF_VERSION
-    groups: list[SubPack] = []
+    groups: list[SubPack] = Field(default_factory=list)
 
 
 # ======================= #
@@ -85,11 +86,11 @@ async def subs_receipt_gen(nbesf_data: SubGroup):
             try:
                 await config.add_subscribe(receipt.user, **model_dump(receipt, exclude={"user"}))
             except SubscribeDupException:
-                logger.warning(f"！添加订阅条目 {repr(receipt)} 失败: 相同的订阅已存在")
+                logger.warning(f"！添加订阅条目 {receipt!r} 失败: 相同的订阅已存在")
             except Exception as e:
-                logger.error(f"！添加订阅条目 {repr(receipt)} 失败: {repr(e)}")
+                logger.error(f"！添加订阅条目 {receipt!r} 失败: {e!r}")
             else:
-                logger.success(f"添加订阅条目 {repr(receipt)} 成功！")
+                logger.success(f"添加订阅条目 {receipt!r} 成功！")
 
 
 def nbesf_parser(raw_data: Any) -> SubGroup:

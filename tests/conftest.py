@@ -1,13 +1,13 @@
-import sys
 from pathlib import Path
 from shutil import rmtree
+import sys
 
-import pytest
 import nonebot
-from sqlalchemy import delete
-from nonebug import NONEBOT_INIT_KWARGS, App
-from pytest_mock.plugin import MockerFixture
 from nonebot.adapters.onebot.v11 import Adapter as OnebotV11Adapter
+from nonebug import NONEBOT_INIT_KWARGS, App
+import pytest
+from pytest_mock.plugin import MockerFixture
+from sqlalchemy import delete
 
 from .utils import AppReq
 
@@ -44,12 +44,12 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
-    from nonebot_plugin_htmlrender.browser import shutdown_browser
-    from nonebot_plugin_datastore.db import init_db, create_session
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
+    from nonebot_plugin_datastore.db import create_session, init_db
+    from nonebot_plugin_htmlrender.browser import shutdown_browser
 
     from nonebot_bison import plugin_config
-    from nonebot_bison.config.db_model import User, Target, Subscribe, ScheduleTimeWeight
+    from nonebot_bison.config.db_model import ScheduleTimeWeight, Subscribe, Target, User
 
     plugin_config.bison_config_path = str(tmp_path / "legacy_config")
     plugin_config.bison_filter_log = False
@@ -111,8 +111,8 @@ async def init_scheduler(app: App):
 async def use_legacy_config(app: App):
     import aiofiles
 
-    from nonebot_bison.utils import Singleton
     from nonebot_bison.config.config_legacy import Config, get_config_path
+    from nonebot_bison.utils import Singleton
 
     # 默认不创建配置所在的文件夹
     # 如果需要测试需要手动创建相关文件夹
@@ -132,8 +132,8 @@ async def use_legacy_config(app: App):
 
 @pytest.fixture
 async def _no_browser(app: App, mocker: MockerFixture):
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform import _get_unavailable_platforms
+    from nonebot_bison.plugin_config import plugin_config
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
     mocker.patch("nonebot_bison.platform.unavailable_paltforms", _get_unavailable_platforms())

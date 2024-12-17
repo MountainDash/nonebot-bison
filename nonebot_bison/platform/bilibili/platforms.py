@@ -1,41 +1,41 @@
-import re
-import json
 from copy import deepcopy
 from enum import Enum, unique
-from typing import NamedTuple
+import json
+import re
+from typing import ClassVar, NamedTuple
 from typing_extensions import Self
 
-from yarl import URL
-from nonebot import logger
 from httpx import AsyncClient
-from pydantic import Field, BaseModel, ValidationError
+from nonebot import logger
 from nonebot.compat import type_validate_json, type_validate_python
+from pydantic import BaseModel, Field, ValidationError
+from yarl import URL
 
-from nonebot_bison.post.post import Post
 from nonebot_bison.compat import model_rebuild
-from nonebot_bison.utils import text_similarity, decode_unicode_escapes
-from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
+from nonebot_bison.platform.platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
+from nonebot_bison.post.post import Post
+from nonebot_bison.types import ApiError, Category, RawPost, Tag, Target
+from nonebot_bison.utils import decode_unicode_escapes, text_similarity
 
-from .retry import ApiCode352Error, retry_for_352
-from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
-from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 from .models import (
-    PostAPI,
-    UserAPI,
-    PGCMajor,
-    DrawMajor,
-    LiveMajor,
-    OPUSMajor,
-    DynRawPost,
-    VideoMajor,
-    CommonMajor,
-    DynamicType,
     ArticleMajor,
+    CommonMajor,
     CoursesMajor,
     DeletedMajor,
-    UnknownMajor,
+    DrawMajor,
+    DynamicType,
+    DynRawPost,
+    LiveMajor,
     LiveRecommendMajor,
+    OPUSMajor,
+    PGCMajor,
+    PostAPI,
+    UnknownMajor,
+    UserAPI,
+    VideoMajor,
 )
+from .retry import ApiCode352Error, retry_for_352
+from .scheduler import BiliBangumiSite, BilibiliSite, BililiveSite
 
 
 class _ProcessedText(NamedTuple):
@@ -51,7 +51,7 @@ class _ParsedMojarPost(NamedTuple):
 
 
 class Bilibili(NewMessage):
-    categories = {
+    categories: ClassVar[dict[Category, str]] = {
         1: "一般动态",
         2: "专栏文章",
         3: "视频",
@@ -162,7 +162,6 @@ class Bilibili(NewMessage):
         return tags
 
     def _text_process(self, dynamic: str, desc: str, title: str) -> _ProcessedText:
-
         # 计算视频标题和视频描述相似度
         title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
         if title_similarity > 0.9:
@@ -308,7 +307,7 @@ class Bilibili(NewMessage):
 
 
 class Bilibililive(StatusChange):
-    categories = {1: "开播提醒", 2: "标题更新提醒", 3: "下播提醒"}
+    categories: ClassVar[dict[Category, str]] = {1: "开播提醒", 2: "标题更新提醒", 3: "下播提醒"}
     platform_name = "bilibili-live"
     enable_tag = False
     enabled = True
@@ -458,7 +457,7 @@ class Bilibililive(StatusChange):
 
 
 class BilibiliBangumi(StatusChange):
-    categories = {}
+    categories: ClassVar[dict[Category, str]] = {}
     platform_name = "bilibili-bangumi"
     enable_tag = False
     enabled = True

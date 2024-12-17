@@ -1,7 +1,7 @@
-from typing import Any, Literal, TypeVar, TypeAlias
+from typing import Any, Literal, TypeAlias, TypeVar
 
-from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
+from pydantic import BaseModel
 
 from nonebot_bison.compat import model_rebuild
 
@@ -13,7 +13,7 @@ TBaseModel = TypeVar("TBaseModel", bound=type[BaseModel])
 def model_rebuild_recurse(cls: TBaseModel) -> TBaseModel:
     """Recursively rebuild all BaseModel subclasses in the class."""
     if not PYDANTIC_V2:
-        from inspect import isclass, getmembers
+        from inspect import getmembers, isclass
 
         for _, sub_cls in getmembers(cls, lambda x: isclass(x) and issubclass(x, BaseModel)):
             model_rebuild_recurse(sub_cls)

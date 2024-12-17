@@ -1,13 +1,13 @@
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 
-from nonebot_bison.utils import text_fletten
-from nonebot_bison.theme.utils import web_embed_image
 from nonebot_bison.theme import Theme, ThemeRenderError, ThemeRenderUnsupportError
+from nonebot_bison.theme.utils import web_embed_image
+from nonebot_bison.utils import text_fletten
 
 if TYPE_CHECKING:
     from nonebot_bison.platform.arknights import ArknightsPost

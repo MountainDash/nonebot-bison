@@ -2,23 +2,25 @@ import asyncio
 from datetime import datetime
 
 from nonebot import on_command
-from nonebot.typing import T_State
-from nonebot.matcher import Matcher
-from nonebot.rule import Rule, to_me
-from nonebot.permission import SUPERUSER
-from nonebot_plugin_saa import TargetQQGroup
-from nonebot.params import ArgStr, ArgPlainText
 from nonebot.adapters import Bot, MessageTemplate
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
+from nonebot.matcher import Matcher
+from nonebot.params import ArgPlainText, ArgStr
+from nonebot.permission import SUPERUSER
+from nonebot.rule import Rule, to_me
+from nonebot.typing import T_State
+from nonebot_plugin_saa import TargetQQGroup
 
+from .add_cookie import do_add_cookie
+from .add_cookie_target import do_add_cookie_target
 from .add_sub import do_add_sub
+from .del_cookie import do_del_cookie
+from .del_cookie_target import do_del_cookie_target
 from .del_sub import do_del_sub
 from .query_sub import do_query_sub
-from .add_cookie import do_add_cookie
-from .del_cookie import do_del_cookie
-from .add_cookie_target import do_add_cookie_target
-from .del_cookie_target import do_del_cookie_target
-from .utils import common_platform, admin_permission, gen_handle_cancel, configurable_to_me, set_target_user_info
+from .utils import admin_permission, common_platform, configurable_to_me, gen_handle_cancel, set_target_user_info
+
+_COMMAND_DISPATCH_TASKS: set[asyncio.Task] = set()
 
 add_sub_matcher = on_command(
     "添加订阅",
@@ -149,7 +151,10 @@ async def do_dispatch_command(
     else:
         do_del_sub(new_matcher)
     new_matcher_ins = new_matcher()
-    asyncio.create_task(new_matcher_ins.run(bot, event, state))
+
+    task = asyncio.create_task(new_matcher_ins.run(bot, event, state))
+    _COMMAND_DISPATCH_TASKS.add(task)
+    task.add_done_callback(_COMMAND_DISPATCH_TASKS.discard)
 
 
 no_permission_matcher = on_command(
@@ -167,14 +172,14 @@ async def send_no_permission():
 
 
 __all__ = [
-    "common_platform",
+    "add_cookie_matcher",
+    "add_cookie_target_matcher",
     "add_sub_matcher",
-    "query_sub_matcher",
+    "common_platform",
+    "del_cookie_matcher",
+    "del_cookie_target_matcher",
     "del_sub_matcher",
     "group_manage_matcher",
     "no_permission_matcher",
-    "add_cookie_matcher",
-    "add_cookie_target_matcher",
-    "del_cookie_target_matcher",
-    "del_cookie_matcher",
+    "query_sub_matcher",
 ]

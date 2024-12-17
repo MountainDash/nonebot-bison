@@ -1,10 +1,10 @@
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_json
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 @pytest.fixture
 def bili_live(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["bilibili-live"](ProcessContext(DefaultClientManager()))
 
@@ -33,7 +33,7 @@ def dummy_only_open_user_subinfo(app: App):
 @pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bililive_no_room(bili_live, dummy_only_open_user_subinfo):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     mock_bili_live_status = get_json("bili_live_status.json")
     mock_bili_live_status["data"] = {}
@@ -53,7 +53,7 @@ async def test_fetch_bililive_no_room(bili_live, dummy_only_open_user_subinfo):
 @respx.mock
 async def test_fetch_first_live(bili_live, dummy_only_open_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     mock_bili_live_status = get_json("bili_live_status.json")
     empty_bili_live_status = deepcopy(mock_bili_live_status)
@@ -90,7 +90,7 @@ async def test_fetch_first_live(bili_live, dummy_only_open_user_subinfo):
 @respx.mock
 async def test_fetch_bililive_only_live_open(bili_live: "Bilibililive", dummy_only_open_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     mock_bili_live_status = get_json("bili_live_status.json")
 
@@ -141,11 +141,11 @@ def dummy_only_title_user_subinfo(app: App):
     return UserSubInfo(user=user, categories=[2], tags=[])
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @respx.mock
 async def test_fetch_bililive_only_title_change(bili_live, dummy_only_title_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     mock_bili_live_status = get_json("bili_live_status.json")
     target = Target("13164144")
@@ -204,7 +204,7 @@ def dummy_only_close_user_subinfo(app: App):
 @respx.mock
 async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     mock_bili_live_status = get_json("bili_live_status.json")
     target = Target("13164144")
@@ -264,7 +264,7 @@ def dummy_bililive_user_subinfo(app: App):
 @respx.mock
 async def test_fetch_bililive_combo(bili_live, dummy_bililive_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     mock_bili_live_status = get_json("bili_live_status.json")
     target = Target("13164144")

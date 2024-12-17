@@ -1,14 +1,15 @@
-from nonebot.typing import T_State
-from nonebot.matcher import Matcher
-from nonebot.params import ArgPlainText
-from nonebot_plugin_saa import MessageFactory
 from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.internal.adapter import MessageTemplate
+from nonebot.matcher import Matcher
+from nonebot.params import ArgPlainText
+from nonebot.typing import T_State
+from nonebot_plugin_saa import MessageFactory
 
-from ..config import config
-from ..utils import parse_text
-from ..platform import platform_manager
-from .utils import gen_handle_cancel, only_allow_private, generate_sub_list_text
+from nonebot_bison.config import config
+from nonebot_bison.platform import platform_manager
+from nonebot_bison.utils import parse_text
+
+from .utils import gen_handle_cancel, generate_sub_list_text, only_allow_private
 
 
 def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
@@ -33,7 +34,6 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
 
     @add_cookie_target_matcher.handle()
     async def init_promote_cookie(state: T_State):
-
         # 获取 site 的所有用户 cookie，再排除掉已经关联的 cookie，剩下的就是可以关联的 cookie
         cookies = await config.get_cookie(site_name=state["site"].name, is_anonymous=False)
         associated_cookies = await config.get_cookie(

@@ -1,6 +1,6 @@
-import pytest
-from nonebug.app import App
 from nonebot.compat import model_dump
+from nonebug.app import App
+import pytest
 
 from .utils import get_json
 
@@ -10,9 +10,9 @@ async def test_subs_export(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config.db_config import config
-    from nonebot_bison.types import Target as TTarget
-    from nonebot_bison.config.db_model import User, Cookie
+    from nonebot_bison.config.db_model import Cookie, User
     from nonebot_bison.config.subs_io import subscribes_export
+    from nonebot_bison.types import Target as TTarget
 
     await config.add_subscribe(
         TargetQQGroup(group_id=1232),
@@ -111,8 +111,8 @@ async def test_subs_import_dup_err(app: App, init_scheduler):
 
 async def test_subs_import_version_disorder(app: App, init_scheduler):
     from nonebot_bison.config.subs_io import subscribes_import
-    from nonebot_bison.config.subs_io.utils import NBESFParseErr
     from nonebot_bison.config.subs_io.nbesf_model import v1, v2, v3
+    from nonebot_bison.config.subs_io.utils import NBESFParseErr
 
     # use v1 parse v2
     with pytest.raises(NBESFParseErr):

@@ -1,21 +1,22 @@
-import re
-import json
-from typing import Any
 from datetime import datetime
-from urllib.parse import unquote
+import json
+import re
+from typing import Any, ClassVar
 from typing_extensions import override
+from urllib.parse import unquote
 
-from yarl import URL
-from lxml.etree import HTML
-from httpx import AsyncClient
-from nonebot.log import logger
 from bs4 import BeautifulSoup as bs
+from httpx import AsyncClient
+from lxml.etree import HTML
+from nonebot.log import logger
+from yarl import URL
 
-from ..post import Post
+from nonebot_bison.post import Post
+from nonebot_bison.types import ApiError, Category, RawPost, Tag, Target
+from nonebot_bison.utils import http_client, text_fletten
+from nonebot_bison.utils.site import CookieClientManager, Site
+
 from .platform import NewMessage
-from ..utils import http_client, text_fletten
-from ..utils.site import Site, CookieClientManager
-from ..types import Tag, Target, RawPost, ApiError, Category
 
 _HEADER = {
     "accept": (
@@ -59,12 +60,12 @@ class WeiboClientManager(CookieClientManager):
 class WeiboSite(Site):
     name = "weibo.com"
     schedule_type = "interval"
-    schedule_setting = {"seconds": 3}
+    schedule_setting: ClassVar[dict] = {"seconds": 3}
     client_mgr = WeiboClientManager
 
 
 class Weibo(NewMessage):
-    categories = {
+    categories: ClassVar[dict[Category, str]] = {
         1: "转发",
         2: "视频",
         3: "图文",

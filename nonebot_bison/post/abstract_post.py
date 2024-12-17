@@ -1,10 +1,10 @@
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-from nonebot_plugin_saa import Text, MessageFactory, MessageSegmentFactory
+from nonebot_plugin_saa import MessageFactory, MessageSegmentFactory, Text
 
-from ..utils import text_to_image
-from ..plugin_config import plugin_config
+from nonebot_bison.plugin_config import plugin_config
+from nonebot_bison.utils import text_to_image
 
 
 @dataclass(kw_only=True)

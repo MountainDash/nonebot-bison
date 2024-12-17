@@ -1,7 +1,7 @@
 from typing import Literal
 
-import pytest
 from nonebug import App
+import pytest
 
 
 @pytest.mark.asyncio

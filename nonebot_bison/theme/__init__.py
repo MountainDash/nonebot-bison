@@ -1,10 +1,9 @@
+from importlib import import_module
 from pathlib import Path
 from pkgutil import iter_modules
-from importlib import import_module
 
-from .types import Theme
 from .registry import theme_manager
-from .types import ThemeRegistrationError
+from .types import Theme, ThemeRegistrationError
 from .types import ThemeRenderError as ThemeRenderError
 from .types import ThemeRenderUnsupportError as ThemeRenderUnsupportError
 

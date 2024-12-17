@@ -1,12 +1,13 @@
+from collections.abc import Sequence
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 
-from nonebot_bison.theme import Theme, ThemeRenderError
 from nonebot_bison.post.protocol import HTMLContentSupport
-from nonebot_bison.utils import pic_merge, is_pics_mergable
+from nonebot_bison.theme import Theme, ThemeRenderError
+from nonebot_bison.utils import is_pics_mergable, pic_merge
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
@@ -31,7 +32,6 @@ class Ht2iTheme(Theme):
             raise ThemeRenderError(f"渲染文本失败: {e}")
 
     async def render(self, post: "Post"):
-
         md_text = ""
 
         md_text += f"## {post.title}\n\n" if post.title else ""
@@ -50,9 +50,7 @@ class Ht2iTheme(Theme):
             else:
                 rp_content = await rp.get_content()
 
-            md_text += (
-                ">  \n> " + rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..." + "  \n"  # noqa: E501
-            )  # noqa: E501
+            md_text += ">  \n> " + rp_content if len(rp_content) < 500 else f"{rp_content[:500]}..." + "  \n"
         md_text += "\n\n"
 
         md_text += f"###### 来源: {post.platform.name} {post.nickname or ''}\n"
@@ -68,7 +66,7 @@ class Ht2iTheme(Theme):
         if urls:
             msgs.append(Text("\n".join(urls)))
 
-        pics_group: list[list[str | bytes | Path | BytesIO]] = []
+        pics_group: list[Sequence[str | bytes | Path | BytesIO]] = []
         if post.images:
             pics_group.append(post.images)
         if rp and rp.images:

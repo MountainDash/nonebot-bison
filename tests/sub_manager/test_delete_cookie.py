@@ -1,22 +1,22 @@
 import json
 
-import pytest
 from nonebug.app import App
+import pytest
 
-from ..utils import fake_superuser, fake_private_message_event
+from tests.utils import fake_private_message_event, fake_superuser
 
 
 @pytest.mark.usefixtures("_clear_db")
 async def test_del_cookie(app: App):
-    from nonebug_saa import should_send_saa
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
+    from nonebug_saa import should_send_saa
 
     from nonebot_bison.config import config
     from nonebot_bison.config.db_model import Cookie
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.sub_manager import del_cookie_matcher
+    from nonebot_bison.types import Target as T_Target
 
     async with app.test_matcher(del_cookie_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
@@ -69,15 +69,15 @@ async def test_del_cookie(app: App):
 @pytest.mark.usefixtures("_clear_db")
 @pytest.mark.usefixtures("_patch_weibo_get_cookie_name")
 async def test_del_cookie_err(app: App):
-    from nonebug_saa import should_send_saa
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
+    from nonebug_saa import should_send_saa
 
     from nonebot_bison.config import config
     from nonebot_bison.config.db_model import Cookie
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.sub_manager import del_cookie_matcher
+    from nonebot_bison.types import Target as T_Target
 
     async with app.test_matcher(del_cookie_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)

@@ -1,9 +1,9 @@
-from time import time
-from typing import Any
 from inspect import cleandoc
+from time import time
+from typing import Any, ClassVar
 
-import pytest
 from nonebug.app import App
+import pytest
 from pytest_mock import MockerFixture
 
 now = time()
@@ -11,7 +11,8 @@ passed = now - 3 * 60 * 60
 
 raw_post_list_1 = [{"id": 1, "text": "p1", "date": now, "tags": ["tag1"], "category": 1}]
 
-raw_post_list_2 = raw_post_list_1 + [
+raw_post_list_2 = [
+    *raw_post_list_1,
     {"id": 2, "text": "p2", "date": now, "tags": ["tag1"], "category": 1},
     {"id": 3, "text": "p3", "date": now, "tags": ["tag2"], "category": 2},
     {"id": 4, "text": "p4", "date": now, "tags": ["tag2"], "category": 3},
@@ -20,9 +21,9 @@ raw_post_list_2 = raw_post_list_1 + [
 
 @pytest.fixture
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import RawPost, Target
 
     class MockPlatform(NewMessage):
         platform_name = "mock-platform"
@@ -31,7 +32,7 @@ def mock_platform(app: App):
         is_common = True
         schedule_interval = 10
         enable_tag = False
-        categories = {}
+        categories: ClassVar[dict] = {}
         has_target = True
 
         sub_index = 0
@@ -109,7 +110,7 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 - nickname: 'Mock'
 - description: 'Labore amet ut invidunt dolor consectetuer ipsum sadipscing sed minim diam rebum justo tincidunt.'
 """
-    )  # noqa: E501
+    )
 
     post2_content = cleandoc(
         "Rebum delenit iusto augue in rebum sanctus diam stet clita voluptua amet tempor sea in.\n"
@@ -176,11 +177,11 @@ Vero hendrerit vero diam et lorem blandit ex diam ex...
 
 @pytest.mark.asyncio
 async def test_generate_msg(mock_platform, mocker: MockerFixture):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
-    from nonebot_bison.post import Post
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.post import Post
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     post: Post = await mock_platform(ProcessContext(DefaultClientManager())).parse(raw_post_list_1[0])
     assert post.platform.default_theme == "basic"
@@ -208,9 +209,9 @@ async def test_generate_msg(mock_platform, mocker: MockerFixture):
 async def test_msg_segments_convert(mock_platform, mocker: MockerFixture):
     from nonebot_plugin_saa import Image
 
-    from nonebot_bison.post import Post
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.post import Post
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     mocker.patch.object(plugin_config, "bison_use_pic", True)
 

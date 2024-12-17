@@ -44,13 +44,11 @@ expiringdictx = "^1.1.0"
 rapidfuzz = "^3.9.7"
 
 [tool.poetry.group.dev.dependencies]
-black = ">=24.8.0,<25.0"
 ipdb = "^0.13.13"
-isort = "^5.13.2"
 nonemoji = "^0.1.4"
 nb-cli = "^1.4.2"
 pre-commit = "^4.0.1"
-ruff = "^0.6.5"
+ruff = "^0.8.2"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.8.1"
@@ -99,25 +97,44 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
-ignore = ["E402", "C901", "PT023"]
+select = [
+  "F",     # Pyflakes
+  "W",     # pycodestyle warnings
+  "E",     # pycodestyle errors
+  "I",     # isort
+  "UP",    # pyupgrade
+  "ASYNC", # flake8-async
+  "C4",    # flake8-comprehensions
+  "T10",   # flake8-debugger
+  "T20",   # flake8-print
+  "PYI",   # flake8-pyi
+  "PT",    # flake8-pytest-style
+  "Q",     # flake8-quotes
+  "TID",   # flake8-tidy-imports
+  "RUF",   # Ruff-specific rules
+]
+ignore = [
+  "E402",   # module-import-not-at-top-of-file
+  "UP037",  # quoted-annotation
+  "RUF001", # ambiguous-unicode-character-string
+  "RUF002", # ambiguous-unicode-character-docstring
+  "RUF003", # ambiguous-unicode-character-comment
+]
 
-[tool.black]
-line-length = 120
-preview = true
-target-version = ["py310", "py311", "py312"]
-include = '\.pyi?$'
-extend-exclude = '''
-'''
+[tool.ruff.format]
+line-ending = "lf"
 
-[tool.isort]
-profile = "black"
-line_length = 120
-skip_gitignore = true
-length_sort = true
-force_sort_within_sections = true
-src_paths = ["nonebot_bison", "tests"]
-extra_standard_library = ["typing_extensions"]
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["nonebot_bison", "tests/*"]
+extra-standard-library = ["typing_extensions"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
 
 [tool.nonebot]
 adapters = [
@@ -130,6 +147,7 @@ builtin_plugins = ["echo"]
 [tool.pyright]
 typeCheckingMode = "basic"
 reportShadowedImports = false
+disableBytesTypePromotions = true
 pythonVersion = "3.10"
 pythonPlatform = "All"
 executionEnvironments = [

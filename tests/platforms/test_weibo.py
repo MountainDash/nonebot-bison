@@ -1,12 +1,12 @@
-import typing
 from datetime import datetime
+import typing
 
-import respx
-import pytest
 import feedparser
-from pytz import timezone
+from httpx import AsyncClient, Response
 from nonebug.app import App
-from httpx import Response, AsyncClient
+import pytest
+from pytz import timezone
+import respx
 
 from .utils import get_file, get_json
 
@@ -19,7 +19,7 @@ image_cdn_router = respx.route(host__regex=r"wx\d.sinaimg.cn", path__startswith=
 @pytest.fixture
 def weibo(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["weibo"](ProcessContext(DefaultClientManager()))
 
@@ -42,7 +42,7 @@ async def test_get_name(weibo):
 @respx.mock
 async def test_fetch_new(weibo, dummy_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1076036279793937")
     detail_router = respx.get("https://m.weibo.cn/statuses/extend?id=4649031014551911")
@@ -184,7 +184,7 @@ async def test_rsshub_compare(weibo):
 
 test_post = {
     "mblog": {
-        "text": (  # noqa
+        "text": (
             '<a  href="https://m.weibo.cn/search?containerid=231522type%3D1%26t%3D10%26q%3D%23%E5%88%9A%E5%87%BA%E7%94%9F%E7%9A%84%E5%B0%8F%E7%BE%8A%E9%A9%BC%E9%95%BF%E5%95%A5%E6%A0%B7%23&extparam=%23%E5%88%9A%E5%87%BA%E7%94%9F%E7%9A%84%E5%B0%8F%E7%BE%8A%E9%A9%BC%E9%95%BF%E5%95%A5%E6%A0%B7%23&luicode=10000011&lfid=1076036003966749"'
             ' data-hide=""><span class="surl-text">#刚出生的小羊驼长啥样#</span></a> <br />小羊驼三三来也<span'
             ' class="url-icon"><img alt=[好喜欢]'

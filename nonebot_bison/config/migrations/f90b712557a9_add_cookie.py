@@ -6,8 +6,8 @@ Create Date: 2024-09-23 10:03:30.593263
 
 """
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy import Text
 from sqlalchemy.dialects import postgresql
 

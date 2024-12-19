@@ -185,7 +185,7 @@ class SiteMeta(type):
         elif not kwargs.get("abstract"):
             # this is the subclass
             if "name" in namespace:
-                site_manager[namespace["name"]] = cls
+                site_manager[namespace["name"]] = cls  # type: ignore[reportArgumentType]
         super().__init__(name, bases, namespace, **kwargs)
 
 

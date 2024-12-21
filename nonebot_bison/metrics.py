@@ -1,5 +1,8 @@
 import time
 
+from nonebot import require
+
+require("nonebot_plugin_prometheus")
 from fastapi import APIRouter
 from starlette.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, Gauge, Counter, Histogram, generate_latest

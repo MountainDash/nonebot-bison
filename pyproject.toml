@@ -43,6 +43,7 @@ hishel = "^0.0.30"
 expiringdictx = "^1.1.0"
 rapidfuzz = "^3.9.7"
 prometheus-client = "^0.21.0"
+nonebot-plugin-prometheus = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.13"

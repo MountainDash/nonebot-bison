@@ -3,9 +3,7 @@ import time
 from nonebot import require
 
 require("nonebot_plugin_prometheus")
-from fastapi import APIRouter
-from starlette.responses import Response
-from prometheus_client import CONTENT_TYPE_LATEST, Gauge, Counter, Histogram, generate_latest
+from prometheus_client import Gauge, Counter, Histogram
 
 # Request counter
 request_counter = Counter(
@@ -35,11 +33,3 @@ render_histogram = Histogram(
 
 start_time = Gauge("bison_start_time", "The start time of the program")
 start_time.set(time.time())
-
-
-metrics_router = APIRouter(prefix="/api/metrics", tags=["metrics"])
-
-
-@metrics_router.get("")
-async def metrics():
-    return Response(media_type=CONTENT_TYPE_LATEST, content=generate_latest())

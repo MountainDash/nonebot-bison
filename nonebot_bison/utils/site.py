@@ -11,11 +11,10 @@ from nonebot.log import logger
 
 from nonebot_bison.config import config
 from nonebot_bison.config.db_model import Cookie
+from nonebot_bison.metrics import cookie_choose_counter
 from nonebot_bison.types import Target
 
 from .http import http_client
-from ..config.db_model import Cookie
-from ..metrics import cookie_choose_counter
 
 
 class ClientManager(ABC):

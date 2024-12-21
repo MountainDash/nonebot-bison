@@ -4,13 +4,10 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from fastapi.param_functions import Depends
-from fastapi.exceptions import HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 import nonebot
 from nonebot_plugin_saa import TargetQQGroup
 from nonebot_plugin_saa.auto_select_bot import get_bot
-from fastapi.security.oauth2 import OAuth2PasswordBearer
 
 from nonebot_bison.apis import check_sub_target
 from nonebot_bison.config import NoSuchSubscribeException, NoSuchTargetException, NoSuchUserException, config

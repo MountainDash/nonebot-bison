@@ -3,7 +3,7 @@ import time
 from nonebot import require
 
 require("nonebot_plugin_prometheus")
-from prometheus_client import Gauge, Counter, Histogram
+from nonebot_plugin_prometheus import Gauge, Counter, Histogram
 
 # Request counter
 request_counter = Counter(

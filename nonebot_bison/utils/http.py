@@ -3,7 +3,7 @@ import httpx
 from nonebot_bison.plugin_config import plugin_config
 
 http_args = {
-    "proxies": plugin_config.bison_proxy or None,
+    "proxy": plugin_config.bison_proxy or None,
 }
 http_headers = {"user-agent": plugin_config.bison_ua}
 

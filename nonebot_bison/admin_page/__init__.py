@@ -13,7 +13,6 @@ from nonebot_bison.plugin_config import plugin_config
 
 from .api import router as api_router
 from .token_manager import token_manager as tm
-from ..metrics import metrics_router as metrics_router
 
 if TYPE_CHECKING:
     from nonebot.drivers.fastapi import Driver
@@ -48,7 +47,6 @@ def init_fastapi(driver: "Driver"):
             description="nonebot-bison webui and api",
         )
         nonebot_app.include_router(api_router)
-        nonebot_app.include_router(metrics_router)
         nonebot_app.mount("/", SinglePageApplication(directory=static_path), name="bison-frontend")
 
         app = driver.server_app

@@ -74,6 +74,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           install-deps: "true"
 
+      - name: Install playwright
+        run: uv run playwright install
+
       - name: Run Pytest
         run: uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare and not render' -n auto
 
@@ -105,6 +108,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           install-deps: "true"
+
+      - name: Install playwright
+        run: uv run playwright install
 
       - name: Run Pytest
         run: uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare' -n auto

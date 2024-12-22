@@ -57,5 +57,8 @@ jobs:
       - name: Install prerequisites
         run: uv add pydantic==1.10 && uv sync --frozen
 
+      - name: Install playwright
+        run: uv run playwright install
+
       - name: Run Pytest
         run: uv run pytest -k 'not compare and not render' -n auto

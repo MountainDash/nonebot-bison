@@ -6,6 +6,10 @@ inputs:
     description: Python version
     required: false
     default: "3.10"
+  install-deps:
+    description: Install dependencies
+    required: false
+    default: false
 
 runs:
   using: "composite"
@@ -20,3 +24,7 @@ runs:
       with:
         version: "latest"
         enable-cache: true
+
+    - name: Install dependencies
+      if: ${{ inputs.install-deps == true }}
+      run: uv sync --frozen

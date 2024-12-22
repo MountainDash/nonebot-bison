@@ -68,6 +68,8 @@ test = [
     "respx==0.21.1",
     "freezegun==1.5.1",
 ]
+
+[project.optional-dependencies]
 docker = [
     "nb-cli==1.4.2",
     "nonebot2[aiohttp,fastapi]==2.3.3",

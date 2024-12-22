@@ -14,7 +14,9 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
-    - name: Setup Poetry
-      uses: Gr1N/setup-poetry@v9
+
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v4
       with:
-        poetry-version: "1.7.1"
+        version: "latest"
+        enable-cache: true

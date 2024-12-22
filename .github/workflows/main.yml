@@ -127,12 +127,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download frontend files
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend
-          path: ./nonebot_bison/admin_page/dist
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -144,7 +138,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           context: .
-          file: ./docker/Dockerfile_with_frontend
+          file: ./docker/Dockerfile
           push: false
           load: true
           tags: felinae98/nonebot-bison:dummy
@@ -174,7 +168,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           context: .
-          file: ./docker/Dockerfile_with_frontend
+          file: ./docker/Dockerfile
           push: true
           tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}
           cache-from: type=gha
@@ -187,12 +181,6 @@ jobs:
     if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download frontend files
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend
-          path: ./nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -215,8 +203,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./docker/Dockerfile_with_frontend_sentry
+          file: ./docker/Dockerfile_without_browser
           push: ${{ github.event_name != 'pull_request' }}
-          tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}-sentry
+          tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}-nobrowser
           cache-from: type=gha
           cache-to: type=gha,mode=max

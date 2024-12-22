@@ -37,8 +37,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  docker-main-sentry:
-    name: Docker main sentry
+  docker-main-nobrowser:
+    name: Docker main without browser
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

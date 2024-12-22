@@ -10,6 +10,10 @@ inputs:
     description: Install dependencies
     required: false
     default: "false"
+  install-playwright:
+    description: Install Playwright
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -28,4 +32,9 @@ runs:
     - name: Install dependencies
       if: ${{ inputs.install-deps == 'true' }}
       run: uv sync --frozen
+      shell: bash
+
+    - name: Install Playwright
+      if: ${{ inputs.install-playwright == 'true' }}
+      run: uv run playwright install
       shell: bash

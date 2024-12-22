@@ -73,6 +73,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           install-deps: "true"
+          install-playwright: "true"
 
       - name: Run Pytest
         run: uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare and not render' -n auto
@@ -105,6 +106,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           install-deps: "true"
+          install-playwright: "true"
 
       - name: Run Pytest
         run: uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare' -n auto

@@ -55,7 +55,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install prerequisites
-        run: uv add pydantic==1.10 && uv sync --frozen
+        run: uv add pydantic==1.10 && uv sync --frozen && uv run playwright install
 
       - name: Run Pytest
         run: uv run pytest -k 'not compare and not render' -n auto

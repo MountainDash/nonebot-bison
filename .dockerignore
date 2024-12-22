@@ -12,6 +12,9 @@ htmlcov
 docker
 dist
 docs
+venv
+.venv
+/admin-frontend/node_modules
 /LICENSE
 /.editorconfig
 /.gitattributes

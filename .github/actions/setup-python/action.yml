@@ -28,3 +28,4 @@ runs:
     - name: Install dependencies
       if: ${{ inputs.install-deps == true }}
       run: uv sync --frozen
+      shell: bash

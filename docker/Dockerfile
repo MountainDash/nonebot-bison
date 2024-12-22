@@ -105,9 +105,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     UV_LINK_MODE=copy \
     TZ=Asia/Shanghai \
-    SHELL="/bin/bash" \
-    PNPM_HOME="/pnpm" \
-    PATH="/pnpm:${PATH}"
+    SHELL="/bin/bash"
 
 RUN echo "📦 Installing system dependencies..." && \
     apt-get update && \

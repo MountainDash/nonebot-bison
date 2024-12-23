@@ -27,7 +27,7 @@ body:
       description: 请选择安装方式
       options:
         - 通过 nb-cli 安装
-        - 使用 poetry/pdm 等现代包管理器安装
+        - 使用 uv/poetry/pdm 等现代包管理器安装
         - 通过 pip install 安装
         - 克隆或下载项目直接使用
 

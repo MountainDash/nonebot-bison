@@ -42,4 +42,5 @@ async def test_without_permission(app: App):
             True,
         )
         ctx.should_pass_rule()
-        ctx.should_pass_permission()
+        ctx.should_pass_permission(no_permission_matcher)
+        ctx.should_not_pass_permission(add_sub_matcher)

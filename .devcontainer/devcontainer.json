@@ -2,9 +2,9 @@
   "name": "Default Linux Universal",
   "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+    "ghcr.io/va-h/devcontainers-features/uv:1": {}
   },
-  "postCreateCommand": "poetry config virtualenvs.in-project true && poetry install -E all && poetry run pre-commit install && npm install -g pnpm && pnpm install",
+  "postCreateCommand": "uv venv && uv sync --all-groups --all-extras && uv run pre-commit install && npm install -g pnpm && pnpm install",
   "customizations": {
     "vscode": {
       "settings": {
@@ -12,7 +12,7 @@
         "python.analysis.typeCheckingMode": "basic",
         "ruff.organizeImports": false,
         "[python]": {
-          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.codeActionsOnSave": {
             "source.fixAll.ruff": true,
             "source.organizeImports": true
@@ -44,8 +44,6 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.isort",
-        "ms-python.black-formatter",
         "charliermarsh.ruff",
         "EditorConfig.EditorConfig",
         "esbenp.prettier-vscode",

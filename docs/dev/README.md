@@ -8,7 +8,7 @@ next: /dev/cookie
 ## 语言以及工具
 
 1. 本项目使用了`python3.10`的特性进行开发，所以请确保你的 Python 版本>=3.10
-2. 本项目使用 poetry 进行依赖管理，请确保开发之前已经进行过`poetry install`，运行时在`poetry shell`的环境中进行运行
+2. 本项目使用 uv 进行依赖管理，请确保开发之前已经进行过`uv sync`，运行时在`uv venv`的环境中进行运行
 3. 本项目使用的 node 项目管理工具是 pnpm
 
 ::: tip 参考
@@ -30,7 +30,7 @@ next: /dev/cookie
 2. 运行 bot
 
    ```bash
-   poetry run nb run
+   uv run nb run
    ```
 
 3. 运行前端：
@@ -50,7 +50,7 @@ next: /dev/cookie
 
 ## 代码格式
 
-本项目使用了 pre-commit 来进行代码美化和格式化。在`poetry shell`状态下执行`pre-commit install`来安装 git hook，可自动在 commit 时
+本项目使用了 pre-commit 来进行代码美化和格式化。在`uv venv`状态下执行`pre-commit install`来安装 git hook，可自动在 commit 时
 格式化代码。
 
 ## 适配新网站

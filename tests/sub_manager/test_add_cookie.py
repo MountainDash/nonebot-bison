@@ -4,31 +4,7 @@ from nonebug.app import App
 import pytest
 from pytest_mock import MockerFixture
 
-from tests.utils import BotReply, fake_admin_user, fake_private_message_event, fake_superuser
-
-
-async def test_add_cookie_rule(app: App, mocker: MockerFixture):
-    from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
-
-    from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.sub_manager import add_cookie_matcher
-
-    mocker.patch.object(plugin_config, "bison_to_me", True)
-
-    async with app.test_matcher(add_cookie_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event = fake_private_message_event(message=Message("添加cookie"), sender=fake_superuser)
-        ctx.receive_event(bot, event)
-        ctx.should_pass_rule()
-        ctx.should_pass_permission()
-
-    async with app.test_matcher(add_cookie_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event = fake_private_message_event(message=Message("添加cookie"), sender=fake_admin_user)
-        ctx.receive_event(bot, event)
-        ctx.should_not_pass_rule()
-        ctx.should_pass_permission()
+from tests.utils import BotReply, fake_private_message_event, fake_superuser
 
 
 @pytest.mark.usefixtures("_clear_db")

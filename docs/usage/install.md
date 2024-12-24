@@ -23,7 +23,7 @@ next: /usage/easy-use
 参考视频教程 [保姆级新手教学 - Well404](https://www.bilibili.com/video/BV1984y1b7JY)
 :::
 ::: warning 防止环境冲突！
-建议所有操作都在虚拟环境下进行，推荐使用[`poetry`](https://python-poetry.org/)或者 python 自带的[`venv`](https://docs.python.org/zh-cn/3/library/venv.html)
+建议所有操作都在虚拟环境下进行，推荐使用[`uv`](https://docs.astral.sh/uv/)或者 python 自带的[`venv`](https://docs.python.org/zh-cn/3/library/venv.html)
 :::
 
 ### 使用 nb-cli 安装 <Badge type="tip" text="推荐" vertical="top" />
@@ -43,17 +43,17 @@ next: /usage/easy-use
 3. 在项目中添加依赖
 
    ```bash
-   poetry add nonebot-bison
+   uv add nonebot-bison
    ```
 
 ### 手动安装
 
 1. 安装 pip 包`nonebot-bison`
    ::: code-tabs
-   @tab poetry
+   @tab uv
 
    ```bash
-   poetry add nonebot-bison
+   uv add nonebot-bison
    ```
 
    @tab pip
@@ -169,13 +169,13 @@ Bison 的 WebUI 是需要编译后才能使用的，直接克隆源代码需要�
 本项目中使用了 Python 3.10 的语法，如果出现问题，请检查 Python 版本
 :::
 
-1. 首先安装 poetry：[安装方法](https://python-poetry.org/docs/#installation)
-2. clone 本项目，在项目中`poetry install`安装依赖
+1. 首先安装 uv：[安装方法](https://docs.astral.sh/uv/getting-started/installation/)
+2. clone 本项目，在项目中使用`uv sync`安装依赖
 
    ```bash
    git clone https://github.com/felinae98/nonebot-bison.git
    cd nonebot-bison
-   poetry install
+   uv sync
    ```
 
 #### WebUI 安装
@@ -235,5 +235,5 @@ Bison 的 WebUI 是需要编译后才能使用的，直接克隆源代码需要�
 2. 启动 Bot
 
    ```bash
-   poetry run nb run
+   uv run nb run
    ```

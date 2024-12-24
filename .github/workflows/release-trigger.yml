@@ -16,7 +16,7 @@ jobs:
       - name: Setup Python environment
         uses: ./.github/actions/setup-python
 
-      - run: echo "TAG_NAME=v$(poetry version -s)" >> $GITHUB_ENV
+      - run: echo "TAG_NAME=v$(uvx --from=toml-cli toml get --toml-path=pyproject.toml project.version)" >> $GITHUB_ENV
 
       - name: Archive Changelog
         uses: docker://ghcr.io/nonebot/auto-changelog:master
@@ -30,6 +30,6 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
           git add .
-          git commit -m ":bookmark: Release $(poetry version -s)"
+          git commit -m ":bookmark: Release ${{ env.TAG_NAME }}"
           git tag ${{ env.TAG_NAME }}
           git push && git push --tags

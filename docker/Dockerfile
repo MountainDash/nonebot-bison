@@ -176,10 +176,11 @@ RUN --mount=type=cache,target=/root/.cache/ \
     rm -rf /bin/uv /bin/uvx && \
     echo "✅ UV cleanup completed"
 
-COPY --from=metadata-stage /tmp/VERSION /app/VERSION
-COPY nonebot_bison/ /app/nonebot_bison/
-COPY --from=frontend-stage /tmp/nonebot_bison/admin_page/dist ./nonebot_bison/admin_page/dist
 COPY --from=playwright-stage /root/.cache/ms-playwright /root/.cache/ms-playwright
+COPY extra_plugins/ /app/extra_plugins/
+COPY --from=frontend-stage /tmp/nonebot_bison/admin_page/dist ./nonebot_bison/admin_page/dist
+COPY nonebot_bison/ /app/nonebot_bison/
+COPY --from=metadata-stage /tmp/VERSION /app/VERSION
 
 EXPOSE 8080
 

@@ -94,16 +94,43 @@ RUN echo "📦 Installing playwright..." && \
     uvx playwright install --with-deps chromium && \
     echo "✅ Playwright installed successfully"
 
+FROM python:3.12-slim AS uv-stage
+
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    TZ=Asia/Shanghai
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN echo "🔔 Verifying uv installation..." && \
+    if UV_VERSION=$(uv --version 2>&1); then \
+        echo "✅ uv version ${UV_VERSION} installed successfully"; \
+    else \
+        echo "❌ uv installation failed" && exit 1; \
+    fi
+
+COPY ./pyproject.toml ./uv.lock ./
+
+RUN --mount=type=cache,target=/root/.cache/ \
+    --mount=type=cache,target=/root/.uv \
+    echo "📦 Installing bison dependencies..." && \
+    uv venv && \
+    uv pip install --extra=docker --requirement pyproject.toml --no-cache && \
+    echo "✅ Dependencies installed successfully" && \
+    echo "🔔 Cleaning up uv..." && \
+    rm -rf /bin/uv /bin/uvx && \
+    echo "✅ UV cleanup completed"
+
+
 FROM python:3.12-slim AS production
 
 WORKDIR /app
 
-#ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
 ENV DEBIAN_FRONTEND=noninteractive \
-    UV_COMPILE_BYTECODE=1 \
-    UV_SYSTEM_PYTHON=true \
     PYTHONUNBUFFERED=1 \
-    UV_LINK_MODE=copy \
     TZ=Asia/Shanghai \
     SHELL="/bin/bash"
 
@@ -154,31 +181,13 @@ RUN echo "📦 Installing system dependencies..." && \
     fc-cache -fv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    echo "✅ System dependencies installed successfully"
+    echo "✅ System dependencies installed successfully" \
 
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-RUN echo "🔔 Verifying uv installation..." && \
-    if UV_VERSION=$(uv --version 2>&1); then \
-        echo "✅ uv version ${UV_VERSION} installed successfully"; \
-    else \
-        echo "❌ uv installation failed" && exit 1; \
-    fi
-
-COPY ./pyproject.toml ./uv.lock ./
-
-RUN --mount=type=cache,target=/root/.cache/ \
-    --mount=type=cache,target=/root/.uv \
-    echo "📦 Installing bison dependencies..." && \
-    uv pip install --extra=docker --requirement pyproject.toml --no-cache && \
-    echo "✅ Dependencies installed successfully" && \
-    echo "🔔 Cleaning up uv..." && \
-    rm -rf /bin/uv /bin/uvx && \
-    echo "✅ UV cleanup completed"
-
+COPY ./docker.env.prod ./.env
 COPY --from=playwright-stage /root/.cache/ms-playwright /root/.cache/ms-playwright
 COPY extra_plugins/ /app/extra_plugins/
 COPY --from=frontend-stage /tmp/nonebot_bison/admin_page/dist ./nonebot_bison/admin_page/dist
+COPY --from=uv-stage /app /app
 COPY nonebot_bison/ /app/nonebot_bison/
 COPY --from=metadata-stage /tmp/VERSION /app/VERSION
 
@@ -187,6 +196,7 @@ EXPOSE 8080
 RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo "📌 Current bison Version: $(cat /app/VERSION)"' >> /app/start.sh && \
     echo 'echo "🚀 Starting service..."' >> /app/start.sh && \
+    echo 'source /app/.venv/bin/activate' >> /app/start.sh && \
     echo 'nb run' >> /app/start.sh && \
     chmod +x /app/start.sh
 

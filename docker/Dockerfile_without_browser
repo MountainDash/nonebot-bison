@@ -79,33 +79,16 @@ RUN echo "🏗️ Starting frontend build..." && \
     pnpm run build && \
     echo "✅ Frontend build completed"
 
-FROM python:3.12-slim AS playwright-stage
 
-WORKDIR /tmp
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 \
-    TZ=Asia/Shanghai
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-
-RUN echo "📦 Installing playwright..." && \
-    uvx playwright install --with-deps chromium && \
-    echo "✅ Playwright installed successfully"
-
-FROM python:3.12-slim AS production
+FROM python:3.12-slim AS uv-stage
 
 WORKDIR /app
 
-
 ENV DEBIAN_FRONTEND=noninteractive \
-    UV_COMPILE_BYTECODE=1 \
-    UV_SYSTEM_PYTHON=true \
     PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    TZ=Asia/Shanghai \
-    SHELL="/bin/bash"
+    TZ=Asia/Shanghai
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN echo "🔔 Verifying uv installation..." && \
@@ -116,19 +99,32 @@ RUN echo "🔔 Verifying uv installation..." && \
     fi
 
 COPY ./pyproject.toml ./uv.lock ./
-COPY ./docker.env.prod ./.env
 
 RUN --mount=type=cache,target=/root/.cache/ \
     --mount=type=cache,target=/root/.uv \
     echo "📦 Installing bison dependencies..." && \
+    uv venv && \
     uv pip install --extra=docker --requirement pyproject.toml --no-cache && \
     echo "✅ Dependencies installed successfully" && \
     echo "🔔 Cleaning up uv..." && \
     rm -rf /bin/uv /bin/uvx && \
     echo "✅ UV cleanup completed"
 
+
+FROM python:3.12-slim AS production
+
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    TZ=Asia/Shanghai \
+    SHELL="/bin/bash"
+
+
+COPY ./docker.env.prod ./.env
 COPY extra_plugins/ /app/extra_plugins/
 COPY --from=frontend-stage /tmp/nonebot_bison/admin_page/dist ./nonebot_bison/admin_page/dist
+COPY --from=uv-stage /app /app
 COPY nonebot_bison/ /app/nonebot_bison/
 COPY --from=metadata-stage /tmp/VERSION /app/VERSION
 
@@ -140,6 +136,7 @@ ENV BISON_SKIP_BROWSER_CHECK=True \
 RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo "📌 Current bison Version: $(cat /app/VERSION)"' >> /app/start.sh && \
     echo 'echo "🚀 Starting service..."' >> /app/start.sh && \
+    echo 'source /app/.venv/bin/activate' >> /app/start.sh && \
     echo 'nb run' >> /app/start.sh && \
     chmod +x /app/start.sh
 

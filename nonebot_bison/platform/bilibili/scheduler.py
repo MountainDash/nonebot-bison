@@ -91,9 +91,12 @@ class BilibiliClientManager(CookieClientManager):
     async def _choose_cookie(self, target: Target | None) -> CookieModel:
         """选择 cookie 的具体算法"""
         if self._current_user_cookie is None:
+            # 若当前没有选定用户 cookie 则尝试获取
             self._current_user_cookie = await self._get_next_user_cookie()
         if self._current_user_cookie:
+            # 如果当前有选定的用户 cookie 则直接返回
             return self._current_user_cookie
+        # 否则返回匿名 cookie
         return (await config.get_cookie(self._site_name, is_anonymous=True))[0]
 
     @override

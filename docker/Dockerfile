@@ -183,6 +183,7 @@ COPY --from=playwright-stage /root/.cache/ms-playwright /root/.cache/ms-playwrig
 COPY extra_plugins/ /app/extra_plugins/
 COPY --from=frontend-stage /tmp/nonebot_bison/admin_page/dist ./nonebot_bison/admin_page/dist
 COPY --from=uv-stage /app /app
+COPY ./pyproject.toml ./uv.lock ./
 COPY nonebot_bison/ /app/nonebot_bison/
 COPY --from=metadata-stage /tmp/VERSION /app/VERSION
 

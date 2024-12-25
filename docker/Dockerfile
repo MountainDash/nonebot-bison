@@ -56,7 +56,7 @@ ENV TZ=Asia/Shanghai \
 COPY ./admin-frontend/package.json ./admin-frontend/pnpm-lock.yaml ./
 
 RUN corepack enable && \
-    corepack prepare pnpm@9.15.1 --activate && \
+    corepack prepare pnpm@latest --activate && \
     echo "🔔 Verifying Node.js installation..." && \
     if NODE_VERSION=$(node --version 2>&1); then \
         echo "✅ Node.js version ${NODE_VERSION} installed successfully"; \
@@ -79,7 +79,7 @@ RUN echo "🏗️ Starting frontend build..." && \
     pnpm run build && \
     echo "✅ Frontend build completed"
 
-FROM python:3.12-slim AS playwright-stage
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS playwright-stage
 
 WORKDIR /tmp
 
@@ -87,24 +87,21 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     TZ=Asia/Shanghai
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-
 RUN echo "📦 Installing playwright..." && \
     uvx playwright install --with-deps chromium && \
     echo "✅ Playwright installed successfully"
 
-FROM python:3.12-slim AS uv-stage
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv-stage
 
 WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \
+    UV_FROZEN=1 \
     UV_LINK_MODE=copy \
     TZ=Asia/Shanghai
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN echo "🔔 Verifying uv installation..." && \
     if UV_VERSION=$(uv --version 2>&1); then \
         echo "✅ uv version ${UV_VERSION} installed successfully"; \
@@ -112,25 +109,22 @@ RUN echo "🔔 Verifying uv installation..." && \
         echo "❌ uv installation failed" && exit 1; \
     fi
 
-COPY ./pyproject.toml ./uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    echo "📦 Installing project dependencies..." && \
+    uv sync --no-install-project --no-dev && \
+    echo "✅ Dependencies installed successfully"
 
-RUN --mount=type=cache,target=/root/.cache/ \
-    --mount=type=cache,target=/root/.uv \
-    echo "📦 Installing bison dependencies..." && \
-    uv venv && \
-    uv pip install --extra=docker --requirement pyproject.toml --no-cache && \
-    echo "✅ Dependencies installed successfully" && \
-    echo "🔔 Cleaning up uv..." && \
-    rm -rf /bin/uv /bin/uvx && \
-    echo "✅ UV cleanup completed"
-
-
-FROM python:3.12-slim AS production
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS production
 
 WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_FROZEN=1 \
+    UV_LINK_MODE=copy \
     TZ=Asia/Shanghai \
     SHELL="/bin/bash"
 
@@ -181,8 +175,9 @@ RUN echo "📦 Installing system dependencies..." && \
     fc-cache -fv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    echo "✅ System dependencies installed successfully" \
+    echo "✅ System dependencies installed successfully"
 
+# 少变动的放上面，频繁变动的放下面
 COPY ./docker.env.prod ./.env
 COPY --from=playwright-stage /root/.cache/ms-playwright /root/.cache/ms-playwright
 COPY extra_plugins/ /app/extra_plugins/
@@ -190,6 +185,11 @@ COPY --from=frontend-stage /tmp/nonebot_bison/admin_page/dist ./nonebot_bison/ad
 COPY --from=uv-stage /app /app
 COPY nonebot_bison/ /app/nonebot_bison/
 COPY --from=metadata-stage /tmp/VERSION /app/VERSION
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    echo "📦 Installing bison project..." && \
+    uv sync --no-dev && \
+    echo "✅ Bison installed successfully"
 
 EXPOSE 8080
 

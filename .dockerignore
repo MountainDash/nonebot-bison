@@ -1,12 +1,12 @@
 *.ini
-#*.yaml
+# *.yaml
 *.yml
 *.md
-#*.json
+# *.json
 *.xml
 tests
 node_modules
-#admin-frontend
+# admin-frontend
 data*
 htmlcov
 docker
@@ -22,3 +22,6 @@ venv
 /.prettierrc
 /.devcontainer/
 /.github/
+
+# self install 时需要
+!README.md

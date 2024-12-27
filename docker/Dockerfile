@@ -113,7 +113,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     echo "📦 Installing project dependencies..." && \
-    uv sync --no-install-project --no-dev && \
+    uv sync --no-install-project --no-dev --extra docker && \
     echo "✅ Dependencies installed successfully"
 
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS production
@@ -190,6 +190,8 @@ COPY --from=metadata-stage /tmp/VERSION /app/VERSION
 RUN --mount=type=cache,target=/root/.cache/uv \
     echo "📦 Installing bison project..." && \
     uv sync --no-dev && \
+    uv run nb adapter install nonebot-adapter-satori && \
+    uv run nb adapter install nonebot-adapter-qq && \
     echo "✅ Bison installed successfully"
 
 EXPOSE 8080

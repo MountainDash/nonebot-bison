@@ -1583,16 +1583,15 @@ wheels = [
 ]
 
 [[package]]
-name = "nonebot-adapter-red"
-version = "0.9.0"
+name = "nonebot-adapter-satori"
+version = "0.13.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nonebot2" },
-    { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c1/d5/81fda183c540aa6dd5444aa720b34d4724e0d962fcbb0535d29fe9d6f5a8/nonebot_adapter_red-0.9.0.tar.gz", hash = "sha256:a657c5ffb071c91deb4109bb94ac8046dcbea5cbb584437995c30ffb2d184954", size = 22819 }
+sdist = { url = "https://files.pythonhosted.org/packages/78/81/598a40dce2fcb7b8a70e957cbc1ed51fbfa9a81a82e2d2fb90a01ac0970d/nonebot_adapter_satori-0.13.1.tar.gz", hash = "sha256:dc1bc014a5721a66708af10e85662b1928d97107f9e052b03574a6d18f392ca5", size = 30046 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/19/c6/b45001ee2e85352c39e10dacdd74cc8e2c99a5fc41f3dafb3ebc49fe1a61/nonebot_adapter_red-0.9.0-py3-none-any.whl", hash = "sha256:8dd5cd0a5d964faa23823b7c37fa8c64fa3ed8f67fa66515fe44a2708ee438ec", size = 24563 },
+    { url = "https://files.pythonhosted.org/packages/ce/11/8bac0f32c95a61b1d5fe9a9e73ba24c73418ec3c84b842ffb34f65f83378/nonebot_adapter_satori-0.13.1-py3-none-any.whl", hash = "sha256:ad0163a7bc3572e9c4d406bbd289e090ebf2209acd4387e6881054d2e95fe071", size = 28997 },
 ]
 
 [[package]]
@@ -1626,7 +1625,7 @@ dependencies = [
 docker = [
     { name = "nb-cli" },
     { name = "nonebot-adapter-qq" },
-    { name = "nonebot-adapter-red" },
+    { name = "nonebot-adapter-satori" },
     { name = "nonebot2", extra = ["aiohttp", "fastapi"] },
 ]
 
@@ -1663,7 +1662,7 @@ requires-dist = [
     { name = "nb-cli", marker = "extra == 'docker'", specifier = ">=1.4.2,<2.0.0" },
     { name = "nonebot-adapter-onebot", specifier = ">=2.4.5,<3.0.0" },
     { name = "nonebot-adapter-qq", marker = "extra == 'docker'", specifier = ">=1.5.1,<2.0.0" },
-    { name = "nonebot-adapter-red", marker = "extra == 'docker'", specifier = ">=0.9.0,<1.0.0" },
+    { name = "nonebot-adapter-satori", marker = "extra == 'docker'", specifier = ">=0.13.1" },
     { name = "nonebot-plugin-apscheduler", specifier = ">=0.5.0" },
     { name = "nonebot-plugin-datastore", specifier = ">=1.3.0,<2.0.0" },
     { name = "nonebot-plugin-htmlrender", specifier = ">=0.3.5,!=0.5.0" },

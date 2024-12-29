@@ -126,7 +126,7 @@ COPY --from=metadata-stage /tmp/VERSION /app/VERSION
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     echo "📦 Installing bison project..." && \
-    uv sync --no-dev && \
+    uv sync --no-dev --extra docker && \
     uv run nb adapter install nonebot-adapter-satori && \
     uv run nb adapter install nonebot-adapter-qq && \
     echo "✅ Bison installed successfully"

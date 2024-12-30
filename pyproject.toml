@@ -42,7 +42,7 @@ yarl = ">=1.11.1"
 hishel = "^0.0.30"
 expiringdictx = "^1.1.0"
 rapidfuzz = "^3.9.7"
-nonebot-plugin-prometheus = "^0.3.0"
+nonebot-plugin-prometheus = "^0.3.7"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.13"
@@ -141,7 +141,7 @@ keep-runtime-typing = true
 adapters = [
   { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = ["nonebot_bison"]
+plugins = ["nonebot_bison", "nonebot_plugin_prometheus"]
 plugin_dirs = ["extra_plugins"]
 builtin_plugins = ["echo"]
 

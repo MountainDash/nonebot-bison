@@ -192,6 +192,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --no-dev --extra docker && \
     uv run nb adapter install nonebot-adapter-satori && \
     uv run nb adapter install nonebot-adapter-qq && \
+    uv run nb plugin install nonebot-plugin-sentry && \
     echo "✅ Bison installed successfully"
 
 EXPOSE 8080

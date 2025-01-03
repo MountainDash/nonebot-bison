@@ -34,9 +34,9 @@ async def test_cookie(app: App, init_scheduler):
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 1
-    # 添加用户cookie
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "1"}))
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "2"}))
+    # 添加实名cookie
+    await client_mgr.add_identified_cookie(json.dumps({"test_cookie": "1"}))
+    await client_mgr.add_identified_cookie(json.dumps({"test_cookie": "2"}))
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 3
@@ -68,7 +68,7 @@ async def test_cookie(app: App, init_scheduler):
         tags=[],
     )
 
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "3"}))
+    await client_mgr.add_identified_cookie(json.dumps({"test_cookie": "3"}))
     cookies = await config.get_cookie(site_name=site.name, is_anonymous=False)
 
     # 多个target，多个cookie

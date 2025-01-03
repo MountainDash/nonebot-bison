@@ -235,7 +235,7 @@ async def get_cookie(site_name: str | None = None, target: str | None = None) ->
 @router.post("/cookie", dependencies=[Depends(check_is_superuser)])
 async def add_cookie(site_name: str, content: str) -> StatusResp:
     client_mgr = cast(CookieClientManager, scheduler_dict[site_manager[site_name]].client_mgr)
-    await client_mgr.add_user_cookie(content)
+    await client_mgr.add_identified_cookie(content)
     return StatusResp(ok=True, msg="")
 
 

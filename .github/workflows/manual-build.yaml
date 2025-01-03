@@ -9,34 +9,11 @@ on:
         type: string
 
 jobs:
-  build-frontend:
-    name: Build Frontend
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Frontend
-        uses: ./.github/actions/build-frontend
-
-      - name: Upload dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend
-          path: ./admin-frontend/build/
-
   docker-main:
     name: Docker main
     runs-on: ubuntu-latest
-    needs: [build-frontend]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download frontend files
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend
-          path: ./src/plugins/nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -54,24 +31,17 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./docker/Dockerfile_with_frontend
+          file: ./docker/Dockerfile
           push: true
           tags: felinae98/nonebot-bison:${{ inputs.dockerTag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  docker-main-sentry:
-    name: Docker main sentry
+  docker-main-nobrowser:
+    name: Docker main without browser
     runs-on: ubuntu-latest
-    needs: [build-frontend]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download frontend files
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend
-          path: ./src/plugins/nonebot_bison/admin_page/dist
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -89,7 +59,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./docker/Dockerfile_with_frontend_sentry
-          tags: felinae98/nonebot-bison:${{ inputs.dockerTag }}-sentry
+          file: ./docker/Dockerfile_without_browser
+          tags: felinae98/nonebot-bison:${{ inputs.dockerTag }}-nobrowser
           cache-from: type=gha
           cache-to: type=gha,mode=max

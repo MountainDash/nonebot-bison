@@ -1,12 +1,9 @@
 *.ini
-# *.yaml
 *.yml
 *.md
-# *.json
 *.xml
 tests
 node_modules
-# admin-frontend
 data*
 htmlcov
 docker

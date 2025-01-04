@@ -12,14 +12,16 @@ from playwright.async_api import Cookie
 from nonebot_bison.config import config
 from nonebot_bison.config.db_model import Cookie as CookieModel
 from nonebot_bison.config.db_model import Target
+from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.utils import Site, http_client
 from nonebot_bison.utils.site import CookieClientManager
 
 if TYPE_CHECKING:
     from .platforms import Bilibili
 
-require("nonebot_plugin_htmlrender")
-from nonebot_plugin_htmlrender import get_browser
+if plugin_config.bison_use_browser:
+    require("nonebot_plugin_htmlrender")
+    from nonebot_plugin_htmlrender import get_browser
 
 B = TypeVar("B", bound="Bilibili")
 

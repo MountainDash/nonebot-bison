@@ -83,10 +83,8 @@ sequenceDiagram
 目前 CookieClientManager 具有以下方法
 
 - `refresh_anonymous_cookie(cls)` 移除已有的匿名 cookie，添加一个新的匿名 cookie，应该在 CCM 初始化时调用
-- `add_user_cookie(cls, content: str)` 添加用户 cookie，在这里对 Cookie 进行检查并获取 cookie_name，写入数据库
-- `_generate_hook(self, cookie: Cookie) -> Callable` hook 函数生成器，用于回写请求状态到数据库
 - `_choose_cookie(self, target: Target) -> Cookie` 选择 cookie 的具体算法
-- `add_user_cookie(cls, content: str, cookie_name: str | None = None) -> Cookie` 对外的接口，添加用户 cookie，内部会调用 Site 的方法进行检查
+- `add_identified_cookie(cls, content: str, cookie_name: str | None = None) -> Cookie` 对外的接口，添加实名 cookie，内部会调用 Site 的方法进行检查
 - `get_client(self, target: Target | None) -> AsyncClient` 对外的接口，获取 client，根据 target 选择 cookie
 - `_assemble_client(self, client, cookie) -> AsyncClient` 组装 client，可以自定义 cookie 对象的 content 装配到 client 中的方式
 
@@ -100,7 +98,7 @@ sequenceDiagram
 
 简单来说：
 
-- 如果需要修改 Cookie 的默认参数，可以重写`add_user_cookie`方法，这里设置需要的字段
+- 如果需要修改 Cookie 的默认参数，可以重写`add_identified_cookie`方法，这里设置需要的字段
 - 如果需要修改选择 Cookie 的逻辑，可以重写`_choose_cookie`方法，使用自己的算法选择合适的 Cookie 并返回
 - 如果需要自定义 Cookie 的格式，可以重写`valid_cookie`方法，自定义验证 Cookie 的逻辑，并重写`_assemble_client`方法，自定义将 Cookie 装配到 Client 中的逻辑
 - 如果要在请求结束后做一些操作（例如保存此次请求的结果/状态），可以重写`_response_hook`方法，自定义请求结束后的行为
@@ -137,7 +135,7 @@ sequenceDiagram
 
 - **无 Target 平台的 Cookie 处理方式**
 
-  对于不存在 Target 的平台，如小刻食堂，可以重写 add_user_cookie 方法，为用户 Cookie 设置 is_universal 字段。这样，在获取 Client 时，由于传入的 Target 为空，就只会选择 is_universal 的 cookie。实现了无 Target 平台的用户 Cookie 调度。
+  对于不存在 Target 的平台，如小刻食堂，可以重写 add_identified_cookie 方法，为实名 cookie 设置 is_universal 字段。这样，在获取 Client 时，由于传入的 Target 为空，就只会选择 is_universal 的 cookie。实现了无 Target 平台的实名 cookie 调度。
 
 ## 默认的调度策略
 

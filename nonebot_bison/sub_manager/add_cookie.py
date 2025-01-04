@@ -76,7 +76,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
         client_mgr = cast(CookieClientManager, scheduler_dict[platform_manager[state["platform"]].site].client_mgr)
-        new_cookie = await client_mgr.add_user_cookie(state["cookie"], state["cookie_name"])
+        new_cookie = await client_mgr.add_identified_cookie(state["cookie"], state["cookie_name"])
         await add_cookie.finish(
             f"已添加 Cookie: {new_cookie.cookie_name} 到平台 {state['platform']}"
             + "\n请使用“关联cookie”为 Cookie 关联订阅"

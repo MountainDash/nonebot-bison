@@ -1609,6 +1609,7 @@ dependencies = [
     { name = "nonebot-plugin-apscheduler" },
     { name = "nonebot-plugin-datastore" },
     { name = "nonebot-plugin-htmlrender" },
+    { name = "nonebot-plugin-prometheus" },
     { name = "nonebot-plugin-send-anything-anywhere" },
     { name = "nonebot2", extra = ["fastapi"] },
     { name = "pillow" },
@@ -1667,6 +1668,7 @@ requires-dist = [
     { name = "nonebot-plugin-apscheduler", specifier = ">=0.5.0" },
     { name = "nonebot-plugin-datastore", specifier = ">=1.3.0,<2.0.0" },
     { name = "nonebot-plugin-htmlrender", specifier = ">=0.3.5,!=0.5.0" },
+    { name = "nonebot-plugin-prometheus", specifier = ">=0.3.7" },
     { name = "nonebot-plugin-send-anything-anywhere", specifier = ">=0.7.1,<0.7.2" },
     { name = "nonebot2", extras = ["aiohttp", "fastapi"], marker = "extra == 'docker'", specifier = ">=2.3.3,<3.0.0" },
     { name = "nonebot2", extras = ["fastapi"], specifier = ">=2.3.3,<3.0.0" },
@@ -1764,6 +1766,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5e/aa/a038f16a1770e0f3a12efa4e99ffee236a7742bbbba0f7ed7c369a0e073e/nonebot_plugin_localstore-0.7.3.tar.gz", hash = "sha256:1aff10e2dacfc5bc9ce239fd34849f8d7172a118135dbc5aeba1c97605d9959d", size = 5681 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d6/ab/5589d873bbc47bfb70c5fca95de7538568ddfd4e9a1f0a40c16d3b80077d/nonebot_plugin_localstore-0.7.3-py3-none-any.whl", hash = "sha256:1bc239b4b5320df0dc08eada7c4f8ba4cb92d4dc3134bf4646ab5e297bd7e575", size = 6894 },
+]
+
+[[package]]
+name = "nonebot-plugin-prometheus"
+version = "0.3.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nonebot2" },
+    { name = "prometheus-client" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/a3/4cc06d4f7b267a4292a03fe891bdb63b6d0b5131780ae4458177f15c9a6b/nonebot_plugin_prometheus-0.3.7.tar.gz", hash = "sha256:5f96cd622a2a06ab86a7ebd73d3487ceac959cdc10d4b0282dc980981f08d60b", size = 5124 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/4a/0e4290dbe57f246b947e464000be0656d135247b88f8313a77eb8b0a4794/nonebot_plugin_prometheus-0.3.7-py3-none-any.whl", hash = "sha256:b9cbf048b479c58a9aa7ad7fe4705c79c84d0b31b7b0dac11c708434fc17190b", size = 6065 },
 ]
 
 [[package]]
@@ -2033,6 +2048,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/2e/c8/e22c292035f1bac8b9f5237a2622305bc0304e776080b246f3df57c4ff9f/pre_commit-4.0.1.tar.gz", hash = "sha256:80905ac375958c0444c65e9cebebd948b3cdb518f335a091a670a89d652139d2", size = 191678 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/16/8f/496e10d51edd6671ebe0432e33ff800aa86775d2d147ce7d43389324a525/pre_commit-4.0.1-py2.py3-none-any.whl", hash = "sha256:efde913840816312445dc98787724647c65473daefe420785f885e8ed9a06878", size = 218713 },
+]
+
+[[package]]
+name = "prometheus-client"
+version = "0.21.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/14/7d0f567991f3a9af8d1cd4f619040c93b68f09a02b6d0b6ab1b2d1ded5fe/prometheus_client-0.21.1.tar.gz", hash = "sha256:252505a722ac04b0456be05c05f75f45d760c2911ffc45f2a06bcaed9f3ae3fb", size = 78551 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ff/c2/ab7d37426c179ceb9aeb109a85cda8948bb269b7561a0be870cc656eefe4/prometheus_client-0.21.1-py3-none-any.whl", hash = "sha256:594b45c410d6f4f8888940fe80b5cc2521b305a1fafe1c58609ef715a001f301", size = 54682 },
 ]
 
 [[package]]

@@ -443,7 +443,8 @@ class Bilibililive(StatusChange):
 
     async def parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
-        pic = [raw_post.cover] if raw_post.keyframe == "" else [raw_post.keyframe]
+        # 开播提醒固定使用封面 否则优先使用关键帧，没有则使用封面
+        pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe or raw_post.cover]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(

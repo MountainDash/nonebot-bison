@@ -250,6 +250,30 @@ async def test_fetch_bililive_only_close(bili_live, dummy_only_close_user_subinf
     assert post4.compress is True
 
 
+@pytest.mark.asyncio
+@respx.mock
+async def test_bililive_close_and_no_keyframe(bili_live: "Bilibililive", dummy_only_close_user_subinfo):
+    info = bili_live.Info(
+        title="【Zc】从0挑战到15肉鸽！目前12难度",
+        room_id=721,
+        uid=13164144,
+        live_time=114514,
+        live_status=bili_live.LiveStatus.OFF,
+        area_v2_name="其他单机",
+        uname="魔法Zc目录",
+        face="fake",
+        cover_from_user="fake",
+        keyframe="",
+        category=3,  # 下播
+    )
+    post = await bili_live.parse(info)
+    assert post.images == ["fake"]
+
+    info.keyframe = "key_fake"
+    post2 = await bili_live.parse(info)
+    assert post2.images == ["key_fake"]
+
+
 @pytest.fixture
 def dummy_bililive_user_subinfo(app: App):
     from nonebot_plugin_saa import TargetQQGroup

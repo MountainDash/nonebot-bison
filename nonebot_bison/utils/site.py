@@ -11,6 +11,7 @@ from nonebot.log import logger
 
 from nonebot_bison.config import config
 from nonebot_bison.config.db_model import Cookie
+from nonebot_bison.metrics import cookie_choose_counter
 from nonebot_bison.types import Target
 
 from .http import http_client
@@ -132,6 +133,7 @@ class CookieClientManager(ClientManager):
         """获取 client，根据 target 选择 cookie"""
         client = http_client()
         cookie = await self._choose_cookie(target)
+        cookie_choose_counter.labels(site_name=self._site_name, target=target, cookie_id=cookie.id).inc()
         if cookie.is_universal:
             logger.trace(f"平台 {self._site_name} 未获取到实名cookie, 使用匿名cookie")
         else:

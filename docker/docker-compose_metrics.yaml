@@ -1,0 +1,37 @@
+services:
+  nonebot:
+    image: felinae98/nonebot-bison
+    volumes:
+      - ./nonebot-data:/data
+    environment:
+      TZ: Asia/Shanghai
+      HOST: 0.0.0.0
+      # SUPERUSERS: '["<your QQ>"]'
+      BISON_CONFIG_PATH: /data
+      # BISON_OUTER_URL: 'http://<your server ip>:8080/bison'
+      BISON_FILTER_LOG: "true"
+      BISON_USE_PIC: "false" # 如果需要将文字转为图片发送请改为true
+    ports:
+      - 8080:8080
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=nonebot-bison
+    volumes:
+      - ./grafana-dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json
+      - ./grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}

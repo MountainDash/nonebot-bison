@@ -76,6 +76,7 @@ async def test_scheduler_batch_api(init_scheduler, mocker: MockerFixture):
     class FakePlatform:
         def __init__(self) -> None:
             self.do_batch_fetch_new_post = batch_fetch_mock
+            self.site = BililiveSite
 
     fake_platform_obj = FakePlatform()
     mocker.patch.dict(

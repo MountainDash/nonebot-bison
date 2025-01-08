@@ -28,7 +28,7 @@ B = TypeVar("B", bound="Bilibili")
 
 class BilibiliClientManager(CookieClientManager):
     _default_cookie_cd = timedelta(seconds=120)
-    _current_user_cookie: CookieModel | None = None
+    current_identified_cookie: CookieModel | None = None
     _site_name = "bilibili.com"
 
     async def _get_cookies(self) -> list[Cookie]:
@@ -75,14 +75,14 @@ class BilibiliClientManager(CookieClientManager):
             else:
                 logger.warning(f"请求失败: {cookie.id} {resp.request.url}, 状态码: {resp.status_code}")
                 cookie.status = "failed"
-                self._current_user_cookie = None
+                self.current_identified_cookie = None
             cookie.last_usage = datetime.now()
             await config.update_cookie(cookie)
 
         return _response_hook
 
-    async def _get_next_user_cookie(self) -> CookieModel | None:
-        """选择下一个用户 cookie"""
+    async def _get_next_identified_cookie(self) -> CookieModel | None:
+        """选择下一个实名 cookie"""
         cookies = await config.get_cookie(self._site_name, is_anonymous=False)
         available_cookies = [cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now()]
         if not available_cookies:
@@ -92,12 +92,12 @@ class BilibiliClientManager(CookieClientManager):
 
     async def _choose_cookie(self, target: Target | None) -> CookieModel:
         """选择 cookie 的具体算法"""
-        if self._current_user_cookie is None:
-            # 若当前没有选定用户 cookie 则尝试获取
-            self._current_user_cookie = await self._get_next_user_cookie()
-        if self._current_user_cookie:
-            # 如果当前有选定的用户 cookie 则直接返回
-            return self._current_user_cookie
+        if self.current_identified_cookie is None:
+            # 若当前没有选定实名 cookie 则尝试获取
+            self.current_identified_cookie = await self._get_next_identified_cookie()
+        if self.current_identified_cookie:
+            # 如果当前有选定的实名 cookie 则直接返回
+            return self.current_identified_cookie
         # 否则返回匿名 cookie
         return (await config.get_cookie(self._site_name, is_anonymous=True))[0]
 

@@ -44,7 +44,7 @@ LABEL org.opencontainers.image.created="$(cat /tmp/CREATED_DATE)" \
       org.opencontainers.image.name="$(cat /tmp/PYPROJECT_NAME)" \
       org.opencontainers.image.version="$(cat /tmp/VERSION)"
 
-FROM node:20-slim AS frontend-stage
+FROM node:22.13.0-slim AS frontend-stage
 
 WORKDIR /tmp/admin-frontend
 

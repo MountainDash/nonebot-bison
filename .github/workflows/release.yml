@@ -29,6 +29,8 @@ jobs:
       # write permission is required for autolabeler
       # otherwise, read permission is required at least
       pull-requests: write
+      # required by trusted action release
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 

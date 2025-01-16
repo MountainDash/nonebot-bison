@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### 新功能
+
+- 优化 B站 Cookie 选择策略 [@suyiiyii](https://github.com/suyiiyii) ([#664](https://github.com/MountainDash/nonebot-bison/pull/664))
+
 ## v0.9.6-rc1
 
 ### 新功能

@@ -17,14 +17,14 @@ cookie_choose_counter = Counter(
     "bison_cookie_choose_counter", "The number of cookie choose", ["site_name", "target", "cookie_id"]
 )
 
-request_histogram = Histogram(
+request_time_histogram = Histogram(
     "bison_request_histogram",
     "The time of platform used to request the source",
     ["site_name", "platform_name"],
     buckets=[0.1, 0.5, 1, 2, 5, 10, 30, 60],
 )
 
-render_histogram = Histogram(
+render_time_histogram = Histogram(
     "bison_render_histogram",
     "The time of theme used to render",
     ["site_name", "platform_name"],

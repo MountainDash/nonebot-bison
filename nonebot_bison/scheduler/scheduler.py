@@ -8,7 +8,7 @@ from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
 from nonebot_bison.config import config
-from nonebot_bison.metrics import render_histogram, request_counter, request_histogram, sent_counter
+from nonebot_bison.metrics import render_time_histogram, request_counter, request_time_histogram, sent_counter
 from nonebot_bison.platform import platform_manager
 from nonebot_bison.send import send_msgs
 from nonebot_bison.types import SubUnit, Target
@@ -115,7 +115,7 @@ class Scheduler:
             success=x,
         ).inc()
         try:
-            with request_histogram.labels(
+            with request_time_histogram.labels(
                 platform_name=schedulable.platform_name, site_name=platform_obj.site.name
             ).time():
                 if schedulable.use_batch:
@@ -146,7 +146,9 @@ class Scheduler:
         sent_counter.labels(
             platform_name=schedulable.platform_name, site_name=platform_obj.site.name, target=schedulable.target
         ).inc()
-        with render_histogram.labels(platform_name=schedulable.platform_name, site_name=platform_obj.site.name).time():
+        with render_time_histogram.labels(
+            platform_name=schedulable.platform_name, site_name=platform_obj.site.name
+        ).time():
             for user, send_list in to_send:
                 for send_post in send_list:
                     logger.info(f"send to {user}: {send_post}")

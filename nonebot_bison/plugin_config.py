@@ -1,3 +1,5 @@
+from typing import Literal
+
 import nonebot
 from nonebot import get_plugin_config
 from nonebot.compat import PYDANTIC_V2, ConfigDict
@@ -7,6 +9,11 @@ from yarl import URL
 global_config = nonebot.get_driver().config
 PlatformName = str
 ThemeName = str
+
+
+class ScheduleConfig(BaseModel):
+    type: Literal["date", "interval", "cron"]
+    settings: dict
 
 
 class PlugConfig(BaseModel):
@@ -23,7 +30,9 @@ class PlugConfig(BaseModel):
         description="发送消息时将所有文本转换为图片，防止风控，仅需要推送文转图可以为 platform 指定 theme",
     )
     bison_use_browser: bool = Field(
-        default=False, description="是否使用环境中的浏览器", alias="bison_theme_use_browser"
+        default=False,
+        description="是否使用环境中的浏览器",
+        alias="bison_theme_use_browser",
     )
     bison_init_filter: bool = True
     bison_use_queue: bool = True
@@ -42,6 +51,7 @@ class PlugConfig(BaseModel):
     )
     bison_show_network_warning: bool = True
     bison_platform_theme: dict[PlatformName, ThemeName] = {}
+    bison_site_schedule: dict[str, ScheduleConfig] = {}
 
     @property
     def outer_url(self) -> URL:

@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修正 opus 解析类型 [@AzideCupric](https://github.com/AzideCupric) ([#689](https://github.com/MountainDash/nonebot-bison/pull/689))
+
 ## v0.9.6-rc2
 
 ### 新功能

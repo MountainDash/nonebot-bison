@@ -54,7 +54,8 @@ ENV TZ=Asia/Shanghai \
 
 COPY ./admin-frontend/package.json ./admin-frontend/pnpm-lock.yaml ./
 
-RUN corepack enable && \
+RUN npm install -g corepack@latest && \
+    corepack enable && \
     corepack prepare pnpm@latest --activate && \
     echo "🔔 Verifying Node.js installation..." && \
     if NODE_VERSION=$(node --version 2>&1); then \

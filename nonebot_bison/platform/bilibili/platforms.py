@@ -225,7 +225,7 @@ class Bilibili(NewMessage):
                 )
             case OPUSMajor(opus=opus):
                 return _ParsedMojarPost(
-                    title=opus.title,
+                    title=opus.title or "",
                     content=opus.summary.text,
                     pics=[pic.url for pic in opus.pics],
                     url=URL(opus.jump_url).with_scheme("https").human_repr(),
@@ -252,7 +252,13 @@ class Bilibili(NewMessage):
                     url=None,
                 )
             case UnknownMajor(type=unknown_type):
-                raise CategoryNotSupport(unknown_type)
+                logger.error(f"无法解析的动态，类型: {unknown_type}")
+                return _ParsedMojarPost(
+                    title="",
+                    content=f"无法解析的动态，类型: {unknown_type}",
+                    pics=[],
+                    url=f"https://t.bilibili.com/{raw_post.id_str}",
+                )
             case None:  # 没有major的情况
                 return _ParsedMojarPost(
                     title="",

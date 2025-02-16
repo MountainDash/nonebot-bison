@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- :bug: 修正 OPUS mojar model 字段类型的错误 [@AzideCupric](https://github.com/AzideCupric) ([#691](https://github.com/MountainDash/nonebot-bison/pull/691))
 - 修正 opus 解析类型 [@AzideCupric](https://github.com/AzideCupric) ([#689](https://github.com/MountainDash/nonebot-bison/pull/689))
 
 ## v0.9.6-rc2

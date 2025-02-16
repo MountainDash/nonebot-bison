@@ -14,6 +14,9 @@ import respx
 
 from .utils import get_json
 
+if TYPE_CHECKING:
+    from nonebot_bison.platform.bilibili import Bilibili
+
 
 @pytest.fixture
 def bing_dy_list(app: App):
@@ -22,8 +25,9 @@ def bing_dy_list(app: App):
     return type_validate_python(PostAPI, get_json("bilibili-new.json")).data.items  # type: ignore
 
 
-if TYPE_CHECKING:
-    from nonebot_bison.platform.bilibili import Bilibili
+@pytest.fixture
+def opus_major_raw_content():
+    return get_json("bilibili-opus-major.json")
 
 
 @pytest.fixture
@@ -405,6 +409,20 @@ async def test_dynamic_forward(bilibili: "Bilibili", bing_dy_list: list):
     assert rp.images
     assert len(rp.images) == 9
     assert rp.url == "https://t.bilibili.com/915793667264872453"
+
+
+async def test_opus_mojar_parse(bilibili: "Bilibili", opus_major_raw_content: dict[str, Any]):
+    from nonebot_bison.platform.bilibili.models import OPUSMajor, PostAPI
+
+    result = type_validate_python(PostAPI, opus_major_raw_content)
+    assert result.data
+    assert result.data.items
+    for item in result.data.items:
+        assert item.modules
+        assert item.modules.module_dynamic.major
+        assert isinstance(item.modules.module_dynamic.major, OPUSMajor)
+        assert item.modules.module_dynamic.major.opus
+        assert item.modules.module_dynamic.major.type == "MAJOR_TYPE_OPUS"
 
 
 async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list):

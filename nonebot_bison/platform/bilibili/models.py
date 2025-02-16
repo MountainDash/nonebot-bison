@@ -311,19 +311,19 @@ class OPUSMajor(Base):
     class Pic(Base):
         width: int
         height: int
-        size: int
+        size: float
         """文件大小，KiB（1024）"""
         url: str
         """图片链接"""
 
     class Opus(Base):
         jump_url: str
-        title: str
+        title: str | None
         summary: "OPUSMajor.Summary"
         pics: "list[OPUSMajor.Pic]"
 
     type: Literal["MAJOR_TYPE_OPUS"]
-    opus: "list[OPUSMajor.Opus]"
+    opus: "OPUSMajor.Opus"
 
 
 class CommonMajor(Base):

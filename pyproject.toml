@@ -23,6 +23,7 @@ dependencies = [
   "hishel<1.0.0,>=0.0.30",
   "expiringdictx<2.0.0,>=1.1.0",
   "rapidfuzz<4.0.0,>=3.9.7",
+  "nonebot-plugin-prometheus>=0.3.7"
 ]
 name = "nonebot-bison"
 version = "0.9.6-rc2"
@@ -141,7 +142,7 @@ keep-runtime-typing = true
 adapters = [
   { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = ["nonebot_bison"]
+plugins = ["nonebot_bison", "nonebot_plugin_prometheus"]
 plugin_dirs = ["extra_plugins"]
 builtin_plugins = ["echo"]
 

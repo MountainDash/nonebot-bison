@@ -65,5 +65,5 @@ def do_add_cookie_target(add_cookie_target_matcher: type[Matcher]):
         await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], state["cookie"].id)
         cookie = state["cookie"]
         await add_cookie_target_matcher.finish(
-            f"已关联 Cookie: {cookie.cookie_name} " f"到订阅 {state['site'].name} {state['target']['target']}"
+            f"已关联 Cookie: {cookie.cookie_name} 到订阅 {state['site'].name} {state['target']['target']}"
         )

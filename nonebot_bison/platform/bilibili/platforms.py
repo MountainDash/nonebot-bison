@@ -523,7 +523,7 @@ class BilibiliBangumi(StatusChange):
 
     async def parse(self, raw_post: RawPost) -> Post:
         client = await self.ctx.get_client()
-        detail_res = await client.get(f'https://api.bilibili.com/pgc/view/web/season?season_id={raw_post["season_id"]}')
+        detail_res = await client.get(f"https://api.bilibili.com/pgc/view/web/season?season_id={raw_post['season_id']}")
         detail_dict = detail_res.json()
         lastest_episode = None
         for episode in detail_dict["result"]["episodes"][::-1]:

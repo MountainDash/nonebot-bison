@@ -1596,9 +1596,10 @@ wheels = [
 
 [[package]]
 name = "nonebot-bison"
-version = "0.9.5"
+version = "0.9.6rc2"
 source = { editable = "." }
 dependencies = [
+    { name = "anyio" },
     { name = "beautifulsoup4" },
     { name = "expiringdictx" },
     { name = "feedparser" },
@@ -1654,6 +1655,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
+    { name = "anyio", specifier = ">=4.7.0" },
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
     { name = "expiringdictx", specifier = ">=1.1.0,<2.0.0" },
     { name = "feedparser", specifier = ">=6.0.11,<7.0.0" },

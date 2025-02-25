@@ -23,6 +23,7 @@ dependencies = [
   "hishel<1.0.0,>=0.0.30",
   "expiringdictx<2.0.0,>=1.1.0",
   "rapidfuzz<4.0.0,>=3.9.7",
+  "anyio>=4.7.0",
 ]
 name = "nonebot-bison"
 version = "0.9.6-rc2"
@@ -34,8 +35,6 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: MacOS",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "License :: OSI Approved :: MIT License",
@@ -95,7 +94,7 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
@@ -106,6 +105,7 @@ select = [
   "UP",    # pyupgrade
   "ASYNC", # flake8-async
   "C4",    # flake8-comprehensions
+  "TC",    # flake8-type-checking
   "T10",   # flake8-debugger
   "T20",   # flake8-print
   "PYI",   # flake8-pyi
@@ -149,7 +149,7 @@ builtin_plugins = ["echo"]
 typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 pythonPlatform = "All"
 executionEnvironments = [
   { root = "./tests", extraPaths = [

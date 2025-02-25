@@ -51,11 +51,23 @@ class DeliveryReceipt:
     def add_handstamp(self, key: str, value: Any):
         self._handstamps[key] = value
 
-    def append_address(self, receiver: str):
+    @property
+    def dead_reason(self) -> str:
+        return self._handstamps.get("DEAD_REASON", "")
+
+    @property
+    def address_chain(self) -> list[str]:
+        return self._handstamps.get("ADDRESS_CHAIN", [])
+
+    @property
+    def handstamps(self) -> HandStamp:
+        return self._handstamps
+
+    def append_address(self, addr: str):
         if "RECEIVER_CHAIN" not in self._handstamps:
-            self.add_handstamp("ADDRESS_CHAIN", [receiver])
+            self.add_handstamp("ADDRESS_CHAIN", [addr])
         else:
-            self._handstamps["ADDRESS_CHAIN"].append(receiver)
+            self._handstamps["ADDRESS_CHAIN"].append(addr)
 
     def __str__(self):
         return f"DeliveryReceipt(delivery_status={self.delivery_status}, handstamps={self._handstamps})"
@@ -69,9 +81,9 @@ class Parcel[T]:
     receipt: DeliveryReceipt = field(init=False, default_factory=DeliveryReceipt)
 
     def change_to(self, address: Address) -> Parcel[T]:
-        """生成一个新的包裹，将当前包裹的地址修改到指定地址，同时重置收据，追加当前地址到地址链"""
+        """生成一个新的包裹，将当前包裹的地址修改到指定地址，同时重置收据，保留地址链"""
         parcel = Parcel(address, self.payload, self.metadata)
-        parcel.receipt.append_address(self.tag)
+        parcel.receipt._handstamps["ADDRESS_CHAIN"] = self.receipt.address_chain
         return parcel
 
     def is_sendable(self) -> bool:
@@ -156,16 +168,17 @@ class Channel[T]:
 
     async def delivery(self) -> AsyncIterator[Parcel[T]]:
         rx = await self._get_receiver()
-        async for parcel in rx:
-            if self.instrumentation:
-                await self.instrumentation.on_delivery(parcel)
+        async with rx:
+            async for parcel in rx:
+                if self.instrumentation:
+                    await self.instrumentation.on_delivery(parcel)
 
-            if self.middleware:
-                parcel = await self.middleware.post_process(parcel)
+                if self.middleware:
+                    parcel = await self.middleware.post_process(parcel)
 
-            yield parcel
+                yield parcel
 
-            parcel.receipt.mark_as_delivered()
+                parcel.receipt.mark_as_delivered()
 
     async def post(self, parcel: Parcel[T]) -> weakref.ReferenceType[DeliveryReceipt]:
         if not parcel.is_sendable():
@@ -211,6 +224,17 @@ class Channel[T]:
             self.dead_letter_stream.entrance.close()
         self.dead_letter_stream = None
         logger.info("Courier closed")
+
+
+_post_channel_entrance, _post_channel_outlet = create_memory_object_stream()
+
+
+async def post_to_couier[T](parcel: Parcel[T]):
+    if _post_channel_entrance.statistics().open_receive_streams == 0:
+        logger.warning("No courier is running")
+        return
+
+    await _post_channel_entrance.send(parcel)
 
 
 @dataclass(eq=False)
@@ -280,8 +304,14 @@ class Courier:
     async def run(self):
         """开始运行"""
 
+        async def _run_global_post_receiver():
+            async with _post_channel_outlet:
+                async for parcel in _post_channel_outlet:
+                    await self.post(parcel)
+
         async def _run_roadmap(road: DeliveryRoad):
             async for parcel in road.channel.delivery():
+                parcel.receipt.append_address(road.channel.address)
                 match await road.receiver(parcel):
                     case None:
                         continue
@@ -296,14 +326,16 @@ class Courier:
 
         async def _run_dead_letter_receiver():
             if self.dead_letter_receiver and self.dead_letter_channel:
-                async for dead_letter in self.dead_letter_channel[1]:
-                    await self.dead_letter_receiver(dead_letter)
+                async with self.dead_letter_channel[1] as rx:
+                    async for dead_letter in rx:
+                        await self.dead_letter_receiver(dead_letter)
 
         async with anyio.create_task_group() as tg:
             for _, road in self.roadmaps.items():
                 tg.start_soon(_run_roadmap, road)
 
             tg.start_soon(_run_dead_letter_receiver)
+            tg.start_soon(_run_global_post_receiver)
 
             await self.close_event.wait()
             tg.cancel_scope.cancel()

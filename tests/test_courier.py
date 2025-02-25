@@ -12,6 +12,7 @@ async def test_courier(app: App):
         Instrumentation,
         Middleware,
         Parcel,
+        post_to_couier,
     )
 
     class TestIns(Instrumentation):
@@ -40,6 +41,7 @@ async def test_courier(app: App):
         logger.info(f"comsumer: {parcel}")
         return parcel.change_to(test_addrs.pop())
 
+
     @Courier.receive_from("test2")
     async def test2_comsumer(parcel: Parcel[int]):
         logger.info(f"comsumer: {parcel}")
@@ -54,7 +56,7 @@ async def test_courier(app: App):
     async def producer(addr: Address):
         for i in range(3):
             parcel = Parcel(addr, i * 10)
-            await courier.post(parcel)
+            await post_to_couier(parcel)
             await anyio.sleep(1)
 
     async with anyio.create_task_group() as tg:

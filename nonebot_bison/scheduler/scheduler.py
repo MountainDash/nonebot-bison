@@ -1,11 +1,14 @@
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
 
+from apscheduler.events import EVENT_JOB_MAX_INSTANCES
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
 from nonebot_bison.config import config
+from nonebot_bison.metrics import render_time_histogram, request_counter, request_time_histogram, sent_counter
 from nonebot_bison.platform import platform_manager
 from nonebot_bison.send import send_msgs
 from nonebot_bison.types import SubUnit, Target
@@ -19,6 +22,15 @@ class Schedulable:
     target: Target
     current_weight: int
     use_batch: bool = False
+
+
+def handle_time_exceeded(event):
+    # event.job_id 是该任务在 apscheduler 的 id, 进而可以获得该任务的函数，再获取该函数绑定的对象
+    logger.warning(f"{scheduler.get_job(event.job_id).func.__self__.name} 抓取执行超时")
+    scheduler.get_job(event.job_id).func.__self__.metrics_report(False)
+
+
+scheduler.add_listener(handle_time_exceeded, EVENT_JOB_MAX_INSTANCES)
 
 
 class Scheduler:
@@ -53,6 +65,7 @@ class Scheduler:
 
         self.platform_name_list = platform_name_list
         self.pre_weight_val = 0  # 轮调度中“本轮”增加权重和的初值
+        self.metrics_report: Callable[[bool], None] | None = None  # 作为函数变量，允许外部调用来上报此次抓取是否成功
         logger.info(
             f"register scheduler for {self.name} with "
             f"{self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"
@@ -92,20 +105,32 @@ class Scheduler:
 
         context = ProcessContext(self.client_mgr)
 
+        success_flag = False
+        platform_obj = platform_manager[schedulable.platform_name](context)
+        # 通过闭包的形式，将此次抓取任务的信息保存为函数变量，允许在该任务无法正常结束时由外部上报
+        self.metrics_report = lambda x: request_counter.labels(
+            platform_name=schedulable.platform_name,
+            site_name=platform_obj.site.name,
+            target=schedulable.target,
+            success=x,
+        ).inc()
         try:
-            platform_obj = platform_manager[schedulable.platform_name](context)
-            if schedulable.use_batch:
-                batch_targets = self.batch_api_target_cache[schedulable.platform_name][schedulable.target]
-                sub_units = []
-                for batch_target in batch_targets:
-                    userinfo = await config.get_platform_target_subscribers(schedulable.platform_name, batch_target)
-                    sub_units.append(SubUnit(batch_target, userinfo))
-                to_send = await platform_obj.do_batch_fetch_new_post(sub_units)
-            else:
-                send_userinfo_list = await config.get_platform_target_subscribers(
-                    schedulable.platform_name, schedulable.target
-                )
-                to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
+            with request_time_histogram.labels(
+                platform_name=schedulable.platform_name, site_name=platform_obj.site.name
+            ).time():
+                if schedulable.use_batch:
+                    batch_targets = self.batch_api_target_cache[schedulable.platform_name][schedulable.target]
+                    sub_units = []
+                    for batch_target in batch_targets:
+                        userinfo = await config.get_platform_target_subscribers(schedulable.platform_name, batch_target)
+                        sub_units.append(SubUnit(batch_target, userinfo))
+                    to_send = await platform_obj.do_batch_fetch_new_post(sub_units)
+                else:
+                    send_userinfo_list = await config.get_platform_target_subscribers(
+                        schedulable.platform_name, schedulable.target
+                    )
+                    to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
+                success_flag = True
         except SkipRequestException as err:
             logger.debug(f"skip request: {err}")
         except Exception as err:
@@ -115,19 +140,25 @@ class Scheduler:
             err.args += (records,)
             raise
 
+        self.metrics_report(success_flag)
         if not to_send:
             return
-
-        for user, send_list in to_send:
-            for send_post in send_list:
-                logger.info(f"send to {user}: {send_post}")
-                try:
-                    await send_msgs(
-                        user,
-                        await send_post.generate_messages(),
-                    )
-                except NoBotFound:
-                    logger.warning("no bot connected")
+        sent_counter.labels(
+            platform_name=schedulable.platform_name, site_name=platform_obj.site.name, target=schedulable.target
+        ).inc()
+        with render_time_histogram.labels(
+            platform_name=schedulable.platform_name, site_name=platform_obj.site.name
+        ).time():
+            for user, send_list in to_send:
+                for send_post in send_list:
+                    logger.info(f"send to {user}: {send_post}")
+                    try:
+                        await send_msgs(
+                            user,
+                            await send_post.generate_messages(),
+                        )
+                    except NoBotFound:
+                        logger.warning("no bot connected")
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

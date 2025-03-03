@@ -45,6 +45,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
+    mocker.patch("nonebot_plugin_orm._data_dir", tmp_path / "orm")
     from nonebot_plugin_htmlrender.browser import shutdown_browser
     from nonebot_plugin_orm import get_session, init_orm
 

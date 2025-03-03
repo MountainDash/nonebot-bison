@@ -202,6 +202,7 @@ RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo "📌 Current bison Version: $(cat /app/VERSION)"' >> /app/start.sh && \
     echo 'echo "🚀 Starting service..."' >> /app/start.sh && \
     echo 'source /app/.venv/bin/activate' >> /app/start.sh && \
+    echo 'nb orm upgrade' >> /app/start.sh && \
     echo 'nb run' >> /app/start.sh && \
     chmod +x /app/start.sh
 

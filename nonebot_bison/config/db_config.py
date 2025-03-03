@@ -4,7 +4,7 @@ from collections.abc import Awaitable, Callable, Sequence
 from datetime import datetime, time
 
 from nonebot.compat import model_dump
-from nonebot_plugin_datastore import create_session
+from nonebot_plugin_orm import get_session
 from nonebot_plugin_saa import PlatformTarget
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
@@ -46,7 +46,7 @@ class DBConfig:
         cats: list[Category],
         tags: list[Tag],
     ):
-        async with create_session() as session:
+        async with get_session() as session:
             db_user_stmt = select(User).where(User.user_target == model_dump(user))
             db_user: User | None = await session.scalar(db_user_stmt)
             if not db_user:
@@ -74,7 +74,7 @@ class DBConfig:
                 raise e
 
     async def list_subscribe(self, user: PlatformTarget) -> Sequence[Subscribe]:
-        async with create_session() as session:
+        async with get_session() as session:
             query_stmt = (
                 select(Subscribe)
                 .where(User.user_target == model_dump(user))
@@ -86,7 +86,7 @@ class DBConfig:
 
     async def list_subs_with_all_info(self) -> Sequence[Subscribe]:
         """获取数据库中带有user、target信息的subscribe数据"""
-        async with create_session() as session:
+        async with get_session() as session:
             query_stmt = (
                 select(Subscribe).join(User).options(selectinload(Subscribe.target), selectinload(Subscribe.user))
             )
@@ -95,7 +95,7 @@ class DBConfig:
         return subs
 
     async def del_subscribe(self, user: PlatformTarget, target: str, platform_name: str):
-        async with create_session() as session:
+        async with get_session() as session:
             user_obj = await session.scalar(select(User).where(User.user_target == model_dump(user)))
             target_obj = await session.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
@@ -118,7 +118,7 @@ class DBConfig:
         cats: list,
         tags: list,
     ):
-        async with create_session() as sess:
+        async with get_session() as sess:
             subscribe_obj: Subscribe = await sess.scalar(
                 select(Subscribe)
                 .where(
@@ -136,13 +136,13 @@ class DBConfig:
             await sess.commit()
 
     async def get_platform_target(self, platform_name: str) -> Sequence[Target]:
-        async with create_session() as sess:
+        async with get_session() as sess:
             subq = select(Subscribe.target_id).distinct().subquery()
             query = select(Target).join(subq).where(Target.platform_name == platform_name)
             return (await sess.scalars(query)).all()
 
     async def get_time_weight_config(self, target: T_Target, platform_name: str) -> WeightConfig:
-        async with create_session() as sess:
+        async with get_session() as sess:
             time_weight_conf = (
                 await sess.scalars(
                     select(ScheduleTimeWeight)
@@ -167,7 +167,7 @@ class DBConfig:
             )
 
     async def update_time_weight_config(self, target: T_Target, platform_name: str, conf: WeightConfig):
-        async with create_session() as sess:
+        async with get_session() as sess:
             targetObj = await sess.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
@@ -191,7 +191,7 @@ class DBConfig:
     async def get_current_weight_val(self, platform_list: list[str]) -> dict[str, int]:
         res = {}
         cur_time = _get_time()
-        async with create_session() as sess:
+        async with get_session() as sess:
             targets = (
                 await sess.scalars(
                     select(Target)
@@ -210,7 +210,7 @@ class DBConfig:
         return res
 
     async def get_platform_target_subscribers(self, platform_name: str, target: T_Target) -> list[UserSubInfo]:
-        async with create_session() as sess:
+        async with get_session() as sess:
             query = (
                 select(Subscribe)
                 .join(Target)
@@ -231,7 +231,7 @@ class DBConfig:
         self,
     ) -> dict[str, dict[str, PlatformWeightConfigResp]]:
         res: dict[str, dict[str, PlatformWeightConfigResp]] = defaultdict(dict)
-        async with create_session() as sess:
+        async with get_session() as sess:
             query = select(Target)
             targets = (await sess.scalars(query)).all()
             query = select(ScheduleTimeWeight).options(selectinload(ScheduleTimeWeight.target))
@@ -267,7 +267,7 @@ class DBConfig:
         is_anonymous: bool | None = None,
     ) -> Sequence[Cookie]:
         """获取满足传入条件的所有 cookie"""
-        async with create_session() as sess:
+        async with get_session() as sess:
             query = select(Cookie).distinct()
             if is_universal is not None:
                 query = query.where(Cookie.is_universal == is_universal)
@@ -286,21 +286,21 @@ class DBConfig:
             return res
 
     async def get_cookie_by_id(self, cookie_id: int) -> Cookie:
-        async with create_session() as sess:
+        async with get_session() as sess:
             cookie = await sess.scalar(select(Cookie).where(Cookie.id == cookie_id))
             if not cookie:
                 raise NoSuchTargetException(f"cookie {cookie_id} not found")
             return cookie
 
     async def add_cookie(self, cookie: Cookie) -> int:
-        async with create_session() as sess:
+        async with get_session() as sess:
             sess.add(cookie)
             await sess.commit()
             await sess.refresh(cookie)
             return cookie.id
 
     async def update_cookie(self, cookie: Cookie):
-        async with create_session() as sess:
+        async with get_session() as sess:
             cookie_in_db: Cookie | None = await sess.scalar(select(Cookie).where(Cookie.id == cookie.id))
             if not cookie_in_db:
                 raise ValueError(f"cookie {cookie.id} not found")
@@ -312,7 +312,7 @@ class DBConfig:
             await sess.commit()
 
     async def delete_cookie_by_id(self, cookie_id: int):
-        async with create_session() as sess:
+        async with get_session() as sess:
             cookie = await sess.scalar(
                 select(Cookie)
                 .where(Cookie.id == cookie_id)
@@ -328,7 +328,7 @@ class DBConfig:
 
     async def add_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
         """通过 cookie_id 可以唯一确定一个 Cookie，通过 target 和 platform_name 可以唯一确定一个 Target"""
-        async with create_session() as sess:
+        async with get_session() as sess:
             target_obj = await sess.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
@@ -344,7 +344,7 @@ class DBConfig:
             await sess.commit()
 
     async def delete_cookie_target(self, target: T_Target, platform_name: str, cookie_id: int):
-        async with create_session() as sess:
+        async with get_session() as sess:
             target_obj = await sess.scalar(
                 select(Target).where(Target.platform_name == platform_name, Target.target == target)
             )
@@ -355,12 +355,12 @@ class DBConfig:
             await sess.commit()
 
     async def delete_cookie_target_by_id(self, cookie_target_id: int):
-        async with create_session() as sess:
+        async with get_session() as sess:
             await sess.execute(delete(CookieTarget).where(CookieTarget.id == cookie_target_id))
             await sess.commit()
 
     async def get_cookie_target(self) -> list[CookieTarget]:
-        async with create_session() as sess:
+        async with get_session() as sess:
             query = (
                 select(CookieTarget)
                 .outerjoin(Target)
@@ -374,7 +374,7 @@ class DBConfig:
 
     async def clear_db(self):
         """清空数据库，用于单元测试清理环境"""
-        async with create_session() as sess:
+        async with get_session() as sess:
             await sess.execute(delete(User))
             await sess.execute(delete(Target))
             await sess.execute(delete(ScheduleTimeWeight))

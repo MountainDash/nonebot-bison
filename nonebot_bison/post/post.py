@@ -99,7 +99,7 @@ class Post(AbstractPost, PlainContentSupport):
 
         post_format = f"""## Post: {id(self):X} ##
 
-{self.content if len(self.content) < 200 else self.content[:200] + '...'}
+{self.content if len(self.content) < 200 else self.content[:200] + "..."}
 
 来源: <Platform {self.platform.platform_name}>
 """

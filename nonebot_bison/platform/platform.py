@@ -315,6 +315,7 @@ class NewMessage(MessageProcess, abstract=True):
                 res.append(raw_post)
                 store.exists_posts.add(post_id)
         self.set_stored_data(target, store)
+        logger.trace(f"本次抓取 {len(raw_post_list)} 条，过滤后 {len(filtered_post)} 条，新消息 {len(res)} 条")
         return res
 
     async def _handle_new_post(

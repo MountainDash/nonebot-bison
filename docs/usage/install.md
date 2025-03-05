@@ -133,6 +133,30 @@ next: /usage/easy-use
    - 在目录中运行`docker-compose up -d`启动 Nonebot-Bison
    - 启动 Bot 端（这里请八仙过海）
 
+### docker-compose 部署（包括监控）
+
+由于涉及到的配置文件较多，所以建议克隆仓库使用
+
+1. clone 本仓库
+
+   ```bash
+   git clone https://github.com/felinae98/nonebot-bison.git
+   cd nonebot-bison/docker
+   ```
+
+2. 根据需要修改 docker-compose_metrics.yaml 文件
+
+修改说明请参考[docker-compose 部署](/usage/install.md#docker-compose-部署)
+
+3. 启动项目
+   - 在目录中运行`docker compose -f ./docker-compose_metrics.yaml up`启动 Nonebot-Bison
+   - 启动 Bot 端（这里同样请八仙过海）
+4. Enjoy!
+
+   使用浏览器访问对应地址的 3000 端口，即可进入 Grafana ，默认用户名为 admin，密码为 nonebot-bison。
+
+   在左边侧边栏找到「Dashboards」选项并进入，在右边点击并进入「Bison Status」即可看到监控面板。
+
 ### docker 部署
 
 Bison 的 docker 镜像为[`felinae98/nonebot-bison`](https://hub.docker.com/r/felinae98/nonebot-bison)

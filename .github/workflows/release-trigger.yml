@@ -2,6 +2,11 @@ name: Trigger Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: true
+        type: string
 
 jobs:
   archive:
@@ -16,7 +21,10 @@ jobs:
       - name: Setup Python environment
         uses: ./.github/actions/setup-python
 
-      - run: echo "TAG_NAME=v$(uvx --from=toml-cli toml get --toml-path=pyproject.toml project.version)" >> $GITHUB_ENV
+      - name: Update version in pyproject.toml
+        run: |
+          uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version ${{ github.event.inputs.version }}
+          echo "TAG_NAME=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Archive Changelog
         uses: docker://ghcr.io/nonebot/auto-changelog:master

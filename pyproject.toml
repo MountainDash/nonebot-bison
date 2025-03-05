@@ -25,7 +25,7 @@ dependencies = [
   "rapidfuzz<4.0.0,>=3.9.7",
 ]
 name = "nonebot-bison"
-version = "0.9.6-rc2"
+version = "0.9.7"
 description = "Subscribe message from social medias"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"

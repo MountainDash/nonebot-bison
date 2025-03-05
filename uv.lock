@@ -1067,6 +1067,15 @@ wheels = [
 ]
 
 [[package]]
+name = "importlib-resources"
+version = "6.5.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/8c/f834fbf984f691b4f7ff60f50b514cc3de5cc08abfc3295564dd89c5e2e7/importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c", size = 44693 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec", size = 37461 },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1610,6 +1619,7 @@ dependencies = [
     { name = "nonebot-plugin-apscheduler" },
     { name = "nonebot-plugin-datastore" },
     { name = "nonebot-plugin-htmlrender" },
+    { name = "nonebot-plugin-orm" },
     { name = "nonebot-plugin-send-anything-anywhere" },
     { name = "nonebot2", extra = ["fastapi"] },
     { name = "pillow" },
@@ -1668,6 +1678,7 @@ requires-dist = [
     { name = "nonebot-plugin-apscheduler", specifier = ">=0.5.0" },
     { name = "nonebot-plugin-datastore", specifier = ">=1.3.0,<2.0.0" },
     { name = "nonebot-plugin-htmlrender", specifier = ">=0.3.5,!=0.5.0" },
+    { name = "nonebot-plugin-orm", specifier = ">=0.7.6" },
     { name = "nonebot-plugin-send-anything-anywhere", specifier = ">=0.7.1,<0.7.2" },
     { name = "nonebot2", extras = ["aiohttp", "fastapi"], marker = "extra == 'docker'", specifier = ">=2.3.3,<3.0.0" },
     { name = "nonebot2", extras = ["fastapi"], specifier = ">=2.3.3,<3.0.0" },
@@ -1766,6 +1777,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5e/aa/a038f16a1770e0f3a12efa4e99ffee236a7742bbbba0f7ed7c369a0e073e/nonebot_plugin_localstore-0.7.3.tar.gz", hash = "sha256:1aff10e2dacfc5bc9ce239fd34849f8d7172a118135dbc5aeba1c97605d9959d", size = 5681 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d6/ab/5589d873bbc47bfb70c5fca95de7538568ddfd4e9a1f0a40c16d3b80077d/nonebot_plugin_localstore-0.7.3-py3-none-any.whl", hash = "sha256:1bc239b4b5320df0dc08eada7c4f8ba4cb92d4dc3134bf4646ab5e297bd7e575", size = 6894 },
+]
+
+[[package]]
+name = "nonebot-plugin-orm"
+version = "0.7.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "alembic" },
+    { name = "click" },
+    { name = "importlib-resources", marker = "python_full_version < '3.12'" },
+    { name = "nonebot-plugin-localstore" },
+    { name = "nonebot2" },
+    { name = "sqlalchemy" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cb/21/68a9efa50444ead2f6ee5bc2de69acaafb2a705e1bea734cc4b1d5b5c459/nonebot_plugin_orm-0.7.6.tar.gz", hash = "sha256:3ae4ac362a8ea6e6467666f654287855a30447f8fa457af88f1760f155c5d68c", size = 27537 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/c5/6ae05bf3a667231dbdbc923e9980611fdb4f144deb620b3b9a06bd1a54b6/nonebot_plugin_orm-0.7.6-py3-none-any.whl", hash = "sha256:6ce808d7e847eb7c1a738609b0e94bb612488650c5150ae1b2d67463034bb255", size = 32884 },
 ]
 
 [[package]]

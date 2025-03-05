@@ -3,9 +3,8 @@ import pytest
 
 
 async def test_add_subscribe(app: App, init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_orm import get_session
     from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
 
     from nonebot_bison.config.db_config import config
@@ -31,7 +30,7 @@ async def test_add_subscribe(app: App, init_scheduler):
     confs = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(confs) == 1
     conf: Subscribe = confs[0]
-    async with AsyncSession(get_engine()) as sess:
+    async with get_session() as sess:
         related_user_obj = await sess.scalar(select(User).where(User.id == conf.user_id))
         related_target_obj = await sess.scalar(select(Target).where(Target.id == conf.target_id))
     assert related_user_obj
@@ -53,7 +52,7 @@ async def test_add_subscribe(app: App, init_scheduler):
     confs = await config.list_subscribe(TargetQQGroup(group_id=123))
     assert len(confs) == 1
     conf2: Subscribe = confs[0]
-    async with AsyncSession(get_engine()) as sess:
+    async with get_session() as sess:
         related_user_obj = await sess.scalar(select(User).where(User.id == conf2.user_id))
         related_target_obj = await sess.scalar(select(Target).where(Target.id == conf2.target_id))
     assert related_user_obj
@@ -93,9 +92,8 @@ async def test_add_dup_sub(init_scheduler):
 
 
 async def test_del_subsribe(init_scheduler):
-    from nonebot_plugin_datastore.db import get_engine
+    from nonebot_plugin_orm import get_session
     from nonebot_plugin_saa import TargetQQGroup
-    from sqlalchemy.ext.asyncio.session import AsyncSession
     from sqlalchemy.sql.expression import select
     from sqlalchemy.sql.functions import func
 
@@ -116,7 +114,7 @@ async def test_del_subsribe(init_scheduler):
         target=TTarget("weibo_id"),
         platform_name="weibo",
     )
-    async with AsyncSession(get_engine()) as sess:
+    async with get_session() as sess:
         assert (await sess.scalar(select(func.count()).select_from(Subscribe))) == 0
         assert (await sess.scalar(select(func.count()).select_from(Target))) == 1
 
@@ -144,7 +142,7 @@ async def test_del_subsribe(init_scheduler):
         platform_name="weibo",
     )
 
-    async with AsyncSession(get_engine()) as sess:
+    async with get_session() as sess:
         assert (await sess.scalar(select(func.count()).select_from(Subscribe))) == 1
         assert (await sess.scalar(select(func.count()).select_from(Target))) == 1
         target = await sess.scalar(select(Target))

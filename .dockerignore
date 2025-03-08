@@ -1,19 +1,24 @@
 *.ini
-*.yaml
 *.yml
 *.md
-*.json
-*.toml
 *.xml
 tests
 node_modules
-admin-frontend
 data*
 htmlcov
 docker
 dist
 docs
-.*
+venv
+.venv
+/admin-frontend/node_modules
+/LICENSE
+/.editorconfig
+/.gitattributes
+/.prettierignore
+/.prettierrc
+/.devcontainer/
+/.github/
 
-!pyproject.toml
+# self install 时需要
 !README.md

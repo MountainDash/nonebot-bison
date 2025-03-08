@@ -1,11 +1,11 @@
-from time import time
 from copy import deepcopy
 from inspect import cleandoc
-from typing import TYPE_CHECKING, Any
+from time import time
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pytest
 from flaky import flaky
 from nonebug import App
+import pytest
 from pytest_mock import MockerFixture
 
 if TYPE_CHECKING:
@@ -15,7 +15,8 @@ now = time()
 passed = now - 3 * 60 * 60
 raw_post_list_1 = [{"id": 1, "text": "p1", "date": now, "tags": ["tag1"], "category": 1}]
 
-raw_post_list_2 = raw_post_list_1 + [
+raw_post_list_2 = [
+    *raw_post_list_1,
     {"id": 2, "text": "p2", "date": now, "tags": ["tag1"], "category": 1},
     {"id": 3, "text": "p3", "date": now, "tags": ["tag2"], "category": 2},
     {"id": 4, "text": "p4", "date": now, "tags": ["tag2"], "category": 3},
@@ -36,9 +37,9 @@ def SIMPLE_PNG_DATA() -> bytes:
 
 @pytest.fixture
 def mock_platform(app: App):
-    from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, RawPost
     from nonebot_bison.platform.platform import NewMessage
+    from nonebot_bison.post import Post
+    from nonebot_bison.types import RawPost, Target
 
     class MockPlatform(NewMessage):
         platform_name = "mock_platform"
@@ -47,7 +48,7 @@ def mock_platform(app: App):
         is_common = True
         schedule_interval = 10
         enable_tag = False
-        categories = {}
+        categories: ClassVar[dict] = {}
         has_target = True
 
         sub_index = 0
@@ -84,7 +85,7 @@ def mock_platform(app: App):
 @pytest.fixture
 def mock_post(app: App, mock_platform):
     from nonebot_bison.post import Post
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return Post(
         m := mock_platform(ProcessContext(DefaultClientManager())),
@@ -161,7 +162,7 @@ async def test_theme_no_enable_use_browser(app: App, mock_post, mocker: MockerFi
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_arknights_theme(app: App, mock_post):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
     from nonebot_bison.theme import theme_manager
     from nonebot_bison.theme.themes.arknights import ArknightsTheme
@@ -178,7 +179,7 @@ async def test_arknights_theme(app: App, mock_post):
 
 @pytest.mark.asyncio
 async def test_basic_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
     from nonebot_bison.theme import theme_manager
     from nonebot_bison.theme.themes.basic import BasicTheme
@@ -233,7 +234,7 @@ async def test_basic_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMP
 
 @pytest.mark.asyncio
 async def test_brief_theme(app: App, mock_post):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
     from nonebot_bison.theme import theme_manager
     from nonebot_bison.theme.themes.brief import BriefTheme
@@ -275,7 +276,7 @@ async def test_brief_theme(app: App, mock_post):
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_ceobecanteen_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
     from nonebot_bison.theme import theme_manager
     from nonebot_bison.theme.themes.ceobe_canteen import CeobeCanteenTheme
@@ -301,7 +302,7 @@ async def test_ceobecanteen_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DAT
 @pytest.mark.asyncio
 @flaky(max_runs=3, min_passes=1)
 async def test_ht2i_theme(app: App, mock_post: "Post", MERGEABLE_PNG_DATA, SIMPLE_PNG_DATA):
-    from nonebot_plugin_saa import Text, Image
+    from nonebot_plugin_saa import Image, Text
 
     from nonebot_bison.theme import theme_manager
     from nonebot_bison.theme.themes.ht2i import Ht2iTheme

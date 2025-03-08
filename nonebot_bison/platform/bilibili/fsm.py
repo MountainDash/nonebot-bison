@@ -1,22 +1,22 @@
-import sys
 import asyncio
-import inspect
+from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
+from collections.abc import Set as AbstractSet
+from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
-from dataclasses import dataclass
-from collections.abc import Set as AbstractSet
-from collections.abc import Callable, Sequence, Awaitable, AsyncGenerator
+import inspect
+import sys
 from typing import (
     TYPE_CHECKING,
     Any,
+    Concatenate,
     Generic,
-    TypeVar,
-    Protocol,
+    NamedTuple,
     ParamSpec,
+    Protocol,
     TypeAlias,
     TypedDict,
-    NamedTuple,
-    Concatenate,
+    TypeVar,
     overload,
     runtime_checkable,
 )

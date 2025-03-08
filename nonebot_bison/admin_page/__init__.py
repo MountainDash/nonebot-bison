@@ -2,15 +2,16 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from nonebot.log import logger
-from nonebot.rule import to_me
-from nonebot.typing import T_State
 from nonebot import get_driver, on_command
 from nonebot.adapters.onebot.v11 import Bot
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
+from nonebot.log import logger
+from nonebot.rule import to_me
+from nonebot.typing import T_State
+
+from nonebot_bison.plugin_config import plugin_config
 
 from .api import router as api_router
-from ..plugin_config import plugin_config
 from .token_manager import token_manager as tm
 
 if TYPE_CHECKING:
@@ -21,9 +22,9 @@ STATIC_PATH = (Path(__file__).parent / "dist").resolve()
 
 
 def init_fastapi(driver: "Driver"):
-    import socketio
     from fastapi.applications import FastAPI
     from fastapi.staticfiles import StaticFiles
+    import socketio
 
     sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
     socket_app = socketio.ASGIApp(sio, socketio_path="socket")

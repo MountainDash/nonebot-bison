@@ -1,8 +1,8 @@
 import typing
 
-import pytest
 from flaky import flaky
 from nonebug.app import App
+import pytest
 
 if typing.TYPE_CHECKING:
     import sys
@@ -65,7 +65,7 @@ async def downloaded_resource_2():
 @pytest.mark.external
 @flaky
 async def test_9_merge(app: App, downloaded_resource: list[bytes]):
-    from nonebot_bison.utils import pic_merge, http_client
+    from nonebot_bison.utils import http_client, pic_merge
 
     pics = await pic_merge(list(downloaded_resource), http_client())
     assert len(pics) == 5
@@ -74,7 +74,7 @@ async def test_9_merge(app: App, downloaded_resource: list[bytes]):
 @pytest.mark.external
 @flaky
 async def test_9_merge_2(app: App, downloaded_resource_2: list[bytes]):
-    from nonebot_bison.utils import pic_merge, http_client
+    from nonebot_bison.utils import http_client, pic_merge
 
     pics = await pic_merge(list(downloaded_resource_2), http_client())
     assert len(pics) == 4
@@ -83,7 +83,7 @@ async def test_9_merge_2(app: App, downloaded_resource_2: list[bytes]):
 @pytest.mark.external
 @flaky
 async def test_6_merge(app: App, downloaded_resource: list[bytes]):
-    from nonebot_bison.utils import pic_merge, http_client
+    from nonebot_bison.utils import http_client, pic_merge
 
     pics = await pic_merge(list(downloaded_resource[0:6] + downloaded_resource[9:]), http_client())
     assert len(pics) == 5
@@ -92,7 +92,7 @@ async def test_6_merge(app: App, downloaded_resource: list[bytes]):
 @pytest.mark.external
 @flaky
 async def test_3_merge(app: App, downloaded_resource: list[bytes]):
-    from nonebot_bison.utils import pic_merge, http_client
+    from nonebot_bison.utils import http_client, pic_merge
 
     pics = await pic_merge(list(downloaded_resource[0:3] + downloaded_resource[9:]), http_client())
     assert len(pics) == 5
@@ -101,7 +101,7 @@ async def test_3_merge(app: App, downloaded_resource: list[bytes]):
 @pytest.mark.external
 @flaky
 async def test_6_merge_only(app: App, downloaded_resource: list[bytes]):
-    from nonebot_bison.utils import pic_merge, http_client
+    from nonebot_bison.utils import http_client, pic_merge
 
     pics = await pic_merge(list(downloaded_resource[0:6]), http_client())
     assert len(pics) == 1
@@ -110,7 +110,7 @@ async def test_6_merge_only(app: App, downloaded_resource: list[bytes]):
 @pytest.mark.external
 @flaky
 async def test_3_merge_only(app: App, downloaded_resource: list[bytes]):
-    from nonebot_bison.utils import pic_merge, http_client
+    from nonebot_bison.utils import http_client, pic_merge
 
     pics = await pic_merge(list(downloaded_resource[0:3]), http_client())
     assert len(pics) == 1

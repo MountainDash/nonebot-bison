@@ -1,15 +1,16 @@
-from typing import Any
+from typing import Any, ClassVar
 
 from httpx import AsyncClient
 
-from ..post import Post
+from nonebot_bison.post import Post
+from nonebot_bison.types import RawPost, Target
+from nonebot_bison.utils import anonymous_site
+
 from .platform import NewMessage
-from ..utils import anonymous_site
-from ..types import Target, RawPost
 
 
 class FF14(NewMessage):
-    categories = {}
+    categories: ClassVar[dict] = {}
     platform_name = "ff14"
     name = "最终幻想XIV官方公告"
     enable_tag = False

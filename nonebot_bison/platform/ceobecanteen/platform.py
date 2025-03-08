@@ -1,23 +1,23 @@
-from typing import ParamSpec
-from functools import partial
-from datetime import timedelta
 from collections import defaultdict
+from datetime import timedelta
+from functools import partial
+from typing import ClassVar, ParamSpec
 
 from httpx import AsyncClient
 from nonebot import logger, require
 from rapidfuzz import fuzz, process
 
-from nonebot_bison.post import Post
+from nonebot_bison.platform.platform import NewMessage
 from nonebot_bison.plugin_config import plugin_config
-from nonebot_bison.types import Target, RawPost, Category
-from nonebot_bison.utils import Site, ClientManager, capture_html
+from nonebot_bison.post import Post
+from nonebot_bison.types import Category, RawPost, Target
+from nonebot_bison.utils import ClientManager, Site, capture_html
 
-from ..platform import NewMessage
-from .utils import process_response
-from .const import COMB_ID_URL, COOKIES_URL, COOKIE_ID_URL
-from .exception import CeobeSnapshotSkip, CeobeSnapshotFailed
 from .cache import CeobeCache, CeobeClient, CeobeDataSourceCache
-from .models import CeobeImage, CeobeCookie, CeobeTextPic, CombIdResponse, CookiesResponse, CookieIdResponse
+from .const import COMB_ID_URL, COOKIE_ID_URL, COOKIES_URL
+from .exception import CeobeSnapshotFailed, CeobeSnapshotSkip
+from .models import CeobeCookie, CeobeImage, CeobeTextPic, CombIdResponse, CookieIdResponse, CookiesResponse
+from .utils import process_response
 
 P = ParamSpec("P")
 
@@ -49,7 +49,7 @@ class CeobeCanteenSite(Site):
     name = "ceobe_canteen"
     schedule_type = "interval"
     # lwt の 推荐间隔
-    schedule_setting = {"seconds": 15}
+    schedule_setting: ClassVar[dict] = {"seconds": 15}
     client_mgr = CeobeCanteenClientManager
 
 
@@ -64,7 +64,7 @@ class CeobeCanteen(NewMessage):
     use_batch: bool = True
     default_theme: str = "ceobecanteen"
 
-    categories: dict[Category, str] = {1: "普通", 2: "转发"}
+    categories: ClassVar[dict[Category, str]] = {1: "普通", 2: "转发"}
 
     data_source_cache = CeobeDataSourceCache()
 
@@ -213,7 +213,9 @@ class CeobeCanteen(NewMessage):
         logger.debug(f"snapshot official website url: {url}")
 
         # /html/body/div[1]/div[1]/div/div[1]/div[1]/div
-        snapshot_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div"  # noqa: E501
+        snapshot_selector = (
+            "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div"
+        )
         # /html/body/div[1]/div[1]/div/div[1]/div[1]/div/div[4]/div/div/div
         calculate_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(4) > div > div > div"  # noqa: E501
         viewport = {"width": 1024, "height": 19990}

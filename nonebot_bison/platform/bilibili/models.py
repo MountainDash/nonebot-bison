@@ -1,7 +1,7 @@
-from typing import Any, Literal, TypeVar, TypeAlias
+from typing import Any, Literal, TypeAlias, TypeVar
 
-from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
+from pydantic import BaseModel
 
 from nonebot_bison.compat import model_rebuild
 
@@ -13,7 +13,7 @@ TBaseModel = TypeVar("TBaseModel", bound=type[BaseModel])
 def model_rebuild_recurse(cls: TBaseModel) -> TBaseModel:
     """Recursively rebuild all BaseModel subclasses in the class."""
     if not PYDANTIC_V2:
-        from inspect import isclass, getmembers
+        from inspect import getmembers, isclass
 
         for _, sub_cls in getmembers(cls, lambda x: isclass(x) and issubclass(x, BaseModel)):
             model_rebuild_recurse(sub_cls)
@@ -131,7 +131,7 @@ class PostAPI(APIBase):
         basic: "PostAPI.Basic"
         id_str: str
         modules: "PostAPI.Modules"
-        orig: "PostAPI.Item | None" = None
+        orig: "PostAPI.Item | PostAPI.DeletedItem | None" = None
         topic: "PostAPI.Topic | None" = None
         type: DynamicType
 
@@ -140,6 +140,14 @@ class PostAPI(APIBase):
         id_str: None
         modules: "PostAPI.Modules"
         type: Literal["DYNAMIC_TYPE_NONE"]
+
+        def to_item(self) -> "PostAPI.Item":
+            return PostAPI.Item(
+                basic=self.basic,
+                id_str="",
+                modules=self.modules,
+                type=self.type,
+            )
 
     class Data(Base):
         items: "list[PostAPI.Item | PostAPI.DeletedItem] | None" = None
@@ -303,14 +311,14 @@ class OPUSMajor(Base):
     class Pic(Base):
         width: int
         height: int
-        size: int
+        size: float
         """文件大小，KiB（1024）"""
         url: str
         """图片链接"""
 
     class Opus(Base):
         jump_url: str
-        title: str
+        title: str | None
         summary: "OPUSMajor.Summary"
         pics: "list[OPUSMajor.Pic]"
 

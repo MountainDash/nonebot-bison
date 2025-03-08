@@ -1,16 +1,17 @@
-from io import BytesIO
+from collections.abc import Sequence
 from functools import partial
+from io import BytesIO
 from typing import Literal, TypeGuard
 
-from yarl import URL
-from PIL import Image
 from httpx import AsyncClient
 from nonebot import logger, require
-from PIL.Image import Image as PILImage
-from nonebot_plugin_saa import Text as SaaText
 from nonebot_plugin_saa import Image as SaaImage
+from nonebot_plugin_saa import Text as SaaText
+from PIL import Image
+from PIL.Image import Image as PILImage
+from yarl import URL
 
-from ..plugin_config import plugin_config
+from nonebot_bison.plugin_config import plugin_config
 
 
 async def pic_url_to_image(data: str | bytes, http_client: AsyncClient) -> PILImage:
@@ -96,7 +97,7 @@ async def pic_merge(pics: list[str | bytes], http_client: AsyncClient) -> list[s
     return pics
 
 
-def is_pics_mergable(imgs: list) -> TypeGuard[list[str | bytes]]:
+def is_pics_mergable(imgs: Sequence) -> TypeGuard[list[str | bytes]]:
     if any(not isinstance(img, str | bytes) for img in imgs):
         return False
 

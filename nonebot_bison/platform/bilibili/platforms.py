@@ -1,40 +1,41 @@
-import re
-import json
 from copy import deepcopy
 from enum import Enum, unique
-from typing import NamedTuple
+import json
+import re
+from typing import ClassVar, NamedTuple
 from typing_extensions import Self
 
-from yarl import URL
-from nonebot import logger
 from httpx import AsyncClient
-from pydantic import Field, BaseModel, ValidationError
+from nonebot import logger
 from nonebot.compat import type_validate_json, type_validate_python
+from pydantic import BaseModel, Field, ValidationError
+from yarl import URL
 
-from nonebot_bison.post.post import Post
 from nonebot_bison.compat import model_rebuild
-from nonebot_bison.utils import text_similarity, decode_unicode_escapes
-from nonebot_bison.types import Tag, Target, RawPost, ApiError, Category
+from nonebot_bison.platform.platform import CategoryNotRecognize, CategoryNotSupport, NewMessage, StatusChange
+from nonebot_bison.post.post import Post
+from nonebot_bison.types import ApiError, Category, RawPost, Tag, Target
+from nonebot_bison.utils import decode_unicode_escapes, text_similarity
 
-from .retry import ApiCode352Error, retry_for_352
-from .scheduler import BilibiliSite, BililiveSite, BiliBangumiSite
-from ..platform import NewMessage, StatusChange, CategoryNotSupport, CategoryNotRecognize
 from .models import (
-    PostAPI,
-    UserAPI,
-    PGCMajor,
-    DrawMajor,
-    LiveMajor,
-    OPUSMajor,
-    DynRawPost,
-    VideoMajor,
-    CommonMajor,
-    DynamicType,
     ArticleMajor,
+    CommonMajor,
     CoursesMajor,
-    UnknownMajor,
+    DeletedMajor,
+    DrawMajor,
+    DynamicType,
+    DynRawPost,
+    LiveMajor,
     LiveRecommendMajor,
+    OPUSMajor,
+    PGCMajor,
+    PostAPI,
+    UnknownMajor,
+    UserAPI,
+    VideoMajor,
 )
+from .retry import ApiCode352Error, retry_for_352
+from .scheduler import BiliBangumiSite, BilibiliSite, BililiveSite
 
 
 class _ProcessedText(NamedTuple):
@@ -50,7 +51,7 @@ class _ParsedMojarPost(NamedTuple):
 
 
 class Bilibili(NewMessage):
-    categories = {
+    categories: ClassVar[dict[Category, str]] = {
         1: "一般动态",
         2: "专栏文章",
         3: "视频",
@@ -161,7 +162,6 @@ class Bilibili(NewMessage):
         return tags
 
     def _text_process(self, dynamic: str, desc: str, title: str) -> _ProcessedText:
-
         # 计算视频标题和视频描述相似度
         title_similarity = 0.0 if len(title) == 0 or len(desc) == 0 else text_similarity(title, desc[: len(title)])
         if title_similarity > 0.9:
@@ -169,7 +169,8 @@ class Bilibili(NewMessage):
         # 计算视频描述和动态描述相似度
         content_similarity = 0.0 if len(dynamic) == 0 or len(desc) == 0 else text_similarity(dynamic, desc)
         if content_similarity > 0.8:
-            return _ProcessedText(title, desc if len(dynamic) < len(desc) else dynamic)  # 选择较长的描述
+            # 选择较长的描述
+            return _ProcessedText(title, desc if len(dynamic) < len(desc) else dynamic)
         else:
             return _ProcessedText(title, f"{desc}" + (f"\n=================\n{dynamic}" if dynamic else ""))
 
@@ -224,7 +225,7 @@ class Bilibili(NewMessage):
                 )
             case OPUSMajor(opus=opus):
                 return _ParsedMojarPost(
-                    title=opus.title,
+                    title=opus.title or "",
                     content=opus.summary.text,
                     pics=[pic.url for pic in opus.pics],
                     url=URL(opus.jump_url).with_scheme("https").human_repr(),
@@ -243,8 +244,21 @@ class Bilibili(NewMessage):
                     pics=[courses.cover],
                     url=URL(courses.jump_url).with_scheme("https").human_repr(),
                 )
+            case DeletedMajor(none=none):
+                return _ParsedMojarPost(
+                    title="",
+                    content=none.tips,
+                    pics=[],
+                    url=None,
+                )
             case UnknownMajor(type=unknown_type):
-                raise CategoryNotSupport(unknown_type)
+                logger.error(f"无法解析的动态，类型: {unknown_type}")
+                return _ParsedMojarPost(
+                    title="",
+                    content=f"无法解析的动态，类型: {unknown_type}",
+                    pics=[],
+                    url=f"https://t.bilibili.com/{raw_post.id_str}",
+                )
             case None:  # 没有major的情况
                 return _ParsedMojarPost(
                     title="",
@@ -259,10 +273,13 @@ class Bilibili(NewMessage):
         parsed_raw_post = self.pre_parse_by_mojar(raw_post)
         parsed_raw_repost = None
         if self._do_get_category(raw_post.type) == Category(5):
-            if raw_post.orig:
-                parsed_raw_repost = self.pre_parse_by_mojar(raw_post.orig)
-            else:
-                logger.warning(f"转发动态{raw_post.id_str}没有原动态")
+            match raw_post.orig:
+                case PostAPI.Item() as orig:
+                    parsed_raw_repost = self.pre_parse_by_mojar(orig)
+                case PostAPI.DeletedItem() as orig:
+                    parsed_raw_repost = self.pre_parse_by_mojar(orig.to_item())
+                case None:
+                    logger.warning(f"转发动态{raw_post.id_str}没有原动态")
 
         post = Post(
             self,
@@ -275,8 +292,14 @@ class Bilibili(NewMessage):
             nickname=raw_post.modules.module_author.name,
         )
         if parsed_raw_repost:
-            orig = raw_post.orig
-            assert orig
+            match raw_post.orig:
+                case PostAPI.Item() as orig:
+                    orig = orig
+                case PostAPI.DeletedItem() as orig:
+                    orig = orig.to_item()
+                case None:
+                    raise ValueError("转发动态没有原动态")
+
             post.repost = Post(
                 self,
                 content=decode_unicode_escapes(parsed_raw_repost.content),
@@ -291,7 +314,7 @@ class Bilibili(NewMessage):
 
 
 class Bilibililive(StatusChange):
-    categories = {1: "开播提醒", 2: "标题更新提醒", 3: "下播提醒"}
+    categories: ClassVar[dict[Category, str]] = {1: "开播提醒", 2: "标题更新提醒", 3: "下播提醒"}
     platform_name = "bilibili-live"
     enable_tag = False
     enabled = True
@@ -426,7 +449,8 @@ class Bilibililive(StatusChange):
 
     async def parse(self, raw_post: Info) -> Post:
         url = f"https://live.bilibili.com/{raw_post.room_id}"
-        pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe]
+        # 开播提醒固定使用封面 否则优先使用关键帧，没有则使用封面
+        pic = [raw_post.cover] if raw_post.category == Category(1) else [raw_post.keyframe or raw_post.cover]
         title = f"[{self.categories[raw_post.category].rstrip('提醒')}] {raw_post.title}"
         target_name = f"{raw_post.uname} {raw_post.area_name}"
         return Post(
@@ -441,7 +465,7 @@ class Bilibililive(StatusChange):
 
 
 class BilibiliBangumi(StatusChange):
-    categories = {}
+    categories: ClassVar[dict[Category, str]] = {}
     platform_name = "bilibili-bangumi"
     enable_tag = False
     enabled = True

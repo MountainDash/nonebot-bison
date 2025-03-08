@@ -1,19 +1,19 @@
-import pytest
 from nonebug.app import App
 from nonebug_saa import should_send_saa
+import pytest
 
-from ..utils import fake_admin_user, fake_group_message_event
+from tests.utils import fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
 async def test_query_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11 import Bot, Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
-    from nonebot_bison.types import Target
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import query_sub_matcher
+    from nonebot_bison.types import Target
 
     await config.add_subscribe(
         TargetQQGroup(group_id=10000),
@@ -41,12 +41,12 @@ async def test_query_sub(app: App, init_scheduler):
 @pytest.mark.asyncio
 async def test_query_no_exsits_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11 import Bot, Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
-    from nonebot_bison.types import Target
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import query_sub_matcher
+    from nonebot_bison.types import Target
 
     platform_manager["no_exsits_platform"] = platform_manager["weibo"]
     await config.add_subscribe(
@@ -80,12 +80,12 @@ async def test_query_no_exsits_sub(app: App, init_scheduler):
 async def test_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
-    from nonebot_bison.types import Target
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.types import Target
 
     await config.add_subscribe(
         TargetQQGroup(group_id=10000),
@@ -129,12 +129,12 @@ async def test_del_sub(app: App, init_scheduler):
 async def test_del_no_exsits_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
-    from nonebot_bison.types import Target
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.types import Target
 
     platform_manager["no_exsits_platform"] = platform_manager["weibo"]
     await config.add_subscribe(

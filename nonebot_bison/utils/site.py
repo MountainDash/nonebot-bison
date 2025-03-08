@@ -1,18 +1,19 @@
-import json
-from typing import Literal
-from json import JSONDecodeError
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from datetime import datetime, timedelta
+import json
+from json import JSONDecodeError
+from typing import Literal
 
 import httpx
 from httpx import AsyncClient
 from nonebot.log import logger
 
-from ..types import Target
-from ..config import config
+from nonebot_bison.config import config
+from nonebot_bison.config.db_model import Cookie
+from nonebot_bison.types import Target
+
 from .http import http_client
-from ..config.db_model import Cookie
 
 
 class ClientManager(ABC):
@@ -78,8 +79,8 @@ class CookieClientManager(ClientManager):
             new_anonymous_cookie = await self._generate_anonymous_cookie()
             await config.add_cookie(new_anonymous_cookie)
 
-    async def add_user_cookie(self, content: str, cookie_name: str | None = None) -> Cookie:
-        """添加用户 cookie"""
+    async def add_identified_cookie(self, content: str, cookie_name: str | None = None) -> Cookie:
+        """添加实名 cookie"""
 
         if not await self.validate_cookie(content):
             raise ValueError()
@@ -123,8 +124,8 @@ class CookieClientManager(ClientManager):
     async def _choose_cookie(self, target: Target | None) -> Cookie:
         """选择 cookie 的具体算法"""
         cookies = await config.get_cookie(self._site_name, target)
-        cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
-        cookie = min(cookies, key=lambda x: x.last_usage)
+        available_cookies = (cookie for cookie in cookies if cookie.last_usage + cookie.cd < datetime.now())
+        cookie = min(available_cookies, key=lambda x: x.last_usage)
         return cookie
 
     async def get_client(self, target: Target | None) -> AsyncClient:
@@ -132,9 +133,9 @@ class CookieClientManager(ClientManager):
         client = http_client()
         cookie = await self._choose_cookie(target)
         if cookie.is_universal:
-            logger.trace(f"平台 {self._site_name} 未获取到用户cookie, 使用匿名cookie")
+            logger.trace(f"平台 {self._site_name} 未获取到实名cookie, 使用匿名cookie")
         else:
-            logger.trace(f"平台 {self._site_name} 获取到用户cookie: {cookie.id}")
+            logger.trace(f"平台 {self._site_name} 获取到实名cookie: {cookie.id}")
 
         return await self._assemble_client(client, cookie)
 
@@ -183,8 +184,8 @@ class SiteMeta(type):
             cls._key = kwargs.get("key")
         elif not kwargs.get("abstract"):
             # this is the subclass
-            if hasattr(cls, "name"):
-                site_manager[cls.name] = cls
+            if "name" in namespace:
+                site_manager[namespace["name"]] = cls  # type: ignore[reportArgumentType]
         super().__init__(name, bases, namespace, **kwargs)
 
 

@@ -1,9 +1,9 @@
+from datetime import datetime
 import json
 from typing import cast
-from datetime import datetime
 
-import pytest
 from nonebug import App
+import pytest
 
 
 @pytest.mark.usefixtures("_patch_weibo_get_cookie_name")
@@ -11,9 +11,9 @@ async def test_cookie(app: App, init_scheduler):
     from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config.db_config import config
+    from nonebot_bison.config.utils import DuplicateCookieTargetException
     from nonebot_bison.scheduler import scheduler_dict
     from nonebot_bison.types import Target as T_Target
-    from nonebot_bison.config.utils import DuplicateCookieTargetException
     from nonebot_bison.utils.site import CookieClientManager, site_manager
 
     target = T_Target("weibo_id")
@@ -34,9 +34,9 @@ async def test_cookie(app: App, init_scheduler):
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 1
-    # 添加用户cookie
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "1"}))
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "2"}))
+    # 添加实名cookie
+    await client_mgr.add_identified_cookie(json.dumps({"test_cookie": "1"}))
+    await client_mgr.add_identified_cookie(json.dumps({"test_cookie": "2"}))
 
     cookies = await config.get_cookie(site_name=site.name)
     assert len(cookies) == 3
@@ -68,7 +68,7 @@ async def test_cookie(app: App, init_scheduler):
         tags=[],
     )
 
-    await client_mgr.add_user_cookie(json.dumps({"test_cookie": "3"}))
+    await client_mgr.add_identified_cookie(json.dumps({"test_cookie": "3"}))
     cookies = await config.get_cookie(site_name=site.name, is_anonymous=False)
 
     # 多个target，多个cookie

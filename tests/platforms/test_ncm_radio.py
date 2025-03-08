@@ -1,10 +1,10 @@
 import time
 import typing
 
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
+import respx
 
 from .utils import get_json
 
@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 def ncm_radio(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["ncm-radio"](ProcessContext(DefaultClientManager()))
 
@@ -42,7 +42,7 @@ def ncm_radio_1(ncm_radio_raw: dict):
 @respx.mock
 async def test_fetch_new(ncm_radio, ncm_radio_0, ncm_radio_1, dummy_user_subinfo):
     from nonebot_bison.post import Post
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ncm_router = respx.post("http://music.163.com/api/dj/program/byradio")
     ncm_router.mock(return_value=Response(200, json=ncm_radio_0))

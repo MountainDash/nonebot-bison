@@ -1,11 +1,11 @@
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
 from nonebug_saa import should_send_saa
+import pytest
+import respx
 
-from ..platforms.utils import get_json
-from ..utils import BotReply, fake_admin_user, fake_group_message_event
+from tests.platforms.utils import get_json
+from tests.utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 # 选择platform阶段中止
@@ -55,8 +55,8 @@ async def test_abort_add_on_id(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -103,8 +103,8 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -163,8 +163,8 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -224,12 +224,12 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
 async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import TargetQQGroup, MessageFactory
+    from nonebot_plugin_saa import MessageFactory, TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.types import Target as T_Target
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
         TargetQQGroup(group_id=10000),

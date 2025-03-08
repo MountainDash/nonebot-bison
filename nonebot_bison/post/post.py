@@ -1,20 +1,22 @@
-import reprlib
+from collections.abc import Sequence
+from dataclasses import dataclass, fields
 from io import BytesIO
 from pathlib import Path
+import reprlib
 from typing import TYPE_CHECKING
-from dataclasses import fields, dataclass
 
 from nonebot.log import logger
 from nonebot_plugin_saa import MessageSegmentFactory
 
-from ..theme import theme_manager
+from nonebot_bison.plugin_config import plugin_config
+from nonebot_bison.theme import theme_manager
+from nonebot_bison.theme.types import ThemeRenderError, ThemeRenderUnsupportError
+
 from .abstract_post import AbstractPost
-from ..plugin_config import plugin_config
 from .protocol import PlainContentSupport
-from ..theme.types import ThemeRenderError, ThemeRenderUnsupportError
 
 if TYPE_CHECKING:
-    from ..platform import Platform
+    from nonebot_bison.platform import Platform
 
 
 @dataclass
@@ -30,7 +32,7 @@ class Post(AbstractPost, PlainContentSupport):
     """文本内容"""
     title: str | None = None
     """标题"""
-    images: list[str | bytes | Path | BytesIO] | None = None
+    images: Sequence[str | bytes | Path | BytesIO] | None = None
     """图片列表"""
     timestamp: float | None = None
     """发布/获取时间戳, 秒"""

@@ -1,22 +1,23 @@
 import re
-from typing import Any
+from typing import Any, ClassVar
 
 from httpx import AsyncClient
 
-from ..post import Post
-from ..utils import Site
+from nonebot_bison.post import Post
+from nonebot_bison.types import ApiError, Category, RawPost, Target
+from nonebot_bison.utils import Site
+
 from .platform import NewMessage
-from ..types import Target, RawPost, ApiError
 
 
 class NcmSite(Site):
     name = "music.163.com"
     schedule_type = "interval"
-    schedule_setting = {"minutes": 1}
+    schedule_setting: ClassVar[dict] = {"minutes": 1}
 
 
 class NcmArtist(NewMessage):
-    categories = {}
+    categories: ClassVar[dict[Category, str]] = {}
     platform_name = "ncm-artist"
     enable_tag = False
     enabled = True
@@ -73,7 +74,7 @@ class NcmArtist(NewMessage):
 
 
 class NcmRadio(NewMessage):
-    categories = {}
+    categories: ClassVar[dict[Category, str]] = {}
     platform_name = "ncm-radio"
     enable_tag = False
     enabled = True

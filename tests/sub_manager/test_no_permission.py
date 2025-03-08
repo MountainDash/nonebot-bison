@@ -1,7 +1,7 @@
-import pytest
 from nonebug import App
+import pytest
 
-from ..utils import BotReply, fake_admin_user, fake_group_message_event
+from tests.utils import BotReply, fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
@@ -42,4 +42,5 @@ async def test_without_permission(app: App):
             True,
         )
         ctx.should_pass_rule()
-        ctx.should_pass_permission()
+        ctx.should_pass_permission(no_permission_matcher)
+        ctx.should_not_pass_permission(add_sub_matcher)

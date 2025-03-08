@@ -1,12 +1,12 @@
-import typing
 from datetime import datetime
+import typing
 import xml.etree.ElementTree as ET
 
-import pytz
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
+import pytest
+import pytz
+import respx
 
 from .utils import get_file
 
@@ -35,7 +35,7 @@ def user_info_factory(app: App, dummy_user):
 @pytest.fixture
 def rss(app: App):
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.utils import ProcessContext, DefaultClientManager
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
     return platform_manager["rss"](ProcessContext(DefaultClientManager()))
 
@@ -71,7 +71,7 @@ async def test_fetch_new_1(
     user_info_factory,
     update_time_feed_1,
 ):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ## 标题重复的情况
     rss_router = respx.get("https://rsshub.app/twitter/user/ArknightsStaff")
@@ -113,7 +113,7 @@ async def test_fetch_new_2(
     user_info_factory,
     update_time_feed_2,
 ):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ## 标题与正文不重复的情况
     rss_router = respx.get("https://www.ruanyifeng.com/blog/atom.xml")
@@ -148,7 +148,7 @@ async def test_fetch_new_3(
     user_info_factory,
     update_time_feed_3,
 ):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ## 只有<updated>没有<published>
     rss_router = respx.get("https://github.com/R3nzTheCodeGOD/R3nzSkin/releases.atom")
@@ -172,7 +172,7 @@ async def test_fetch_new_4(
     rss,
     user_info_factory,
 ):
-    from nonebot_bison.types import Target, SubUnit
+    from nonebot_bison.types import SubUnit, Target
 
     ## 没有日期信息的情况
     rss_router = respx.get("https://rsshub.app/wallhaven/hot?limit=5")

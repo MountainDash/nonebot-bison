@@ -1,29 +1,31 @@
+import difflib
 import re
 import sys
-import difflib
+from typing import Any, ClassVar
 
-import nonebot
-from nonebot.plugin import require
 from bs4 import BeautifulSoup as bs
-from nonebot.log import logger, default_format
-from nonebot_plugin_saa import Text, Image, MessageSegmentFactory
+import nonebot
+from nonebot.log import default_format, logger
+from nonebot.plugin import require
+from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
 
-from .site import Site as Site
-from ..plugin_config import plugin_config
-from .image import pic_merge as pic_merge
+from nonebot_bison.plugin_config import plugin_config
+
+from .context import ProcessContext as ProcessContext
 from .http import http_client as http_client
 from .image import capture_html as capture_html
-from .site import ClientManager as ClientManager
-from .image import text_to_image as text_to_image
-from .site import anonymous_site as anonymous_site
-from .context import ProcessContext as ProcessContext
 from .image import is_pics_mergable as is_pics_mergable
+from .image import pic_merge as pic_merge
 from .image import pic_url_to_image as pic_url_to_image
+from .image import text_to_image as text_to_image
+from .site import ClientManager as ClientManager
 from .site import DefaultClientManager as DefaultClientManager
+from .site import Site as Site
+from .site import anonymous_site as anonymous_site
 
 
 class Singleton(type):
-    _instances = {}
+    _instances: ClassVar[dict[Any, Any]] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:

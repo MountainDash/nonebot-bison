@@ -1,19 +1,20 @@
-from typing import cast
 from collections import defaultdict
 from collections.abc import Callable
+from typing import cast
 
-from sqlalchemy import select
-from nonebot.log import logger
-from sqlalchemy.sql.selectable import Select
-from nonebot_plugin_saa import PlatformTarget
 from nonebot.compat import type_validate_python
+from nonebot.log import logger
 from nonebot_plugin_datastore.db import create_session
+from nonebot_plugin_saa import PlatformTarget
+from sqlalchemy import select
 from sqlalchemy.orm.strategy_options import selectinload
+from sqlalchemy.sql.selectable import Select
 
-from .. import config
-from .utils import NBESFVerMatchErr, row2dict
+from nonebot_bison.config import config
+from nonebot_bison.config.db_model import Cookie, CookieTarget, Subscribe, Target, User
+
 from .nbesf_model import NBESFBase, v1, v2, v3
-from ..db_model import User, Cookie, Target, Subscribe, CookieTarget
+from .utils import NBESFVerMatchErr, row2dict
 
 
 async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup:
@@ -65,7 +66,7 @@ async def subscribes_export(selector: Callable[[Select], Select]) -> v3.SubGroup
         target_payload = type_validate_python(v3.Target, cookie_target.target)
         cookie_target_dict[cookie_target.cookie].append(target_payload)
 
-    def cookie_transform(cookie: Cookie, targets: [Target]) -> v3.Cookie:
+    def cookie_transform(cookie: Cookie, targets: list[v3.Target]) -> v3.Cookie:
         cookie_dict = row2dict(cookie)
         cookie_dict["tags"] = cookie.tags
         cookie_dict["targets"] = targets

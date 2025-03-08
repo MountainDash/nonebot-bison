@@ -6,6 +6,14 @@ inputs:
     description: Python version
     required: false
     default: "3.10"
+  install-deps:
+    description: Install dependencies
+    required: false
+    default: "false"
+  install-playwright:
+    description: Install Playwright
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -14,7 +22,19 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
-    - name: Setup Poetry
-      uses: Gr1N/setup-poetry@v9
+
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v5
       with:
-        poetry-version: "1.7.1"
+        version: "latest"
+        enable-cache: true
+
+    - name: Install dependencies
+      if: ${{ inputs.install-deps == 'true' }}
+      run: uv sync --frozen
+      shell: bash
+
+    - name: Install Playwright
+      if: ${{ inputs.install-playwright == 'true' }}
+      run: uv run playwright install
+      shell: bash

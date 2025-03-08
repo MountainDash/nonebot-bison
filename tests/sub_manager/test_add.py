@@ -1,12 +1,12 @@
-import respx
-import pytest
 from httpx import Response
 from nonebug.app import App
-from pytest_mock import MockerFixture
 from nonebug_saa import should_send_saa
+import pytest
+from pytest_mock import MockerFixture
+import respx
 
-from ..platforms.utils import get_json
-from ..utils import BotReply, fake_admin_user, fake_group_message_event, add_reply_on_id_input_search
+from tests.platforms.utils import get_json
+from tests.utils import BotReply, add_reply_on_id_input_search, fake_admin_user, fake_group_message_event
 
 
 @pytest.mark.asyncio
@@ -61,13 +61,13 @@ async def test_configurable_at_me_false(app: App, mocker: MockerFixture):
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_target(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -142,8 +142,9 @@ async def test_add_with_target(app: App, init_scheduler):
     sub = subs[0]
     assert sub.target.target == "6279793937"
     assert sub.tags == []
-    assert sub.categories == [platform_manager["weibo"].reverse_category["图文"]] + [
-        platform_manager["weibo"].reverse_category["文字"]
+    assert sub.categories == [
+        platform_manager["weibo"].reverse_category["图文"],
+        platform_manager["weibo"].reverse_category["文字"],
     ]
     assert sub.target.platform_name == "weibo"
     assert sub.target.target_name == "明日方舟Arknights"
@@ -152,13 +153,13 @@ async def test_add_with_target(app: App, init_scheduler):
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_target_no_cat(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
-    from nonebot_bison.platform.ncm import NcmArtist
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.ncm import NcmArtist
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
@@ -207,9 +208,9 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_no_target(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
@@ -290,11 +291,11 @@ async def test_platform_name_err(app: App):
 async def test_add_with_get_id(app: App):
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
-    from nonebot_plugin_saa import Text, TargetQQGroup, MessageFactory, SupportedAdapters
+    from nonebot_plugin_saa import MessageFactory, SupportedAdapters, TargetQQGroup, Text
 
     from nonebot_bison.config import config
-    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -356,9 +357,9 @@ async def test_add_with_get_id(app: App):
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
@@ -470,9 +471,9 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
@@ -549,9 +550,9 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
 @pytest.mark.asyncio
 @respx.mock
 async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler):
-    from nonebot_plugin_saa import TargetQQGroup
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
+    from nonebot_plugin_saa import TargetQQGroup
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
@@ -622,9 +623,9 @@ async def test_subscribe_platform_requires_browser(app: App, mocker: MockerFixtu
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11.message import Message
 
+    from nonebot_bison.platform import platform_manager, unavailable_paltforms
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
-    from nonebot_bison.platform import platform_manager, unavailable_paltforms
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
     mocker.patch.dict(unavailable_paltforms, {"bilibili": "需要启用 bison_use_browser"})

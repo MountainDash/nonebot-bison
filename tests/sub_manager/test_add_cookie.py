@@ -1,34 +1,10 @@
 import json
 
-import pytest
 from nonebug.app import App
+import pytest
 from pytest_mock import MockerFixture
 
-from ..utils import BotReply, fake_superuser, fake_admin_user, fake_private_message_event
-
-
-async def test_add_cookie_rule(app: App, mocker: MockerFixture):
-    from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
-
-    from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.sub_manager import add_cookie_matcher
-
-    mocker.patch.object(plugin_config, "bison_to_me", True)
-
-    async with app.test_matcher(add_cookie_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event = fake_private_message_event(message=Message("添加cookie"), sender=fake_superuser)
-        ctx.receive_event(bot, event)
-        ctx.should_pass_rule()
-        ctx.should_pass_permission()
-
-    async with app.test_matcher(add_cookie_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event = fake_private_message_event(message=Message("添加cookie"), sender=fake_admin_user)
-        ctx.receive_event(bot, event)
-        ctx.should_not_pass_rule()
-        ctx.should_pass_permission()
+from tests.utils import BotReply, fake_private_message_event, fake_superuser
 
 
 @pytest.mark.usefixtures("_clear_db")
@@ -40,8 +16,8 @@ async def test_add_cookie_target_no_cookie(app: App):
 
     async with app.test_matcher(add_cookie_target_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
+        from nonebot_plugin_saa import MessageFactory, TargetQQGroup
         from nonebug_saa import should_send_saa
-        from nonebot_plugin_saa import TargetQQGroup, MessageFactory
 
         from nonebot_bison.config import config
         from nonebot_bison.types import Target as T_Target
@@ -89,7 +65,7 @@ async def test_add_cookie(app: App):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import common_platform, add_cookie_matcher, add_cookie_target_matcher
+    from nonebot_bison.sub_manager import add_cookie_matcher, add_cookie_target_matcher, common_platform
 
     async with app.test_matcher(add_cookie_matcher) as ctx:
         bot = ctx.create_bot(base=Bot)
@@ -143,8 +119,8 @@ async def test_add_cookie(app: App):
         )
 
     async with app.test_matcher(add_cookie_target_matcher) as ctx:
+        from nonebot_plugin_saa import MessageFactory, TargetQQGroup
         from nonebug_saa import should_send_saa
-        from nonebot_plugin_saa import TargetQQGroup, MessageFactory
 
         from nonebot_bison.config import config
         from nonebot_bison.types import Target as T_Target

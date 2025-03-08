@@ -1,16 +1,17 @@
-from typing import cast
 from json import JSONDecodeError
+from typing import cast
 
+from nonebot.adapters import Message, MessageTemplate
+from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot.log import logger
-from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.params import Arg, ArgPlainText
-from nonebot.adapters.onebot.v11 import MessageEvent
-from nonebot.adapters import Message, MessageTemplate
+from nonebot.typing import T_State
 
-from ..scheduler import scheduler_dict
-from ..platform import platform_manager
-from ..utils.site import CookieClientManager, is_cookie_client_manager
+from nonebot_bison.platform import platform_manager
+from nonebot_bison.scheduler import scheduler_dict
+from nonebot_bison.utils.site import CookieClientManager, is_cookie_client_manager
+
 from .utils import common_platform, gen_handle_cancel, only_allow_private
 
 
@@ -75,7 +76,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
     @add_cookie.handle()
     async def add_cookie_process(state: T_State):
         client_mgr = cast(CookieClientManager, scheduler_dict[platform_manager[state["platform"]].site].client_mgr)
-        new_cookie = await client_mgr.add_user_cookie(state["cookie"], state["cookie_name"])
+        new_cookie = await client_mgr.add_identified_cookie(state["cookie"], state["cookie_name"])
         await add_cookie.finish(
             f"已添加 Cookie: {new_cookie.cookie_name} 到平台 {state['platform']}"
             + "\n请使用“关联cookie”为 Cookie 关联订阅"

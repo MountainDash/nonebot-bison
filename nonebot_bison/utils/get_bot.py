@@ -1,12 +1,12 @@
 """提供获取 Bot 的方法"""
 
-from typing import Any
 from collections import defaultdict
+from typing import Any
 
 import nonebot
 from nonebot.adapters import Bot
-from nonebot_plugin_saa import PlatformTarget
 from nonebot.adapters.onebot.v11 import Bot as Ob11Bot
+from nonebot_plugin_saa import PlatformTarget
 
 GROUP: dict[int, list[Bot]] = {}
 USER: dict[int, list[Bot]] = {}

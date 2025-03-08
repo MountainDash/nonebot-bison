@@ -1,10 +1,10 @@
 import asyncio
 from collections import deque
 
-from nonebot.log import logger
-from nonebot_plugin_saa.auto_select_bot import refresh_bots
 from nonebot.adapters.onebot.v11.exception import ActionFailed
-from nonebot_plugin_saa import MessageFactory, PlatformTarget, AggregatedMessageFactory
+from nonebot.log import logger
+from nonebot_plugin_saa import AggregatedMessageFactory, MessageFactory, PlatformTarget
+from nonebot_plugin_saa.auto_select_bot import refresh_bots
 
 from .plugin_config import plugin_config
 
@@ -13,6 +13,8 @@ Sendable = MessageFactory | AggregatedMessageFactory
 QUEUE: deque[tuple[PlatformTarget, Sendable, int]] = deque()
 
 MESSGE_SEND_INTERVAL = 1.5
+
+_MESSAGE_DISPATCH_TASKS: set[asyncio.Task] = set()
 
 
 async def _do_send(send_target: PlatformTarget, msg: Sendable):
@@ -59,7 +61,9 @@ async def _send_msgs_dispatch(send_target: PlatformTarget, msg: Sendable):
         QUEUE.append((send_target, msg, plugin_config.bison_resend_times))
         # len(QUEUE) before append was 0
         if len(QUEUE) == 1:
-            asyncio.create_task(do_send_msgs())
+            task = asyncio.create_task(do_send_msgs())
+            _MESSAGE_DISPATCH_TASKS.add(task)
+            task.add_done_callback(_MESSAGE_DISPATCH_TASKS.discard)
     else:
         await _do_send(send_target, msg)
 

@@ -6,10 +6,10 @@ Create Date: 2023-08-25 00:20:51.511329
 
 """
 
-import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.orm import Session
+import sqlalchemy as sa
 from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
 
 # revision identifiers, used by Alembic.
 revision = "f9baef347cc8"

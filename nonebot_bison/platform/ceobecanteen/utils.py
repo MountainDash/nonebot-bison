@@ -3,7 +3,7 @@ from nonebot import logger
 from nonebot.compat import type_validate_python
 
 from .exception import CeobeResponseError
-from .models import ResponseModel, CookieIdResponse
+from .models import CookieIdResponse, ResponseModel
 
 
 def process_response(response: Response, parse_model: type[ResponseModel]) -> ResponseModel:

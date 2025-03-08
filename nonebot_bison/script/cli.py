@@ -1,25 +1,26 @@
-import json
-import time
+from collections.abc import Callable, Coroutine
+from functools import partial, wraps
 import importlib
+import json
 from pathlib import Path
+import time
 from types import ModuleType
 from typing import Any, TypeVar
-from functools import wraps, partial
-from collections.abc import Callable, Coroutine
 
-from nonebot.log import logger
+from anyio import open_file
 from nonebot.compat import model_dump
+from nonebot.log import logger
 
-from ..scheduler.manager import init_scheduler
-from ..config.subs_io.nbesf_model import v1, v2, v3
-from ..config.subs_io import subscribes_export, subscribes_import
+from nonebot_bison.config.subs_io import subscribes_export, subscribes_import
+from nonebot_bison.config.subs_io.nbesf_model import v1, v2, v3
+from nonebot_bison.scheduler.manager import init_scheduler
 
 try:
     from typing_extensions import ParamSpec
 
     import anyio
+    from anyio import from_thread, to_thread
     import click
-    from anyio import to_thread, from_thread
 except ImportError as e:  # pragma: no cover
     raise ImportError("请使用 `pip install nonebot-bison[cli]` 安装所需依赖") from e
 
@@ -83,7 +84,7 @@ async def subs_export(path: Path, format: str):
     export_file = path / f"bison_subscribes_export_{int(time.time())}.{format}"
 
     logger.info("正在获取订阅信息...")
-    export_data: v2.SubGroup = await subscribes_export(lambda x: x)
+    export_data: v3.SubGroup = await subscribes_export(lambda x: x)
 
     with export_file.open("w", encoding="utf-8") as f:
         match format:
@@ -127,18 +128,18 @@ async def subs_import(path: str, format: str):
     import_file_path = Path(path)
     assert import_file_path.is_file(), "该路径不是文件！"
 
-    with import_file_path.open("r", encoding="utf-8") as f:
+    async with await open_file(import_file_path, "r", encoding="utf-8") as f:
         match format:
             case "yaml" | "yml":
                 logger.info("正在从yaml导入...")
 
                 pyyaml = import_yaml_module()
-                import_items = pyyaml.safe_load(f)
+                import_items = pyyaml.safe_load(await f.read())
 
             case "json":
                 logger.info("正在从json导入...")
 
-                import_items = json.load(f)
+                import_items = json.loads(await f.read())
 
             case _:
                 raise click.BadParameter(message=f"不支持的导入格式: {format}")

@@ -1,10 +1,10 @@
-from datetime import time
 from dataclasses import dataclass
-from typing import Any, Literal, NewType, NamedTuple
+from datetime import time
+from typing import Any, Literal, NamedTuple, NewType
 
 from httpx import URL
-from pydantic import BaseModel
 from nonebot_plugin_saa import PlatformTarget as SendTarget
+from pydantic import BaseModel
 
 RawPost = Any
 Target = NewType("Target", str)

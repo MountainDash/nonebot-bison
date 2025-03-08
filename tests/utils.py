@@ -12,9 +12,9 @@ class AppReq(TypedDict, total=False):
 
 
 def fake_group_message_event(**field) -> "GroupMessageEvent":
-    from pydantic import create_model
+    from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
-    from nonebot.adapters.onebot.v11 import Message, GroupMessageEvent
+    from pydantic import create_model
 
     _Fake = create_model("_Fake", __base__=GroupMessageEvent)
 
@@ -48,9 +48,9 @@ def fake_group_message_event(**field) -> "GroupMessageEvent":
 
 
 def fake_private_message_event(**field) -> "PrivateMessageEvent":
-    from pydantic import create_model
-    from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11 import Message, PrivateMessageEvent
+    from nonebot.adapters.onebot.v11.event import Sender
+    from pydantic import create_model
 
     _Fake = create_model("_Fake", __base__=PrivateMessageEvent)
 
@@ -89,7 +89,6 @@ add_reply_on_id_input_search = (
 
 
 class BotReply:
-
     @staticmethod
     def add_reply_on_platform(platform_manager, common_platform):
         return (

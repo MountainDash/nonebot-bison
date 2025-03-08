@@ -1,12 +1,13 @@
-from nonebot.params import Arg
 from nonebot.matcher import Matcher
+from nonebot.params import Arg
 from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
-from ..config import config
-from ..types import Category
-from ..utils import parse_text
+from nonebot_bison.config import config
+from nonebot_bison.platform import platform_manager
+from nonebot_bison.types import Category
+from nonebot_bison.utils import parse_text
+
 from .utils import ensure_user_info
-from ..platform import platform_manager
 
 
 def do_query_sub(query_sub: type[Matcher]):

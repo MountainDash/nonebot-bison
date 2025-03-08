@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Awaitable, Callable, Collection
 from dataclasses import dataclass
-
-import re
 import json
+import re
 import ssl
 import time
 import typing

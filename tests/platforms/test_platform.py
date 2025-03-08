@@ -1,12 +1,11 @@
+from collections.abc import Iterator
 from time import time
 from typing import Any, ClassVar
-from collections.abc import Iterator
 
-import pytest
+from _pytest.logging import LogCaptureFixture
 from loguru import logger
 from nonebug.app import App
-from _pytest.logging import LogCaptureFixture
-
+import pytest
 
 now = time()
 passed = now - 3 * 60 * 60
@@ -32,8 +31,8 @@ def caplog(caplog: LogCaptureFixture) -> Iterator[LogCaptureFixture]:
 
 
 def test_logger_custom_warning_enable(app: App, caplog):
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import logger_custom_warning
+    from nonebot_bison.plugin_config import plugin_config
 
     plugin_config.bison_collapse_network_warning = True
     plugin_config.bison_collapse_network_warning_length = 100
@@ -52,8 +51,8 @@ def test_logger_custom_warning_enable(app: App, caplog):
 
 
 def test_logger_custom_warning_disable(app: App, caplog):
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import logger_custom_warning
+    from nonebot_bison.plugin_config import plugin_config
 
     plugin_config.bison_collapse_network_warning = False
     plugin_config.bison_collapse_network_warning_length = 100
@@ -70,8 +69,8 @@ def test_logger_custom_warning_disable(app: App, caplog):
 
 @pytest.mark.asyncio
 async def test_catch_network_error_unmatched_exception(app: App, caplog):
-    from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.platform.platform import catch_network_error
+    from nonebot_bison.plugin_config import plugin_config
 
     plugin_config.bison_collapse_network_warning = True
 

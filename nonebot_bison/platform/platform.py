@@ -3,6 +3,7 @@ from collections import defaultdict
 from collections.abc import Awaitable, Callable, Collection
 from dataclasses import dataclass
 import json
+import re
 import ssl
 import time
 import typing
@@ -48,20 +49,31 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
+def logger_custom_warning(_msg: str) -> None:
+    if plugin_config.bison_collapse_network_warning:
+        _msg = re.sub(r"\s*[\r\n]+\s*", "", _msg)
+        _max_length = plugin_config.bison_collapse_network_warning_length
+        logger.warning(_msg if len(_msg) < _max_length else f"{_msg[:_max_length]}...")
+        return None
+    else:
+        logger.warning(_msg)
+        return None
+
+
 async def catch_network_error(func: Callable[P, Awaitable[R]], *args: P.args, **kwargs: P.kwargs) -> R | None:
-    try:
+    if plugin_config.bison_show_network_warning:
+        try:
+            return await func(*args, **kwargs)
+        except httpx.RequestError as err:
+            return logger_custom_warning(f"network connection error: {type(err)}, url: {err.request.url}")
+        except ssl.SSLError as err:
+            return logger_custom_warning(f"ssl error: {err}")
+        except json.JSONDecodeError as err:
+            return logger_custom_warning(f"json error, parsing: {err.doc}")
+        except Exception as err:
+            return logger_custom_warning(f"unmatched exception: {err}")
+    else:
         return await func(*args, **kwargs)
-    except httpx.RequestError as err:
-        if plugin_config.bison_show_network_warning:
-            logger.warning(f"network connection error: {type(err)}, url: {err.request.url}")
-        return None
-    except ssl.SSLError as err:
-        if plugin_config.bison_show_network_warning:
-            logger.warning(f"ssl error: {err}")
-        return None
-    except json.JSONDecodeError as err:
-        logger.warning(f"json error, parsing: {err.doc}")
-        raise err
 
 
 class PlatformMeta(RegistryMeta):

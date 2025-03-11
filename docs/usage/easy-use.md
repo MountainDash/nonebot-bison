@@ -156,6 +156,6 @@ Bison 支持导出 Prometheus 格式的指标数据，并且提供了配套的 G
 
 在默认情况下，指标导出会默认挂载在 "/metrics" 路径下，详细配置请参考插件 [nonebot-plugin-prometheus](https://github.com/suyiiyii/nonebot-plugin-prometheus?tab=readme-ov-file#%E9%85%8D%E7%BD%AE) 。
 
-可视化面板可以在[dashboard.json](https://github.com/MountainDash/nonebot-bison/blob/main/docker/grafana-dashboard.json)找到。
+可视化面板可以在[dashboard.json](https://github.com/MountainDash/nonebot-bison/blob/main/docker/grafana-dashboard.json)找到。或者直接使用 [23060](https://grafana.com/grafana/dashboards/23060) 导入。
 
 如果你对 Prometheus 以及 Grafana 不是很熟悉，可以使用[docker-compose 部署-包括监控](/usage/install.md#docker-compose-部署-包括监控)提供的安装方式，快速上手体验。

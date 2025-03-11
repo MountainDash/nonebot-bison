@@ -323,7 +323,7 @@ class OPUSMajor(Base):
         pics: "list[OPUSMajor.Pic]"
 
     type: Literal["MAJOR_TYPE_OPUS"]
-    opus: "OPUSMajor.Opus"
+    opus: "list[OPUSMajor.Opus]"
 
 
 class CommonMajor(Base):

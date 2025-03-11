@@ -2,6 +2,18 @@
 
 ## 最近更新
 
+### Bug 修复
+
+- 修正 opus 解析类型 [@AzideCupric](https://github.com/AzideCupric) ([#689](https://github.com/MountainDash/nonebot-bison/pull/689))
+
+## v0.9.6-rc2
+
+### 新功能
+
+- 优化 B站 Cookie 选择策略 [@suyiiyii](https://github.com/suyiiyii) ([#664](https://github.com/MountainDash/nonebot-bison/pull/664))
+
+## v0.9.6-rc1
+
 ### 新功能
 
 - :sparkles: B站获取OPUS格式动态 [@AzideCupric](https://github.com/AzideCupric) ([#651](https://github.com/MountainDash/nonebot-bison/pull/651))
@@ -9,6 +21,7 @@
 
 ### Bug 修复
 
+- B站直播无法获取关键帧时使用封面 [@gongfuture](https://github.com/gongfuture) ([#631](https://github.com/MountainDash/nonebot-bison/pull/631))
 - :bug: 修复新版 httpx 中 proxy 不起效的问题 [@suyiiyii](https://github.com/suyiiyii) ([#669](https://github.com/MountainDash/nonebot-bison/pull/669))
 - :bug: 修复 cookie 模块 type hint [@suyiiyii](https://github.com/suyiiyii) ([#658](https://github.com/MountainDash/nonebot-bison/pull/658))
 - :bug: B站转发动态补充 DeletedItem 类型解析 [@AzideCupric](https://github.com/AzideCupric) ([#659](https://github.com/MountainDash/nonebot-bison/pull/659))

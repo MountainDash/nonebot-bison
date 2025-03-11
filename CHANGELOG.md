@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### 新功能
+
+- ✨ 增加 Metric 服务 [@suyiiyii](https://github.com/suyiiyii) ([#666](https://github.com/MountainDash/nonebot-bison/pull/666))
+
 ## v0.9.7
 
 ### Bug 修复

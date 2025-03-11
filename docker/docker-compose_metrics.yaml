@@ -28,7 +28,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=nonebot-bison
     volumes:
-      - ./grafana-dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json
+      - ./grafana-dashboard-bison.json:/etc/grafana/provisioning/dashboards/dashboard-bison.json
+      - ./grafana-dashboard-nonebot.json:/etc/grafana/provisioning/dashboards/dashboard-nonebot.json
       - ./grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
 

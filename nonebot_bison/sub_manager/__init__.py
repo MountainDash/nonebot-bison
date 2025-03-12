@@ -100,7 +100,7 @@ async def send_group_list(bot: Bot, event: PrivateMessageEvent, state: T_State):
     group_number_idx = {}
     for idx, group in enumerate(groups, 1):
         group_number_idx[idx] = group["group_id"]
-        res_text += f'{idx}. {group["group_id"]} - {group["group_name"]}\n'
+        res_text += f"{idx}. {group['group_id']} - {group['group_name']}\n"
     res_text += "请输入左侧序号\n中止操作请输入'取消'"
     # await group_manage_matcher.send(res_text)
     state["_prompt"] = res_text

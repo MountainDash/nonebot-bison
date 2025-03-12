@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)) ([#690](https://github.com/MountainDash/nonebot-bison/pull/690))
+
 ### 新功能
 
 - ✨ 增加 Metric 服务 [@suyiiyii](https://github.com/suyiiyii) ([#666](https://github.com/MountainDash/nonebot-bison/pull/666))

@@ -41,6 +41,8 @@ class PlugConfig(BaseModel):
         description="默认UA",
     )
     bison_show_network_warning: bool = True
+    bison_collapse_network_warning: bool = False  # 清理警告文本中的换行符，当文本字符数超过限制时折叠
+    bison_collapse_network_warning_length: int = 100
     bison_platform_theme: dict[PlatformName, ThemeName] = {}
 
     @property

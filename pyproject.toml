@@ -114,6 +114,7 @@ select = [
   "Q",     # flake8-quotes
   "TID",   # flake8-tidy-imports
   "RUF",   # Ruff-specific rules
+  "TC",    # flake8-type-checking
 ]
 ignore = [
   "E402",   # module-import-not-at-top-of-file
@@ -147,10 +148,11 @@ plugin_dirs = ["extra_plugins"]
 builtin_plugins = ["echo"]
 
 [tool.pyright]
+enableExperimentalFeatures=true
 typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 pythonPlatform = "All"
 executionEnvironments = [
   { root = "./tests", extraPaths = [

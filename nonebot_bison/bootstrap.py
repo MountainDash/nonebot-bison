@@ -44,6 +44,7 @@ async def post():
     legacy_db_startup()
     # migrate data
     await data_migrate()
+
     # init scheduler
     await init_scheduler()
     logger.info("nonebot-bison bootstrap done")

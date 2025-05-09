@@ -231,13 +231,13 @@ def parse_cookie(content: str) -> dict:
 
 def plain_cookie_to_json(cookie_string):
     # Strip whitespace and split by semicolon
-    cookie_pairs = [pair.strip() for pair in cookie_string.split(';')]
+    cookie_pairs = [pair.strip() for pair in cookie_string.split(";")]
 
     # Create a dictionary from the cookie pairs
     cookie_dict = {}
     for pair in cookie_pairs:
-        if '=' in pair:
-            key, value = pair.split('=', 1)  # Split only at the first '=' occurrence
+        if "=" in pair:
+            key, value = pair.split("=", 1)  # Split only at the first '=' occurrence
             cookie_dict[key.strip()] = value.strip()
         else:
             raise CookieFormatException

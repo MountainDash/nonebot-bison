@@ -122,9 +122,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "/^value$/",
           "values": true
         },
@@ -151,10 +149,7 @@
         {
           "id": "labelsToFields",
           "options": {
-            "keepLabels": [
-              "implementation",
-              "version"
-            ],
+            "keepLabels": ["implementation", "version"],
             "mode": "rows",
             "valueLabel": "instance"
           }
@@ -200,9 +195,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -267,9 +260,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -338,9 +329,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -408,9 +397,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -588,9 +575,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -616,10 +601,7 @@
         {
           "id": "joinByLabels",
           "options": {
-            "join": [
-              "bot_id",
-              "adapter_name"
-            ],
+            "join": ["bot_id", "adapter_name"],
             "value": "__name__"
           }
         },
@@ -684,9 +666,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -712,10 +692,7 @@
         {
           "id": "joinByLabels",
           "options": {
-            "join": [
-              "bot_id",
-              "adapter_name"
-            ],
+            "join": ["bot_id", "adapter_name"],
             "value": "__name__"
           }
         },
@@ -1165,9 +1142,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -1193,11 +1168,7 @@
         {
           "id": "joinByLabels",
           "options": {
-            "join": [
-              "adapter_name",
-              "bot_id",
-              "user_id"
-            ],
+            "join": ["adapter_name", "bot_id", "user_id"],
             "value": "__name__"
           }
         },
@@ -1270,9 +1241,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -1298,11 +1267,7 @@
         {
           "id": "joinByLabels",
           "options": {
-            "join": [
-              "adapter_name",
-              "bot_id",
-              "user_id"
-            ],
+            "join": ["adapter_name", "bot_id", "user_id"],
             "value": "__name__"
           }
         },
@@ -1338,9 +1303,7 @@
   ],
   "refresh": "",
   "schemaVersion": 38,
-  "tags": [
-    "NoneBot"
-  ],
+  "tags": ["NoneBot"],
   "templating": {
     "list": [
       {

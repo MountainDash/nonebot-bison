@@ -51,6 +51,12 @@ class SkipRequestException(Exception):
     pass
 
 
+class CookieFormatException(Exception):
+    """cookie格式错误"""
+
+    pass
+
+
 class CookieClientManager(ClientManager):
     _default_cookie_cd = timedelta(seconds=15)
     _site_name: str = ""
@@ -85,7 +91,7 @@ class CookieClientManager(ClientManager):
 
         if not await self.validate_cookie(content):
             raise ValueError()
-        cookie = Cookie(site_name=self._site_name, content=content)
+        cookie = Cookie(site_name=self._site_name, content=parse_cookie(content))
         cookie.cookie_name = cookie_name if cookie_name else await self.get_cookie_name(content)
         cookie.cd = self._default_cookie_cd
         cookie_id = await config.add_cookie(cookie)
@@ -100,10 +106,8 @@ class CookieClientManager(ClientManager):
     async def validate_cookie(self, content: str) -> bool:
         """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
         try:
-            data = json.loads(content)
-            if not isinstance(data, dict):
-                return False
-        except JSONDecodeError:
+            parse_cookie(content)
+        except CookieFormatException:
             return False
         return True
 
@@ -213,3 +217,29 @@ def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_
             "client_mgr": DefaultClientManager,
         },
     )
+
+
+def parse_cookie(content: str) -> dict:
+    try:
+        data = json.loads(content)
+        if not isinstance(data, dict):
+            raise CookieFormatException
+        return data
+    except JSONDecodeError:
+        return plain_cookie_to_json(content)
+
+
+def plain_cookie_to_json(cookie_string):
+    # Strip whitespace and split by semicolon
+    cookie_pairs = [pair.strip() for pair in cookie_string.split(';')]
+
+    # Create a dictionary from the cookie pairs
+    cookie_dict = {}
+    for pair in cookie_pairs:
+        if '=' in pair:
+            key, value = pair.split('=', 1)  # Split only at the first '=' occurrence
+            cookie_dict[key.strip()] = value.strip()
+        else:
+            raise CookieFormatException
+
+    return cookie_dict

@@ -122,3 +122,29 @@ async def test_cookie(app: App, init_scheduler):
 
     cookie_targets = await config.get_cookie_target()
     assert len(cookie_targets) == 2
+
+
+@pytest.mark.usefixtures("_patch_weibo_get_cookie_name")
+def test_parse_cookie():
+    from nonebot_bison.utils.site import parse_cookie
+    from nonebot_bison.utils.site import CookieFormatException
+    valid_cookie = [
+        "buvid3=7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc; b_nut=1730004183; _uuid=110C3D7AA-5A93-2FFA-39102-002E9D916218D93681infoc; CURRENT_FNVAL=4048; buvid_fp=b005f375d5a10c359a1e3000d2ce9ff3; buvid4=2EC6FDB3-5793-4CB2-14CD-1500004C816694458-024121214-3%2BpNY9k7fQ%2B5btK5slbeYy032KrlM3%2FKYx74vbwAtQHooBkd4NQz4D93uaqjIR1s; rpdid=0zb000LZi7|dqQ6QJZH|2oO|3w1TlKiS; fingerprint=b0000075d5a10c359a1e3bb000ce9ff3",
+        "buvid3=7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc",
+        "{}",
+        r'{"aaa":"bbb"}']
+    invalid_cookie = [
+        "",
+        "{aa}",
+        "7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc",
+        "7DBD8997-0677-BFC6-F33E-39621C7F12BD83823=infoc;"]
+    for cookie in valid_cookie:
+        parse_cookie(cookie)
+    for cookie in invalid_cookie:
+        flag = False
+        try:
+            parse_cookie(cookie)
+        except CookieFormatException:
+            flag = True
+        if not flag:
+            raise CookieFormatException

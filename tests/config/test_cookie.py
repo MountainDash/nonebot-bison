@@ -143,10 +143,5 @@ def test_parse_cookie():
     for cookie in valid_cookie:
         parse_cookie(cookie)
     for cookie in invalid_cookie:
-        flag = False
-        try:
+        with pytest.raises(CookieFormatException):
             parse_cookie(cookie)
-        except CookieFormatException:
-            flag = True
-        if not flag:
-            raise CookieFormatException

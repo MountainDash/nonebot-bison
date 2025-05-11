@@ -60,7 +60,7 @@ buvid3=7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc; b_nut=1730004183; _uuid=1
 
 各个平台的 Cookie 获取说明：
 
-- RSS: 对于各种 RSS 订阅，你需要自行准备需要的 Cookie，以支持的格式格式添加即可
+- RSS: 对于各种 RSS 订阅，你需要自行准备需要的 Cookie，以支持的格式添加即可
 - 微博：Bison 兼容 RSSHub 的 Cookie，以下方法引用自[RSSHub 的文档](https://docs.rsshub.app/zh/deploy/config#%E5%BE%AE%E5%8D%9A)
   > 1. 打开并登录 https://m.weibo.cn（确保打开页面为手机版，如果强制跳转电脑端可尝试使用可更改 UserAgent 的浏览器插件）
   > 2. 按下 F12 打开控制台，切换至 Network（网络）面板

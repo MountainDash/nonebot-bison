@@ -90,9 +90,8 @@ class CookieClientManager(ClientManager):
         """添加实名 cookie"""
 
         if not await self.validate_cookie(content):
-            raise ValueError()
-        parsed_content = parse_cookie(content)
-        cookie = Cookie(site_name=self._site_name, content=parsed_content)
+            raise CookieFormatException()
+        cookie = Cookie(site_name=self._site_name, content=content)
         cookie.cookie_name = cookie_name if cookie_name else await self.get_cookie_name(content)
         cookie.cd = self._default_cookie_cd
         cookie_id = await config.add_cookie(cookie)
@@ -149,8 +148,9 @@ class CookieClientManager(ClientManager):
     async def _assemble_client(self, client, cookie) -> AsyncClient:
         """组装 client，可以自定义 cookie 对象装配到 client 中的方式"""
         cookies = httpx.Cookies()
+        cookie_dict = parse_cookie(cookie.content)
         if cookie:
-            cookies.update(json.loads(cookie.content))
+            cookies.update(cookie_dict)
         client.cookies = cookies
         client.event_hooks = {"response": [self._generate_hook(cookie)]}
         return client
@@ -221,10 +221,14 @@ def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_
 
 
 def parse_cookie(content: str) -> dict:
+    """把cookie字符串解析成dict
+    支持两种cookie格式：
+    1. json
+    2. 浏览器传输使用的; 分隔的键值对"""
     try:
         data = json.loads(content)
         if not isinstance(data, dict):
-            raise CookieFormatException
+            raise CookieFormatException()
         return data
     except JSONDecodeError:
         return plain_cookie_to_json(content)
@@ -241,6 +245,6 @@ def plain_cookie_to_json(cookie_string):
             key, value = pair.split("=", 1)  # Split only at the first '=' occurrence
             cookie_dict[key.strip()] = value.strip()
         else:
-            raise CookieFormatException
+            raise CookieFormatException()
 
     return cookie_dict

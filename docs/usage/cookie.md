@@ -40,9 +40,27 @@ Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，�
 
 ## :nerd_face: 如何获取 Cookie？
 
-对于大部分平台，Bison 支持 JSON 格式的 Cookie，你可以通过浏览器的开发者工具获取。
+Bison 支持两种格式的 Cookie，你可以通过浏览器的开发者工具获取：
 
-- RSS: 对于各种 RSS 订阅，你需要自行准备需要的 Cookie，以 JSON 格式添加即可
+- plain
+
+```text
+buvid3=7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc; b_nut=1730004183; _uuid=110C3D7AA-5A93-2FFA-39102-002E9D916218D93681infoc;
+```
+
+- json
+
+```json
+{
+  "buvid3": "7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc",
+  "b_nut": "1730004183",
+  "_uuid": "110C3D7AA-5A93-2FFA-39102-002E9D916218D93681infoc"
+}
+```
+
+各个平台的 Cookie 获取说明：
+
+- RSS: 对于各种 RSS 订阅，你需要自行准备需要的 Cookie，以支持的格式格式添加即可
 - 微博：Bison 兼容 RSSHub 的 Cookie，以下方法引用自[RSSHub 的文档](https://docs.rsshub.app/zh/deploy/config#%E5%BE%AE%E5%8D%9A)
   > 1. 打开并登录 <https://m.weibo.cn>（确保打开页面为手机版，如果强制跳转电脑端可尝试使用可更改 UserAgent 的浏览器插件）
   > 2. 按下 F12 打开控制台，切换至 Network（网络）面板

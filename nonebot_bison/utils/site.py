@@ -91,7 +91,8 @@ class CookieClientManager(ClientManager):
 
         if not await self.validate_cookie(content):
             raise ValueError()
-        cookie = Cookie(site_name=self._site_name, content=parse_cookie(content))
+        parsed_content = parse_cookie(content)
+        cookie = Cookie(site_name=self._site_name, content=parsed_content)
         cookie.cookie_name = cookie_name if cookie_name else await self.get_cookie_name(content)
         cookie.cd = self._default_cookie_cd
         cookie_id = await config.add_cookie(cookie)

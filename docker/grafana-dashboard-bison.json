@@ -864,7 +864,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(bison_request_counter_total[1m])* 60)  by (platform_name)",
+          "expr": "sum(increase(bison_request_counter_total[1m])* 60)  by (platform_name)",
           "instant": false,
           "legendFormat": "{{platform_name}}",
           "range": true,
@@ -955,7 +955,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(bison_cookie_choose_counter_total[1m]) * 60) by (cookie_id)",
+          "expr": "sum(increase(bison_cookie_choose_counter_total[1m]) * 60) by (cookie_id)",
           "instant": false,
           "legendFormat": "{{site_name}} - {{cookie_id}}",
           "range": true,
@@ -1046,7 +1046,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(bison_request_counter_total[1m]) * 60",
+          "expr": "increase(bison_request_counter_total[1m]) * 60",
           "instant": false,
           "legendFormat": "{{platform_name}} - {{target}}",
           "range": true,
@@ -1137,7 +1137,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(bison_cookie_choose_counter_total[1m]) * 60",
+          "expr": "increase(bison_cookie_choose_counter_total[1m]) * 60",
           "instant": false,
           "legendFormat": "{{site_name}} - {{target}} - {{cookie_id}}",
           "range": true,
@@ -1215,7 +1215,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(bison_request_histogram_bucket[1m])*60) by (le)",
+          "expr": "sum(increase(bison_request_histogram_bucket[1m])*60) by (le)",
           "format": "heatmap",
           "instant": false,
           "legendFormat": "{{platform_name}}",
@@ -1273,8 +1273,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1308,8 +1307,8 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "rate(bison_sent_counter_total[1m]) * 60",
+          "editorMode": "code",
+          "expr": "increase(bison_sent_counter_total[1m]) * 60",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1337,6 +1336,6 @@
   "timezone": "",
   "title": "Bison Status",
   "uid": "d946848a-975c-4ad1-8ce4-8525caf3648c",
-  "version": 12,
+  "version": 13,
   "weekStart": ""
 }

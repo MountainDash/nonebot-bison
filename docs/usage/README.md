@@ -22,7 +22,7 @@ next: /usage/cookie
 
 :::
 
-- `BISON_TO_ME`: 是否需要 @Bot 或使用 Bot 的 Nickname 来触发 Bison 的命令，默认为`True`
+- `BISON_TO_ME`: 是否需要 @Bot 或使用 Bot 的 Nickname 来触发 Bison 的命令，默认为`true`
 - `BISON_CONFIG_PATH`<Badge text="弃用" type="warning" vertical="top"/>: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录，现用于从低版本迁移
 - `BISON_USE_PIC`: 将几乎所有文字渲染成图片后进行发送，多用于规避风控
 - `BISON_BROWSER`: 本插件使用 Chrome 来渲染图片
@@ -34,8 +34,8 @@ next: /usage/cookie
     截止发布时，本项目尚不能完全与 browserless 兼容，目前建议使用镜像内自带的浏览器
     即 **不要配置这个变量**
     :::
-- `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`False`会在用到浏览器时自动下载，
-  默认`True`
+- `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`false`会在用到浏览器时自动下载，
+  默认`true`
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，不设置或为空时默认值为 `http://localhost:<Bot运行在的端口>/bison/`
   ::: warning
   请注意，该网址**并不能直接访问** Bison 的后台管理网页，正确的访问方法请参见[私聊机器人获取后台地址](#私聊机器人获取后台地址)
@@ -82,8 +82,8 @@ next: /usage/cookie
 
 - `BISON_PROXY`: 使用的代理连接，形如`http://<ip>:<port>`（可选）
 - `BISON_UA`: 使用的 User-Agent，默认为 Chrome
-- `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认为`True`
-- `BISON_USE_BROWSER`: 环境中是否存在浏览器，某些主题或者平台需要浏览器，默认为`False`
+- `BISON_SHOW_NETWORK_WARNING`: 是否在日志中输出网络异常，默认为`true`
+- `BISON_USE_BROWSER`: 环境中是否存在浏览器，某些主题或者平台需要浏览器，默认为`false`
 - `BISON_PLATFORM_THEME`: 为[平台](#平台)指定渲染用[主题](#主题)，用于渲染推送消息，默认为`{}`
   ::: details BISON_PLATFORM_THEME 配置项示例
 

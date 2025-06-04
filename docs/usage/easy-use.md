@@ -21,14 +21,14 @@ next: /usage/
    在本节中，我们假设`COMMAND_START`设置中包含`'/'`，也就是说，我们的命令前缀是`/`  
    例如：`COMMAND_START=['', '/']`
 2. `BISON_TO_ME`  
-   是否需要 @Bot 或使用 Bot 的 Nickname 来触发 Bison，默认为`True`  
+   是否需要 @Bot 或使用 Bot 的 Nickname 来触发 Bison，默认为`true`  
    例如：
-   - `BISON_TO_ME=True`  
+   - `BISON_TO_ME=true`  
      `@Bot /help`
-   - `BISON_TO_ME=False`  
+   - `BISON_TO_ME=false`  
      `/help`
 3. `BISON_USE_PIC`  
-   将文字渲染成图片后进行发送，多用于规避风控，默认为`False`
+   将文字渲染成图片后进行发送，多用于规避风控，默认为`false`
 4. `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
 
    - `0`: 不启用 (默认)
@@ -73,7 +73,7 @@ next: /usage/
 
 - 如果出现 bot 不响应的问题，请先排查这个配置
 - 尝试在命令前添加设置了的命令前缀，如`COMMAND_START=['!']`，则尝试使用`!添加订阅`
-- `BISON_TO_ME`默认为`True`, 请在命令前 @Bot 或者添加 Bot 的 Nickname : `@Bot 添加订阅`
+- `BISON_TO_ME`默认为`true`, 请在命令前 @Bot 或者添加 Bot 的 Nickname : `@Bot 添加订阅`
 - Bison 只会响应群主/群管理/SUPERUSERS 的命令，请检查你的群权限等级
   :::
 

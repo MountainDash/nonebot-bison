@@ -135,8 +135,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 EXPOSE 8080
 
-ENV BISON_SKIP_BROWSER_CHECK=True \
-    BISON_USE_BROWSER=False
+ENV BISON_SKIP_BROWSER_CHECK=true \
+    BISON_USE_BROWSER=false
 
 RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo "📌 Current bison Version: $(cat /app/VERSION)"' >> /app/start.sh && \

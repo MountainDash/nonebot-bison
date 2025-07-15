@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from datetime import datetime, timedelta
+from http.cookies import SimpleCookie
 import json
 from json import JSONDecodeError
 from typing import Literal
@@ -234,17 +235,12 @@ def parse_cookie(content: str) -> dict:
         return plain_cookie_to_json(content)
 
 
-def plain_cookie_to_json(cookie_string):
-    # Strip whitespace and split by semicolon
-    cookie_pairs = [pair.strip() for pair in cookie_string.split(";")]
-
-    # Create a dictionary from the cookie pairs
-    cookie_dict = {}
-    for pair in cookie_pairs:
-        if "=" in pair:
-            key, value = pair.split("=", 1)  # Split only at the first '=' occurrence
-            cookie_dict[key.strip()] = value.strip()
-        else:
-            raise CookieFormatException()
-
-    return cookie_dict
+def plain_cookie_to_json(cookie_string: str) -> dict:
+    """使用 Python 内置的 SimpleCookie 来解析 cookie 字符串"""
+    cookie = SimpleCookie()
+    try:
+        cookie.load(cookie_string)
+        # 将 SimpleCookie 转换为普通字典
+        return {key: morsel.value for key, morsel in cookie.items()}
+    except Exception:
+        raise CookieFormatException()

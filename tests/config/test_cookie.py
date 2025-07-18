@@ -137,14 +137,14 @@ def test_parse_cookie():
             "9a1e3bb000ce9ff3"
         ),
         "buvid3=7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc",
-        "{}",
         r'{"aaa":"bbb"}',
     ]
     invalid_cookie = [
         "",
         "{aa}",
+        "{}",
         "7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc",
-        "7DBD8997-0677-BFC6-F33E-39621C7F12BD83823=infoc;",
+        "7DBD8997-0677-BFC6-F33E-39621C7F12BD83823infoc;",
     ]
     for cookie in valid_cookie:
         parse_cookie(cookie)

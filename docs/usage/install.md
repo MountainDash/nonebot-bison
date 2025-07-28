@@ -207,7 +207,6 @@ Bison 的 WebUI 是需要编译后才能使用的，直接克隆源代码需要�
 1. 安装包管理器
    Bison 仓库中使用了`pnpm`作为包管理器，如果没有安装请先安装`pnpm`  
    当然如果你因为一些原因不想使用`pnpm`，可以使用`yarn`或者`npm`进行安装
-
    - pnpm
      参见 [pnpm 安装](https://pnpm.io/zh/installation)
    - yarn

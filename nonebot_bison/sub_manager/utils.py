@@ -1,22 +1,15 @@
 from itertools import groupby
 from operator import attrgetter
-from typing import Annotated
 
-from nonebot.adapters import Event
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventPlainText, EventToMe
-from nonebot.permission import SUPERUSER
-from nonebot.rule import Rule
 from nonebot.typing import T_State
-from nonebot_plugin_saa import PlatformTarget, extract_target
+from nonebot_plugin_saa import PlatformTarget
 
 from nonebot_bison.config import config
 from nonebot_bison.platform import platform_manager
-from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.types import Category
 from nonebot_bison.types import Target as T_Target
 from nonebot_bison.utils.site import is_cookie_client_manager
-
 
 common_platform = [
     p.platform_name
@@ -63,8 +56,7 @@ async def generate_sub_list_text(
         res += f"{sub.target.platform_name} {sub.target.target_name} {sub.target.target}\n"
         if platform := platform_manager.get(sub.target.platform_name):
             if platform.categories:
-                res += " [{}]".format(", ".join(platform.categories[Category(x)]
-                                      for x in sub.categories)) + "\n"
+                res += " [{}]".format(", ".join(platform.categories[Category(x)] for x in sub.categories)) + "\n"
             if platform.enable_tag:
                 if sub.tags:
                     res += " {}".format(", ".join(sub.tags)) + "\n"

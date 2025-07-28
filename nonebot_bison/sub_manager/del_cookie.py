@@ -1,20 +1,24 @@
-from nonebot_plugin_alconna import on_alconna, Alconna, CommandMeta
-from nonebot_plugin_waiter import waiter, prompt
 from nonebot.adapters import Bot, Event
-from nonebot.typing import T_State
-from nonebot_plugin_saa import MessageFactory, PlatformTarget
 from nonebot.params import Depends
+from nonebot.typing import T_State
+from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_saa import MessageFactory, PlatformTarget
+from nonebot_plugin_waiter import waiter
 
 from nonebot_bison.config import config
 from nonebot_bison.utils import parse_text
-from .depends import BisonToMeCheckExtension, BisonCancelExtension,BisonPrivateExtension, admin_permission, bison_target_user_info
+
+from .depends import (
+    BisonCancelExtension,
+    BisonPrivateExtension,
+    BisonToMeCheckExtension,
+    admin_permission,
+    bison_target_user_info,
+)
 
 del_cookie_alc = Alconna(
     "删除cookie",
-    meta=CommandMeta(
-        description="Bison 删除 Cookie 指令",
-        usage="输入“删除cookie”，跟随 Bot 提示信息进行"
-    ),
+    meta=CommandMeta(description="Bison 删除 Cookie 指令", usage="输入“删除cookie”，跟随 Bot 提示信息进行"),
 )
 
 del_cookie_command = on_alconna(
@@ -29,15 +33,14 @@ del_cookie_command = on_alconna(
         BisonToMeCheckExtension(),
         BisonPrivateExtension(),
         BisonCancelExtension("删除中止"),
-    ]
+    ],
 )
+
 
 @del_cookie_command.handle()
 async def del_cookie_handler(
-        bot: Bot,
-        event: Event,
-        state: T_State,
-        target_user_info: PlatformTarget = Depends(bison_target_user_info)):
+    bot: Bot, event: Event, state: T_State, target_user_info: PlatformTarget = Depends(bison_target_user_info)
+):
     # 1. 展示 Cookie 列表
     cookies = await config.get_cookie(is_anonymous=False)
     if not cookies:

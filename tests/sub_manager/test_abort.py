@@ -233,7 +233,6 @@ async def test_abort_del_sub(app: App, init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.sub_manager import del_sub_command
-    from nonebot_bison.sub_manager.utils import common_platform
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(

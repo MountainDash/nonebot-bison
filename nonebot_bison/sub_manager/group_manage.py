@@ -1,28 +1,27 @@
-from nonebot_plugin_alconna import on_alconna, Alconna, CommandMeta
-from nonebot_plugin_waiter import waiter, prompt
-from nonebot.adapters import Bot, Event
-from nonebot.matcher import Matcher
-from nonebot.typing import T_State
-from nonebot.rule import Rule
-from nonebot.permission import SUPERUSER
-from nonebot_plugin_saa import TargetQQGroup, PlatformTarget
-from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
-from datetime import datetime
-from nonebot.params import Depends
-from .add_sub import add_sub_handler
-from .query_sub import query_sub_handler
-from .del_sub import del_sub_handler
-from .depends import BisonToMeCheckExtension, BisonCancelExtension, admin_permission, bison_target_user_info
 import asyncio
+from datetime import datetime
+
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
+from nonebot.matcher import Matcher
+from nonebot.params import Depends
+from nonebot.permission import SUPERUSER
+from nonebot.rule import Rule
+from nonebot.typing import T_State
+from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_saa import PlatformTarget, TargetQQGroup
+from nonebot_plugin_waiter import waiter
+
+from .add_sub import add_sub_handler
+from .del_sub import del_sub_handler
+from .depends import BisonCancelExtension, BisonToMeCheckExtension, bison_target_user_info
+from .query_sub import query_sub_handler
 
 _COMMAND_DISPATCH_TASKS: set[asyncio.Task] = set()
 
 group_manage_alc = Alconna(
     "群管理",
-    meta=CommandMeta(
-        description="Bison 群管理入口",
-        usage="输入“群管理”，跟随 Bot 提示信息进行"
-    ),
+    meta=CommandMeta(description="Bison 群管理入口", usage="输入“群管理”，跟随 Bot 提示信息进行"),
 )
 
 group_manage_command = on_alconna(
@@ -35,12 +34,18 @@ group_manage_command = on_alconna(
     extensions=[
         BisonToMeCheckExtension(),
         BisonCancelExtension("已取消"),
-    ]
+    ],
 )
 
 
 @group_manage_command.handle()
-async def group_manage_handler(bot: Bot, event: PrivateMessageEvent, state: T_State, matcher: Matcher, target_user_info: PlatformTarget = Depends(bison_target_user_info)):
+async def group_manage_handler(
+    bot: Bot,
+    event: PrivateMessageEvent,
+    state: T_State,
+    matcher: Matcher,
+    target_user_info: PlatformTarget = Depends(bison_target_user_info),
+):
     # 1. 获取群列表
     groups = await bot.call_api("get_group_list")
     res_text = "请选择需要管理的群：\n"
@@ -108,7 +113,7 @@ async def group_manage_handler(bot: Bot, event: PrivateMessageEvent, state: T_St
         )
         if command == "取消":
             await group_manage_command.finish("已取消")
-        elif sub_handler:=sub_cmd_map.get(command, None):
+        elif sub_handler := sub_cmd_map.get(command, None):
             break
 
     else:

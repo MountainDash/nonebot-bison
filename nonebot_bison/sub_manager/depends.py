@@ -1,12 +1,12 @@
-from nonebot_plugin_alconna import Extension
-from nonebot.adapters import Bot, Event, Message
-from nonebot.matcher import Matcher
-from nonebot_plugin_alconna import Alconna, UniMessage
-from nonebot_plugin_saa import extract_target, PlatformTarget
-from nonebot.typing import T_State
-from nonebot_bison.plugin_config import plugin_config
 import contextlib
+
+from nonebot.adapters import Bot, Event
 from nonebot.permission import SUPERUSER
+from nonebot_plugin_alconna import Alconna, Extension
+from nonebot_plugin_saa import PlatformTarget, extract_target
+
+from nonebot_bison.plugin_config import plugin_config
+
 
 def admin_permission():
     permission = SUPERUSER
@@ -16,6 +16,7 @@ def admin_permission():
         permission = permission | GROUP_ADMIN | GROUP_OWNER
 
     return permission
+
 
 async def bison_target_user_info(event: Event) -> PlatformTarget:
     return extract_target(event)
@@ -32,7 +33,6 @@ class BisonToMeCheckExtension(Extension):
         return "BisonToMeCheckExtension"
 
     async def permission_check(self, bot: Bot, event: Event, command: Alconna):
-        from nonebot import logger
         if plugin_config.bison_to_me:
             return event.is_tome()
         else:

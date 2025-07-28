@@ -1,20 +1,24 @@
-from nonebot_plugin_alconna import on_alconna, Alconna, CommandMeta
-from nonebot_plugin_waiter import waiter, prompt
 from nonebot.adapters import Bot, Event
+from nonebot.params import Depends
 from nonebot.typing import T_State
+from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
 from nonebot_plugin_saa import MessageFactory, PlatformTarget
+from nonebot_plugin_waiter import waiter
+
 from nonebot_bison.config import config
 from nonebot_bison.utils import parse_text
-from nonebot.params import Depends
 
-from .depends import BisonToMeCheckExtension, BisonCancelExtension,BisonPrivateExtension, admin_permission, bison_target_user_info
+from .depends import (
+    BisonCancelExtension,
+    BisonPrivateExtension,
+    BisonToMeCheckExtension,
+    admin_permission,
+    bison_target_user_info,
+)
 
 del_cookie_target_alc = Alconna(
     "取消关联cookie",
-    meta=CommandMeta(
-        description="Bison 取消 Cookie 关联指令",
-        usage="输入“取消关联cookie”，跟随 Bot 提示信息进行"
-    ),
+    meta=CommandMeta(description="Bison 取消 Cookie 关联指令", usage="输入“取消关联cookie”，跟随 Bot 提示信息进行"),
 )
 
 del_cookie_target_command = on_alconna(
@@ -29,15 +33,14 @@ del_cookie_target_command = on_alconna(
         BisonToMeCheckExtension(),
         BisonPrivateExtension(),
         BisonCancelExtension("取消关联中止"),
-    ]
+    ],
 )
+
 
 @del_cookie_target_command.handle()
 async def del_cookie_target_handler(
-        bot: Bot,
-        event: Event,
-        state: T_State,
-        target_user_info: PlatformTarget = Depends(bison_target_user_info)):
+    bot: Bot, event: Event, state: T_State, target_user_info: PlatformTarget = Depends(bison_target_user_info)
+):
     # 1. 展示已关联 Cookie 列表
     cookie_targets = await config.get_cookie_target()
     if not cookie_targets:

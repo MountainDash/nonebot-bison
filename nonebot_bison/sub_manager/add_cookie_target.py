@@ -1,24 +1,29 @@
-from nonebot_plugin_alconna import on_alconna, Alconna, CommandMeta
-from nonebot_plugin_waiter import waiter, prompt
-from nonebot.adapters import Bot, Event
-from nonebot.typing import T_State
-from nonebot.params import Depends
 from typing import cast
+
+from nonebot.adapters import Bot, Event
+from nonebot.params import Depends
+from nonebot.typing import T_State
+from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_saa import MessageFactory, PlatformTarget
+from nonebot_plugin_waiter import waiter
+
 from nonebot_bison.config import config
+from nonebot_bison.config.db_model import Cookie
 from nonebot_bison.platform import platform_manager
 from nonebot_bison.utils import parse_text
-from nonebot_plugin_saa import MessageFactory, PlatformTarget
 
-from nonebot_bison.config.db_model import Cookie
+from .depends import (
+    BisonCancelExtension,
+    BisonPrivateExtension,
+    BisonToMeCheckExtension,
+    admin_permission,
+    bison_target_user_info,
+)
 from .utils import generate_sub_list_text
-from .depends import BisonToMeCheckExtension, BisonPrivateExtension, BisonCancelExtension, admin_permission, bison_target_user_info
 
 add_cookie_target_alc = Alconna(
     "关联cookie",
-    meta=CommandMeta(
-        description="Bison 关联 Cookie 指令",
-        usage="输入“关联cookie”，跟随 Bot 提示信息进行"
-    ),
+    meta=CommandMeta(description="Bison 关联 Cookie 指令", usage="输入“关联cookie”，跟随 Bot 提示信息进行"),
 )
 
 add_cookie_target_command = on_alconna(
@@ -33,16 +38,14 @@ add_cookie_target_command = on_alconna(
         BisonToMeCheckExtension(),
         BisonPrivateExtension(),
         BisonCancelExtension("已中止关联cookie"),
-    ]
+    ],
 )
 
 
 @add_cookie_target_command.handle()
 async def add_cookie_target_handler(
-        bot: Bot,
-        event: Event,
-        state: T_State,
-        target_user_info: PlatformTarget = Depends(bison_target_user_info)):
+    bot: Bot, event: Event, state: T_State, target_user_info: PlatformTarget = Depends(bison_target_user_info)
+):
     # 1. 展示订阅列表，选择订阅
     res = await generate_sub_list_text(
         add_cookie_target_command, state, is_index=True, is_show_cookie=True, is_hide_no_cookie_platfrom=True
@@ -77,8 +80,7 @@ async def add_cookie_target_handler(
         is_anonymous=False,
     )
     associated_cookie_ids = {cookie.id for cookie in associated_cookies}
-    cookies = [
-        cookie for cookie in cookies if cookie.id not in associated_cookie_ids]
+    cookies = [cookie for cookie in cookies if cookie.id not in associated_cookie_ids]
     if not cookies:
         await add_cookie_target_command.finish(
             "当前平台暂无可关联的 Cookie，请使用“添加cookie”命令添加或检查已关联的 Cookie"
@@ -86,8 +88,7 @@ async def add_cookie_target_handler(
     state["cookies"] = cookies
 
     cookie_list_text = "请选择一个 Cookie，已关联的 Cookie 不会显示\n" + "\n".join(
-        [f"{idx}. {cookie.cookie_name}" for idx,
-            cookie in enumerate(cookies, 1)]
+        [f"{idx}. {cookie.cookie_name}" for idx, cookie in enumerate(cookies, 1)]
     )
     await add_cookie_target_command.send(cookie_list_text)
 
@@ -112,11 +113,7 @@ async def add_cookie_target_handler(
 
     # 3. 关联 Cookie
     cookie = cast("Cookie", state["cookie"])
-    await config.add_cookie_target(
-        state["target"]["target"],
-        state["target"]["platform_name"],
-        cookie.id
-    )
+    await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], cookie.id)
     await add_cookie_target_command.finish(
         f"已关联 Cookie: {cookie.cookie_name} 到订阅 {state['site'].name} {state['target']['target']}"
     )

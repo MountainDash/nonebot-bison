@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 
 from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import Bot
-from nonebot_plugin_alconna import on_alconna, Alconna
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
 from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
+from nonebot_plugin_alconna import Alconna, on_alconna
 
 from nonebot_bison.plugin_config import plugin_config
 
@@ -78,6 +78,7 @@ def register_get_token_handler():
 
     get_token.__help__name__ = "获取后台管理地址"  # type: ignore
     get_token.__help__info__ = "获取管理bot后台的地址，该地址会在一段时间过后过期，请不要泄漏该地址"  # type: ignore
+
 
 def get_fastapi_driver() -> "Driver | None":
     try:

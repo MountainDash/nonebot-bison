@@ -72,7 +72,6 @@ async def test_add_with_target(app: App, init_scheduler):
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
-
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
     ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=100505000")
@@ -166,7 +165,6 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
-
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
     ncm_router.mock(return_value=Response(200, json=get_json("ncm_siren.json")))
 
@@ -222,7 +220,6 @@ async def test_add_no_target(app: App, init_scheduler):
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
-
     async with app.test_matcher(add_sub_command) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
@@ -267,7 +264,6 @@ async def test_platform_name_err(app: App):
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
-
     async with app.test_matcher(add_sub_command) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
@@ -307,7 +303,6 @@ async def test_add_with_get_id(app: App):
     from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
-
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
@@ -377,7 +372,6 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot_bison.platform.bilibili import Bilibili
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
-
 
     ak_list_router = respx.get("https://api.bilibili.com/x/web-interface/card?mid=161775300")
     ak_list_router.mock(return_value=Response(200, json=get_json("bilibili_arknights_profile.json")))
@@ -494,7 +488,6 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
-
     ak_list_router = respx.get("https://api.bilibili.com/x/web-interface/card?mid=161775300")
     ak_list_router.mock(return_value=Response(200, json=get_json("bilibili_arknights_profile.json")))
 
@@ -575,7 +568,6 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
-
     ak_list_router = respx.get("https://api.bilibili.com/pgc/review/user?media_id=28235413")
     ak_list_router.mock(return_value=Response(200, json=get_json("bilibili-gangumi-hanhua1.json")))
 
@@ -644,7 +636,6 @@ async def test_subscribe_platform_requires_browser(app: App, mocker: MockerFixtu
     from nonebot_bison.plugin_config import plugin_config
     from nonebot_bison.sub_manager import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
-
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)
     mocker.patch.dict(unavailable_paltforms, {"bilibili": "需要启用 bison_use_browser"})

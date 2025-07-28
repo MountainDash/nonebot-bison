@@ -15,10 +15,10 @@ async def test_del_cookie(app: App):
 
     from nonebot_bison.config import config
     from nonebot_bison.config.db_model import Cookie
-    from nonebot_bison.sub_manager import del_cookie_matcher
+    from nonebot_bison.sub_manager import del_cookie_command
     from nonebot_bison.types import Target as T_Target
 
-    async with app.test_matcher(del_cookie_matcher) as ctx:
+    async with app.test_matcher(del_cookie_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         event = fake_private_message_event(
             message=Message("删除cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
@@ -28,7 +28,7 @@ async def test_del_cookie(app: App):
         ctx.should_pass_permission()
         ctx.should_call_send(event, "暂无已添加的 Cookie\n请使用“添加cookie”命令添加", True)
 
-    async with app.test_matcher(del_cookie_matcher) as ctx:
+    async with app.test_matcher(del_cookie_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         target = T_Target("weibo_id")
         platform_name = "weibo"
@@ -75,10 +75,10 @@ async def test_del_cookie_err(app: App):
 
     from nonebot_bison.config import config
     from nonebot_bison.config.db_model import Cookie
-    from nonebot_bison.sub_manager import del_cookie_matcher
+    from nonebot_bison.sub_manager import del_cookie_command
     from nonebot_bison.types import Target as T_Target
 
-    async with app.test_matcher(del_cookie_matcher) as ctx:
+    async with app.test_matcher(del_cookie_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         event = fake_private_message_event(
             message=Message("删除cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
@@ -88,7 +88,7 @@ async def test_del_cookie_err(app: App):
         ctx.should_pass_permission()
         ctx.should_call_send(event, "暂无已添加的 Cookie\n请使用“添加cookie”命令添加", True)
 
-    async with app.test_matcher(del_cookie_matcher) as ctx:
+    async with app.test_matcher(del_cookie_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         target = T_Target("weibo_id")
         platform_name = "weibo"

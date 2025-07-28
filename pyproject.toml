@@ -43,7 +43,7 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/felinae98/nonebot-bison"
+homepage = "https://github.com/MountainDash/nonebot-bison"
 
 [project.entry-points.nb_scripts]
 bison = "nonebot_bison.script.cli:main"
@@ -142,7 +142,7 @@ keep-runtime-typing = true
 adapters = [
   { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = ["nonebot_bison", "nonebot_plugin_prometheus"]
+plugins = ["nonebot_bison", "nonebot_plugin_prometheus", "nonebot_plugin_alconna", "nonebot_plugin_waiter"]
 plugin_dirs = ["extra_plugins"]
 builtin_plugins = ["echo"]
 

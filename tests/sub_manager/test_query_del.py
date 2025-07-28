@@ -12,7 +12,7 @@ async def test_query_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import query_sub_matcher
+    from nonebot_bison.sub_manager import query_sub_command
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
@@ -23,7 +23,7 @@ async def test_query_sub(app: App, init_scheduler):
         [platform_manager["weibo"].reverse_category["图文"]],
         ["明日方舟"],
     )
-    async with app.test_matcher(query_sub_matcher) as ctx:
+    async with app.test_matcher(query_sub_command) as ctx:
         bot = ctx.create_bot(base=Bot)
 
         event = fake_group_message_event(message=Message("查询订阅"), to_me=True)
@@ -45,7 +45,7 @@ async def test_query_no_exsits_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import query_sub_matcher
+    from nonebot_bison.sub_manager import query_sub_command
     from nonebot_bison.types import Target
 
     platform_manager["no_exsits_platform"] = platform_manager["weibo"]
@@ -58,7 +58,7 @@ async def test_query_no_exsits_sub(app: App, init_scheduler):
         ["明日方舟"],
     )
     del platform_manager["no_exsits_platform"]
-    async with app.test_matcher(query_sub_matcher) as ctx:
+    async with app.test_matcher(query_sub_command) as ctx:
         bot = ctx.create_bot(base=Bot)
 
         event = fake_group_message_event(message=Message("查询订阅"), to_me=True)
@@ -84,7 +84,7 @@ async def test_del_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.sub_manager import del_sub_command
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
@@ -95,7 +95,7 @@ async def test_del_sub(app: App, init_scheduler):
         [platform_manager["weibo"].reverse_category["图文"]],
         ["明日方舟"],
     )
-    async with app.test_matcher(del_sub_matcher) as ctx:
+    async with app.test_matcher(del_sub_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
         event = fake_group_message_event(message=Message("删除订阅"), to_me=True, sender=fake_admin_user)
@@ -133,7 +133,7 @@ async def test_del_no_exsits_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.sub_manager import del_sub_command
     from nonebot_bison.types import Target
 
     platform_manager["no_exsits_platform"] = platform_manager["weibo"]
@@ -146,7 +146,7 @@ async def test_del_no_exsits_sub(app: App, init_scheduler):
         ["明日方舟"],
     )
     del platform_manager["no_exsits_platform"]
-    async with app.test_matcher(del_sub_matcher) as ctx:
+    async with app.test_matcher(del_sub_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
         event = fake_group_message_event(message=Message("删除订阅"), to_me=True, sender=fake_admin_user)
@@ -181,9 +181,9 @@ async def test_del_empty_sub(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.sub_manager import del_sub_command
 
-    async with app.test_matcher(del_sub_matcher) as ctx:
+    async with app.test_matcher(del_sub_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
         event = fake_group_message_event(message=Message("删除订阅"), to_me=True, sender=fake_admin_user)

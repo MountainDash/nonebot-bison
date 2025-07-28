@@ -12,9 +12,9 @@ async def test_add_cookie_target_no_cookie(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import add_cookie_target_matcher
+    from nonebot_bison.sub_manager import add_cookie_target_command
 
-    async with app.test_matcher(add_cookie_target_matcher) as ctx:
+    async with app.test_matcher(add_cookie_target_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         from nonebot_plugin_saa import MessageFactory, TargetQQGroup
         from nonebug_saa import should_send_saa
@@ -65,9 +65,10 @@ async def test_add_cookie(app: App):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import add_cookie_matcher, add_cookie_target_matcher, common_platform
+    from nonebot_bison.sub_manager import add_cookie_command, add_cookie_target_command
+    from nonebot_bison.sub_manager.utils import common_platform
 
-    async with app.test_matcher(add_cookie_matcher) as ctx:
+    async with app.test_matcher(add_cookie_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         event_1 = fake_private_message_event(
             message=Message("添加cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
@@ -118,7 +119,7 @@ async def test_add_cookie(app: App):
             event_4_ok, "已添加 Cookie: weibo: [test_name] 到平台 weibo\n请使用“关联cookie”为 Cookie 关联订阅", True
         )
 
-    async with app.test_matcher(add_cookie_target_matcher) as ctx:
+    async with app.test_matcher(add_cookie_target_command) as ctx:
         from nonebot_plugin_saa import MessageFactory, TargetQQGroup
         from nonebug_saa import should_send_saa
 
@@ -179,9 +180,9 @@ async def test_add_cookie_target_no_target(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import add_cookie_target_matcher
+    from nonebot_bison.sub_manager import add_cookie_target_command
 
-    async with app.test_matcher(add_cookie_target_matcher) as ctx:
+    async with app.test_matcher(add_cookie_target_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         event_1 = fake_private_message_event(
             message=Message("关联cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id

@@ -5,6 +5,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_alconna.uniseg import UniMessage
 from nonebot_plugin_saa import PlatformTarget
 from nonebot_plugin_waiter import waiter
 
@@ -46,7 +47,7 @@ async def add_cookie_handler(
     bot: Bot, event: Event, state: T_State, target_user_info: PlatformTarget = Depends(bison_target_user_info)
 ):
     # 1. 选择平台
-    await add_cookie_command.send(
+    await UniMessage.text(
         "请输入想要添加 Cookie 的平台，目前支持，请输入冒号左边的名称：\n"
         + "".join(
             [
@@ -56,7 +57,7 @@ async def add_cookie_handler(
             ]
         )
         + "要查看全部平台请输入：“全部”\n中止添加cookie过程请输入：“取消”"
-    )
+    ).send()
 
     @waiter(waits=["message"], keep_session=True)
     async def check_platform(event: Event):
@@ -64,9 +65,9 @@ async def add_cookie_handler(
 
     async for platform in check_platform(timeout=600, retry=5, prompt=""):
         if platform is None:
-            await add_cookie_command.finish("等待超时！")
+            await UniMessage.text("等待超时！").finish()
         if platform == "全部":
-            await add_cookie_command.send(
+            await UniMessage.text(
                 "全部平台\n"
                 + "\n".join(
                     [
@@ -75,21 +76,21 @@ async def add_cookie_handler(
                         if is_cookie_client_manager(platform.site.client_mgr)
                     ]
                 )
-            )
+            ).send()
             continue
         elif platform == "取消":
-            await add_cookie_command.finish("已中止添加cookie")
+            await UniMessage.text("已中止添加cookie").finish()
         elif platform in platform_manager and is_cookie_client_manager(platform_manager[platform].site.client_mgr):
             state["platform"] = platform
             break
         else:
-            await add_cookie_command.send("平台输入错误，请重新输入")
+            await UniMessage.text("平台输入错误，请重新输入").send()
             continue
     else:
-        await add_cookie_command.send("输入失败")
+        await UniMessage.text("输入失败").send()
 
     # 2. 输入 Cookie
-    await add_cookie_command.send("请输入 Cookie")
+    await UniMessage.text("请输入 Cookie").send()
 
     @waiter(waits=["message"], keep_session=True)
     async def check_cookie(event: Event):
@@ -97,12 +98,12 @@ async def add_cookie_handler(
 
     async for cookie_text in check_cookie(timeout=600, retry=5, prompt=""):
         if cookie_text is None:
-            await add_cookie_command.finish("等待超时！")
+            await UniMessage.text("等待超时！").finish()
         client_mgr = cast(CookieClientManager, scheduler_dict[platform_manager[state["platform"]].site].client_mgr)
         if not await client_mgr.validate_cookie(cookie_text):
-            await add_cookie_command.send(
+            await UniMessage.text(
                 "无效的 Cookie，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
-            )
+            ).send()
             continue
         try:
             cookie_name = await client_mgr.get_cookie_name(cookie_text)
@@ -110,16 +111,16 @@ async def add_cookie_handler(
             state["cookie_name"] = cookie_name
             break
         except JSONDecodeError:
-            await add_cookie_command.send(
+            await UniMessage.text(
                 "获取 Cookie 名称失败，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
-            )
+            ).send()
             continue
     else:
-        await add_cookie_command.finish("输入失败")
+        await UniMessage.text("输入失败").finish()
 
     # 3. 添加 Cookie
     client_mgr = cast(CookieClientManager, scheduler_dict[platform_manager[state["platform"]].site].client_mgr)
     new_cookie = await client_mgr.add_identified_cookie(state["cookie"], state["cookie_name"])
-    await add_cookie_command.finish(
+    await UniMessage.text(
         f"已添加 Cookie: {new_cookie.cookie_name} 到平台 {state['platform']}" + "\n请使用“关联cookie”为 Cookie 关联订阅"
-    )
+    ).finish()

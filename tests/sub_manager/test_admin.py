@@ -9,7 +9,7 @@ async def test_query_with_superuser_private(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import group_manage_command
+    from nonebot_bison.sub_manager.group_manage import group_manage_command
 
     async with app.test_matcher(group_manage_command) as ctx:
         bot = ctx.create_bot(base=Bot)
@@ -70,7 +70,7 @@ async def test_query_with_abort_on_idx(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import group_manage_command
+    from nonebot_bison.sub_manager.group_manage import group_manage_command
 
     async with app.test_matcher(group_manage_command) as ctx:
         bot = ctx.create_bot(base=Bot)
@@ -104,7 +104,7 @@ async def test_query_with_abort_on_command(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import group_manage_command
+    from nonebot_bison.sub_manager.group_manage import group_manage_command
 
     async with app.test_matcher(group_manage_command) as ctx:
         bot = ctx.create_bot(base=Bot)
@@ -147,7 +147,7 @@ async def test_query_with_superuser_group_tome(app: App):
     from nonebot.adapters.onebot.v11.bot import Bot
     from nonebot.adapters.onebot.v11.message import Message
 
-    from nonebot_bison.sub_manager import group_manage_command
+    from nonebot_bison.sub_manager.group_manage import group_manage_command
 
     async with app.test_matcher(group_manage_command) as ctx:
         bot = ctx.create_bot(base=Bot)

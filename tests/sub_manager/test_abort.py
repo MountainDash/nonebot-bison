@@ -16,7 +16,7 @@ async def test_abort_add_on_platform(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -58,7 +58,7 @@ async def test_abort_add_on_id(app: App, init_scheduler):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -107,7 +107,7 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -168,7 +168,7 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -232,7 +232,7 @@ async def test_abort_del_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import del_sub_command
+    from nonebot_bison.sub_manager.del_sub import del_sub_command
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(

@@ -15,7 +15,7 @@ async def test_del_cookie(app: App):
 
     from nonebot_bison.config import config
     from nonebot_bison.config.db_model import Cookie
-    from nonebot_bison.sub_manager import del_cookie_command
+    from nonebot_bison.sub_manager.del_cookie import del_cookie_command
     from nonebot_bison.types import Target as T_Target
 
     async with app.test_matcher(del_cookie_command) as ctx:
@@ -75,7 +75,7 @@ async def test_del_cookie_err(app: App):
 
     from nonebot_bison.config import config
     from nonebot_bison.config.db_model import Cookie
-    from nonebot_bison.sub_manager import del_cookie_command
+    from nonebot_bison.sub_manager.del_cookie import del_cookie_command
     from nonebot_bison.types import Target as T_Target
 
     async with app.test_matcher(del_cookie_command) as ctx:

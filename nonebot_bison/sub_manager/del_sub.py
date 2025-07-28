@@ -4,6 +4,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_alconna.uniseg import UniMessage
 from nonebot_plugin_saa import MessageFactory, PlatformTarget
 from nonebot_plugin_waiter import waiter
 
@@ -41,7 +42,7 @@ async def del_sub_handler(
     user_info = cast(PlatformTarget, state.get("target_user_info"))
     sub_list = await config.list_subscribe(user_info)
     if not sub_list:
-        await del_sub_command.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")
+        await UniMessage.text("暂无已订阅账号\n请使用“添加订阅”命令添加订阅").finish()
     res = "订阅的帐号为：\n"
     state["sub_table"] = {}
     for index, sub in enumerate(sub_list, 1):
@@ -69,16 +70,16 @@ async def del_sub_handler(
 
     async for index_str in check_index(timeout=600, retry=5, prompt=""):
         if index_str is None:
-            await del_sub_command.finish("等待超时！")
+            await UniMessage.text("等待超时！").finish()
         if index_str == "取消":
-            await del_sub_command.finish("删除中止")
+            await UniMessage.text("删除中止").finish()
         try:
             index = int(index_str)
             await config.del_subscribe(user_info, **state["sub_table"][index])
         except Exception:
-            await del_sub_command.send("删除错误")
+            await UniMessage.text("删除错误").send()
             continue
         else:
-            await del_sub_command.finish("删除成功")
+            await UniMessage.text("删除成功").finish()
     else:
-        await del_sub_command.finish("输入失败")
+        await UniMessage.text("输入失败").finish()

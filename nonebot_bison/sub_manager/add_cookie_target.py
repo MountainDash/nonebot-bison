@@ -4,6 +4,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_alconna.uniseg import UniMessage
 from nonebot_plugin_saa import MessageFactory, PlatformTarget
 from nonebot_plugin_waiter import waiter
 
@@ -59,18 +60,18 @@ async def add_cookie_target_handler(
 
     async for target_idx in check_target_idx(timeout=600, retry=5, prompt=""):
         if target_idx is None:
-            await add_cookie_target_command.finish("等待超时！")
+            await UniMessage.text("等待超时！").finish()
         if target_idx == "取消":
-            await add_cookie_target_command.finish("已中止关联cookie")
+            await UniMessage.text("已中止关联cookie").finish()
         try:
             state["target"] = cast(dict, state["sub_table"][int(target_idx)])
             state["site"] = platform_manager[state["target"]["platform_name"]].site
             break
         except Exception:
-            await add_cookie_target_command.send("序号错误")
+            await UniMessage.text("序号错误").send()
             continue
     else:
-        await add_cookie_target_command.finish("输入失败")
+        await UniMessage.text("输入失败").finish()
 
     # 2. 获取 site 的所有实名 cookie，再排除掉已经关联的 cookie，剩下的就是可以关联的 cookie
     cookies = await config.get_cookie(site_name=state["site"].name, is_anonymous=False)
@@ -82,15 +83,13 @@ async def add_cookie_target_handler(
     associated_cookie_ids = {cookie.id for cookie in associated_cookies}
     cookies = [cookie for cookie in cookies if cookie.id not in associated_cookie_ids]
     if not cookies:
-        await add_cookie_target_command.finish(
-            "当前平台暂无可关联的 Cookie，请使用“添加cookie”命令添加或检查已关联的 Cookie"
-        )
+        await UniMessage.text("当前平台暂无可关联的 Cookie，请使用“添加cookie”命令添加或检查已关联的 Cookie").finish()
     state["cookies"] = cookies
 
     cookie_list_text = "请选择一个 Cookie，已关联的 Cookie 不会显示\n" + "\n".join(
         [f"{idx}. {cookie.cookie_name}" for idx, cookie in enumerate(cookies, 1)]
     )
-    await add_cookie_target_command.send(cookie_list_text)
+    await UniMessage.text(cookie_list_text).send()
 
     @waiter(waits=["message"], keep_session=True)
     async def check_cookie_idx(event: Event):
@@ -98,22 +97,22 @@ async def add_cookie_target_handler(
 
     async for cookie_idx in check_cookie_idx(timeout=600, retry=5, prompt=""):
         if cookie_idx is None:
-            await add_cookie_target_command.finish("等待超时！")
+            await UniMessage.text("等待超时！").finish()
         if cookie_idx == "取消":
-            await add_cookie_target_command.finish("已中止关联cookie")
+            await UniMessage.text("已中止关联cookie").finish()
         try:
             idx = int(cookie_idx)
             state["cookie"] = cast(object, state["cookies"][idx - 1])
             break
         except Exception:
-            await add_cookie_target_command.send("序号错误，请重新输入")
+            await UniMessage.text("序号错误，请重新输入").send()
             continue
     else:
-        await add_cookie_target_command.finish("输入失败")
+        await UniMessage.text("输入失败").finish()
 
     # 3. 关联 Cookie
     cookie = cast("Cookie", state["cookie"])
     await config.add_cookie_target(state["target"]["target"], state["target"]["platform_name"], cookie.id)
-    await add_cookie_target_command.finish(
+    await UniMessage.text(
         f"已关联 Cookie: {cookie.cookie_name} 到订阅 {state['site'].name} {state['target']['target']}"
-    )
+    ).finish()

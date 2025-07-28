@@ -15,7 +15,7 @@ async def test_configurable_at_me_true_failed(app: App, mocker: MockerFixture):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
 
     mocker.patch.object(plugin_config, "bison_to_me", True)
 
@@ -41,7 +41,7 @@ async def test_configurable_at_me_false(app: App, mocker: MockerFixture):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     mocker.patch.object(plugin_config, "bison_to_me", False)
@@ -69,7 +69,7 @@ async def test_add_with_target(app: App, init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -162,7 +162,7 @@ async def test_add_with_target_no_cat(app: App, init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.ncm import NcmArtist
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ncm_router = respx.get("https://music.163.com/api/artist/albums/32540734")
@@ -217,7 +217,7 @@ async def test_add_no_target(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     async with app.test_matcher(add_sub_command) as ctx:
@@ -261,7 +261,7 @@ async def test_platform_name_err(app: App):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     async with app.test_matcher(add_sub_command) as ctx:
@@ -301,7 +301,7 @@ async def test_add_with_get_id(app: App):
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
@@ -370,7 +370,7 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import Bilibili
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://api.bilibili.com/x/web-interface/card?mid=161775300")
@@ -485,7 +485,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import Bilibililive
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://api.bilibili.com/x/web-interface/card?mid=161775300")
@@ -565,7 +565,7 @@ async def test_add_with_bilibili_bangumi_target_parser(app: App, init_scheduler)
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import BilibiliBangumi
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://api.bilibili.com/pgc/review/user?media_id=28235413")
@@ -634,7 +634,7 @@ async def test_subscribe_platform_requires_browser(app: App, mocker: MockerFixtu
 
     from nonebot_bison.platform import platform_manager, unavailable_paltforms
     from nonebot_bison.plugin_config import plugin_config
-    from nonebot_bison.sub_manager import add_sub_command
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
     from nonebot_bison.sub_manager.utils import common_platform
 
     mocker.patch.object(plugin_config, "bison_use_browser", False)

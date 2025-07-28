@@ -5,6 +5,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot_plugin_alconna import Alconna, CommandMeta, on_alconna
+from nonebot_plugin_alconna.uniseg import UniMessage
 from nonebot_plugin_saa import PlatformTarget, SupportedAdapters, Text
 from nonebot_plugin_waiter import waiter
 
@@ -45,11 +46,11 @@ async def add_sub_handler(
     target_user_info: PlatformTarget = Depends(bison_target_user_info),
 ):
     # 1. 获取平台
-    await add_sub_command.send(
+    await UniMessage.text(
         "请输入想要订阅的平台，目前支持，请输入冒号左边的名称：\n"
         + "".join([f"{platform_name}: {platform_manager[platform_name].name}\n" for platform_name in common_platform])
         + "要查看全部平台请输入：“全部”\n中止订阅过程请输入：“取消”"
-    )
+    ).send()
 
     @waiter(waits=["message"], keep_session=True)
     async def check_platform(event: Event):
@@ -57,27 +58,27 @@ async def add_sub_handler(
 
     async for platform in check_platform(timeout=600, retry=5, prompt=""):
         if platform is None:
-            await add_sub_command.finish("等待超时！")
+            await UniMessage.text("等待超时！").finish()
         if platform == "全部":
-            await add_sub_command.send(
+            await UniMessage.text(
                 "全部平台\n"
                 + "\n".join(
                     [f"{platform_name}: {platform.name}" for platform_name, platform in platform_manager.items()]
                 )
-            )
+            ).send()
             continue
         elif platform == "取消":
-            await add_sub_command.finish("已中止订阅")
+            await UniMessage.text("已中止订阅").finish()
         elif platform in platform_manager:
             if platform in unavailable_paltforms:
-                await add_sub_command.finish(f"无法订阅 {platform}，{unavailable_paltforms[platform]}")
+                await UniMessage.text(f"无法订阅 {platform}，{unavailable_paltforms[platform]}").finish()
             state["platform"] = platform
             break
         else:
-            await add_sub_command.send("平台输入错误")
+            await UniMessage.text("平台输入错误").send()
             continue
     else:
-        await add_sub_command.send("输入失败")
+        await UniMessage.text("输入失败").send()
     # 2. 获取id
     cur_platform = platform_manager[state["platform"]]
     if cur_platform.has_target:
@@ -86,15 +87,15 @@ async def add_sub_handler(
         async def check_raw_id(event: Event):
             return event.get_plaintext().strip()
 
-        await add_sub_command.send(
+        await UniMessage.text(
             ("1." + cur_platform.parse_target_promot + "\n2.")
             if cur_platform.parse_target_promot
             else "" + "请输入订阅用户的id\n查询id获取方法请回复:“查询”"
-        )
+        ).send()
         async for raw_id_text in check_raw_id(timeout=600, retry=5, prompt=""):
             try:
                 if raw_id_text is None:
-                    await add_sub_command.finish("等待超时！")
+                    await UniMessage.text("等待超时！").finish()
                 if raw_id_text == "查询":
                     url = "https://nonebot-bison.netlify.app/usage/#%E6%89%80%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0%E7%9A%84-uid"
                     msg = Text(url)
@@ -119,18 +120,18 @@ async def add_sub_handler(
                 raw_id_text = await cur_platform.parse_target(raw_id_text)
                 name = await check_sub_target(state["platform"], raw_id_text)
                 if not name:
-                    await add_sub_command.send("id输入错误，请重新输入")
+                    await UniMessage.text("id输入错误，请重新输入").send()
                     continue
                 state["id"] = raw_id_text
                 state["name"] = name
-                await add_sub_command.send(
+                await UniMessage.text(
                     f"即将订阅的用户为:{state['platform']} {state['name']} {state['id']}\n如有错误请输入“取消”重新订阅"
-                )
+                ).send()
                 break
             except Platform.ParseTargetException as e:
-                await add_sub_command.send(
+                await UniMessage.text(
                     "不能从你的输入中提取出id，请检查你输入的内容是否符合预期" + (f"\n{e.prompt}" if e.prompt else "")
-                )
+                ).send()
                 continue
     else:
         state["id"] = "default"
@@ -143,17 +144,17 @@ async def add_sub_handler(
         async def check_category(event: Event):
             return event.get_plaintext().strip()
 
-        await add_sub_command.send(
+        await UniMessage.text(
             "请输入要订阅的类别，以空格分隔，支持的类别有：{}".format(" ".join(list(cur_platform.categories.values())))
-        )
+        ).send()
         async for raw_cats_text in check_category(timeout=600, retry=5, prompt=""):
             if raw_cats_text is None:
-                await add_sub_command.finish("等待超时！")
+                await UniMessage.text("等待超时！").finish()
             res = []
             unsupported_flag = False
             for cat in raw_cats_text.split():
                 if cat not in cur_platform.reverse_category:
-                    await add_sub_command.send(f"不支持 {cat}，请重新输入")
+                    await UniMessage.text(f"不支持 {cat}，请重新输入").send()
                     unsupported_flag = True
                     break
                 res.append(cur_platform.reverse_category[cat])
@@ -170,18 +171,18 @@ async def add_sub_handler(
         async def check_tag(event: Event):
             return event.get_plaintext().strip()
 
-        await add_sub_command.send(
+        await UniMessage.text(
             '请输入要订阅/屏蔽的标签(不含#号)\n多个标签请使用空格隔开\n订阅所有标签输入"全部标签"\n具体规则回复"详情"'
-        )
+        ).send()
         async for raw_tags_text in check_tag(timeout=600, retry=5, prompt=""):
             if raw_tags_text is None:
-                await add_sub_command.finish("等待超时！")
+                await UniMessage.text("等待超时！").finish()
             if raw_tags_text == "详情":
-                await add_sub_command.send(
+                await UniMessage.text(
                     "订阅标签直接输入标签内容\n"
                     "屏蔽标签请在标签名称前添加~号\n"
                     "详见https://nonebot-bison.netlify.app/usage/#%E5%B9%B3%E5%8F%B0%E8%AE%A2%E9%98%85%E6%A0%87%E7%AD%BE-tag"
-                )
+                ).send()
                 continue
             if raw_tags_text in ["全部标签", "全部", "全标签"]:
                 state["tags"] = []
@@ -203,7 +204,7 @@ async def add_sub_handler(
             tags=state.get("tags", []),
         )
     except SubscribeDupException:
-        await add_sub_command.finish(f"添加 {state['name']} 失败: 已存在该订阅")
+        await UniMessage.text(f"添加 {state['name']} 失败: 已存在该订阅").finish()
     except Exception as e:
-        await add_sub_command.finish(f"添加 {state['name']} 失败: {e}")
-    await add_sub_command.finish(f"添加 {state['name']} 成功")
+        await UniMessage.text(f"添加 {state['name']} 失败: {e}").finish()
+    await UniMessage.text(f"添加 {state['name']} 成功").finish()

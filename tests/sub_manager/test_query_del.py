@@ -12,7 +12,7 @@ async def test_query_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import query_sub_command
+    from nonebot_bison.sub_manager.query_sub import query_sub_command
     from nonebot_bison.types import Target
 
     await config.add_subscribe(
@@ -45,7 +45,7 @@ async def test_query_no_exsits_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import query_sub_command
+    from nonebot_bison.sub_manager.query_sub import query_sub_command
     from nonebot_bison.types import Target
 
     platform_manager["no_exsits_platform"] = platform_manager["weibo"]

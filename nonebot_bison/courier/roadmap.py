@@ -3,20 +3,24 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from .parcel import Address, Parcel
+from nonebot.dependencies import Dependent
+
+from .parcel import Parcel
+from .types import Address
 
 if TYPE_CHECKING:
-    from .channel import ChannelName
+    from .types import ChannelName
 
-type DeliveryReceiver[T, R] = Callable[[Parcel[T]], Awaitable[Parcel[R] | None]]
+type DeliveryReceiver[R] = Dependent[Parcel[R] | None]
+type DeliveryReceiverHandle[R] = Callable[..., Parcel[R] | None] | Callable[..., Awaitable[Parcel[R] | None]]
 
 
 class Road(NamedTuple):
     channel: ChannelName
-    receiver: DeliveryReceiver[Any, Any]
+    receiver: DeliveryReceiver[Any]
 
     def __repr__(self) -> str:
-        return f"Road(channel={self.channel}, receiver={self.receiver.__name__})"
+        return f"Road(channel={self.channel}, receiver={self.receiver})"
 
 
 type Roadmaps = dict[Address, Road]

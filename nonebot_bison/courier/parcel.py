@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import field
 from enum import StrEnum
 import reprlib
 from typing import TYPE_CHECKING, Any, NotRequired, TypedDict
 from venv import logger
 
 from anyio import Event
+from pydantic.dataclasses import dataclass
 
-type Address = str
-type Metadata = dict[str, Any]
+from .types import Address, Metadata  # noqa: TC001 for pydantic
 
 
 class DeliveryStatus(StrEnum):
@@ -30,8 +30,9 @@ else:
         ADDRESS_CHAIN: NotRequired[list[str]]
 
 
+@dataclass
 class DeliveryReceipt:
-    def __init__(self):
+    def __post_init__(self):
         self._event = Event()
         self._delivery_status: DeliveryStatus = DeliveryStatus.DELIVERING
         self._handstamps: _HandStamps = {}
@@ -104,11 +105,11 @@ class DeliveryReceipt:
         return f"{self.__class__.__name__}(delivery_status={self.delivery_status}, handstamps={self._handstamps})"
 
 
-@dataclass(match_args=True, frozen=True)
+@dataclass(frozen=True)
 class Parcel[T]:
     tag: Address
     payload: T
-    metadata: Metadata | None = None
+    metadata: Metadata = field(default_factory=dict)
     receipt: DeliveryReceipt = field(init=False, default_factory=DeliveryReceipt)
 
     def change_to(self, address: Address) -> Parcel[T]:
@@ -123,5 +124,7 @@ class Parcel[T]:
     def __str__(self):
         return (
             f"Parcel(tag={self.tag}, payload={reprlib.repr(self.payload)}, "
-            f"metadata={self.metadata}, receipt={self.receipt})"
+            f"metadata={self.metadata!s}, receipt={self.receipt!s})"
         )
+
+    class DeliveryReject(Exception): ...

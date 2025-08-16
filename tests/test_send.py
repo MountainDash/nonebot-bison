@@ -56,7 +56,7 @@ async def test_send_queue(app: App, mocker: MockerFixture):
         await send_msgs(target, [MessageFactory("msg")])
         await send_msgs(target, [MessageFactory("msg2")])
         assert not ctx.wait_list.empty()
-        await asyncio.sleep(2 * MESSGE_SEND_INTERVAL)
+        await asyncio.sleep(2 * MESSGE_SEND_INTERVAL.total_seconds())
         assert ctx.wait_list.empty()
 
 

@@ -1,7 +1,7 @@
 [project]
 authors = [{ name = "felinae98", email = "felinae225@qq.com" }]
 license = { text = "MIT" }
-requires-python = "<4.0.0,>=3.10"
+requires-python = "<4.0.0,>=3.12"
 dependencies = [
   "beautifulsoup4>=4.12.3",
   "feedparser<7.0.0,>=6.0.11",
@@ -17,13 +17,14 @@ dependencies = [
   "python-socketio<6.0.0,>=5.11.4",
   "tinydb<5.0.0,>=4.8.0",
   "qrcode<8.0.0,>=7.4.2",
-  "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=2.9.2",
+  "pydantic!=2.5.0,!=2.5.1,>=2.9.2,<3.0.0",
   "lxml>=5.3.0",
   "yarl>=1.11.1",
   "hishel<1.0.0,>=0.0.30",
   "expiringdictx<2.0.0,>=1.1.0",
   "rapidfuzz<4.0.0,>=3.9.7",
   "nonebot-plugin-prometheus>=0.3.16",
+  "typing-extensions>=4.14.1",
 ]
 name = "nonebot-bison"
 version = "0.9.8"
@@ -96,7 +97,7 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [

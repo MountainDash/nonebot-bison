@@ -6,16 +6,34 @@ from typing import TYPE_CHECKING, Any, ClassVar, Self
 import anyio
 from anyio import create_memory_object_stream
 from loguru import logger
+from nonebot.dependencies import Dependent, Param
+from nonebot.utils import flatten_exception_group
 
-from .channel import Channel, ChannelName, Conveyor
+from .channel import Channel, Conveyor
 from .middleware import Middleware
+from .param import (
+    DeadReasonParam,
+    DefaultParam,
+    DependParam,
+    ExceptionParam,
+    MetadataParam,
+    MetaFetchParam,
+    ParcelParam,
+    PayloadParam,
+    ReceiptParam,
+)
 from .parcel import Parcel
-from .roadmap import Road
+from .roadmap import DeliveryReceiverHandle, Road
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from .middleware import Instrumentation
-    from .parcel import Address
     from .roadmap import DeliveryReceiver, Roadmaps
+    from .types import Address, ChannelName
+
+
+__EXCEPTION_KEY__ = "__courier_exception__"
 
 
 @dataclass(eq=False)
@@ -23,9 +41,20 @@ class Courier:
     roadmaps: ClassVar[Roadmaps] = {}
     plan_channels: ClassVar[set[ChannelName]] = set()
     instrumentation: Instrumentation | None = None
-    dead_letter_channel: Conveyor | None = None
+    dead_letter_channel: Conveyor[Parcel[Any]] | None = None
     channel_buffer_size: int = 100
     _instance: ClassVar[Self | None] = None
+    PARCEL_PARAM_TYPES: ClassVar[tuple[type[Param], ...]] = (
+        DependParam,
+        MetadataParam,
+        MetaFetchParam,
+        ParcelParam,
+        PayloadParam,
+        ReceiptParam,
+        DeadReasonParam,
+        ExceptionParam,
+        DefaultParam,
+    )
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls._instance is None:
@@ -39,12 +68,12 @@ class Courier:
         return cls._instance
 
     def __post_init__(self):
-        self.dead_letter_receiver: DeliveryReceiver[Any, Any] | None = None
+        self.dead_letter_receiver: DeliveryReceiver[Any] | None = None
         self.close_event = anyio.Event()
         self.channels: dict[ChannelName, Channel[Any]] = {}
 
     @classmethod
-    def receive_from(cls, address: Address, channel: ChannelName = "main"):
+    def receive_from(cls, address: Address, channel: ChannelName = "main", parameterless: Iterable[Any] | None = None):
         """注册一个包裹的接收者，该被注册的可调用对象将会用于处理特定地址的包裹
 
         通过返回一个新的包裹，可以将包裹传递给下一个接收者
@@ -55,10 +84,13 @@ class Courier:
         if address in cls.roadmaps:
             raise ValueError(f"Receiver for {address} already has been registered")
 
-        def wrapper[T, R](receiver: DeliveryReceiver[T, R]) -> DeliveryReceiver[T, R]:
+        def wrapper[R](receiver: DeliveryReceiverHandle[R]) -> DeliveryReceiverHandle[R]:
+            dependentable = Dependent[Parcel[R] | None].parse(
+                call=receiver, parameterless=parameterless, allow_types=cls.PARCEL_PARAM_TYPES
+            )
             cls.roadmaps[address] = Road(
                 channel=channel,
-                receiver=receiver,
+                receiver=dependentable,
             )
             cls.plan_channels.add(channel)
             return receiver
@@ -80,13 +112,17 @@ class Courier:
         road = self.roadmaps[parcel.tag]
         return await self.channels[road.channel].post(parcel)
 
-    def receive_from_dead_letter(self, receiver: DeliveryReceiver[Any, Any]):
+    def receive_from_dead_letter(
+        self, receiver: DeliveryReceiverHandle[Any], parameterless: Iterable[Any] | None = None
+    ) -> DeliveryReceiverHandle[Any]:
         """注册一个死信接收者"""
 
         if not self.dead_letter_channel:
             raise ValueError("Dead letter channel is not available")
 
-        self.dead_letter_receiver = receiver
+        self.dead_letter_receiver = Dependent[Parcel[Any] | None].parse(
+            call=receiver, parameterless=parameterless, allow_types=self.PARCEL_PARAM_TYPES
+        )
         return receiver
 
     async def run(self):
@@ -111,9 +147,9 @@ class Courier:
                     continue
 
                 try:
-                    match await send_road.receiver(parcel):
+                    match await send_road.receiver(parcel=parcel):
                         case None:
-                            continue
+                            pass
                         case Parcel(tag) if tag == parcel.tag:
                             logger.warning(
                                 f"Receiver {send_road.receiver} returned a parcel with the same tag, recycling"
@@ -121,32 +157,35 @@ class Courier:
                             await self._recycle_dead_letter(
                                 parcel, reason=f"Receiver returned a parcel with the same tag: {tag!r}"
                             )
-                            continue
                         case Parcel() as new_parcel:
                             logger.debug(
                                 f"Receiver {send_road.receiver} returned a new parcel: {new_parcel!s}, forwarding"
                             )
                             await self.post(new_parcel)
-                            continue
                         case other:
                             logger.error(f"Receiver returned an unexpected value: {other!r}")
                             await self._recycle_dead_letter(parcel, reason=f"Unexpected return value: {other!r}")
-                            continue
-                except Exception as e:
-                    logger.error(
-                        f"Error occurred while processing parcel {parcel!s} in receiver {send_road.receiver}",
-                        exc_info=e,
+                except* Exception as e:
+                    logger.exception(
+                        f"Error occurred while processing parcel {parcel!s} in receiver {send_road.receiver}"
                     )
-                    await self._recycle_dead_letter(parcel, reason=str(e))
-                    continue
+                    dead_reasons = []
+                    for exc in flatten_exception_group(e):
+                        dead_reasons.append(f"{exc!r}")
+                    await self._recycle_dead_letter(
+                        parcel, reason=f"dead by these exception:\n{'\n'.join(dead_reasons)}", exc=e
+                    )
                 else:
                     logger.debug(f"Parcel {parcel!s} processed successfully by receiver {send_road.receiver}")
+                finally:
+                    continue
 
         async def _run_dead_letter_receiver():
             if self.dead_letter_receiver and self.dead_letter_channel:
                 async with self.dead_letter_channel.outlet as rx:
                     async for dead_letter in rx:
-                        await self.dead_letter_receiver(dead_letter)
+                        exception = dead_letter.metadata.pop(__EXCEPTION_KEY__)
+                        await self.dead_letter_receiver(parcel=dead_letter, exception=exception)
 
         async with anyio.create_task_group() as tg:
             for channel in self.plan_channels:
@@ -165,7 +204,12 @@ class Courier:
             self.dead_letter_channel.entrance.close()
         self.close_event.set()
 
-    async def _recycle_dead_letter(self, dead_letter: Parcel[Any], reason: str):
+    async def _recycle_dead_letter(
+        self,
+        dead_letter: Parcel[Any],
+        reason: str,
+        exc: Exception | ExceptionGroup[Exception] | None = None,
+    ):
         logger.warning(f"recycling dead letter {dead_letter!s} on courier")
         dead_letter.receipt.append_address(f"c:dead-a:{dead_letter.tag}")
         if not dead_letter.receipt.is_dead:
@@ -175,6 +219,7 @@ class Courier:
             return
 
         if self.dead_letter_receiver and self.dead_letter_channel:
+            dead_letter.metadata[__EXCEPTION_KEY__] = exc
             await self.dead_letter_channel.entrance.send(dead_letter)
 
     def _create_channel(self, name: str) -> Channel:

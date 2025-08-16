@@ -19,9 +19,7 @@ if TYPE_CHECKING:
 
     from .middleware import Instrumentation
     from .parcel import DeliveryReceipt, Parcel
-
-
-type ChannelName = str
+    from .types import ChannelName
 
 
 class Conveyor[T](NamedTuple):
@@ -52,7 +50,7 @@ class Channel[T]:
     async def post(self, parcel: Parcel[T]) -> weakref.ReferenceType[DeliveryReceipt]:
         if not parcel.is_sendable():
             raise ValueError(f"Parcel {parcel!r} is not sendable")
-        logger.debug(f"Parcel {parcel!r} is being sent by channel {self.name}")
+        logger.debug(f"Parcel {parcel!s} is being sent by channel {self.name}")
 
         receipt = parcel.receipt
         try:
@@ -92,4 +90,4 @@ class Channel[T]:
         if self.dead_letter_entrance:
             self.dead_letter_entrance.close()
         self.dead_letter_entrance = None
-        logger.info("Courier closed")
+        logger.info(f"Courier [{self.name}] closed")

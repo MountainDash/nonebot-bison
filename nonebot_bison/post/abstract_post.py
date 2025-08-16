@@ -6,6 +6,9 @@ from nonebot_plugin_saa import MessageFactory, MessageSegmentFactory, Text
 from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.utils import text_to_image
 
+type SendableMessages = list[MessageFactory]
+"""该用户本次应顺序发送的所有消息"""
+
 
 @dataclass(kw_only=True)
 class AbstractPost(ABC):
@@ -17,7 +20,7 @@ class AbstractPost(ABC):
         "Generate MessageSegmentFactory list from this instance"
         ...
 
-    async def generate_messages(self) -> list[MessageFactory]:
+    async def generate_messages(self) -> SendableMessages:
         "really call to generate messages"
         msg_segments = await self.generate()
         msg_segments = await self.message_segments_process(msg_segments)

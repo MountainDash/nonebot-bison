@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import nonebot
 from nonebot import get_plugin_config
 from nonebot.compat import PYDANTIC_V2, ConfigDict
@@ -9,6 +11,19 @@ PlatformName = str
 ThemeName = str
 
 
+class MaxConcurrencyConfig(BaseModel):
+    if PYDANTIC_V2:
+        model_config = ConfigDict(populate_by_name=True)
+    else:
+
+        class Config:
+            allow_population_by_field_name = True
+
+    render_post: int = Field(default=5, description="渲染动态报文的最大并发数")
+    send_message: int = Field(default=100, description="消息发送队列的最大缓存大小")
+    resend_wait: timedelta = Field(default=timedelta(seconds=1.5), description="消息重试发送前的等待时间")
+
+
 class PlugConfig(BaseModel):
     if PYDANTIC_V2:
         model_config = ConfigDict(populate_by_name=True)
@@ -17,6 +32,7 @@ class PlugConfig(BaseModel):
         class Config:
             allow_population_by_field_name = True
 
+    bison_max_concurrency: MaxConcurrencyConfig = Field(default_factory=MaxConcurrencyConfig)
     bison_config_path: str = ""
     bison_use_pic: bool = Field(
         default=False,

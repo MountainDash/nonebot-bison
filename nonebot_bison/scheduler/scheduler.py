@@ -3,13 +3,12 @@ from dataclasses import dataclass
 
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
-from nonebot_plugin_saa.utils.exceptions import NoBotFound
 
 from nonebot_bison.config import config
-from nonebot_bison.metrics import render_time_histogram, request_counter, request_time_histogram, sent_counter
+from nonebot_bison.courier import Parcel, post_to_courier
+from nonebot_bison.metrics import request_counter, request_time_histogram
 from nonebot_bison.platform import platform_manager
-from nonebot_bison.send import send_msgs
-from nonebot_bison.types import SubUnit, Target
+from nonebot_bison.types import SubUnit, SubUnitPayload, Target
 from nonebot_bison.utils import ClientManager, ProcessContext, Site
 from nonebot_bison.utils.site import SkipRequestException
 
@@ -86,6 +85,13 @@ class Scheduler:
         cur_max_schedulable.current_weight -= weight_sum
         return cur_max_schedulable
 
+    def create_schedule_parcel(self, sub_units: SubUnitPayload, platform_name: str) -> Parcel:
+        return Parcel(
+            tag="schedule",
+            payload=sub_units,
+            metadata={"platform_name": platform_name, "client_mgr": self.client_mgr},
+        )
+
     async def exec_fetch(self):
         if not (schedulable := await self.get_next_schedulable()):
             return
@@ -105,12 +111,16 @@ class Scheduler:
                     for batch_target in batch_targets:
                         userinfo = await config.get_platform_target_subscribers(schedulable.platform_name, batch_target)
                         sub_units.append(SubUnit(batch_target, userinfo))
-                    to_send = await platform_obj.do_batch_fetch_new_post(sub_units)
+                    await post_to_courier(self.create_schedule_parcel(sub_units, schedulable.platform_name))
                 else:
                     send_userinfo_list = await config.get_platform_target_subscribers(
                         schedulable.platform_name, schedulable.target
                     )
-                    to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
+                    await post_to_courier(
+                        self.create_schedule_parcel(
+                            SubUnit(schedulable.target, send_userinfo_list), schedulable.platform_name
+                        )
+                    )
                 success_flag = True
         except SkipRequestException as err:
             logger.debug(f"skip request: {err}")
@@ -127,24 +137,6 @@ class Scheduler:
             target=schedulable.target,
             success=success_flag,
         ).inc()
-        if not to_send:
-            return
-        sent_counter.labels(
-            platform_name=schedulable.platform_name, site_name=platform_obj.site.name, target=schedulable.target
-        ).inc()
-        with render_time_histogram.labels(
-            platform_name=schedulable.platform_name, site_name=platform_obj.site.name
-        ).time():
-            for user, send_list in to_send:
-                for send_post in send_list:
-                    logger.info(f"send to {user}: {send_post}")
-                    try:
-                        await send_msgs(
-                            user,
-                            await send_post.generate_messages(),
-                        )
-                    except NoBotFound:
-                        logger.warning("no bot connected")
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

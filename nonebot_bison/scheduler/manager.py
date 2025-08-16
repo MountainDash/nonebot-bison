@@ -1,9 +1,8 @@
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from nonebot.log import logger
 
 from nonebot_bison.config import config
-from nonebot_bison.config.db_model import Target
 from nonebot_bison.platform import platform_manager
 from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.types import Target as T_Target
@@ -11,6 +10,9 @@ from nonebot_bison.utils import Site
 from nonebot_bison.utils.site import CookieClientManager, is_cookie_client_manager
 
 from .scheduler import Scheduler
+
+if TYPE_CHECKING:
+    from nonebot_bison.config.db_model import Target
 
 scheduler_dict: dict[type[Site], Scheduler] = {}
 

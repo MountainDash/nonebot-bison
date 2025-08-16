@@ -1,9 +1,10 @@
 from .channel import Channel as Channel
-from .channel import ChannelName as ChannelName
 from .channel import Conveyor as Conveyor
 from .courier import Courier as Courier
 from .middleware import Instrumentation as Instrumentation
 from .middleware import Middleware as Middleware
-from .parcel import Address as Address
 from .parcel import Parcel as Parcel
 from .post import post_to_courier as post_to_courier
+from .types import Address as Address
+from .types import ChannelName as ChannelName
+from .types import Metadata as Metadata

@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from .channel import ChannelName
-    from .parcel import Address, Parcel
+    from .parcel import Parcel
+    from .types import Address
 
 
 class Instrumentation(ABC):

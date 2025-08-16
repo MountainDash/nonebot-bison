@@ -58,3 +58,6 @@ class ApiError(Exception):
 class SubUnit(NamedTuple):
     sub_target: Target
     user_sub_infos: list[UserSubInfo]
+
+
+SubUnitPayload = SubUnit | list[SubUnit]

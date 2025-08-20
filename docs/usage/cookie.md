@@ -44,12 +44,12 @@ Cookie 全局生效，这意味着，通过你的 Cookie 获取到的内容，�
 
 - RSS: 对于各种 RSS 订阅，你需要自行准备需要的 Cookie，以 JSON 格式添加即可
 - 微博：Bison 兼容 RSSHub 的 Cookie，以下方法引用自[RSSHub 的文档](https://docs.rsshub.app/zh/deploy/config#%E5%BE%AE%E5%8D%9A)
-  > 1. 打开并登录 https://m.weibo.cn（确保打开页面为手机版，如果强制跳转电脑端可尝试使用可更改 UserAgent 的浏览器插件）
+  > 1. 打开并登录 <https://m.weibo.cn>（确保打开页面为手机版，如果强制跳转电脑端可尝试使用可更改 UserAgent 的浏览器插件）
   > 2. 按下 F12 打开控制台，切换至 Network（网络）面板
   > 3. 在该网页切换至任意关注分组，并在面板打开最先捕获到的请求（该情形下捕获到的请求路径应包含/feed/group）
   > 4. 查看该请求的 Headers（请求头）, 找到 Cookie 字段并复制内容
 - Bilibili: Bison 兼容 RSSHub 的 Cookie，以下方法引用自[RSSHub 的文档](https://docs.rsshub.app/zh/deploy/config#bilibili)
-  > 1. 打开 https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=0&type=8
+  > 1. 打开 <https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=0&type=8>
   > 2. 打开控制台，切换到 Network 面板，刷新
   > 3. 点击 dynamic_new 请求，找到 Cookie
   > 4. 视频和专栏，UP 主粉丝及关注只要求 SESSDATA 字段，动态需复制整段 Cookie

@@ -1,3 +1,4 @@
+<!-- markdownlint-disable first-line-heading -->
 <div align="center">
   <a href="https://v2.nonebot.dev/store">
     <img src="https://nonebot-bison.netlify.app/logo.svg" width="200" alt="logo">
@@ -7,6 +8,8 @@
 <div align="center">
 
 # Bison
+
+<!-- markdownlint-disable no-emphasis-as-heading -->
 
 _✨ 通用订阅推送插件 ✨_
 

@@ -145,8 +145,7 @@ next: /usage/easy-use
    ```
 
 2. 根据需要修改 docker-compose_metrics.yaml 文件
-
-修改说明请参考[docker-compose 部署](/usage/install.md#docker-compose-部署)
+   修改说明请参考[docker-compose 部署](/usage/install.md#docker-compose-部署)
 
 3. 启动项目
    - 在目录中运行`docker compose -f ./docker-compose_metrics.yaml up`启动 Nonebot-Bison

@@ -11,12 +11,12 @@
     "docs:update-package": "pnpm dlx vp-update"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "2.0.0-rc.17",
-    "mermaid": "^11.3.0",
-    "sass-embedded": "^1.79.5",
-    "vue": "^3.5.6",
-    "vuepress": "2.0.0-rc.17",
-    "vuepress-plugin-md-enhance": "2.0.0-rc.57",
-    "vuepress-theme-hope": "2.0.0-rc.58"
+    "@vuepress/bundler-vite": "2.0.0-rc.24",
+    "mermaid": "^11.10.0",
+    "sass-embedded": "^1.90.0",
+    "vue": "^3.5.18",
+    "vuepress": "2.0.0-rc.24",
+    "vuepress-plugin-md-enhance": "2.0.0-rc.94",
+    "vuepress-theme-hope": "2.0.0-rc.94"
   }
 }

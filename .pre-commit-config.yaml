@@ -19,7 +19,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        types_or: [javascript, jsx, ts, tsx, markdown, yaml, json]
+        types_or: [javascript, jsx, ts, tsx, yaml, json]
         exclude: "admin-frontend/"
         stages: [pre-commit]
 
@@ -57,4 +57,9 @@ repos:
       - id: nonemoji
         stages: [prepare-commit-msg]
 
-exclude: "CHANGELOG.md"
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.18.1
+    hooks:
+      - id: markdownlint-cli2
+
+exclude: "CHANGELOG.md|pnpm-lock.yaml"

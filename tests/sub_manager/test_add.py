@@ -70,9 +70,9 @@ async def test_add_with_target(app: App, init_scheduler):
     from nonebot_bison.platform.weibo import Weibo
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
-    ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
+    ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?type=uid&value=6279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
-    ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=100505000")
+    ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?type=uid&value=000")
     ak_list_bad_router.mock(return_value=Response(200, json=get_json("weibo_err_profile.json")))
 
     async with app.test_matcher(add_sub_matcher) as ctx:

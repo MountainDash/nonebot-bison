@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10, <4.0.0"
 resolution-markers = [
     "python_full_version < '3.11'",
@@ -1649,7 +1649,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-bison"
-version = "0.9.7"
+version = "0.9.8"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },

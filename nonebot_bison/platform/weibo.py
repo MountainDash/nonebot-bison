@@ -56,6 +56,24 @@ class WeiboClientManager(CookieClientManager):
 
         return text_fletten(f"weibo: [{name[:10]}]")
 
+    @override
+    async def get_client(self, target: Target | None) -> AsyncClient:
+        client = await super().get_client(target)
+
+        if len(client.cookies) == 0:
+            client.cookies.update({"dummycookie": "1"})
+
+        return client
+
+    @classmethod
+    async def get_query_name_client(cls) -> AsyncClient:
+        client = http_client()
+
+        if len(client.cookies) == 0:
+            client.cookies.update({"dummycookie": "1"})
+
+        return client
+
 
 class WeiboSite(Site):
     name = "weibo.com"
@@ -82,8 +100,8 @@ class Weibo(NewMessage):
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
-        param = {"containerid": "100505" + target}
-        res = await client.get("https://m.weibo.cn/api/container/getIndex", params=param)
+        header = {"Referer": f"https://m.weibo.cn/u/{target}", "MWeibo-Pwa": "1", "X-Requested-With": "XMLHttpRequest"}
+        res = await client.get(f"https://m.weibo.cn/api/container/getIndex?type=uid&value={target}", headers=header)
         res_dict = json.loads(res.text)
         if res_dict.get("ok") == 1:
             return res_dict["data"]["userInfo"]["screen_name"]

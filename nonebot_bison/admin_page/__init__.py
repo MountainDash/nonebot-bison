@@ -2,12 +2,13 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from nonebot import get_driver, on_command
+from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import Bot
 from nonebot.adapters.onebot.v11.event import PrivateMessageEvent
 from nonebot.log import logger
 from nonebot.rule import to_me
 from nonebot.typing import T_State
+from nonebot_plugin_alconna import Alconna, on_alconna
 
 from nonebot_bison.plugin_config import plugin_config
 
@@ -62,7 +63,13 @@ def init_fastapi(driver: "Driver"):
 
 
 def register_get_token_handler():
-    get_token = on_command("后台管理", rule=to_me(), priority=5, aliases={"管理后台"}, block=True)
+    get_token = on_alconna(
+        Alconna("后台管理"),
+        rule=to_me(),
+        priority=5,
+        block=True,
+        aliases={"管理后台"},
+    )
 
     @get_token.handle()
     async def send_token(bot: "Bot", event: PrivateMessageEvent, state: T_State):

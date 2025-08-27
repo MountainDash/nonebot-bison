@@ -16,13 +16,14 @@ async def test_abort_add_on_platform(app: App, init_scheduler):
     from nonebot.adapters.onebot.v11.message import Message
 
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
+    from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
     ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=100505000")
     ak_list_bad_router.mock(return_value=Response(200, json=get_json("weibo_err_profile.json")))
-    async with app.test_matcher(add_sub_matcher) as ctx:
+    async with app.test_matcher(add_sub_command) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
             message=Message("添加订阅"),
@@ -57,13 +58,14 @@ async def test_abort_add_on_id(app: App, init_scheduler):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
+    from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=1005056279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
     ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=100505000")
     ak_list_bad_router.mock(return_value=Response(200, json=get_json("weibo_err_profile.json")))
-    async with app.test_matcher(add_sub_matcher) as ctx:
+    async with app.test_matcher(add_sub_command) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
             message=Message("添加订阅"),
@@ -105,13 +107,14 @@ async def test_abort_add_on_cats(app: App, init_scheduler):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
+    from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?type=uid&value=6279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
     ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=100505000")
     ak_list_bad_router.mock(return_value=Response(200, json=get_json("weibo_err_profile.json")))
-    async with app.test_matcher(add_sub_matcher) as ctx:
+    async with app.test_matcher(add_sub_command) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
             message=Message("添加订阅"),
@@ -165,13 +168,14 @@ async def test_abort_add_on_tag(app: App, init_scheduler):
 
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.weibo import Weibo
-    from nonebot_bison.sub_manager import add_sub_matcher, common_platform
+    from nonebot_bison.sub_manager.add_sub import add_sub_command
+    from nonebot_bison.sub_manager.utils import common_platform
 
     ak_list_router = respx.get("https://m.weibo.cn/api/container/getIndex?type=uid&value=6279793937")
     ak_list_router.mock(return_value=Response(200, json=get_json("weibo_ak_profile.json")))
     ak_list_bad_router = respx.get("https://m.weibo.cn/api/container/getIndex?containerid=100505000")
     ak_list_bad_router.mock(return_value=Response(200, json=get_json("weibo_err_profile.json")))
-    async with app.test_matcher(add_sub_matcher) as ctx:
+    async with app.test_matcher(add_sub_command) as ctx:
         bot = ctx.create_bot()
         event_1 = fake_group_message_event(
             message=Message("添加订阅"),
@@ -228,7 +232,7 @@ async def test_abort_del_sub(app: App, init_scheduler):
 
     from nonebot_bison.config import config
     from nonebot_bison.platform import platform_manager
-    from nonebot_bison.sub_manager import del_sub_matcher
+    from nonebot_bison.sub_manager.del_sub import del_sub_command
     from nonebot_bison.types import Target as T_Target
 
     await config.add_subscribe(
@@ -239,7 +243,7 @@ async def test_abort_del_sub(app: App, init_scheduler):
         [platform_manager["weibo"].reverse_category["图文"]],
         ["明日方舟"],
     )
-    async with app.test_matcher(del_sub_matcher) as ctx:
+    async with app.test_matcher(del_sub_command) as ctx:
         bot = ctx.create_bot(base=Bot)
         assert isinstance(bot, Bot)
         event = fake_group_message_event(message=Message("删除订阅"), to_me=True, sender=fake_admin_user)

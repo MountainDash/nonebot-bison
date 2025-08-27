@@ -1,32 +1,15 @@
-import contextlib
 from itertools import groupby
 from operator import attrgetter
-from typing import Annotated
 
-from nonebot.adapters import Event
 from nonebot.matcher import Matcher
-from nonebot.params import Depends, EventPlainText, EventToMe
-from nonebot.permission import SUPERUSER
-from nonebot.rule import Rule
 from nonebot.typing import T_State
-from nonebot_plugin_saa import PlatformTarget, extract_target
+from nonebot_plugin_saa import PlatformTarget
 
 from nonebot_bison.config import config
 from nonebot_bison.platform import platform_manager
-from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.types import Category
 from nonebot_bison.types import Target as T_Target
 from nonebot_bison.utils.site import is_cookie_client_manager
-
-
-def _configurable_to_me(to_me: bool = EventToMe()):
-    if plugin_config.bison_to_me:
-        return to_me
-    else:
-        return True
-
-
-configurable_to_me = Rule(_configurable_to_me)
 
 common_platform = [
     p.platform_name
@@ -35,37 +18,6 @@ common_platform = [
         platform_manager.values(),
     )
 ]
-
-
-def gen_handle_cancel(matcher: type[Matcher], message: str):
-    async def _handle_cancel(text: Annotated[str, EventPlainText()]):
-        if text == "取消":
-            await matcher.finish(message)
-
-    return Depends(_handle_cancel)
-
-
-def ensure_user_info(matcher: type[Matcher]):
-    async def _check_user_info(state: T_State):
-        if not state.get("target_user_info"):
-            await matcher.finish("No target_user_info set, this shouldn't happen, please issue")
-
-    return _check_user_info
-
-
-async def set_target_user_info(event: Event, state: T_State):
-    user = extract_target(event)
-    state["target_user_info"] = user
-
-
-def admin_permission():
-    permission = SUPERUSER
-    with contextlib.suppress(ImportError):
-        from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
-
-        permission = permission | GROUP_ADMIN | GROUP_OWNER
-
-    return permission
 
 
 async def generate_sub_list_text(
@@ -121,11 +73,3 @@ async def generate_sub_list_text(
             res += f" （平台 {sub.target.platform_name} 已失效，请删除此订阅）"
 
     return res
-
-
-async def only_allow_private(
-    event: Event,
-    matcher: type[Matcher],
-):
-    if not (hasattr(event, "message_type") and getattr(event, "message_type") == "private"):
-        await matcher.finish("请在私聊中使用此命令")

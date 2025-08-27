@@ -1726,7 +1726,7 @@ requires-dist = [
     { name = "nonebot2", extras = ["aiohttp", "fastapi"], marker = "extra == 'docker'", specifier = ">=2.3.3,<3.0.0" },
     { name = "nonebot2", extras = ["fastapi"], specifier = ">=2.3.3,<3.0.0" },
     { name = "pillow", specifier = ">=11.0.0,<11.1" },
-    { name = "pip", marker = "extra == 'docker'", specifier = ">=24.3.1" },
+    { name = "pip", marker = "extra == 'docker'", specifier = ">=25.1.1" },
     { name = "pydantic", specifier = "!=2.5.0,!=2.5.1,>=2.9.2,<3.0.0" },
     { name = "pyjwt", specifier = ">=2.9.0,<3.0.0" },
     { name = "python-socketio", specifier = ">=5.11.4,<6.0.0" },
@@ -2076,11 +2076,11 @@ wheels = [
 
 [[package]]
 name = "pip"
-version = "24.3.1"
+version = "25.1.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f4/b1/b422acd212ad7eedddaf7981eee6e5de085154ff726459cf2da7c5a184c1/pip-24.3.1.tar.gz", hash = "sha256:ebcb60557f2aefabc2e0f918751cd24ea0d56d8ec5445fe1807f1d2109660b99", size = 1931073, upload-time = "2024-10-27T18:35:56.354Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/59/de/241caa0ca606f2ec5fe0c1f4261b0465df78d786a38da693864a116c37f4/pip-25.1.1.tar.gz", hash = "sha256:3de45d411d308d5054c2168185d8da7f9a2cd753dbac8acbfa88a8909ecd9077", size = 1940155, upload-time = "2025-05-02T15:14:02.057Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/7d/500c9ad20238fcfcb4cb9243eede163594d7020ce87bd9610c9e02771876/pip-24.3.1-py3-none-any.whl", hash = "sha256:3790624780082365f47549d032f3770eeb2b1e8bd1f7b2e02dace1afa361b4ed", size = 1822182, upload-time = "2024-10-27T18:35:53.067Z" },
+    { url = "https://files.pythonhosted.org/packages/29/a2/d40fb2460e883eca5199c62cfc2463fd261f760556ae6290f88488c362c0/pip-25.1.1-py3-none-any.whl", hash = "sha256:2913a38a2abf4ea6b64ab507bd9e967f3b53dc1ede74b01b0931e1ce548751af", size = 1825227, upload-time = "2025-05-02T15:13:59.102Z" },
 ]
 
 [[package]]

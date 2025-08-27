@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修复 weibo 问题 [@felinae98](https://github.com/felinae98) ([#719](https://github.com/MountainDash/nonebot-bison/pull/719))
+
 ## v0.9.8
 
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)) ([#690](https://github.com/MountainDash/nonebot-bison/pull/690))

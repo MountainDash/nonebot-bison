@@ -127,7 +127,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     UV_FROZEN=1 \
     UV_LINK_MODE=copy \
     TZ=Asia/Shanghai \
-    SHELL="/bin/bash"
+    SHELL="/bin/bash" \
+    HOST=0.0.0.0
 
 RUN echo "📦 Installing system dependencies..." && \
     apt-get update && \

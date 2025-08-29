@@ -25,6 +25,7 @@ jobs:
         run: |
           uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version ${{ github.event.inputs.version }}
           echo "TAG_NAME=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          uv sync
 
       - name: Archive Changelog
         uses: docker://ghcr.io/nonebot/auto-changelog:master

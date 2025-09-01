@@ -38,11 +38,12 @@ class APIBase(Base):
 
 
 class UserAPI(APIBase):
-    class Card(Base):
-        name: str
+    class Info(Base):
+        uname: str
+        face: str
 
     class Data(Base):
-        card: "UserAPI.Card"
+        info: "UserAPI.Info"
 
     data: Data | None = None
 

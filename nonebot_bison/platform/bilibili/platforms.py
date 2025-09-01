@@ -1,6 +1,5 @@
 from copy import deepcopy
 from enum import Enum, unique
-import json
 import re
 from typing import ClassVar, NamedTuple
 from typing_extensions import Self
@@ -71,12 +70,12 @@ class Bilibili(NewMessage):
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
-        res = await client.get("https://api.bilibili.com/x/web-interface/card", params={"mid": target})
+        res = await client.get("https://api.live.bilibili.com/live_user/v1/Master/info", params={"uid": target})
         res.raise_for_status()
         res_data = type_validate_json(UserAPI, res.content)
         if res_data.code != 0:
             return None
-        return res_data.data.card.name if res_data.data else None
+        return res_data.data.info.uname if res_data.data else None
 
     @classmethod
     async def parse_target(cls, target_text: str) -> Target:
@@ -383,11 +382,12 @@ class Bilibililive(StatusChange):
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
-        res = await client.get("https://api.bilibili.com/x/web-interface/card", params={"mid": target})
-        res_data = json.loads(res.text)
-        if res_data["code"]:
+        res = await client.get("https://api.live.bilibili.com/live_user/v1/Master/info", params={"uid": target})
+        res.raise_for_status()
+        res_data = type_validate_json(UserAPI, res.content)
+        if res_data.code != 0:
             return None
-        return res_data["data"]["card"]["name"]
+        return res_data.data.info.uname if res_data.data else None
 
     def _gen_empty_info(self, uid: int) -> Info:
         """返回一个空的Info，用于该用户没有直播间的情况"""

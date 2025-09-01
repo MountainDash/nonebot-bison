@@ -1,94 +1,36 @@
 {
   "code": 0,
-  "message": "0",
-  "ttl": 1,
+  "msg": "",
+  "message": "",
   "data": {
-    "card": {
-      "mid": "161775300",
-      "name": "明日方舟",
-      "approve": false,
-      "sex": "保密",
-      "rank": "10000",
+    "info": {
+      "uid": 161775300,
+      "uname": "明日方舟",
       "face": "https://i0.hdslb.com/bfs/face/d4005a0f9b898d8bb049caf9c6355f8e8f772a8f.jpg",
-      "face_nft": 0,
-      "face_nft_type": 0,
-      "DisplayRank": "0",
-      "regtime": 0,
-      "spacesta": 0,
-      "birthday": "",
-      "place": "",
-      "description": "",
-      "article": 0,
-      "attentions": [],
-      "fans": 5421712,
-      "friend": 3,
-      "attention": 3,
-      "sign": "重铸未来 方舟启航",
-      "level_info": {
-        "current_level": 6,
-        "current_min": 0,
-        "current_exp": 0,
-        "next_exp": 0
+      "official_verify": {
+        "type": 1,
+        "desc": "bilibili企业认证:明日方舟官方账号"
       },
-      "pendant": {
-        "pid": 1990,
-        "name": "明日方舟",
-        "image": "https://i0.hdslb.com/bfs/garb/item/0c8e7d627a35c378b757f39419889ef1fcc0ed9b.png",
-        "expire": 0,
-        "image_enhance": "https://i0.hdslb.com/bfs/garb/item/1815c81da71069ea3db4553cad7d233f782da2f2.webp",
-        "image_enhance_frame": "https://i0.hdslb.com/bfs/garb/item/ed2b4ef1da228c0b937753542b33af8f04d1d70c.png"
-      },
-      "nameplate": {
-        "nid": 0,
-        "name": "",
-        "image": "",
-        "image_small": "",
-        "level": "",
-        "condition": ""
-      },
-      "Official": {
-        "role": 3,
-        "title": "明日方舟官方账号",
-        "desc": "",
-        "type": 1
-      },
-      "official_verify": { "type": 1, "desc": "明日方舟官方账号" },
-      "vip": {
-        "type": 2,
-        "status": 1,
-        "due_date": 1715097600000,
-        "vip_pay_type": 0,
-        "theme_type": 0,
-        "label": {
-          "path": "",
-          "text": "年度大会员",
-          "label_theme": "annual_vip",
-          "text_color": "#FFFFFF",
-          "bg_style": 1,
-          "bg_color": "#FB7299",
-          "border_color": "",
-          "use_img_label": true,
-          "img_label_uri_hans": "",
-          "img_label_uri_hant": "",
-          "img_label_uri_hans_static": "https://i0.hdslb.com/bfs/vip/8d4f8bfc713826a5412a0a27eaaac4d6b9ede1d9.png",
-          "img_label_uri_hant_static": "https://i0.hdslb.com/bfs/activity-plat/static/20220614/e369244d0b14644f5e1a06431e22a4d5/VEW8fCC0hg.png"
-        },
-        "avatar_subscript": 1,
-        "nickname_color": "#FB7299",
-        "role": 3,
-        "avatar_subscript_url": "",
-        "tv_vip_status": 0,
-        "tv_vip_pay_type": 0,
-        "tv_due_date": 0,
-        "vipType": 2,
-        "vipStatus": 1
-      },
-      "is_senior_member": 0
+      "gender": -1
     },
-    "following": false,
-    "archive_count": 282,
-    "article_count": 0,
-    "follower": 5421712,
-    "like_num": 83977549
+    "exp": {
+      "master_level": {
+        "level": 35,
+        "color": 16746162,
+        "current": [11400000, 47813810],
+        "next": [14200000, 62013810]
+      }
+    },
+    "follower_num": 6734852,
+    "room_id": 5555734,
+    "medal_name": "粉丝团",
+    "glory_count": 1,
+    "pendant": "",
+    "link_group_num": 0,
+    "room_news": {
+      "content": "",
+      "ctime": "2025-07-26 19:12:27",
+      "ctime_text": "7-26"
+    }
   }
 }

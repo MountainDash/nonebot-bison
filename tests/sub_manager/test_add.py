@@ -366,7 +366,7 @@ async def test_add_with_bilibili_target_parser(app: App, init_scheduler):
     from nonebot_bison.platform.bilibili import Bilibili
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
-    ak_list_router = respx.get("https://api.bilibili.com/x/web-interface/card?mid=161775300")
+    ak_list_router = respx.get("https://api.live.bilibili.com/live_user/v1/Master/info?uid=161775300")
     ak_list_router.mock(return_value=Response(200, json=get_json("bilibili_arknights_profile.json")))
 
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")
@@ -480,7 +480,7 @@ async def test_add_with_bilibili_live_target_parser(app: App, init_scheduler):
     from nonebot_bison.platform.bilibili import Bilibililive
     from nonebot_bison.sub_manager import add_sub_matcher, common_platform
 
-    ak_list_router = respx.get("https://api.bilibili.com/x/web-interface/card?mid=161775300")
+    ak_list_router = respx.get("https://api.live.bilibili.com/live_user/v1/Master/info?uid=161775300")
     ak_list_router.mock(return_value=Response(200, json=get_json("bilibili_arknights_profile.json")))
 
     bilibili_main_page_router = respx.get("https://www.bilibili.com/")

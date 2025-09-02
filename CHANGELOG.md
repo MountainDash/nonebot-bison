@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修复 B 站用户名获取问题 [@AzideCupric](https://github.com/AzideCupric) ([#721](https://github.com/MountainDash/nonebot-bison/pull/721))
+
 ## v0.9.9
 
 ### Bug 修复

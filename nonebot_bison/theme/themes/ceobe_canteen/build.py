@@ -1,9 +1,12 @@
+import base64
 from collections.abc import Sequence
 from datetime import datetime
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+import anyio
 from httpx import AsyncClient
 import jinja2
 from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
@@ -18,6 +21,24 @@ from nonebot_bison.utils import is_pics_mergable, pic_merge
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
+
+
+@lru_cache
+async def embed_image_as_data_url(image_path: Path) -> str:
+    """读取图片文件并返回base64数据URL字符串
+
+    Args:
+        image_path: 图片文件路径
+
+    Returns:
+        base64格式的data URL字符串
+    """
+    if not image_path.exists():
+        return ""
+
+    async with await anyio.open_file(image_path, "rb") as f:
+        image_data = base64.b64encode(await f.read()).decode()
+        return f"data:image/png;base64,{image_data}"
 
 
 class CeobeInfo(BaseModel):
@@ -190,7 +211,12 @@ class CeobeCanteenTheme(Theme):
             enable_async=True,
         )
         template = template_env.get_template(self.template_name)
-        html = await template.render_async(card=ceobe_card)
+
+        # 获取嵌入的图片数据
+        bison_logo_data = await embed_image_as_data_url(self.template_path / "bison_logo.png")
+        ceobe_logo_data = await embed_image_as_data_url(self.template_path / "ceobecanteen_logo.png")
+
+        html = await template.render_async(card=ceobe_card, bison_logo=bison_logo_data, ceobe_logo=ceobe_logo_data)
         pages = {
             "device_scale_factor": 2,
             "viewport": {"width": 512, "height": 455},
@@ -198,7 +224,7 @@ class CeobeCanteenTheme(Theme):
         }
         try:
             async with get_new_page(**pages) as page:
-                await page.goto(self.template_path.as_uri())
+                await page.goto("about:blank")
                 await page.set_content(html)
                 await page.wait_for_timeout(1)
                 card_body = await page.locator("#ceobecanteen-card").screenshot(

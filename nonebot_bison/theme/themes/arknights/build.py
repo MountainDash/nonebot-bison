@@ -33,7 +33,8 @@ class ArknightsTheme(Theme):
     template_name: str = "announce.html.jinja"
 
     async def render(self, post: "ArknightsPost"):
-        from nonebot_plugin_htmlrender import template_to_pic
+        from jinja2 import Environment, FileSystemLoader
+        from nonebot_plugin_htmlrender import html_to_pic
 
         if not post.title:
             raise ThemeRenderUnsupportError("标题为空")
@@ -56,16 +57,14 @@ class ArknightsTheme(Theme):
         )
 
         try:
-            announce_pic = await template_to_pic(
-                template_path=self.template_path.as_posix(),
-                template_name=self.template_name,
-                templates={
-                    "data": ark_data,
-                },
-                pages={
-                    "viewport": {"width": 600, "height": 100},
-                    "base_url": self.template_path.as_uri(),
-                },
+            env = Environment(loader=FileSystemLoader(self.template_path))
+            template = env.get_template(self.template_name)
+            html_content = template.render(data=ark_data)
+
+            announce_pic = await html_to_pic(
+                html=html_content,
+                viewport={"width": 600, "height": 100},
+                template_path="file:///",  # dummy path, make htmlrender happy
             )
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")

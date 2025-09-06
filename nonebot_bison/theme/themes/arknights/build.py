@@ -33,7 +33,7 @@ class ArknightsTheme(Theme):
     template_name: str = "announce.html.jinja"
 
     async def render(self, post: "ArknightsPost"):
-        from nonebot_plugin_htmlrender import template_to_pic
+        from nonebot_bison.theme.render_helper import template_to_pic
 
         if not post.title:
             raise ThemeRenderUnsupportError("标题为空")
@@ -64,7 +64,6 @@ class ArknightsTheme(Theme):
                 },
                 pages={
                     "viewport": {"width": 600, "height": 100},
-                    "base_url": self.template_path.as_uri(),
                 },
             )
         except Exception as e:

@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- 使 arknights theme 支持分离式渲染 [@felinae98](https://github.com/felinae98) ([#723](https://github.com/MountainDash/nonebot-bison/pull/723))
 - ceobe theme 支持使用分离式渲染 [@felinae98](https://github.com/felinae98) ([#722](https://github.com/MountainDash/nonebot-bison/pull/722))
 - 将 dockerfile 默认的 host 设为 0.0.0.0 [@felinae98](https://github.com/felinae98) ([#720](https://github.com/MountainDash/nonebot-bison/pull/720))
 - 修复 B 站用户名获取问题 [@AzideCupric](https://github.com/AzideCupric) ([#721](https://github.com/MountainDash/nonebot-bison/pull/721))

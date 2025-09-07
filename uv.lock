@@ -1649,7 +1649,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-bison"
-version = "0.9.10"
+version = "0.9.11"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },

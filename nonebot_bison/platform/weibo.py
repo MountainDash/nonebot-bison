@@ -78,7 +78,7 @@ class WeiboClientManager(CookieClientManager):
 class WeiboSite(Site):
     name = "weibo.com"
     schedule_type = "interval"
-    schedule_setting: ClassVar[dict] = {"seconds": 3}
+    schedule_setting: ClassVar[dict] = {"seconds": 10}
     client_mgr = WeiboClientManager
 
 

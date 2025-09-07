@@ -9,7 +9,11 @@
     />
     <link rel="icon" href="data:;base64,=" />
     <title>公告</title>
-    <style>{% include "style.css" %}</style>
+    <style>
+      {% filter indent(6) %}
+      {%- include "style.css" -%}
+      {% endfilter %}
+    </style>
   </head>
   <body>
     <div class="main">

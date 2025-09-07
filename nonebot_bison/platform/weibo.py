@@ -100,7 +100,12 @@ class Weibo(NewMessage):
 
     @classmethod
     async def get_target_name(cls, client: AsyncClient, target: Target) -> str | None:
-        header = {"Referer": f"https://m.weibo.cn/u/{target}", "MWeibo-Pwa": "1", "X-Requested-With": "XMLHttpRequest"}
+        header = {
+            "Referer": f"https://m.weibo.cn/u/{target}",
+            "MWeibo-Pwa": "1",
+            "X-Requested-With": "XMLHttpRequest",
+            "sec-fetch-mode": "cors",
+        }
         res = await client.get(f"https://m.weibo.cn/api/container/getIndex?type=uid&value={target}", headers=header)
         res_dict = json.loads(res.text)
         if res_dict.get("ok") == 1:

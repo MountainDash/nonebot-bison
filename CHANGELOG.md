@@ -4,6 +4,7 @@
 
 ### Bug 修复
 
+- 修复 weibo 不能获取订阅账号名称的问题 [@felinae98](https://github.com/felinae98) ([#724](https://github.com/MountainDash/nonebot-bison/pull/724))
 - 使 arknights theme 支持分离式渲染 [@felinae98](https://github.com/felinae98) ([#723](https://github.com/MountainDash/nonebot-bison/pull/723))
 - ceobe theme 支持使用分离式渲染 [@felinae98](https://github.com/felinae98) ([#722](https://github.com/MountainDash/nonebot-bison/pull/722))
 - 将 dockerfile 默认的 host 设为 0.0.0.0 [@felinae98](https://github.com/felinae98) ([#720](https://github.com/MountainDash/nonebot-bison/pull/720))

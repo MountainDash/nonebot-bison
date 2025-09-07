@@ -2,6 +2,10 @@
 
 ## 最近更新
 
+### 新功能
+
+- 将 weibo 的调度间隔减慢为 10s 一次 [@felinae98](https://github.com/felinae98) ([#725](https://github.com/MountainDash/nonebot-bison/pull/725))
+
 ### Bug 修复
 
 - 修复 weibo 不能获取订阅账号名称的问题 [@felinae98](https://github.com/felinae98) ([#724](https://github.com/MountainDash/nonebot-bison/pull/724))

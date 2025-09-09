@@ -425,6 +425,16 @@ async def test_opus_mojar_parse(bilibili: "Bilibili", opus_major_raw_content: di
         assert item.modules.module_dynamic.major.type == "MAJOR_TYPE_OPUS"
 
 
+async def test_opus_mojar_validate(app):
+    from nonebot_bison.platform.bilibili.models import OPUSMajor
+
+    content = get_json("bilibili-opus-major-object.json")
+
+    result = type_validate_python(OPUSMajor, content)
+    assert isinstance(result, OPUSMajor)
+    assert all(not pic.size for pic in result.opus.pics)
+
+
 async def test_dynamic_forword_deleted(bilibili: "Bilibili", bing_dy_list: list):
     from nonebot_bison.post import Post
 

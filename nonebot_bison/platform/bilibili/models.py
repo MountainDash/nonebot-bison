@@ -273,7 +273,7 @@ class DrawMajor(Base):
     class Item(Base):
         width: int
         height: int
-        size: float
+        size: float | None = None
         """文件大小，KiB（1024）"""
         src: str
         """图片链接"""
@@ -312,7 +312,7 @@ class OPUSMajor(Base):
     class Pic(Base):
         width: int
         height: int
-        size: float
+        size: float | None = None
         """文件大小，KiB（1024）"""
         url: str
         """图片链接"""

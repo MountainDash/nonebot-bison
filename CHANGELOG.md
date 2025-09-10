@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修复解析 bilibili opus major 时 pic 的 size 可能为空的问题 [@AzideCupric](https://github.com/AzideCupric) ([#727](https://github.com/MountainDash/nonebot-bison/pull/727))
+
 ## v0.9.11
 
 ### 新功能

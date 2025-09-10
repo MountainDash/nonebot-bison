@@ -63,11 +63,13 @@ next: /usage/cookie
 - `BISON_USE_QUEUE`: 是否用队列的方式发送消息，降低发送频率，默认开
 - `BISON_RESEND_TIMES`: 最大重发次数，默认 0
 - `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
+
   - `0`: 不启用 (默认)
   - `1`: 首条消息单独发送，剩余图片合并转发
   - `2`: 所有消息全部合并转发
 
   ::: details BISON_USE_PIC_MERGE 配置项示例
+
   - 当`BISON_USE_PIC_MERGE=1`时：
     ![simple1](/images/forward-msg-simple1.png)
   - 当`BISON_USE_PIC_MERGE=2`时：
@@ -86,6 +88,7 @@ next: /usage/cookie
   ::: details BISON_PLATFORM_THEME 配置项示例
 
   配置项使用`<platform>:<theme>`的形式来为某个平台指定其渲染主题，例如
+
   - `"weibo":"basic"`
   - `"bilibili":"ht2i"`。
 

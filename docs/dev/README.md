@@ -107,11 +107,13 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 - `nonebot_bison.platform.platform.NewMessage`
   需要实现：
+
   - `async get_sub_list(Target) -> list[RawPost]`
   - `get_id(RawPost)`
   - `get_date(RawPost)` (可选)
 
   ::: details 大致流程
+
   1. 调用`get_sub_list`拿到 RawPost 列表
   2. 调用`get_id`判断是否重复，如果没有重复就说明是新的 RawPost
   3. 如果有`get_category`和`get_date`，则调用判断 RawPost 是否满足条件
@@ -122,10 +124,12 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 - `nonebot_bison.platform.platform.StatusChange`
   需要实现：
+
   - `async get_status(Target) -> Any`
   - `compare_status(Target, old_status, new_status) -> list[RawPost]`
 
   :::details 大致流程
+
   1. `get_status`获取当前状态
   2. 传入`compare_status`比较前状态
   3. 通过则进入`parser`生成 Post
@@ -135,10 +139,12 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 - `nonebot_bison.platform.platform.SimplePost`
   需要实现：
+
   - `async get_sub_list(Target) -> list[RawPost]`
   - `get_date(RawPost)` (可选)
 
   ::: details 大致流程
+
   1. 调用`get_sub_list`拿到 RawPost 列表
   2. 如果有`get_category`和`get_date`，则调用判断 RawPost 是否满足条件
   3. 调用`parse`生成正式推文

@@ -106,6 +106,12 @@ next: /usage/cookie
   所有支持的主题请参见[主题](#主题)一节
   :::
 
+- `BISON_SITE_SCHEDULE`: 设置特定 site 的调度间隔，它是一个 {site_name => {type: Literal["interval", "date", "cron"], settings: dict}} 为结构的配置项。内层的 dict 为 apscheduler 调用 add_jobs 时传入的参数。  
+  举例将 bilibili 的周期调节到 90s 一次可以这样设置：  
+  `BISON_SITE_SCHEDULE__bilibili.com={"type":"interval","settings":{"seconds":90}}`  
+  或者可以在一个环境变量中完成所有 site 的设置：  
+  `BISON_SITE_SCHEDULE={"bilibili.com":{"type":"interval","settings":{"seconds":90}},"weibo.com":{"type":"interval","settings":{"seconds":5}}}`
+
 ## 使用
 
 ::: warning

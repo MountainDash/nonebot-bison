@@ -30,11 +30,13 @@ next: /usage/
 3. `BISON_USE_PIC`  
    将文字渲染成图片后进行发送，多用于规避风控，默认为`false`
 4. `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
+
    - `0`: 不启用 (默认)
    - `1`: 首条消息单独发送，剩余图片合并转发
    - `2`: 所有消息全部合并转发
 
    ::: details BISON_USE_PIC_MERGE 配置项示例
+
    - 当`BISON_USE_PIC_MERGE=1`时：
      ![simple1](/images/forward-msg-simple1.png)
    - 当`BISON_USE_PIC_MERGE=2`时：

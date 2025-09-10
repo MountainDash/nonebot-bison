@@ -46,7 +46,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     nonebot.require("nonebot_bison")
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db
-    from nonebot_plugin_htmlrender.browser import shutdown_browser
+    from nonebot_plugin_htmlrender.browser import shutdown_htmlrender
 
     from nonebot_bison import plugin_config
     from nonebot_bison.config.db_model import ScheduleTimeWeight, Subscribe, Target, User
@@ -82,7 +82,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
         await session.execute(delete(ScheduleTimeWeight))
 
     # 关闭渲染图片时打开的浏览器
-    await shutdown_browser()
+    await shutdown_htmlrender()
     # 清除缓存文件
     cache_dir = Path.cwd() / ".cache" / "hishel"
     if cache_dir.exists():

@@ -52,7 +52,7 @@ class SkipRequestException(Exception):
     pass
 
 
-class CookieFormatException(Exception):
+class CookieFormatException(ValueError):
     """cookie格式错误"""
 
     pass

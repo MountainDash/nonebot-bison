@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from datetime import datetime, timedelta
+from http.cookies import SimpleCookie
 import json
 from json import JSONDecodeError
 from typing import Literal
@@ -51,6 +52,12 @@ class SkipRequestException(Exception):
     pass
 
 
+class CookieFormatException(ValueError):
+    """cookie格式错误"""
+
+    pass
+
+
 class CookieClientManager(ClientManager):
     _default_cookie_cd = timedelta(seconds=15)
     _site_name: str = ""
@@ -84,7 +91,7 @@ class CookieClientManager(ClientManager):
         """添加实名 cookie"""
 
         if not await self.validate_cookie(content):
-            raise ValueError()
+            raise CookieFormatException()
         cookie = Cookie(site_name=self._site_name, content=content)
         cookie.cookie_name = cookie_name if cookie_name else await self.get_cookie_name(content)
         cookie.cd = self._default_cookie_cd
@@ -100,10 +107,8 @@ class CookieClientManager(ClientManager):
     async def validate_cookie(self, content: str) -> bool:
         """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
         try:
-            data = json.loads(content)
-            if not isinstance(data, dict):
-                return False
-        except JSONDecodeError:
+            parse_cookie(content)
+        except CookieFormatException:
             return False
         return True
 
@@ -144,8 +149,9 @@ class CookieClientManager(ClientManager):
     async def _assemble_client(self, client, cookie) -> AsyncClient:
         """组装 client，可以自定义 cookie 对象装配到 client 中的方式"""
         cookies = httpx.Cookies()
+        cookie_dict = parse_cookie(cookie.content)
         if cookie:
-            cookies.update(json.loads(cookie.content))
+            cookies.update(cookie_dict)
         client.cookies = cookies
         client.event_hooks = {"response": [self._generate_hook(cookie)]}
         return client
@@ -213,3 +219,31 @@ def anonymous_site(schedule_type: Literal["date", "interval", "cron"], schedule_
             "client_mgr": DefaultClientManager,
         },
     )
+
+
+def parse_cookie(content: str) -> dict:
+    """把cookie字符串解析成dict
+    支持两种cookie格式：
+    1. json
+    2. 浏览器传输使用的; 分隔的键值对"""
+    try:
+        data = json.loads(content)
+        if not isinstance(data, dict):
+            raise CookieFormatException()
+        cookie_dict = data
+    except JSONDecodeError:
+        cookie_dict = plain_cookie_to_json(content)
+    if len(cookie_dict) == 0:
+        raise CookieFormatException("Cookie content is empty or invalid")
+    return cookie_dict
+
+
+def plain_cookie_to_json(cookie_string: str) -> dict:
+    """使用 Python 内置的 SimpleCookie 来解析 cookie 字符串"""
+    cookie = SimpleCookie()
+    try:
+        cookie.load(cookie_string)
+        # 将 SimpleCookie 转换为普通字典
+        return {key: morsel.value for key, morsel in cookie.items()}
+    except Exception:
+        raise CookieFormatException()

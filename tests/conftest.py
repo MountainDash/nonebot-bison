@@ -46,7 +46,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     nonebot.require("nonebot_bison")
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db
-    from nonebot_plugin_htmlrender.browser import shutdown_htmlrender
+    from nonebot_plugin_htmlrender.browser import shutdown_htmlrender, startup_htmlrender
 
     from nonebot_bison import plugin_config
     from nonebot_bison.config.db_model import ScheduleTimeWeight, Subscribe, Target, User
@@ -58,6 +58,8 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     datastore_config.datastore_config_dir = tmp_path / "config"
     datastore_config.datastore_cache_dir = tmp_path / "cache"
     datastore_config.datastore_data_dir = tmp_path / "data"
+
+    await startup_htmlrender()
 
     param: AppReq = getattr(request, "param", AppReq())
 

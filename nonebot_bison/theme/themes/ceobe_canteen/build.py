@@ -1,7 +1,6 @@
 import base64
 from collections.abc import Sequence
 from datetime import datetime
-from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -23,7 +22,6 @@ if TYPE_CHECKING:
     from nonebot_bison.post import Post
 
 
-@lru_cache
 async def embed_image_as_data_url(image_path: Path) -> str:
     """读取图片文件并返回base64数据URL字符串
 

@@ -34,7 +34,9 @@ runs:
       run: uv sync --frozen
       shell: bash
 
-    - name: Install Playwright
-      if: ${{ inputs.install-playwright == 'true' }}
-      run: uv run playwright install
+    - name: Get Playwright version
+      id: playwright-version
+      run: |
+        version=$(uv run playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+        echo "playwright-version=$version" >> $GITHUB_OUTPUT
       shell: bash

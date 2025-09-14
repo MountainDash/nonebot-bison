@@ -1,7 +1,6 @@
 import base64
 from collections.abc import Sequence
 from datetime import datetime
-from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -21,24 +20,6 @@ from nonebot_bison.utils import is_pics_mergable, pic_merge
 
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
-
-
-@lru_cache
-async def embed_image_as_data_url(image_path: Path) -> str:
-    """读取图片文件并返回base64数据URL字符串
-
-    Args:
-        image_path: 图片文件路径
-
-    Returns:
-        base64格式的data URL字符串
-    """
-    if not image_path.exists():
-        return ""
-
-    async with await anyio.open_file(image_path, "rb") as f:
-        image_data = base64.b64encode(await f.read()).decode()
-        return f"data:image/png;base64,{image_data}"
 
 
 class CeobeInfo(BaseModel):
@@ -101,6 +82,33 @@ class CeobeCanteenTheme(Theme):
 
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "ceobe_canteen.html.jinja"
+    _image_cache: dict[Path, str]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._image_cache = {}
+
+    async def embed_image_as_data_url(self, image_path: Path) -> str:
+        """读取图片文件并返回base64数据URL字符串
+
+        Args:
+            image_path: 图片文件路径
+
+        Returns:
+            base64格式的data URL字符串
+        """
+        if image_path in self._image_cache:
+            return self._image_cache[image_path]
+
+        if not image_path.exists():
+            return ""
+
+        async with await anyio.open_file(image_path, "rb") as f:
+            image_data = base64.b64encode(await f.read()).decode()
+            result = f"data:image/png;base64,{image_data}"
+            self._image_cache[image_path] = result
+            return result
 
     async def parse(self, post: "Post") -> tuple[CeobeCard, list[str | bytes | Path | BytesIO]]:
         """解析 Post 为 CeobeCard与处理好的图片列表"""
@@ -213,8 +221,8 @@ class CeobeCanteenTheme(Theme):
         template = template_env.get_template(self.template_name)
 
         # 获取嵌入的图片数据
-        bison_logo_data = await embed_image_as_data_url(self.template_path / "bison_logo.png")
-        ceobe_logo_data = await embed_image_as_data_url(self.template_path / "ceobecanteen_logo.png")
+        bison_logo_data = await self.embed_image_as_data_url(self.template_path / "bison_logo.png")
+        ceobe_logo_data = await self.embed_image_as_data_url(self.template_path / "ceobecanteen_logo.png")
 
         html = await template.render_async(card=ceobe_card, bison_logo=bison_logo_data, ceobe_logo=ceobe_logo_data)
         pages = {

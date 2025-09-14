@@ -39,7 +39,7 @@ async def data_migrate():
                         continue
                     user_sub_set.add(key)
                     if key in platform_target_map.keys():
-                        target_obj, ext_user_type, ext_user = platform_target_map[key]
+                        target_obj, _, _ = platform_target_map[key]
                         if target_obj.target_name != target_name:
                             # GG
                             logger.error(

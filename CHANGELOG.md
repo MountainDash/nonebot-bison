@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- 修复 ceobecanteen 主题渲染错误 [@felinae98](https://github.com/felinae98) ([#732](https://github.com/MountainDash/nonebot-bison/pull/732))
 - 修复解析 bilibili opus major 时 pic 的 size 可能为空的问题 [@AzideCupric](https://github.com/AzideCupric) ([#727](https://github.com/MountainDash/nonebot-bison/pull/727))
 
 ## v0.9.11

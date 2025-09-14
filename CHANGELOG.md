@@ -2,6 +2,10 @@
 
 ## 最近更新
 
+### 新功能
+
+- 支持 plain 形式的 cookie [@suyiiyii](https://github.com/suyiiyii) ([#709](https://github.com/MountainDash/nonebot-bison/pull/709))
+
 ### Bug 修复
 
 - 修复解析 bilibili opus major 时 pic 的 size 可能为空的问题 [@AzideCupric](https://github.com/AzideCupric) ([#727](https://github.com/MountainDash/nonebot-bison/pull/727))

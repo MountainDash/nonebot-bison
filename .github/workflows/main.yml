@@ -102,14 +102,28 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Python environment
+        id: python-setup
         uses: ./.github/actions/setup-python
         with:
           python-version: ${{ matrix.python-version }}
           install-deps: "true"
-          install-playwright: "true"
+
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+
+      - name: Start Playwright service
+        shell: bash
+        run: |
+          version=$(uv run playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          docker run -d --name playwright \
+            -p 3000:3000 \
+            mcr.microsoft.com/playwright:v$version \
+            /bin/sh -c "npx -y playwright@$version run-server --port 3000 --host 0.0.0.0"
 
       - name: Run Pytest
-        run: uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare' -n auto
+        run: |
+          echo "htmlrender_connect=ws://localhost:3000" >> .env
+          uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare' -n auto
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5

@@ -41,16 +41,16 @@ ActionReturn: TypeAlias = Any
 
 
 @runtime_checkable
-class SupportStateOnExit(Generic[TAddon], Protocol):
+class SupportStateOnExit(Protocol, Generic[TAddon]):
     async def on_exit(self, addon: TAddon) -> None: ...
 
 
 @runtime_checkable
-class SupportStateOnEnter(Generic[TAddon], Protocol):
+class SupportStateOnEnter(Protocol, Generic[TAddon]):
     async def on_enter(self, addon: TAddon) -> None: ...
 
 
-class Action(Generic[TState, TEvent, TAddon], Protocol):
+class Action(Protocol, Generic[TState, TEvent, TAddon]):
     async def __call__(self, from_: TState, event: TEvent, to: TState, addon: TAddon) -> ActionReturn: ...
 
 
@@ -77,12 +77,12 @@ class Condition(Generic[TAddon]):
 # 所以什么时候 drop 3.10(?
 if sys.version_info >= (3, 11) or TYPE_CHECKING:
 
-    class Transition(Generic[TState, TEvent, TAddon], NamedTuple):
+    class Transition(NamedTuple, Generic[TState, TEvent, TAddon]):
         action: Action[TState, TEvent, TAddon]
         to: TState
         conditions: AbstractSet[Condition[TAddon]] | None = None
 
-    class StateGraph(Generic[TState, TEvent, TAddon], TypedDict):
+    class StateGraph(TypedDict, Generic[TState, TEvent, TAddon]):
         transitions: dict[
             TState,
             dict[

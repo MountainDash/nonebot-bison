@@ -223,6 +223,8 @@ class CeobeCanteen(NewMessage):
         try:
             async with get_new_page(viewport=viewport) as page:
                 await page.goto(url, wait_until="networkidle")
+                logger.debug(await page.content())
+
                 element_width = await page.evaluate(
                     "(selector) => document.querySelector(selector).offsetWidth", calculate_selector
                 )

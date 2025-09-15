@@ -212,24 +212,20 @@ class CeobeCanteen(NewMessage):
 
         logger.debug(f"snapshot official website url: {url}")
 
-        # /html/body/div[1]/div[1]/div/div[1]/div[1]/div
-        snapshot_selector = (
-            "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div"
-        )
-        # /html/body/div[1]/div[1]/div/div[1]/div[1]/div/div[4]/div/div/div
-        calculate_selector = "html > body > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(4) > div > div > div"  # noqa: E501
+        snapshot_selector = "//html/body/div[1]/div[1]/div/div[1]/div[1]/div"
+        calculate_selector = "//html/body/div[1]/div[1]/div/div[1]/div[1]/div/div[4]/div/div/div"
         viewport = {"width": 1024, "height": 19990}
 
         try:
             async with get_new_page(viewport=viewport) as page:
                 await page.goto(url, wait_until="networkidle")
-                element_width = await page.evaluate(
-                    "(selector) => document.querySelector(selector).offsetWidth", calculate_selector
-                )
+                logger.debug(await page.content())
+
+                locator = page.locator(calculate_selector)
+
+                element_width = await locator.evaluate("(elem) => elem.offsetWidth")
                 logger.debug(f"element width: {element_width}")
-                element_height = await page.evaluate(
-                    "(selector) => document.querySelector(selector).offsetHeight", calculate_selector
-                )
+                element_height = await locator.evaluate("(elem) => elem.offsetHeight")
                 logger.debug(f"element height: {element_height}")
                 element_height += 1000
 

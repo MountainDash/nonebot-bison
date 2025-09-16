@@ -19,6 +19,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "command_start": {""},
         "log_level": "TRACE",
         "bison_use_browser": True,
+        "htmlrender_ci_mode": True,
     }
 
 

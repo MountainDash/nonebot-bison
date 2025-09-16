@@ -1720,7 +1720,7 @@ requires-dist = [
     { name = "nonebot-adapter-satori", marker = "extra == 'docker'", specifier = ">=0.13.1" },
     { name = "nonebot-plugin-apscheduler", specifier = ">=0.5.0" },
     { name = "nonebot-plugin-datastore", specifier = ">=1.3.0,<2.0.0" },
-    { name = "nonebot-plugin-htmlrender", specifier = ">=0.6.8" },
+    { name = "nonebot-plugin-htmlrender", specifier = ">=0.7.0a1" },
     { name = "nonebot-plugin-prometheus", specifier = ">=0.4.1" },
     { name = "nonebot-plugin-send-anything-anywhere", specifier = ">=0.7.1,<0.7.2" },
     { name = "nonebot2", extras = ["aiohttp", "fastapi"], marker = "extra == 'docker'", specifier = ">=2.3.3,<3.0.0" },
@@ -1808,7 +1808,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-plugin-htmlrender"
-version = "0.6.8"
+version = "0.7.0a1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1820,10 +1820,11 @@ dependencies = [
     { name = "pygments" },
     { name = "pymdown-extensions" },
     { name = "python-markdown-math" },
+    { name = "tenacity" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/8f/e59f63ee53fdf009c185f0c98d0a9b4b68739cf2f4c4ce2460440cca2401/nonebot_plugin_htmlrender-0.6.8.tar.gz", hash = "sha256:8c8ec7fe9d0c1b38d5d2133c36b187ef4edf3c995863f39f0850ef69ab9d1f57", size = 1394413, upload-time = "2025-09-10T06:24:30.854Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/4e/9731fc737553aac4897edd4f6a619b350ee253bfe538e4dee34383ba7d30/nonebot_plugin_htmlrender-0.7.0a1.tar.gz", hash = "sha256:fa20036602d928b89d41da3a3ccbab650f32b5e5e39d1f4d5896d8c894af8d8b", size = 1395735, upload-time = "2025-09-15T15:03:26.081Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/f6/69ec701768dd0feeafb77eea4343096d58b189ef16d90723acc9cc0fb052/nonebot_plugin_htmlrender-0.6.8-py3-none-any.whl", hash = "sha256:64b41ef0788449d2c858086b299cb6aef82806c3844cb2706245c1e180a3d7db", size = 1065646, upload-time = "2025-09-10T06:24:28.877Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/23/e432888dbb5503c700c1daacf110069e80aa765cc818206219e89c74fcb8/nonebot_plugin_htmlrender-0.7.0a1-py3-none-any.whl", hash = "sha256:c804b617de2ab0e138bbd8c0b4f38f847682ec6379066ac0579c8aa87121d4bb", size = 1066349, upload-time = "2025-09-15T15:03:24.424Z" },
 ]
 
 [[package]]
@@ -3041,6 +3042,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/cd/a0/47a06b7d70e01913c1409c30e2a0dadce4142d109093a14c5f009ab0b01f/tarina-0.6.8-cp313-cp313-win32.whl", hash = "sha256:a977e3e38535455b38e018ec345f9982c4d2b40945b330aa5c70c1a24a2f8f5b", size = 87240, upload-time = "2024-12-08T09:04:31.746Z" },
     { url = "https://files.pythonhosted.org/packages/f5/f0/a3f4a6b739add7168c1f1a83491e418065bfac121aa9d11e2d208f4e6254/tarina-0.6.8-cp313-cp313-win_amd64.whl", hash = "sha256:62445e9a7c0ab7ac8f9c316836ade382f4b9780492f0a8a35a658f827bcb1d7f", size = 92850, upload-time = "2024-12-08T09:04:32.775Z" },
     { url = "https://files.pythonhosted.org/packages/4e/73/e99d86960f475172e9da0d15f179a91c24dced1149ca71bcb911ca65e5a7/tarina-0.6.8-py3-none-any.whl", hash = "sha256:0e8a04eecb741937244d97da54f8cd36995819fc12a6b60c9b3f3f3d2860ebe6", size = 45708, upload-time = "2024-12-08T09:04:55.604Z" },
+]
+
+[[package]]
+name = "tenacity"
+version = "9.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/d4/2b0cd0fe285e14b36db076e78c93766ff1d529d70408bd1d2a5a84f1d929/tenacity-9.1.2.tar.gz", hash = "sha256:1169d376c297e7de388d18b4481760d478b0e99a777cad3a9c86e556f4b697cb", size = 48036, upload-time = "2025-04-02T08:25:09.966Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/30/643397144bfbfec6f6ef821f36f33e57d35946c44a2352d3c9f0ae847619/tenacity-9.1.2-py3-none-any.whl", hash = "sha256:f77bf36710d8b73a50b2dd155c97b870017ad21afe6ab300326b0371b3b05138", size = 28248, upload-time = "2025-04-02T08:25:07.678Z" },
 ]
 
 [[package]]

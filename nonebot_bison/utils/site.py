@@ -233,8 +233,7 @@ def parse_cookie(content: str) -> dict:
         cookie_dict = data
     except JSONDecodeError:
         cookie_dict = plain_cookie_to_json(content)
-    if len(cookie_dict) == 0:
-        raise CookieFormatException("Cookie content is empty or invalid")
+
     return cookie_dict
 
 

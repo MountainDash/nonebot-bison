@@ -91,7 +91,7 @@ class CookieClientManager(ClientManager):
         """添加实名 cookie"""
 
         if not await self.validate_cookie(content):
-            raise CookieFormatException()
+            raise CookieFormatException(f"Invalid cookie content: {content!r}")
         cookie = Cookie(site_name=self._site_name, content=content)
         cookie.cookie_name = cookie_name if cookie_name else await self.get_cookie_name(content)
         cookie.cd = self._default_cookie_cd
@@ -106,11 +106,9 @@ class CookieClientManager(ClientManager):
 
     async def validate_cookie(self, content: str) -> bool:
         """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
-        try:
-            parse_cookie(content)
-        except CookieFormatException:
-            return False
-        return True
+        result = parse_cookie(content)
+
+        return bool(result)
 
     def _generate_hook(self, cookie: Cookie) -> Callable:
         """hook 函数生成器，用于回写请求状态到数据库"""

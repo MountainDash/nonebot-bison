@@ -2,7 +2,9 @@
 
 ## 最近更新
 
-* No changes
+### Bug 修复
+
+- 重构cookie解析逻辑 [@AzideCupric](https://github.com/AzideCupric) ([#735](https://github.com/MountainDash/nonebot-bison/pull/735))
 
 ## v0.9.12
 

@@ -26,7 +26,7 @@ dependencies = [
   "nonebot-plugin-prometheus>=0.4.1",
 ]
 name = "nonebot-bison"
-version = "0.9.12"
+version = "0.9.13"
 description = "Subscribe message from social medias"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"

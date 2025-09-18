@@ -68,7 +68,7 @@ def do_add_cookie(add_cookie: type[Matcher]):
             state["cookie"] = cookie_text
             state["cookie_name"] = cookie_name
         except JSONDecodeError as e:
-            logger.error("获取 Cookie 名称失败" + str(e))
+            logger.error("获取 Cookie 名称失败:" + str(e))
             await add_cookie.reject(
                 "获取 Cookie 名称失败，请检查后重新输入，详情见https://nonebot-bison.netlify.app/usage/cookie.html"
             )

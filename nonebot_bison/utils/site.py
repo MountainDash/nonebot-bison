@@ -108,7 +108,7 @@ class CookieClientManager(ClientManager):
         """验证 cookie 内容是否有效，添加 cookie 时用，可根据平台的具体情况进行重写"""
         result = parse_cookie(content)
 
-        return bool(result)
+        return len(result) > 0
 
     def _generate_hook(self, cookie: Cookie) -> Callable:
         """hook 函数生成器，用于回写请求状态到数据库"""

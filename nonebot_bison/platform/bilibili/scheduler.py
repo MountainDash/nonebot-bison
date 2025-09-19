@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 if plugin_config.bison_use_browser:
     require("nonebot_plugin_htmlrender")
-    from nonebot_plugin_htmlrender import get_browser
+    from nonebot_plugin_htmlrender.browser import get_browser
 
 B = TypeVar("B", bound="Bilibili")
 

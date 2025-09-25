@@ -2,7 +2,6 @@ import json
 
 from nonebug.app import App
 import pytest
-from pytest_mock import MockerFixture
 
 from tests.utils import BotReply, fake_private_message_event, fake_superuser
 
@@ -41,19 +40,33 @@ async def test_add_cookie_target_no_cookie(app: App):
         should_send_saa(
             ctx,
             MessageFactory(
-                "订阅的帐号为：\n1 weibo weibo_name weibo_id\n []\n请输入要关联 cookie 的订阅的序号\n输入'取消'中止"
+                "请输入想要关联 Cookie 的平台，目前支持，请输入冒号左边的名称：\nbilibili: "
+                'B站\nrss: Rss\nweibo: 新浪微博\n中止关联过程请输入："取消"'
             ),
             bot,
             event=event_1,
         )
         event_2 = fake_private_message_event(
-            message=Message("1"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+            message=Message("weibo"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
         )
         ctx.receive_event(bot, event_2)
         ctx.should_pass_rule()
+        should_send_saa(
+            ctx,
+            MessageFactory(
+                "订阅的帐号为：\n1 weibo_name weibo_id\n []\n请输入要关联 cookie 的订阅的序号\n输入'取消'中止"
+            ),
+            bot,
+            event=event_2,
+        )
+        event_3 = fake_private_message_event(
+            message=Message("1"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+        )
+        ctx.receive_event(bot, event_3)
+        ctx.should_pass_rule()
         ctx.should_call_send(
-            event_2,
-            "当前平台暂无可关联的 Cookie，请使用“添加cookie”命令添加或检查已关联的 Cookie",
+            event_3,
+            '当前平台暂无可关联的 Cookie，请使用"添加cookie"命令添加或检查已关联的 Cookie',
             True,
         )
 
@@ -144,23 +157,25 @@ async def test_add_cookie(app: App):
         should_send_saa(
             ctx,
             MessageFactory(
-                "订阅的帐号为：\n1 weibo weibo_name weibo_id\n []\n请输入要关联 cookie 的订阅的序号\n输入'取消'中止"
+                "请输入想要关联 Cookie 的平台，目前支持，请输入冒号左边的名称：\nbilibili: "
+                'B站\nrss: Rss\nweibo: 新浪微博\n中止关联过程请输入："取消"'
             ),
             bot,
             event=event_1,
         )
-        event_2_err = fake_private_message_event(
-            message=Message("2"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+        event_2 = fake_private_message_event(
+            message=Message("weibo"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
         )
-        ctx.receive_event(bot, event_2_err)
-        ctx.should_call_send(event_2_err, "序号错误", True)
-        ctx.should_rejected()
-        event_2_ok = fake_private_message_event(
-            message=Message("1"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
-        )
-        ctx.receive_event(bot, event_2_ok)
+        ctx.receive_event(bot, event_2)
         ctx.should_pass_rule()
-        ctx.should_call_send(event_2_ok, "请选择一个 Cookie，已关联的 Cookie 不会显示\n1. weibo: [test_name]", True)
+        should_send_saa(
+            ctx,
+            MessageFactory(
+                "订阅的帐号为：\n1 weibo_name weibo_id\n []\n请输入要关联 cookie 的订阅的序号\n输入'取消'中止"
+            ),
+            bot,
+            event=event_2,
+        )
         event_3_err = fake_private_message_event(
             message=Message("2"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
         )
@@ -172,24 +187,16 @@ async def test_add_cookie(app: App):
         )
         ctx.receive_event(bot, event_3_ok)
         ctx.should_pass_rule()
-        ctx.should_call_send(event_3_ok, "已关联 Cookie: weibo: [test_name] 到订阅 weibo.com weibo_id", True)
-
-
-async def test_add_cookie_target_no_target(app: App, mocker: MockerFixture):
-    from nonebot.adapters.onebot.v11.bot import Bot
-    from nonebot.adapters.onebot.v11.message import Message
-
-    from nonebot_bison.sub_manager import add_cookie_target_matcher
-
-    async with app.test_matcher(add_cookie_target_matcher) as ctx:
-        bot = ctx.create_bot(base=Bot)
-        event_1 = fake_private_message_event(
-            message=Message("关联cookie"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+        ctx.should_call_send(event_3_ok, "请选择一个 Cookie，已关联的 Cookie 不会显示\n1. weibo: [test_name]", True)
+        event_4_err = fake_private_message_event(
+            message=Message("2"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
         )
-        ctx.receive_event(bot, event_1)
+        ctx.receive_event(bot, event_4_err)
+        ctx.should_call_send(event_4_err, "序号错误", True)
+        ctx.should_rejected()
+        event_4_ok = fake_private_message_event(
+            message=Message("1"), sender=fake_superuser, to_me=True, user_id=fake_superuser.user_id
+        )
+        ctx.receive_event(bot, event_4_ok)
         ctx.should_pass_rule()
-        ctx.should_call_send(
-            event_1,
-            "暂无已订阅账号\n请使用“添加订阅”命令添加订阅",
-            True,
-        )
+        ctx.should_call_send(event_4_ok, "已关联 Cookie: weibo: [test_name] 到订阅 weibo.com weibo_id", True)

@@ -92,6 +92,7 @@ class Scheduler:
         logger.trace(f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}")
 
         context = ProcessContext(self.client_mgr)
+        logger.trace(f"为平台 {schedulable.platform_name} 目标 {schedulable.target} 创建 ProcessContext")
 
         success_flag = False
         platform_obj = platform_manager[schedulable.platform_name](context)
@@ -120,6 +121,16 @@ class Scheduler:
                 logger.warning("API request record: " + record)
             err.args += (records,)
             raise
+        finally:
+            # 确保 ProcessContext 资源被清理
+            try:
+                await context.cleanup()
+            except Exception as cleanup_err:
+                # cleanup 本身不应失败，但添加防御性处理
+                logger.error(
+                    f"ProcessContext cleanup 发生异常: {type(cleanup_err).__name__}: {cleanup_err}",
+                    exc_info=True,
+                )
 
         request_counter.labels(
             platform_name=schedulable.platform_name,

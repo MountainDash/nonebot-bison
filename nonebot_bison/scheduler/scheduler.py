@@ -93,58 +93,65 @@ class Scheduler:
 
         context = ProcessContext(self.client_mgr)
 
-        success_flag = False
-        platform_obj = platform_manager[schedulable.platform_name](context)
         try:
-            with request_time_histogram.labels(
+            success_flag = False
+            platform_obj = platform_manager[schedulable.platform_name](context)
+            try:
+                with request_time_histogram.labels(
+                    platform_name=schedulable.platform_name, site_name=platform_obj.site.name
+                ).time():
+                    if schedulable.use_batch:
+                        batch_targets = self.batch_api_target_cache[schedulable.platform_name][schedulable.target]
+                        sub_units = []
+                        for batch_target in batch_targets:
+                            userinfo = await config.get_platform_target_subscribers(
+                                schedulable.platform_name, batch_target
+                            )
+                            sub_units.append(SubUnit(batch_target, userinfo))
+                        to_send = await platform_obj.do_batch_fetch_new_post(sub_units)
+                    else:
+                        send_userinfo_list = await config.get_platform_target_subscribers(
+                            schedulable.platform_name, schedulable.target
+                        )
+                        to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
+                    success_flag = True
+            except SkipRequestException as err:
+                logger.debug(f"skip request: {err}")
+            except Exception as err:
+                records = context.gen_req_records()
+                for record in records:
+                    logger.warning("API request record: " + record)
+                err.args += (records,)
+                raise
+
+            request_counter.labels(
+                platform_name=schedulable.platform_name,
+                site_name=platform_obj.site.name,
+                target=schedulable.target,
+                success=success_flag,
+            ).inc()
+            if not to_send:
+                return
+            sent_counter.labels(
+                platform_name=schedulable.platform_name,
+                site_name=platform_obj.site.name,
+                target=schedulable.target,
+            ).inc()
+            with render_time_histogram.labels(
                 platform_name=schedulable.platform_name, site_name=platform_obj.site.name
             ).time():
-                if schedulable.use_batch:
-                    batch_targets = self.batch_api_target_cache[schedulable.platform_name][schedulable.target]
-                    sub_units = []
-                    for batch_target in batch_targets:
-                        userinfo = await config.get_platform_target_subscribers(schedulable.platform_name, batch_target)
-                        sub_units.append(SubUnit(batch_target, userinfo))
-                    to_send = await platform_obj.do_batch_fetch_new_post(sub_units)
-                else:
-                    send_userinfo_list = await config.get_platform_target_subscribers(
-                        schedulable.platform_name, schedulable.target
-                    )
-                    to_send = await platform_obj.do_fetch_new_post(SubUnit(schedulable.target, send_userinfo_list))
-                success_flag = True
-        except SkipRequestException as err:
-            logger.debug(f"skip request: {err}")
-        except Exception as err:
-            records = context.gen_req_records()
-            for record in records:
-                logger.warning("API request record: " + record)
-            err.args += (records,)
-            raise
-
-        request_counter.labels(
-            platform_name=schedulable.platform_name,
-            site_name=platform_obj.site.name,
-            target=schedulable.target,
-            success=success_flag,
-        ).inc()
-        if not to_send:
-            return
-        sent_counter.labels(
-            platform_name=schedulable.platform_name, site_name=platform_obj.site.name, target=schedulable.target
-        ).inc()
-        with render_time_histogram.labels(
-            platform_name=schedulable.platform_name, site_name=platform_obj.site.name
-        ).time():
-            for user, send_list in to_send:
-                for send_post in send_list:
-                    logger.info(f"send to {user}: {send_post}")
-                    try:
-                        await send_msgs(
-                            user,
-                            await send_post.generate_messages(),
-                        )
-                    except NoBotFound:
-                        logger.warning("no bot connected")
+                for user, send_list in to_send:
+                    for send_post in send_list:
+                        logger.info(f"send to {user}: {send_post}")
+                        try:
+                            await send_msgs(
+                                user,
+                                await send_post.generate_messages(),
+                            )
+                        except NoBotFound:
+                            logger.warning("no bot connected")
+        finally:
+            await context.cleanup()
 
     def insert_new_schedulable(self, platform_name: str, target: Target):
         self.pre_weight_val += 1000

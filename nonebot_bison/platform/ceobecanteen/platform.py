@@ -26,23 +26,34 @@ class CeobeCanteenClientManager(ClientManager):
     _client: AsyncClient
 
     def __init__(self):
-        self._client = CeobeClient(
+        self._client = self._build_client()
+
+    def _build_client(self) -> AsyncClient:
+        # 使用缓存传输层，保留原有 UA
+        return CeobeClient(
             headers={
                 "User-Agent": "MountainDash/Nonebot-Bison",
             }
         )
 
-    async def get_client(self, target: Target | None) -> AsyncClient:
+    def _ensure_client(self) -> AsyncClient:
+        # 如果客户端被 cleanup 关闭，则重建一个新的实例
+        if self._client is None or self._client.is_closed:
+            self._client = self._build_client()
         return self._client
+
+    async def get_client(self, target: Target | None) -> AsyncClient:
+        return self._ensure_client()
 
     async def get_client_for_static(self) -> AsyncClient:
-        return self._client
+        return self._ensure_client()
 
     async def get_query_name_client(self) -> AsyncClient:
-        return self._client
+        return self._ensure_client()
 
     async def refresh_client(self):
-        raise NotImplementedError("refresh_client is not implemented")
+        # 主动刷新时也重建一份
+        self._client = self._build_client()
 
 
 class CeobeCanteenSite(Site):

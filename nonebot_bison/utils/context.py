@@ -10,10 +10,12 @@ from .site import ClientManager
 class ProcessContext:
     reqs: list[Response]
     _client_mgr: ClientManager
+    _clients: list[AsyncClient]
 
     def __init__(self, client_mgr: ClientManager) -> None:
         self.reqs = []
         self._client_mgr = client_mgr
+        self._clients = []
 
     def _log_response(self, resp: Response):
         self.reqs.append(resp)
@@ -52,12 +54,34 @@ class ProcessContext:
     async def get_client(self, target: Target | None = None) -> AsyncClient:
         client = await self._client_mgr.get_client(target)
         self._register_to_client(client)
+        self._clients.append(client)
         return client
 
     async def get_client_for_static(self) -> AsyncClient:
         client = await self._client_mgr.get_client_for_static()
         self._register_to_client(client)
+        self._clients.append(client)
         return client
 
     async def refresh_client(self):
         await self._client_mgr.refresh_client()
+
+    async def cleanup(self):
+        """关闭所有创建的 HTTP 客户端,释放资源"""
+        for client in self._clients:
+            await client.aclose()
+        self._clients.clear()
+        self.reqs.clear()
+
+    def __deepcopy__(self, memo):
+        """
+        自定义深拷贝行为,跳过不可序列化的字段。
+
+        _clients 和 reqs 包含 AsyncClient 和 Response 对象,这些对象内部有线程锁,
+        无法被 pickle/deepcopy。由于 ProcessContext 主要用于请求追踪,
+        深拷贝时创建一个新的空实例是合理的。
+        """
+        # 创建新实例,使用相同的 client_mgr
+        new_instance = ProcessContext(self._client_mgr)
+        memo[id(self)] = new_instance
+        return new_instance

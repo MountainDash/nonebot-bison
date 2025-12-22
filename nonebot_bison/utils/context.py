@@ -11,11 +11,15 @@ class ProcessContext:
     reqs: list[Response]
     _client_mgr: ClientManager
     _clients: list[AsyncClient]
+    _client: AsyncClient | None
+    _static_client: AsyncClient | None
 
     def __init__(self, client_mgr: ClientManager) -> None:
         self.reqs = []
         self._client_mgr = client_mgr
         self._clients = []
+        self._client = None
+        self._static_client = None
 
     def _log_response(self, resp: Response):
         self.reqs.append(resp)
@@ -52,19 +56,26 @@ class ProcessContext:
         return res
 
     async def get_client(self, target: Target | None = None) -> AsyncClient:
-        client = await self._client_mgr.get_client(target)
-        self._register_to_client(client)
-        self._clients.append(client)
-        return client
+        if self._client is None or self._client.is_closed:
+            client = await self._client_mgr.get_client(target)
+            self._register_to_client(client)
+            self._clients.append(client)
+            self._client = client
+        return self._client
 
     async def get_client_for_static(self) -> AsyncClient:
-        client = await self._client_mgr.get_client_for_static()
-        self._register_to_client(client)
-        self._clients.append(client)
-        return client
+        if self._static_client is None or self._static_client.is_closed:
+            client = await self._client_mgr.get_client_for_static()
+            self._register_to_client(client)
+            self._clients.append(client)
+            self._static_client = client
+        return self._static_client
 
     async def refresh_client(self):
         await self._client_mgr.refresh_client()
+        # Invalidate cached clients after refresh
+        self._client = None
+        self._static_client = None
 
     async def cleanup(self):
         """关闭所有创建的 HTTP 客户端,释放资源"""
@@ -72,6 +83,8 @@ class ProcessContext:
             await client.aclose()
         self._clients.clear()
         self.reqs.clear()
+        self._client = None
+        self._static_client = None
 
     def __deepcopy__(self, memo):
         """

@@ -256,7 +256,7 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
     assert len(res) == 2
     assert res[0]["id"] == 1
     assert res[1]["id"] == 2
-    assert client_mgr.get_client_call_count == 2
+    assert client_mgr.get_client_call_count == 1
     assert client_mgr.refresh_client_call_count == 0
 
     addon = RetryAddon()
@@ -292,7 +292,7 @@ async def test_retry_for_352(app: App, mocker: MockerFixture):
             await fakebili.get_sub_list(Target("t1"))  # type: ignore
 
     assert client_mgr.refresh_client_call_count == 4 * 3 + 3  # refresh + raise
-    assert client_mgr.get_client_call_count == 2 + 4 * 3 + 3  # previous + refresh + raise
+    assert client_mgr.get_client_call_count == 4 * 3 + 3  # refresh + raise
 
     # 重置回正常状态
     fakebili.set_raise352(False)

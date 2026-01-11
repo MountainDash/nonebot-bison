@@ -1,5 +1,11 @@
 # Change Log
 
+## 最近更新
+
+### Bug 修复
+
+- 修复无 content-type 的 http 请求报错的问题 [@felinae98](https://github.com/felinae98) ([#751](https://github.com/MountainDash/nonebot-bison/pull/751))
+
 ## v0.9.14
 
 - :bug: fix context leak in ProcessContext and add cleanup tests [@suyiiyii](https://github.com/suyiiyii) ([#749](https://github.com/MountainDash/nonebot-bison/pull/749))

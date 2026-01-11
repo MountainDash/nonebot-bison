@@ -45,7 +45,7 @@ class ProcessContext:
         try:
             r.content.decode("utf-8")
             return True
-        except (UnicodeDecodeError, AttributeError):
+        except UnicodeDecodeError:
             return False
 
     def gen_req_records(self) -> list[str]:

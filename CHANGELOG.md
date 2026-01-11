@@ -1,6 +1,6 @@
 # Change Log
 
-## 最近更新
+## v0.9.14
 
 - :bug: fix context leak in ProcessContext and add cleanup tests [@suyiiyii](https://github.com/suyiiyii) ([#749](https://github.com/MountainDash/nonebot-bison/pull/749))
 

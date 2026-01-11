@@ -35,12 +35,18 @@ class ProcessContext:
         client.event_hooks = hooks
 
     def _should_print_content(self, r: Response) -> bool:
-        content_type = r.headers["content-type"]
-        if content_type.startswith("text"):
+        if content_type := r.headers.get("content-type"):
+            if content_type.startswith("text"):
+                return True
+            if "json" in content_type:
+                return True
+            return False
+        # If no content-type header, check if content is printable
+        try:
+            r.content.decode("utf-8")
             return True
-        if "json" in content_type:
-            return True
-        return False
+        except (UnicodeDecodeError, AttributeError):
+            return False
 
     def gen_req_records(self) -> list[str]:
         res = []

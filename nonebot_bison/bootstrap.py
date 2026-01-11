@@ -1,10 +1,16 @@
+import anyio
+from anyio.abc import TaskGroup
+from nonebot import get_driver
 from nonebot.log import logger
 from nonebot_plugin_datastore.db import get_engine, post_db_init, pre_db_init
 from sqlalchemy import inspect, text
 
-from .config.config_legacy import start_up as legacy_db_startup
-from .config.db_migration import data_migrate
-from .scheduler.manager import init_scheduler
+from nonebot_bison.core.courier import Courier
+from nonebot_bison.core.courier.utils import create_dead_letter_conveyor
+from nonebot_bison.core.schedule import init_scheduler
+
+from .db.config_legacy import start_up as legacy_db_startup
+from .db.db_migration import data_migrate
 
 
 @pre_db_init
@@ -42,8 +48,25 @@ async def pre():
 async def post():
     # legacy db
     legacy_db_startup()
-    # migrate data
-    await data_migrate()
-    # init scheduler
-    await init_scheduler()
+    async with anyio.create_task_group() as tg:
+        # migrate data
+        tg.start_soon(data_migrate)
+        # init scheduler
+        tg.start_soon(init_scheduler)
+
+    logger.info("nonebot-bison post db init done")
+
+    driver = get_driver()
+    courier = create_courier(driver.task_group)
+
+    driver.task_group.start_soon(courier.run)
+    driver.on_shutdown(courier.close)
+
     logger.info("nonebot-bison bootstrap done")
+
+
+def create_courier(task_group: TaskGroup):
+    dead_letter_channel = create_dead_letter_conveyor()
+    courier = Courier(task_group=task_group, dead_letter_channel=dead_letter_channel)
+
+    return courier

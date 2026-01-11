@@ -15,42 +15,6 @@ repos:
       - id: ruff-format
         stages: [pre-commit]
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        types_or: [javascript, jsx, ts, tsx, yaml, json]
-        exclude: "admin-frontend/"
-        stages: [pre-commit]
-
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.34.0
-    hooks:
-      - id: eslint
-        additional_dependencies:
-          - "eslint@8.57.0"
-          - "@typescript-eslint/eslint-plugin"
-          - "@typescript-eslint/parser"
-          - "eslint-config-airbnb"
-          - "eslint-config-airbnb-typescript"
-          - "eslint-import-resolver-typescript"
-          - "eslint-plugin-import"
-          - "eslint-plugin-jsx-a11y"
-          - "eslint-plugin-react"
-          - "eslint-plugin-react-hooks"
-          - "eslint-plugin-react-redux"
-        types_or: [ts, tsx]
-        types: []
-        files: ^admin-frontend/
-        args:
-          [
-            --fix,
-            -c,
-            "./admin-frontend/.eslintrc.json",
-            --rule,
-            "import/no-unresolved: off",
-          ]
-
   - repo: https://github.com/nonebot/nonemoji
     rev: v0.1.4
     hooks:

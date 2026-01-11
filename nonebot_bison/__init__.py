@@ -6,10 +6,10 @@ require("nonebot_plugin_saa")
 
 import nonebot_plugin_saa
 
-from . import admin_page, bootstrap, config, platform, post, scheduler, send, sub_manager, theme, types, utils
-from .plugin_config import PlugConfig, plugin_config
+from . import core as core
+from .setting import BisonConfig, plugin_config
 
-__help__version__ = "0.8.2"
+__help__version__ = "1.0.0"
 nonebot_plugin_saa.enable_auto_select_bot()
 
 __help__plugin__name__ = "nonebot_bison"
@@ -27,21 +27,7 @@ __plugin_meta__ = PluginMetadata(
     usage=__usage__,
     type="application",
     homepage="https://github.com/felinae98/nonebot-bison",
-    config=PlugConfig,
+    config=BisonConfig,
     supported_adapters=__supported_adapters__,
     extra={"version": __help__version__, "docs": "https://nonebot-bison.netlify.app/"},
 )
-
-__all__ = [
-    "admin_page",
-    "bootstrap",
-    "config",
-    "platform",
-    "post",
-    "scheduler",
-    "send",
-    "sub_manager",
-    "theme",
-    "types",
-    "utils",
-]

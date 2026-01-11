@@ -1,32 +1,19 @@
 [project]
 authors = [{ name = "felinae98", email = "felinae225@qq.com" }]
 license = { text = "MIT" }
-requires-python = "<4.0.0,>=3.10"
+requires-python = "<4.0.0,>=3.12"
 dependencies = [
-  "beautifulsoup4>=4.12.3",
-  "feedparser<7.0.0,>=6.0.11",
-  "httpx>=0.27.2",
-  "nonebot2[fastapi]<3.0.0,>=2.3.3",
-  "nonebot-adapter-onebot<3.0.0,>=2.4.5",
-  "nonebot-plugin-htmlrender>=0.6.0",
-  "nonebot-plugin-datastore<2.0.0,>=1.3.0",
-  "nonebot-plugin-apscheduler>=0.5.0",
-  "nonebot-plugin-send-anything-anywhere<0.7.2,>=0.7.1",
-  "pillow<11.1,>=11.0.0",
-  "pyjwt<3.0.0,>=2.9.0",
-  "python-socketio<6.0.0,>=5.11.4",
-  "tinydb<5.0.0,>=4.8.0",
-  "qrcode<8.0.0,>=7.4.2",
-  "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=2.9.2",
-  "lxml>=5.3.0",
-  "yarl>=1.11.1",
-  "hishel<1.0.0,>=0.0.30",
-  "expiringdictx<2.0.0,>=1.1.0",
-  "rapidfuzz<4.0.0,>=3.9.7",
-  "nonebot-plugin-prometheus>=0.4.1",
+    "httpx>=0.28.1",
+    "nonebot-plugin-apscheduler>=0.5.0",
+    "nonebot-plugin-datastore>=1.3.1",
+    "nonebot-plugin-prometheus>=0.4.1",
+    "nonebot-plugin-send-anything-anywhere>=0.7.1",
+    "nonebot2>=2.4.3",
+    "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=2.9.2",
+    "tinydb>=4.8.2",
 ]
 name = "nonebot-bison"
-version = "0.9.13"
+version = "0.10.0-alpha.1"
 description = "Subscribe message from social medias"
 keywords = ["nonebot", "nonebot2", "qqbot"]
 readme = "README.md"
@@ -35,9 +22,8 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: MacOS",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "License :: OSI Approved :: MIT License",
 ]
@@ -50,41 +36,30 @@ bison = "nonebot_bison.script.cli:main"
 
 [dependency-groups]
 dev = [
-  "ipdb<1.0.0,>=0.13.13",
-  "nonemoji<1.0.0,>=0.1.4",
-  "nb-cli<2.0.0,>=1.4.2",
-  "pre-commit<5.0.0,>=4.0.1",
-  "ruff<1.0.0,>=0.8.2",
+    "ruff>=0.13.2",
 ]
-test = [
-  "flaky<4.0.0,>=3.8.1",
-  "nonebug<1.0.0,>=0.3.7",
-  "nonebug-saa<1.0.0,>=0.4.1",
-  "pytest<9.0.0,>=8.3.3",
-  "pytest-asyncio<0.24.1,>=0.24.0",
-  "pytest-cov<7,>=6.0.0",
-  "pytest-mock<4.0.0,>=3.14.0",
-  "pytest-xdist[psutil]<4.0.0,>=3.6.1",
-  "respx<0.23.0,>=0.22.0",
-  "freezegun<2.0.0,>=1.5.1",
-  "pytz>=2025.1",
-]
+test = []
 
 [project.optional-dependencies]
-docker = [
-  "nb-cli<2.0.0,>=1.4.2",
-  "nonebot2[aiohttp,fastapi]<3.0.0,>=2.3.3",
-  "nonebot-adapter-qq<2.0.0,>=1.5.1",
-  "nonebot-adapter-satori>=0.13.1",
-  "pip>=24.3.1",
-]
+docker = []
 
 [tool.uv]
 default-groups = ["dev", "test"]
 
+[tool.uv.workspace]
+members = [
+    "extra_plugins/theme/*",
+    "extra_plugins/platform/*",
+    "extra_plugins/message/*",
+]
+
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "nonebot_bison"
+module-root = ""
 
 [tool.pytest.ini_options]
 markers = [
@@ -96,7 +71,7 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
@@ -114,6 +89,8 @@ select = [
   "Q",     # flake8-quotes
   "TID",   # flake8-tidy-imports
   "RUF",   # Ruff-specific rules
+  "TC",    # flake8-type-checking
+  "DTZ",   # flake8-datetimez
 ]
 ignore = [
   "E402",   # module-import-not-at-top-of-file
@@ -138,19 +115,11 @@ mark-parentheses = false
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
-[tool.nonebot]
-adapters = [
-  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
-]
-plugins = ["nonebot_bison", "nonebot_plugin_prometheus"]
-plugin_dirs = ["extra_plugins"]
-builtin_plugins = ["echo"]
-
 [tool.pyright]
-typeCheckingMode = "basic"
-reportShadowedImports = false
+enableExperimentalFeatures=true
+typeCheckingMode = "standard"
 disableBytesTypePromotions = true
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 pythonPlatform = "All"
 executionEnvironments = [
   { root = "./tests", extraPaths = [
@@ -159,3 +128,12 @@ executionEnvironments = [
   { root = "./" },
 ]
 defineConstant = { PYDANTIC_V2 = true }
+
+# 开发测试使用
+[tool.nonebot]
+adapters = [
+  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+]
+plugins = ["nonebot_bison", "nonebot_plugin_prometheus"]
+plugin_dirs = ["extra_plugins/theme", "extra_plugins/platform", "extra_plugins/message"]
+builtin_plugins = ["echo"]

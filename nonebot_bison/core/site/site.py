@@ -4,6 +4,7 @@ from typing import Any, Literal
 
 from httpx import AsyncClient
 
+from nonebot_bison.core.site import StoreLike
 from nonebot_bison.typing import Target
 
 
@@ -36,6 +37,9 @@ class SiteConfig:
     client_mgr: type[ClientManager]
     """用于请求站点的 HTTP 接口，如果没有特殊要求可以使用默认的 DefaultClientManager"""
     require_browser: bool = False
+    """是否需要浏览器支持"""
+    store_cls: type[StoreLike]
+    """存储类, 用于存储数据, 如果没有特殊要求可以使用默认的 MemoryStore"""
 
     def __str__(self):
         return f"[{self.name}]-{self.name}-{self.schedule_setting}"

@@ -28,6 +28,7 @@ class BisonConfig(BaseModel):
         " Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
         description="默认UA",
     )
+    bison_filter_on_init: bool = True
 
     @property
     def outer_url(self) -> URL:

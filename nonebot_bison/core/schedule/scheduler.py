@@ -17,6 +17,7 @@ from nonebot_bison.core.site import (
     ProcessContext,
     SiteConfig,
     SkipRequestException,
+    StoreLike,
 )
 from nonebot_bison.db import data_access as database
 from nonebot_bison.metrics import request_counter, request_time_histogram
@@ -38,6 +39,7 @@ class Scheduler:
     ]  # platform_name -> (target -> [target])
     batch_platform_name_targets_cache: dict[str, list[Target]]
     client_mgr: ClientManager
+    store: StoreLike
 
     def __init__(
         self,
@@ -53,6 +55,7 @@ class Scheduler:
             raise RuntimeError(f"{self.name} not found")
         self.scheduler_config = scheduler_config
         self.client_mgr = scheduler_config.client_mgr()
+        self.store = scheduler_config.store_cls()
         self.scheduler_config_obj = copy(self.scheduler_config)
 
         self.schedulable_list = []
@@ -127,12 +130,10 @@ class Scheduler:
             f"scheduler {self.name} fetching next target: [{schedulable.platform_name}]{schedulable.target}"
         )
 
-        context = ProcessContext(self.client_mgr)
+        context = ProcessContext(self.client_mgr, self.store)
 
         success_flag = False
-        platform_obj: CompletedPlatform = Platform.registry[schedulable.platform_name](
-            context
-        )
+        platform_obj: CompletedPlatform = Platform.registry[schedulable.platform_name].bound(context)
         try:
             with request_time_histogram.labels(
                 platform_name=schedulable.platform_name,

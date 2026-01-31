@@ -1,4 +1,5 @@
 from .context import ProcessContext as ProcessContext
+from .context import StoreLike as StoreLike
 from .site import ClientManager as ClientManager
 from .site import SiteConfig as SiteConfig
 

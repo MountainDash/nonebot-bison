@@ -78,6 +78,12 @@
         "needPopup": false
       },
       {
+        "cid": "9883",
+        "version": 1768982231,
+        "needRedDot": true,
+        "needPopup": false
+      },
+      {
         "cid": "3068",
         "version": 1769042318,
         "needRedDot": true,
@@ -315,6 +321,17 @@
         "startAt": 1769040000,
         "focus": 0,
         "title": "共赴星海\\n特别活动"
+      },
+      {
+        "cid": "9883",
+        "type": 0,
+        "tab": "news",
+        "orderType": 1,
+        "orderWeight": 1,
+        "displayType": "picture",
+        "startAt": 1769040000,
+        "focus": 0,
+        "title": "预抽卡活动"
       },
       {
         "cid": "3068",

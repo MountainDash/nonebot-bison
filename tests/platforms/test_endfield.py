@@ -48,7 +48,10 @@ async def test_parse_picture(app: App, endfield, endfield_list_0, endfield_detai
     assert post.title == "预抽卡活动"
     assert post.content == ""
     assert post.images == ["https://web.hycdn.cn/upload/image/20260121/e1e0452b684b22b0379bb7f9881fb6cb.jpg"]
-    assert post.url == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game"
+    assert (
+        post.url
+        == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game" + "（从游戏中点击查看）"
+    )
     assert post.nickname == "终末地游戏内公告"
 
 
@@ -79,7 +82,7 @@ async def test_fetch_new_post(app: App, endfield, dummy_user_subinfo, endfield_l
     from nonebot_bison.types import SubUnit, Target
 
     list_router = respx.get(
-        "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=1&code=endfield_5SD9TN&hideDetail=1"
+        "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=0&code=endfield_5SD9TN&hideDetail=1"
     )
     detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN")
     detail_router.mock(return_value=Response(200, json=endfield_detail_9883))
@@ -104,5 +107,8 @@ async def test_fetch_new_post(app: App, endfield, dummy_user_subinfo, endfield_l
     post2: ArknightsPost = res2[0][1][0]
     assert post2.title == "预抽卡活动"
     assert post2.images == ["https://web.hycdn.cn/upload/image/20260121/e1e0452b684b22b0379bb7f9881fb6cb.jpg"]
-    assert post2.url == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game"
+    assert (
+        post2.url
+        == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game" + "（从游戏中点击查看）"
+    )
     assert post2.nickname == "终末地游戏内公告"

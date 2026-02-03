@@ -36,12 +36,6 @@
         "needPopup": false
       },
       {
-        "cid": "7202",
-        "version": 1769503775,
-        "needRedDot": false,
-        "needPopup": false
-      },
-      {
         "cid": "3067",
         "version": 1769174930,
         "needRedDot": false,
@@ -238,17 +232,6 @@
         "startAt": 1769673600,
         "focus": 0,
         "title": "管理员工作记录\\n网页活动开启"
-      },
-      {
-        "cid": "7202",
-        "type": 0,
-        "tab": "updates",
-        "orderType": 1,
-        "orderWeight": 1,
-        "displayType": "rich_text",
-        "startAt": 1769482800,
-        "focus": 0,
-        "title": "游戏历程\\n体验问卷"
       },
       {
         "cid": "3067",

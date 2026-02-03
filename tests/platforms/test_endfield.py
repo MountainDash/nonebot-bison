@@ -42,7 +42,7 @@ def endfield_detail_7202():
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_parse_picture(app: App):
+async def test_parse_picture(app: App, endfield_detail_9883):
     from nonebot_bison.platform.endfield import BulletinListItem, Endfield
     from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
@@ -67,7 +67,7 @@ async def test_parse_picture(app: App):
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_parse_rich_text(app: App):
+async def test_parse_rich_text(app: App, endfield_detail_7202):
     from nonebot_bison.platform.endfield import BulletinListItem, Endfield
     from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
@@ -120,8 +120,5 @@ async def test_fetch_new_post(
     post2: ArknightsPost = res2[0][1][0]
     assert post2.title == "预抽卡活动"
     assert post2.images == ["https://web.hycdn.cn/upload/image/20260121/e1e0452b684b22b0379bb7f9881fb6cb.jpg"]
-    assert (
-        post2.url
-        == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game" + "（从游戏中点击查看）"
-    )
+    assert post2.url == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game"
     assert post2.nickname == "终末地游戏内公告"

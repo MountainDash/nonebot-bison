@@ -37,9 +37,7 @@ def endfield_detail_7202():
 async def test_parse_picture(app: App, endfield, endfield_list_0, endfield_detail_9883):
     from nonebot_bison.platform.endfield import BulletinListItem
 
-    detail_router = respx.get(
-        "https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN"
-    )
+    detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN")
     detail_router.mock(return_value=Response(200, json=endfield_detail_9883))
 
     raw_item = next(item for item in endfield_list_0["data"]["list"] if item["cid"] == "9883")
@@ -59,9 +57,7 @@ async def test_parse_picture(app: App, endfield, endfield_list_0, endfield_detai
 async def test_parse_rich_text(app: App, endfield, endfield_list_0, endfield_detail_7202):
     from nonebot_bison.platform.endfield import BulletinListItem
 
-    detail_router = respx.get(
-        "https://game-hub.hypergryph.com/bulletin/detail/7202?lang=zh-cn&code=endfield_5SD9TN"
-    )
+    detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/7202?lang=zh-cn&code=endfield_5SD9TN")
     detail_router.mock(return_value=Response(200, json=endfield_detail_7202))
 
     raw_item = next(item for item in endfield_list_0["data"]["list"] if item["cid"] == "7202")
@@ -85,18 +81,14 @@ async def test_fetch_new_post(app: App, endfield, dummy_user_subinfo, endfield_l
     list_router = respx.get(
         "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=1&code=endfield_5SD9TN&hideDetail=1"
     )
-    detail_router = respx.get(
-        "https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN"
-    )
+    detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN")
     detail_router.mock(return_value=Response(200, json=endfield_detail_9883))
 
     list_empty = deepcopy(endfield_list_0)
     list_empty["data"]["list"] = []
 
     list_single = deepcopy(endfield_list_0)
-    list_single["data"]["list"] = [
-        item for item in endfield_list_0["data"]["list"] if item["cid"] == "9883"
-    ]
+    list_single["data"]["list"] = [item for item in endfield_list_0["data"]["list"] if item["cid"] == "9883"]
 
     list_router.mock(return_value=Response(200, json=list_empty))
     target = Target("")

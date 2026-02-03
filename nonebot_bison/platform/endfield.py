@@ -77,6 +77,7 @@ class BulletinData(BaseModel):
     need_popup: bool = Field(alias="needPopup")
     version: int
 
+
 class CleanedBulletinData(BaseModel):
     title: str
     content: str = ""
@@ -120,7 +121,6 @@ class EndfieldSite(Site):
     name = "endfield"
     schedule_type = "interval"
     schedule_setting: ClassVar[dict] = {"seconds": 30}
-
 
 
 class Endfield(NewMessage):

@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from httpx import Response
 from nonebot.compat import type_validate_python
 from nonebug.app import App
@@ -11,15 +9,25 @@ from .utils import get_json
 
 @pytest.fixture
 def endfield(app: App):
-    from nonebot_bison.platform import platform_manager
+    from nonebot_bison.platform.endfield import Endfield
     from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
-    return platform_manager["endfield"](ProcessContext(DefaultClientManager()))
+    return Endfield(ProcessContext(DefaultClientManager()))
 
 
 @pytest.fixture(scope="module")
 def endfield_list_0():
     return get_json("endfield_list_0.json")
+
+
+@pytest.fixture(scope="module")
+def endfield_list__1():
+    return get_json("endfield_list__1.json")
+
+
+@pytest.fixture(scope="module")
+def endfield_list_1():
+    return get_json("endfield_list_1.json")
 
 
 @pytest.fixture(scope="module")
@@ -34,14 +42,16 @@ def endfield_detail_7202():
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_parse_picture(app: App, endfield, endfield_list_0, endfield_detail_9883):
-    from nonebot_bison.platform.endfield import BulletinListItem
+async def test_parse_picture(app: App):
+    from nonebot_bison.platform.endfield import BulletinListItem, Endfield
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
+
+    details = endfield_detail_9883()
+    endfield = Endfield(ProcessContext(DefaultClientManager()))
 
     detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN")
-    detail_router.mock(return_value=Response(200, json=endfield_detail_9883))
-
-    raw_item = next(item for item in endfield_list_0["data"]["list"] if item["cid"] == "9883")
-    raw_post = type_validate_python(BulletinListItem, raw_item)
+    detail_router.mock(return_value=Response(200, json=details))
+    raw_post = type_validate_python(BulletinListItem, details["data"])
 
     post = await endfield.parse(raw_post)
     # assert detail_router.called
@@ -57,19 +67,21 @@ async def test_parse_picture(app: App, endfield, endfield_list_0, endfield_detai
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_parse_rich_text(app: App, endfield, endfield_list_0, endfield_detail_7202):
-    from nonebot_bison.platform.endfield import BulletinListItem
+async def test_parse_rich_text(app: App):
+    from nonebot_bison.platform.endfield import BulletinListItem, Endfield
+    from nonebot_bison.utils import DefaultClientManager, ProcessContext
+
+    details = endfield_detail_7202()
+    endfield = Endfield(ProcessContext(DefaultClientManager()))
 
     detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/7202?lang=zh-cn&code=endfield_5SD9TN")
-    detail_router.mock(return_value=Response(200, json=endfield_detail_7202))
-
-    raw_item = next(item for item in endfield_list_0["data"]["list"] if item["cid"] == "7202")
-    raw_post = type_validate_python(BulletinListItem, raw_item)
+    detail_router.mock(return_value=Response(200, json=details))
+    raw_post = type_validate_python(BulletinListItem, details["data"])
 
     post = await endfield.parse(raw_post)
     # assert detail_router.called
     assert post.title == "游戏历程体验问卷"
-    assert post.content == endfield_detail_7202["data"]["data"]["html"]
+    assert post.content == details["data"]["data"]["html"]
     assert post.images is None
     assert post.url == ""
     assert post.nickname == "终末地游戏内公告"
@@ -77,30 +89,31 @@ async def test_parse_rich_text(app: App, endfield, endfield_list_0, endfield_det
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_fetch_new_post(app: App, endfield, dummy_user_subinfo, endfield_list_0, endfield_detail_9883):
+async def test_fetch_new_post(
+    app: App,
+    endfield,
+    dummy_user_subinfo,
+    endfield_list_0,
+    endfield_list_1,
+    endfield_detail_9883,
+):
     from nonebot_bison.platform.arknights import ArknightsPost
     from nonebot_bison.types import SubUnit, Target
 
     list_router = respx.get(
-        "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=1&code=endfield_5SD9TN&hideDetail=1"
+        "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=0&code=endfield_5SD9TN&hideDetail=1"
     )
     detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN")
     detail_router.mock(return_value=Response(200, json=endfield_detail_9883))
 
-    list_empty = deepcopy(endfield_list_0)
-    list_empty["data"]["list"] = []
-
-    list_single = deepcopy(endfield_list_0)
-    list_single["data"]["list"] = [item for item in endfield_list_0["data"]["list"] if item["cid"] == "9883"]
-
-    list_router.mock(return_value=Response(200, json=list_empty))
+    list_router.mock(return_value=Response(200, json=endfield_list_0))
     target = Target("")
     res1 = await endfield.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert list_router.called
     assert not detail_router.called
     assert res1 == []
 
-    list_router.mock(return_value=Response(200, json=list_single))
+    list_router.mock(return_value=Response(200, json=endfield_list_1))
     res2 = await endfield.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert detail_router.called
     assert len(res2) == 1

@@ -141,7 +141,7 @@ class Endfield(NewMessage):
     async def get_sub_list(self, _) -> list[BulletinListItem]:
         client = await self.ctx.get_client()
         raw_data = await client.get(
-            "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=1&code=endfield_5SD9TN&hideDetail=1"
+            "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=0&code=endfield_5SD9TN&hideDetail=1"
         )
         return type_validate_python(EFBulletinListResponse, raw_data.json()).data.list
 
@@ -196,7 +196,7 @@ class Endfield2(NewMessage):
     async def get_sub_list(self, _) -> list[BulletinListItem]:
         client = await self.ctx.get_client()
         raw_data = await client.get(
-            "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=0&code=endfield_5SD9TN&hideDetail=1"
+            "https://game-hub.hypergryph.com/bulletin/v2/aggregate?lang=zh-cn&platform=Windows&channel=1&subChannel=1&type=1&code=endfield_5SD9TN&hideDetail=1"
         )
         return type_validate_python(EFBulletinListResponse, raw_data.json()).data.list
 

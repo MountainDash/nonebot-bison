@@ -46,7 +46,7 @@ async def test_parse_picture(app: App, endfield_detail_9883):
     from nonebot_bison.platform.endfield import BulletinListItem, Endfield
     from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
-    details = endfield_detail_9883()
+    details = endfield_detail_9883
     endfield = Endfield(ProcessContext(DefaultClientManager()))
 
     detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/9883?lang=zh-cn&code=endfield_5SD9TN")
@@ -71,7 +71,7 @@ async def test_parse_rich_text(app: App, endfield_detail_7202):
     from nonebot_bison.platform.endfield import BulletinListItem, Endfield
     from nonebot_bison.utils import DefaultClientManager, ProcessContext
 
-    details = endfield_detail_7202()
+    details = endfield_detail_7202
     endfield = Endfield(ProcessContext(DefaultClientManager()))
 
     detail_router = respx.get("https://game-hub.hypergryph.com/bulletin/detail/7202?lang=zh-cn&code=endfield_5SD9TN")

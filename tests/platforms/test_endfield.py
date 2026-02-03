@@ -58,10 +58,7 @@ async def test_parse_picture(app: App, endfield_detail_9883):
     assert post.title == "预抽卡活动"
     assert post.content == ""
     assert post.images == ["https://web.hycdn.cn/upload/image/20260121/e1e0452b684b22b0379bb7f9881fb6cb.jpg"]
-    assert (
-        post.url
-        == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game" + "（从游戏中点击查看）"
-    )
+    assert post.url == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game"
     assert post.nickname == "终末地游戏内公告"
 
 

@@ -97,7 +97,6 @@ def clean_bulletin(data: BulletinData) -> CleanedBulletinData:
         content = ""
         images = [payload.url] if payload.url else None
         link = payload.link if payload.link else ""
-        link += "（从游戏中点击查看）" if payload.link_type == 2 else ""
     elif data.display_type == "rich_text":
         content = payload.html if payload.html else ""
         images = None

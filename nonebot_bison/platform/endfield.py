@@ -299,7 +299,7 @@ class TerraHistoricusComic(NewMessage):
         return Category(4)
 
     async def parse(self, raw_post: RawPost) -> Post:
-        url = f"https://comic.hypergryph.com/api/comic/{raw_post['comicCid']}/episode/{raw_post['episodeCid']}"
+        url = f"https://comic.hypergryph.com/talos-ii-historicus/comic/{raw_post['comicCid']}/episode/{raw_post['episodeCid']}"
         return Post(
             self,
             content=raw_post["subtitle"],

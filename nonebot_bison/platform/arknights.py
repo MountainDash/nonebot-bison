@@ -186,7 +186,7 @@ class AkVersion(StatusChange):
         res = []
         ArkUpdatePost = partial(Post, self, "", nickname="明日方舟更新信息")
         if old_status.get("preAnnounceType") == 2 and new_status.get("preAnnounceType") == 0:
-            res.append(ArkUpdatePost(title="登录界面维护公告上线（大概是开始维护了)"))
+            res.append(ArkUpdatePost(title="登录界面维护公告上线（大概是开始维护了）"))
         elif old_status.get("preAnnounceType") == 0 and new_status.get("preAnnounceType") == 2:
             res.append(ArkUpdatePost(title="登录界面维护公告下线（大概是开服了，冲！）"))
         if old_status.get("clientVersion") != new_status.get("clientVersion"):

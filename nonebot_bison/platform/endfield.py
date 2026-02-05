@@ -250,7 +250,7 @@ class EFVersion(StatusChange):
     async def get_status(self, _):
         client = await self.ctx.get_client()
         version = await client.get(
-            "https://launcher.hypergryph.com/api/game/get_latest?appcode=GzD1CpaWgmSq1wew&channel=1&platform=Windows&sub_channel=1&source=game"
+            "https://launcher.hypergryph.com/api/game/get_latest?appcode=6LL0KJuqHBVz33WK&channel=1&platform=Windows&sub_channel=1&source=game"
             # https://launcher.hypergryph.com/api/game/get_latest?appcode=GzD1CpaWgmSq1wew&channel=1&version=68.0.0&platform=Windows&sub_channel=1&source=game
         )
         return version.json().get("version", "")

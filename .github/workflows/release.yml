@@ -89,6 +89,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             felinae98/nonebot-bison:latest
@@ -101,6 +102,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile_without_browser
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             felinae98/nonebot-bison:${{ env.TAG_NAME }}-nobrowser

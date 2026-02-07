@@ -2,10 +2,12 @@ import base64
 from collections.abc import Sequence
 from datetime import datetime
 from io import BytesIO
+from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 import anyio
+from anyio import Path as AIOPath
 from httpx import AsyncClient
 import jinja2
 from nonebot_plugin_saa import Image, MessageSegmentFactory, Text
@@ -22,7 +24,7 @@ if TYPE_CHECKING:
     from nonebot_bison.post import Post
 
 
-async def embed_image_as_data_url(image_path: Path) -> str:
+async def embed_image_as_data_url(image_path: str | PathLike[str]) -> str:
     """读取图片文件并返回base64数据URL字符串
 
     Args:
@@ -31,10 +33,11 @@ async def embed_image_as_data_url(image_path: Path) -> str:
     Returns:
         base64格式的data URL字符串
     """
-    if not image_path.exists():
+    _path = AIOPath(image_path)
+    if not await _path.exists():
         return ""
 
-    async with await anyio.open_file(image_path, "rb") as f:
+    async with await anyio.open_file(_path, "rb") as f:
         image_data = base64.b64encode(await f.read()).decode()
         return f"data:image/png;base64,{image_data}"
 

@@ -7,6 +7,7 @@ import time
 from types import ModuleType
 from typing import Any, TypeVar
 
+from anyio import Path as AIOPath
 from anyio import open_file
 from nonebot.compat import model_dump
 from nonebot.log import logger
@@ -82,11 +83,12 @@ async def subs_export(path: Path, format: str):
     await init_scheduler()
 
     export_file = path / f"bison_subscribes_export_{int(time.time())}.{format}"
+    assert not export_file.exists()
 
     logger.info("正在获取订阅信息...")
     export_data: v3.SubGroup = await subscribes_export(lambda x: x)
 
-    with export_file.open("w", encoding="utf-8") as f:
+    async with await open_file(export_file, "w", encoding="utf-8") as f:
         match format:
             case "yaml" | "yml":
                 logger.info("正在导出为yaml...")
@@ -100,12 +102,13 @@ async def subs_export(path: Path, format: str):
                 # 进行以下曲线救国方案
                 json_data = json.dumps(model_dump(export_data), ensure_ascii=False)
                 yaml_data = pyyaml.safe_load(json_data)
-                pyyaml.safe_dump(yaml_data, f, sort_keys=False)
+                output = pyyaml.safe_dump(yaml_data, sort_keys=False)
+                await f.write(output)
 
             case "json":
                 logger.info("正在导出为json...")
-
-                json.dump(model_dump(export_data), f, indent=4, ensure_ascii=False)
+                json_data = json.dumps(model_dump(export_data), ensure_ascii=False, indent=4)
+                await f.write(json_data)
 
             case _:
                 raise click.BadParameter(message=f"不支持的导出格式: {format}")
@@ -125,8 +128,8 @@ async def subs_export(path: Path, format: str):
 async def subs_import(path: str, format: str):
     await init_scheduler()
 
-    import_file_path = Path(path)
-    assert import_file_path.is_file(), "该路径不是文件！"
+    import_file_path = AIOPath(path)
+    assert await import_file_path.is_file(), "该路径不是文件！"
 
     async with await open_file(import_file_path, "r", encoding="utf-8") as f:
         match format:

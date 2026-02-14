@@ -167,6 +167,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}
           cache-from: type=gha
@@ -202,6 +203,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile_without_browser
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: felinae98/nonebot-bison:${{ env.GIT_BRANCH_NAME }}-nobrowser
           cache-from: type=gha

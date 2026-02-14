@@ -8,6 +8,7 @@ from nonebot_plugin_saa.utils.exceptions import NoBotFound
 from nonebot_bison.config import config
 from nonebot_bison.metrics import render_time_histogram, request_counter, request_time_histogram, sent_counter
 from nonebot_bison.platform import platform_manager
+from nonebot_bison.plugin_config import plugin_config
 from nonebot_bison.send import send_msgs
 from nonebot_bison.types import SubUnit, Target
 from nonebot_bison.utils import ClientManager, ProcessContext, Site
@@ -48,12 +49,19 @@ class Scheduler:
             if use_batch:
                 self.batch_platform_name_targets_cache[platform_name].append(target)
             self.schedulable_list.append(
-                Schedulable(platform_name=platform_name, target=target, current_weight=0, use_batch=use_batch)
+                Schedulable(
+                    platform_name=platform_name,
+                    target=target,
+                    current_weight=0,
+                    use_batch=use_batch,
+                )
             )
         self._refresh_batch_api_target_cache()
 
         self.platform_name_list = platform_name_list
         self.pre_weight_val = 0  # 轮调度中“本轮”增加权重和的初值
+
+        self._load_scehdule_rule_from_config()
         logger.info(
             f"register scheduler for {self.name} with "
             f"{self.scheduler_config.schedule_type} {self.scheduler_config.schedule_setting}"
@@ -63,6 +71,11 @@ class Scheduler:
             self.scheduler_config.schedule_type,
             **self.scheduler_config.schedule_setting,
         )
+
+    def _load_scehdule_rule_from_config(self):
+        if schedule_rule := plugin_config.bison_site_schedule.get(self.name):
+            self.scheduler_config.schedule_type = schedule_rule.type
+            self.scheduler_config.schedule_setting = schedule_rule.settings
 
     def _refresh_batch_api_target_cache(self):
         self.batch_api_target_cache = defaultdict(dict)

@@ -56,13 +56,13 @@ class ArkBulletinResponse(ArkResponseBase):
     data: BulletinData
 
 
-class ArknightsSite(Site):
-    name = "arknights"
+class HypergryphSite(Site):
+    name = "hypergryph"
     schedule_type = "interval"
     schedule_setting: ClassVar[dict] = {"seconds": 30}
 
 
-class ArknightsPost(Post, HTMLContentSupport):
+class HGAnnouncePost(Post, HTMLContentSupport):
     def _cleantext(self, text: str, old_split="\n", new_split="\n") -> str:
         """清理文本：去掉所有多余的空格和换行"""
         lines = text.strip().split(old_split)
@@ -102,7 +102,7 @@ class Arknights(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    site = ArknightsSite
+    site = HypergryphSite
     has_target = False
     default_theme = "arknights"
 
@@ -145,7 +145,7 @@ class Arknights(NewMessage):
             # 只有一张图片
             title = title_escape(data.title)
 
-        return ArknightsPost(
+        return HGAnnouncePost(
             self,
             content=data.content,
             title=title,
@@ -164,7 +164,7 @@ class AkVersion(StatusChange):
     enable_tag = False
     enabled = True
     is_common = False
-    site = ArknightsSite
+    site = HypergryphSite
     has_target = False
     default_theme = "brief"
 
@@ -209,7 +209,7 @@ class MonsterSiren(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    site = ArknightsSite
+    site = HypergryphSite
     has_target = False
 
     @classmethod
@@ -257,7 +257,7 @@ class TerraHistoricusComic(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    site = ArknightsSite
+    site = HypergryphSite
     has_target = False
     default_theme = "brief"
 

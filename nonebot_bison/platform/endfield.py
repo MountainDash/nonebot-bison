@@ -7,9 +7,8 @@ from pydantic import BaseModel, Field
 
 from nonebot_bison.post import Post
 from nonebot_bison.types import Category, Target
-from nonebot_bison.utils import Site
 
-from .arknights import ArknightsPost
+from .arknights import HGAnnouncePost, HypergryphSite
 from .platform import NewMessage, RawPost, StatusChange
 
 
@@ -116,10 +115,6 @@ class EFBulletinResponse(EFResponseBase):
     data: BulletinData
 
 
-class EndfieldSite(Site):
-    name = "endfield"
-    schedule_type = "interval"
-    schedule_setting: ClassVar[dict] = {"seconds": 30}
 
 
 class Endfield(NewMessage):
@@ -129,7 +124,7 @@ class Endfield(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    site = EndfieldSite
+    site = HypergryphSite
     has_target = False
     default_theme = "arknights"
 
@@ -165,7 +160,7 @@ class Endfield(NewMessage):
 
         cleaned_data = clean_bulletin(data)
 
-        return ArknightsPost(
+        return HGAnnouncePost(
             self,
             content=cleaned_data.content,
             title=cleaned_data.title,
@@ -184,7 +179,7 @@ class Endfield2(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    site = EndfieldSite
+    site = HypergryphSite
     has_target = False
     default_theme = "arknights"
 
@@ -220,7 +215,7 @@ class Endfield2(NewMessage):
 
         cleaned_data = clean_bulletin(data)
 
-        return ArknightsPost(
+        return HGAnnouncePost(
             self,
             content=cleaned_data.content,
             title=cleaned_data.title,
@@ -239,7 +234,7 @@ class EFVersion(StatusChange):
     enable_tag = False
     enabled = True
     is_common = False
-    site = EndfieldSite
+    site = HypergryphSite
     has_target = False
     default_theme = "brief"
 
@@ -251,7 +246,6 @@ class EFVersion(StatusChange):
         client = await self.ctx.get_client()
         version = await client.get(
             "https://launcher.hypergryph.com/api/game/get_latest?appcode=6LL0KJuqHBVz33WK&channel=1&platform=Windows&sub_channel=1&source=game"
-            # https://launcher.hypergryph.com/api/game/get_latest?appcode=GzD1CpaWgmSq1wew&channel=1&version=68.0.0&platform=Windows&sub_channel=1&source=game
         )
         return version.json().get("version", "")
 
@@ -276,7 +270,7 @@ class TerraHistoricusComic(NewMessage):
     enable_tag = False
     enabled = True
     is_common = False
-    site = EndfieldSite
+    site = HypergryphSite
     has_target = False
     default_theme = "brief"
 

@@ -115,8 +115,6 @@ class EFBulletinResponse(EFResponseBase):
     data: BulletinData
 
 
-
-
 class Endfield(NewMessage):
     categories: ClassVar[dict[Category, str]] = {1: "游戏公告"}
     platform_name = "endfield"

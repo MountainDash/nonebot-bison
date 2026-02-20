@@ -94,7 +94,7 @@ async def test_fetch_new_post(
     endfield_list_1,
     endfield_detail_9883,
 ):
-    from nonebot_bison.platform.arknights import ArknightsPost
+    from nonebot_bison.platform.arknights import HGAnnouncePost
     from nonebot_bison.types import SubUnit, Target
 
     list_router = respx.get(
@@ -114,7 +114,7 @@ async def test_fetch_new_post(
     res2 = await endfield.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert detail_router.called
     assert len(res2) == 1
-    post2: ArknightsPost = res2[0][1][0]
+    post2: HGAnnouncePost = res2[0][1][0]
     assert post2.title == "预抽卡活动"
     assert post2.images == ["https://web.hycdn.cn/upload/image/20260121/e1e0452b684b22b0379bb7f9881fb6cb.jpg"]
     assert post2.url == "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game"

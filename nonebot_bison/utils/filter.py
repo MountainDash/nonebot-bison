@@ -11,6 +11,7 @@ from nonebot_bison.setting import plugin_config
 from nonebot_bison.typing import Target
 from nonebot_bison.utils.classproperty import classproperty
 
+
 @dataclass
 class _PostIDStorage:
     inited: bool = False

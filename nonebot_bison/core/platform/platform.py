@@ -1,5 +1,5 @@
 from abc import ABC, ABCMeta, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Self
 
 from nonebot_plugin_saa import PlatformTarget
@@ -13,10 +13,15 @@ from nonebot_bison.utils.meta import RegistryMeta
 
 from .config import PlatformConfig
 
-type TargetedPosts = list[tuple[PlatformTarget, list[Post]]]
+type TargetedPosts = Sequence[tuple[PlatformTarget, Sequence[Post]]]
 
+class PlatformException(Exception):
+    """platform related exceptions"""
 
-class CategoryException(Exception):
+class PlatformFetchMethodMismatch(PlatformException):
+    """the Platform.fetch method mismatch"""
+
+class CategoryException(PlatformException):
     """base class for category related exceptions"""
 
 
@@ -64,22 +69,22 @@ class Platform[RawPost](metaclass=PlatformMeta, base=True):
 
 
 # 获取行为混入类
-class FetchMixin(ABC):
+class FetchMixin[RawPost](ABC):
     if TYPE_CHECKING:
         ctx: ProcessContext
 
     @abstractmethod
-    async def fetch(self, sub_unit: SubUnit) -> TargetedPosts:
+    async def fetch(self, sub_unit: SubUnit) -> Iterable[RawPost]:
         """获取指定订阅单元的最新消息"""
         ...
 
 
-class BatchFetchMixin(ABC):
+class BatchFetchMixin[RawPost](ABC):
     if TYPE_CHECKING:
         ctx: ProcessContext
 
     @abstractmethod
-    async def fetch(self, sub_units: Iterable[SubUnit]) -> TargetedPosts:
+    async def fetch(self, sub_units: Iterable[SubUnit]) -> Iterable[RawPost]:
         """批量获取指定订阅单元的最新消息"""
         ...
 
@@ -149,13 +154,13 @@ class FilterMixin[RawPost](ABC):
                 subscribed_tags.append(tag)
         return subscribed_tags, banned_tags
 
-    async def subscriber_filter(
+    async def dispatch(
         self,
         raw_posts: Iterable[RawPost],
         needed_cats: Iterable[Category],
         required_tags: Iterable[Tag],
     ) -> tuple[RawPost, ...]:
-        """过滤出符合订阅用户要求的报文"""
+        """分发符合订阅用户要求的报文"""
         res: list[RawPost] = []
         for raw_post in raw_posts:
             if self.platform_config.categories:

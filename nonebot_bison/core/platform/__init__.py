@@ -1,6 +1,6 @@
 from typing_extensions import TypeIs
 
-from nonebot_bison.core.schedule import SubUnit, SubUnits
+from nonebot_bison.typing import SubUnit, SubUnits
 
 from .config import PlatformConfig as PlatformConfig
 from .platform import BatchFetchMixin as BatchFetchMixin

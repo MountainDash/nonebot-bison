@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
+from typing import override
 
 from nonebot_bison.core.platform import PlatformConfig
 
@@ -38,3 +39,7 @@ class Post(PlainContentSupport):
     """发布者个性签名等"""
     repost: "Post | None" = None
     """转发的Post"""
+
+    @override
+    async def get_plain_content(self) -> str:
+        return self.content

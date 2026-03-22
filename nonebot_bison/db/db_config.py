@@ -1,7 +1,7 @@
 import asyncio
 from collections import defaultdict
 from collections.abc import Awaitable, Callable, Sequence
-from datetime import datetime, time
+from datetime import UTC, datetime, time
 
 from nonebot.compat import model_dump
 from nonebot_plugin_datastore import create_session
@@ -10,8 +10,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
-from nonebot_bison.core.schedule import UserSubInfo
-from nonebot_bison.typing import Category, Tag
+from nonebot_bison.typing import Category, Tag, UserSubInfo
 from nonebot_bison.typing import Target as T_Target
 
 from .db_model import Cookie, CookieTarget, ScheduleTimeWeight, Subscribe, Target, User
@@ -20,7 +19,7 @@ from .utils import DuplicateCookieTargetException, NoSuchTargetException
 
 
 def _get_time():
-    dt = datetime.now()
+    dt = datetime.now(tz=UTC)
     cur_time = time(hour=dt.hour, minute=dt.minute, second=dt.second)
     return cur_time
 

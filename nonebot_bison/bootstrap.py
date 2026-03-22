@@ -58,7 +58,7 @@ async def post():
 
     driver = get_driver()
     courier = create_courier(driver.task_group)
-
+    logger.info("start courier...")
     driver.task_group.start_soon(courier.run)
     driver.on_shutdown(courier.close)
 

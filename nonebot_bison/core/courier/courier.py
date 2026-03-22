@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Self
 
 import anyio
 from anyio import create_memory_object_stream
-from loguru import logger
+from nonebot import logger
 from nonebot.dependencies import Dependent, Param
 from nonebot.utils import flatten_exception_group
 
@@ -68,6 +68,7 @@ class Courier:
     @classmethod
     def get_instance(cls) -> Self:
         if cls._instance is None:
+            logger.critical("Courier instance is not created yet, please call Courier() and .run() first")
             raise ValueError(
                 "Courier instance is not created yet, please call Courier() and .run() first"
             )
@@ -108,6 +109,7 @@ class Courier:
                 receiver=dependentable,
             )
             cls.plan_channels.add(channel)
+            logger.success(f"register courier channel [{channel}]")
             return receiver
 
         return wrapper
@@ -174,7 +176,11 @@ class Courier:
                     continue
 
                 try:
-                    match await send_road.receiver(parcel=parcel):
+                    # courier common receiver dependency inject on here
+                    match await send_road.receiver(
+                        parcel=parcel,
+                        task_group=tg,
+                    ):
                         case None:
                             pass
                         case Parcel(tag) if tag == parcel.tag:
@@ -236,6 +242,7 @@ class Courier:
                 async with self.dead_letter_channel.outlet as rx:
                     async for dead_letter in rx:
                         exception = dead_letter.metadata.pop(__EXCEPTION_KEY__)
+                        # courier dead letter receiver dependency inject on here
                         await self.dead_letter_receiver(
                             parcel=dead_letter, exception=exception, task_group=self.task_group
                         )

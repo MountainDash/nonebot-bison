@@ -11,7 +11,6 @@ from nonebot_bison.core.platform import (
     Platform,
     is_batch_platform,
 )
-from nonebot_bison.core.schedule import SubUnit, SubUnits
 from nonebot_bison.core.site import (
     ClientManager,
     ProcessContext,
@@ -21,7 +20,7 @@ from nonebot_bison.core.site import (
 )
 from nonebot_bison.db import data_access as database
 from nonebot_bison.metrics import request_counter, request_time_histogram
-from nonebot_bison.typing import Target
+from nonebot_bison.typing import SubUnit, SubUnits, Target
 
 
 @dataclass
@@ -120,7 +119,7 @@ class Scheduler:
         return Parcel(
             tag="schedule",
             payload=sub_units,
-            metadata={"platform_name": platform_name, "client_mgr": self.client_mgr},
+            metadata={"platform_name": platform_name, "client_mgr": self.client_mgr, "store": self.store},
         )
 
     async def exec_fetch(self):

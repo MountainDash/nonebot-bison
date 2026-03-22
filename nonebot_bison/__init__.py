@@ -6,7 +6,9 @@ require("nonebot_plugin_saa")
 
 import nonebot_plugin_saa
 
+from . import bootstrap as bootstrap
 from . import core as core
+from . import inbox as inbox
 from .setting import BisonConfig, plugin_config
 
 __help__version__ = "1.0.0"

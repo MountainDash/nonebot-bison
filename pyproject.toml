@@ -3,14 +3,16 @@ authors = [{ name = "felinae98", email = "felinae225@qq.com" }]
 license = { text = "MIT" }
 requires-python = "<4.0.0,>=3.12"
 dependencies = [
-    "httpx>=0.28.1",
-    "nonebot-plugin-apscheduler>=0.5.0",
-    "nonebot-plugin-datastore>=1.3.1",
-    "nonebot-plugin-prometheus>=0.4.1",
-    "nonebot-plugin-send-anything-anywhere>=0.7.1",
-    "nonebot2>=2.4.3",
-    "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=2.9.2",
-    "tinydb>=4.8.2",
+  "httpx>=0.28.1",
+  "nonebot-plugin-apscheduler>=0.5.0",
+  "nonebot-plugin-datastore>=1.3.1",
+  "nonebot-plugin-prometheus>=0.4.1",
+  "nonebot-plugin-send-anything-anywhere>=0.7.1",
+  "nonebot2>=2.4.3",
+  "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=2.9.2",
+  "tinydb>=4.8.2",
+  "nonebot-adapter-onebot>=2.4.6",
+  "nonebot-bison>=0.9.14",
 ]
 name = "nonebot-bison"
 version = "0.10.0-alpha.1"
@@ -35,9 +37,7 @@ homepage = "https://github.com/felinae98/nonebot-bison"
 bison = "nonebot_bison.script.cli:main"
 
 [dependency-groups]
-dev = [
-    "ruff>=0.13.2",
-]
+dev = ["nb-cli>=1.7.2", "nonebot2[fastapi]>=2.4.4", "ruff>=0.13.2"]
 test = []
 
 [project.optional-dependencies]
@@ -48,9 +48,9 @@ default-groups = ["dev", "test"]
 
 [tool.uv.workspace]
 members = [
-    "extra_plugins/theme/*",
-    "extra_plugins/platform/*",
-    "extra_plugins/message/*",
+  "extra_plugins/theme/*",
+  "extra_plugins/platform/*",
+  "extra_plugins/message/*",
 ]
 
 [build-system]
@@ -116,7 +116,7 @@ mark-parentheses = false
 keep-runtime-typing = true
 
 [tool.pyright]
-enableExperimentalFeatures=true
+enableExperimentalFeatures = true
 typeCheckingMode = "standard"
 disableBytesTypePromotions = true
 pythonVersion = "3.12"
@@ -131,9 +131,21 @@ defineConstant = { PYDANTIC_V2 = true }
 
 # 开发测试使用
 [tool.nonebot]
-adapters = [
+plugin_dirs = [
+  "extra_plugins/theme",
+  "extra_plugins/platform",
+  "extra_plugins/message",
+]
+builtin_plugins = ["echo"]
+[tool.nonebot.plugins]
+"@local" = []
+nonebot-bison = ["nonebot_bison"]
+nonebot-plugin-prometheus = ["nonebot_plugin_prometheus"]
+for-test = ["for_test_plugin"]
+
+
+[tool.nonebot.adapters]
+"@local" = []
+nonebot-adapter-onebot = [
   { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = ["nonebot_bison", "nonebot_plugin_prometheus"]
-plugin_dirs = ["extra_plugins/theme", "extra_plugins/platform", "extra_plugins/message"]
-builtin_plugins = ["echo"]

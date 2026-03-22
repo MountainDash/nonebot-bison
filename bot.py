@@ -13,7 +13,8 @@ driver.register_adapter(OneBotV11Adapter)
 
 # 加载插件
 nonebot.load_from_toml("pyproject.toml")
-nonebot.load_plugin(Path(__file__) / "for_test_plugin.py")
+# FIXME
+# nonebot.load_plugin(Path(__file__) / "for_test_plugin.py")
 
 if __name__ == "__main__":
     logger.warning("Always use `nb run` to start the bot instead of manually running!")

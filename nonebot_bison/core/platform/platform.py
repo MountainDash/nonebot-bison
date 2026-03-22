@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING, Self
 from nonebot_plugin_saa import PlatformTarget
 
 from nonebot_bison.core.post import Post
-from nonebot_bison.core.schedule import SubUnit
 from nonebot_bison.core.site import ProcessContext, SiteConfig
-from nonebot_bison.typing import Category, Tag, Target
+from nonebot_bison.typing import Category, SubUnit, Tag, Target
 from nonebot_bison.utils.classproperty import classproperty
 from nonebot_bison.utils.meta import RegistryMeta
 

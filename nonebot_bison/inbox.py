@@ -5,8 +5,7 @@ from nonebot import logger
 from nonebot_bison.core.courier import Courier, Parcel, post_to_courier
 from nonebot_bison.core.platform import CompletedPlatform, Platform
 from nonebot_bison.core.post import Post
-from nonebot_bison.core.schedule import SubUnits
-from nonebot_bison.core.site import ClientManager, ProcessContext
+from nonebot_bison.core.site import ClientManager, ProcessContext, StoreLike
 from nonebot_bison.core.theme import (
     ThemeRenderError,
     ThemeRenderUnsupportError,
@@ -14,6 +13,7 @@ from nonebot_bison.core.theme import (
 )
 from nonebot_bison.core.theme.utils import get_priority_themes
 from nonebot_bison.setting import plugin_config
+from nonebot_bison.typing import SubUnits
 
 
 @Courier.receive_from("schedule")
@@ -30,12 +30,13 @@ async def handle_schedule(tg: TaskGroup, parcel: Parcel[SubUnits]):
         raise parcel.DeliveryReject(f"Platform {platform_name} is not registered")
 
     client_mgr: ClientManager = parcel.metadata["client_mgr"]
+    store: StoreLike = parcel.metadata["store"]
 
     platform: Platform = Platform.registry[platform_name]
     if not platform.platform_config.enable:
         raise parcel.DeliveryReject(f"Platform {platform_name} is not enabled")
 
-    context = ProcessContext(client_mgr)
+    context = ProcessContext(client_mgr, store)
     platform_obj: CompletedPlatform = Platform.registry[platform_name](context)
 
     to_send = await platform_obj.fetch(parcel.payload)  # type: ignore[reportArgumentType] 这里会自动分配

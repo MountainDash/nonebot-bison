@@ -1,8 +1,6 @@
 from abc import ABC, ABCMeta, abstractmethod
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Self
-
-from nonebot_plugin_saa import PlatformTarget
 
 from nonebot_bison.core.post import Post
 from nonebot_bison.core.site import ProcessContext, SiteConfig
@@ -12,7 +10,6 @@ from nonebot_bison.utils.meta import RegistryMeta
 
 from .config import PlatformConfig
 
-type TargetedPosts = Sequence[tuple[PlatformTarget, Sequence[Post]]]
 
 class PlatformException(Exception):
     """platform related exceptions"""
@@ -52,7 +49,7 @@ class Platform[RawPost](metaclass=PlatformMeta, base=True):
     @abstractmethod
     def name(cls) -> str:
         """平台名称"""
-        ...
+        return cls.platform_config.name
 
     @classmethod
     def bound(cls, ctx: ProcessContext) -> Self:

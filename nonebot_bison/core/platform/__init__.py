@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from typing_extensions import TypeIs
 
 from nonebot_bison.typing import SubUnit, SubUnits
@@ -11,7 +12,15 @@ from .platform import FetchMixin as FetchMixin
 from .platform import FilterMixin as FilterMixin
 from .platform import Platform as Platform
 from .platform import PlatformFetchMethodMismatch
-from .platform import TargetedPosts as TargetedPosts
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from nonebot_plugin_saa import PlatformTarget
+
+    from nonebot_bison.core.post import Post
+
+type TargetedPosts = "Sequence[tuple[PlatformTarget, Sequence[Post]]]"
 
 
 class CompletedFetchPlatform[RawPost](Platform[RawPost], FetchMixin[RawPost], FilterMixin[RawPost], abstract=True): ...
@@ -44,7 +53,6 @@ def is_batch_platform(
 
 
 async def fetch_new_post[RawPost](platform: CompletedPlatform[RawPost], sub_units: SubUnits) -> TargetedPosts:
-
     async def _do_fetch(unit: SubUnit):
         filtered_posts = await platform.filter(unit.sub_target, posts)
         for user, cats, tags in unit.user_sub_infos:

@@ -134,7 +134,7 @@ defineConstant = { PYDANTIC_V2 = true }
 plugin_dirs = [
   "extra_plugins/theme",
   "extra_plugins/platform",
-  "extra_plugins/message",
+  "extra_plugins/message/nonebot-bison-message-saa",
 ]
 builtin_plugins = ["echo"]
 [tool.nonebot.plugins]
@@ -142,6 +142,7 @@ builtin_plugins = ["echo"]
 nonebot-bison = ["nonebot_bison"]
 nonebot-plugin-prometheus = ["nonebot_plugin_prometheus"]
 for-test = ["for_test_plugin"]
+nonebot-plugin-send-anything-anywhere = ["nonebot_plugin_saa"]
 
 
 [tool.nonebot.adapters]

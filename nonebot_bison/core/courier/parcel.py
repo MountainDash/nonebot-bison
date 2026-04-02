@@ -95,6 +95,7 @@ class DeliveryReceipt:
     def handstamps(self) -> _HandStamps:
         return self._handstamps
 
+    # FIXME: 规范的地址表达方式
     def append_address(self, addr: str):
         if "ADDRESS_CHAIN" not in self._handstamps:
             self._handstamps.update(ADDRESS_CHAIN=[addr])

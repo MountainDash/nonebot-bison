@@ -3,7 +3,7 @@ from anyio.abc import TaskGroup
 from nonebot import logger
 
 from nonebot_bison.core.courier import Courier, Parcel, post_to_courier
-from nonebot_bison.core.platform import CompletedPlatform, Platform
+from nonebot_bison.core.platform import CompletedPlatform, Platform, fetch_new_post
 from nonebot_bison.core.post import Post
 from nonebot_bison.core.site import ClientManager, ProcessContext, StoreLike
 from nonebot_bison.core.theme import (
@@ -27,7 +27,7 @@ async def handle_schedule(tg: TaskGroup, parcel: Parcel[SubUnits]):
 
     platform_name: str = parcel.metadata["platform_name"]
     if platform_name not in Platform.registry:
-        raise parcel.DeliveryReject(f"Platform {platform_name} is not registered")
+        raise parcel.DeliveryReject(f"Platform {platform_name} is not registered: {Platform.registry}")
 
     client_mgr: ClientManager = parcel.metadata["client_mgr"]
     store: StoreLike = parcel.metadata["store"]
@@ -37,9 +37,9 @@ async def handle_schedule(tg: TaskGroup, parcel: Parcel[SubUnits]):
         raise parcel.DeliveryReject(f"Platform {platform_name} is not enabled")
 
     context = ProcessContext(client_mgr, store)
-    platform_obj: CompletedPlatform = Platform.registry[platform_name](context)
+    platform_obj: CompletedPlatform = Platform.registry[platform_name].bound(context)
 
-    to_send = await platform_obj.fetch(parcel.payload)  # type: ignore[reportArgumentType] 这里会自动分配
+    to_send = await fetch_new_post(platform_obj, parcel.payload)
 
     # 限制最大并发渲染数
     semaphore = anyio.Semaphore(plugin_config.bison_render_post_concurrency)
@@ -49,11 +49,12 @@ async def handle_schedule(tg: TaskGroup, parcel: Parcel[SubUnits]):
         async def _render(semaphore: anyio.Semaphore, post: Post):
             themes = get_priority_themes(post.platform)
             for theme_name in themes:
+                # FIXME: 符合 __getitem__ 语义
                 if theme := theme_manager[theme_name]:
                     try:
                         async with semaphore:
                             parcel = await theme.package(post, {"send_to": user})
-                            await post_to_courier(parcel)
+                            return await post_to_courier(parcel)
                     except ThemeRenderUnsupportError as e:
                         logger.warning(
                             f"Theme {theme_name} does not support Post of {platform_obj.__class__.__name__}: {e}"

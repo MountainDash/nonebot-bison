@@ -1,16 +1,20 @@
 from typing import NamedTuple
 
 import anyio
+from anyio.abc import TaskStatus
+from nonebot import get_bot
 from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot.log import logger
 from nonebot_plugin_saa import AggregatedMessageFactory, MessageFactory, PlatformTarget
-from nonebot_plugin_saa.auto_select_bot import refresh_bots
+from nonebot_plugin_saa.auto_select_bot import BOT_CACHE, refresh_bots
+from nonebot_plugin_saa.utils import NoBotFound
 
 from .setting import plugin_config
 
 Sendable = MessageFactory | AggregatedMessageFactory
 type SendableMessages = list[MessageFactory]
 """该用户本次应顺序发送的所有消息"""
+
 
 class MessageQueueItem(NamedTuple):
     send_to: PlatformTarget
@@ -32,6 +36,7 @@ async def message_stream_close():
 
 async def _do_send(send_target: PlatformTarget, msg: Sendable):
     try:
+        logger.success(f"send to {send_target}, {BOT_CACHE=}")
         await msg.send_to(send_target)
     except ActionFailed:  # TODO: catch exception of other adapters
         await refresh_bots()
@@ -51,7 +56,7 @@ async def run_send_msgs_receiver():
                 msg_str = str(message)
                 if len(msg_str) > 50:
                     msg_str = f"{msg_str[:50]}..."
-                logger.warning(f"send msg err {e} {msg_str}")
+                logger.warning(f"send msg err {e!r} {msg_str}")
         else:
             await anyio.sleep(MESSGE_SEND_INTERVAL.total_seconds())
         finally:
@@ -65,7 +70,12 @@ async def _send_msgs_dispatch(send_target: PlatformTarget, msg: Sendable):
         await _do_send(send_target, msg)
 
 
-async def send_msgs(send_target: PlatformTarget, msgs: list[MessageFactory]):
+async def send_msgs(
+    send_target: PlatformTarget,
+    msgs: list[MessageFactory],
+    task_status: TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
+):
+    task_status.started()
     if not plugin_config.send_use_pic_merge:
         for msg in msgs:
             await _send_msgs_dispatch(send_target, msg)

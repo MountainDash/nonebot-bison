@@ -1,6 +1,8 @@
 from typing import Any, ClassVar
 from typing_extensions import Sentinel
 
+from nonebot import logger
+
 from nonebot_bison.utils.classproperty import classproperty
 
 type RegisteredClass = Any
@@ -27,14 +29,12 @@ class RegistryMeta(type):
                 cls.__registries[base] = {}
                 # 先不考虑存在base之后再定义base的情况，没有实际需求，有需要再说
                 cls.__base = base
-                cls.name = classproperty(classmethod(lambda cls: base))
             case True:
                 # 没有指定 base 的具体值，使用类名
                 cls.__registries[name] = {}
                 cls.__base = name
-                cls.name = classproperty(classmethod(lambda cls: name))
             case other if other is _MISSING_ and not is_abstract:
-                #this is a subclass
+                # 这是需要注册的子类
                 match cls.name:
                     case None:
                         raise TypeError("Registered class must implement 'name' classproperty")
@@ -65,4 +65,4 @@ class RegistryMeta(type):
     @classmethod
     def name(cls) -> str:
         """注册类的名称"""
-        raise NotImplementedError("Registered class must implement 'name' classproperty")
+        return cls.__name__

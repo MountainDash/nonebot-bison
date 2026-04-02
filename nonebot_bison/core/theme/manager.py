@@ -25,7 +25,7 @@ class ThemeManager:
         logger.opt(colors=True).success(f"Theme <b><u>{theme_name}</u></b> unregistered")
 
     def __getitem__(self, theme: str):
-        return self.__themes[theme]
+        return self.__themes.get(theme)
 
     def __len__(self):
         return len(self.__themes)

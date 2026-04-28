@@ -34,8 +34,17 @@ homepage = "https://github.com/felinae98/nonebot-bison"
 bison = "nonebot_bison.script.cli:main"
 
 [dependency-groups]
-dev = ["nb-cli>=1.7.2", "nonebot2[fastapi]>=2.4.4", "ruff>=0.13.2"]
-test = []
+dev = [
+  { include-group = "test" },
+  "nb-cli>=1.7.2",
+  "nonebot2[fastapi]>=2.4.4",
+  "ruff>=0.13.2",
+]
+test = [
+  "pytest-cov >=7.0.0, <8.0.0",
+  "pytest-xdist >=3.0.2, <4.0.0",
+  "coverage-conditional-plugin >=0.9.0, <0.10.0",
+]
 
 [project.optional-dependencies]
 docker = []
@@ -55,10 +64,8 @@ module-root = ""
 bison-core = { workspace = true }
 
 [tool.uv.workspace]
-members = [
-    "packages/*",
-]
-exclude=[]
+members = ["packages/*"]
+exclude = ["packages/plugins"]
 
 [tool.pytest.ini_options]
 markers = [

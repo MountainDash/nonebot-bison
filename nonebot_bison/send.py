@@ -2,6 +2,7 @@ from typing import NamedTuple
 
 import anyio
 from anyio.abc import TaskGroup
+from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
 from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot.log import logger
 from nonebot_plugin_saa import AggregatedMessageFactory, MessageFactory, PlatformTarget
@@ -18,9 +19,32 @@ class MessageQueueItem(NamedTuple):
     retry: int
 
 
-MESSAGE_STREAM_ENTRANCE, MESSAGE_STREAM_OUTLET = anyio.create_memory_object_stream[MessageQueueItem](
-    plugin_config.bison_send_message_max_buffer_size
-)
+class SendStream(NamedTuple):
+    entrance: MemoryObjectSendStream[MessageQueueItem]
+    outlet: MemoryObjectReceiveStream[MessageQueueItem]
+
+    @classmethod
+    def build(cls, max_buffer_size: int):
+        return cls(*anyio.create_memory_object_stream[MessageQueueItem](max_buffer_size=max_buffer_size))
+
+    def close(self):
+        self.entrance.close()
+
+
+_SEND_STREAM: SendStream | None = None
+
+
+def set_global_send_stream(stream: SendStream):
+    global _SEND_STREAM
+    _SEND_STREAM = stream
+
+
+def get_global_send_stream() -> SendStream:
+    global _SEND_STREAM
+    if not _SEND_STREAM:
+        raise Exception("need to set global send stream first.")
+    return _SEND_STREAM
+
 
 MESSGE_SEND_INTERVAL = plugin_config.bison_send_message_interval
 
@@ -35,7 +59,9 @@ async def _do_send(send_target: PlatformTarget, msg: Sendable):
 
 async def _send_msgs_dispatch(send_target: PlatformTarget, msg: Sendable):
     if plugin_config.bison_use_queue:
-        await MESSAGE_STREAM_ENTRANCE.send(MessageQueueItem(send_target, msg, plugin_config.bison_resend_times))
+        await get_global_send_stream().entrance.send(
+            MessageQueueItem(send_target, msg, plugin_config.bison_resend_times)
+        )
     else:
         await _do_send(send_target, msg)
 
@@ -58,14 +84,14 @@ async def send_msgs(send_target: PlatformTarget, msgs: list[MessageFactory]):
 
 async def _run_send_msgs_receiver():
     logger.info("Start receive sendable message...")
-    async for send_to, message, retry in MESSAGE_STREAM_OUTLET:
+    async for send_to, message, retry in get_global_send_stream().outlet:
         try:
             await _do_send(send_to, message)
         except Exception as e:
             await anyio.sleep(MESSGE_SEND_INTERVAL.total_seconds())
             if retry > 0:
                 # reput to entrance
-                await MESSAGE_STREAM_ENTRANCE.send(MessageQueueItem(send_to, message, retry - 1))
+                await get_global_send_stream().entrance.send(MessageQueueItem(send_to, message, retry - 1))
             else:
                 logger.warning(f"send msg err [{e}]: {message:<500}")
         else:
@@ -75,9 +101,9 @@ async def _run_send_msgs_receiver():
 
 
 async def background_run_send_msgs_receiver(tg: TaskGroup):
+    send_stream = SendStream.build(plugin_config.bison_send_message_max_buffer_size)
+    set_global_send_stream(send_stream)
+
     tg.start_soon(_run_send_msgs_receiver)
 
-
-async def send_msgs_stream_close():
-    await MESSAGE_STREAM_ENTRANCE.aclose()
-    await MESSAGE_STREAM_OUTLET.aclose()
+    return get_global_send_stream().close

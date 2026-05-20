@@ -71,7 +71,7 @@ RUN npm install -g corepack@latest && \
         echo "❌ pnpm installation failed" && exit 1; \
     fi
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm approve-builds --all && pnpm install --frozen-lockfile && pnpm approve-builds --all
 
 COPY ./admin-frontend .
 RUN mkdir -p ../nonebot_bison/admin_page/dist

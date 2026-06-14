@@ -2,6 +2,8 @@
 
 ## 最近更新
 
+- :construction_worker: employ review bot [@felinae98](https://github.com/felinae98) ([#766](https://github.com/MountainDash/nonebot-bison/pull/766))
+
 ### Bug 修复
 
 - 修复无 content-type 的 http 请求报错的问题 [@felinae98](https://github.com/felinae98) ([#751](https://github.com/MountainDash/nonebot-bison/pull/751))

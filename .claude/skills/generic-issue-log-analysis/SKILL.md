@@ -24,14 +24,14 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 2. 获取 issue 内容。
 
    - 读取正文和评论。
-   - 提取这些信息：版本、分支、平台、环境、任务或入口、预期行为、实际行为、复现步骤、维护者评论、附件链接。
+   - 提取这些信息：Bison 版本、NoneBot 版本、Python 版本、部署方式（Docker / pip 安装 / 源码运行）、平台（微博/B站/RSS/明日方舟等）、任务或订阅、预期行为、实际行为、复现步骤、维护者评论、附件链接。
    - 如果维护者、机器人或其他评论已经给出结论，不要直接照抄；仍要用日志、代码和文档自行验证。
 
 3. 提取附件和现场证据。
 
-   - 优先关注日志包、截图、配置导出、崩溃转储、诊断报告和资源导出。
-   - 不要假定附件命名固定；除了项目约定命名，也要留意 `log`、`report`、`debug`、`crash`、`dump`、`config`、`trace`、`screenshot` 等常见关键词。
-   - 如果同一个 issue 有多份日志，先看最新一次复现；如果 issue 在对比不同版本、不同环境或不同控制器，再补看旧样本。
+   - 优先关注 Bison 运行日志、NoneBot 控制台输出、截图、配置导出（如 `.env`、`docker.env`、`bison_config`）、崩溃转储、浏览器截图（playwright 相关问题）、平台订阅配置导出。
+   - 不要假定附件命名固定；留意 `log`、`report`、`debug`、`crash`、`dump`、`config`、`trace`、`screenshot`、`bison.log`、`nonebot.log` 等关键词。
+   - 如果同一个 issue 有多份日志，先看最新一次复现；如果 issue 在对比不同版本、不同环境或不同平台，再补看旧样本。
 
 4. 下载并解压附件。
 
@@ -41,14 +41,15 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 5. 建立时间线。
 
-   - 先从 issue 文本确定“用户认为出问题的时刻”和复现条件。
-   - 再把界面日志、服务日志、运行时日志、截图、配置快照和崩溃信息串成一条时间线。
-   - 优先锁定这次复现对应的 `task_id`、`session_id`、请求 ID、时间戳或其他稳定标识，再追踪细节。
+   - 先从 issue 文本确定“用户认为出问题的时刻”和复现条件（如添加特定订阅、特定时间段没有收到推送）。
+   - 再把 NoneBot 日志、Bison 调度日志、爬取日志、推送日志、配置快照和崩溃信息串成一条时间线。
+   - 优先锁定这次复现对应的 `sub_id`、`platform`、`target`、用户 ID、群号、时间戳或其他稳定标识，再追踪细节。
 
 6. 回溯到代码和文档。
 
-   - 先看本仓库文档、配置定义和实现代码。
-   - 如果问题明显落在上游依赖、共享组件、绑定层或外部工具，再按需查看相关仓库或文档。
+   - 先看 [Bison 文档](https://nonebot-bison.netlify.app/)、README、FAQ。
+   - 再看相关模块：`platform/`（各平台爬取逻辑）、`scheduler/`（调度器）、`send.py`（推送队列）、`sub_manager.py`（订阅管理）、`plugin_config.py`（配置项）。
+   - 如果问题明显落在 NoneBot2 框架、`nonebot-plugin-saa`、`nonebot-plugin-apscheduler`、`nonebot-plugin-datastore` 或下游 QQ 客户端，再按需查看相关仓库或文档。
    - 只看真正相关的模块，不要为了“完整”而把整个依赖栈都扫一遍。
 
 7. 区分 issue 当时环境和当前分支。
@@ -56,7 +57,7 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
    - 先以 issue 文本、附件、配置快照和缓存资源还原用户当时的实际环境。
    - 再对照当前仓库代码，判断问题是当前仍存在，还是当时存在但现在可能已修复。
    - 如果 issue 很旧，或日志流程与当前主线明显不一致，必要时按对应 tag、release 或历史提交复核旧逻辑。
-   - 输出给用户时，如果提到任务名、入口名、设置项、按钮名、错误提示或日志前缀，先在仓库里搜索翻译 / 本地化文件，不要直接把 `t("...")`、`i18n.t("...")`、`LocalizationHelper.GetString("...")`、`DynamicResource` key、枚举名或内部 ID 当成最终展示文本。
+   - 输出给用户时，如果提到平台名、订阅名、配置项、按钮名、错误提示或日志前缀，先在仓库里搜索翻译 / 本地化文件，不要直接把 `t("...")`、`i18n.t("...")`、枚举名或内部 ID 当成最终展示文本。
 
 8. 输出结论。
 
@@ -65,77 +66,110 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 ## Artifact Map
 
-### Runtime / Core Logs
+### Bison / NoneBot Runtime Logs
 
-- 模块归属：核心运行时、执行引擎、任务调度层。
+- 模块归属：Bison 核心运行时、NoneBot2 框架层。
 - 最适合看：
-  - 实际执行路径
-  - 识别、调用、动作失败
-  - 超时、重试、异常栈
-- 对任务行为和底层错误通常最权威。
+  - 插件加载失败、数据库连接错误
+  - 调度器启动状态
+  - 配置读取问题（`plugin_config` 相关）
+  - `bootstrap.py` 中的数据库迁移日志（alembic 版本检查）
+- 典型日志特征：`nonebot-bison bootstrap done`、`[nonebot_bison]` 前缀的日志、`nonebot.log` 中的 ERROR 级别日志。
 
-### UI / Frontend Logs
+### Platform / Crawler Logs
 
-- 模块归属：GUI、前端或用户交互层。
+- 模块归属：各平台爬取模块（`platform/` 目录），包括微博、Bilibili、B站直播、RSS、明日方舟、网易云音乐、FF14。
 - 最适合看：
-  - 用户到底点了什么
-  - 参数是否真的提交
-  - 用户可见报错和时间线入口
+  - 订阅的特定平台爬取失败
+  - Cookie 过期或无效
+  - 平台风控导致返回空数据或错误页面
+  - playwright 浏览器启动失败
+  - HTTP 请求超时、代理配置问题
+- 典型日志特征：`Fetching posts from platform xxx`、`Failed to fetch`、`Cookie expired`、`bison_use_browser` 相关日志。
 
-### Service / Bridge / Agent Logs
+### Scheduler Logs
 
-- 模块归属：后台服务、桥接层、agent、进程编排或 IPC 层。
+- 模块归属：调度器模块（`scheduler/` 目录），基于 `nonebot-plugin-apscheduler`。
 - 最适合看：
-  - 服务启动失败
-  - 子进程异常
-  - IPC、HTTP、RPC、FFI、资源加载或实例生命周期错误
+  - 定时任务是否按预期执行
+  - 任务被跳过或延迟执行
+  - 调度器未启动
+  - 权重调度配置问题
+- 典型日志特征：`Job xxx triggered`、`scheduler log level` 调整相关。
+
+### Send / Queue Logs
+
+- 模块归属：推送模块（`send.py`），使用 `nonebot-plugin-saa` 和队列机制。
+- 最适合看：
+  - 消息发送失败及重试次数
+  - 队列积压
+  - `ActionFailed` 异常（适配器层面）
+  - 风控触发导致的发送失败
+  - 图片合并转发配置问题（`bison_use_pic_merge`）
+- 典型日志特征：`send msg failed, refresh bots`、`send msg err`、`QUEUE` 相关内容。
 
 ### Config Snapshots
 
-- 模块归属：配置快照、导出配置、任务参数、缓存配置。
+- 模块归属：Bison 配置项（`plugin_config.py`、`.env`、`docker.env`、`bison_config`）。
+- 重点关注配置项：
+  - `bison_use_pic`：文本转图片风控防护
+  - `bison_use_browser`：是否启用浏览器（playwright）
+  - `bison_use_queue`：是否启用推送队列
+  - `bison_proxy`：代理配置
+  - `bison_ua`：User-Agent
+  - `bison_resend_times`：推送失败重试次数
+  - `bison_filter_log`：日志过滤
+  - `bison_platform_theme`：平台主题映射
+  - `bison_to_me`：是否 at 自己触发命令
 - 最适合看：
-  - 实际启用了哪些选项
-  - issue 文字里说的配置是否真和日志一致
-  - 当前行为是配置问题还是实现问题
+  - issue 中描述的配置是否与实际生效配置一致
+  - 配置项冲突或误设导致的异常行为
 
-### Screenshots / On-Error Artifacts
+### Screenshots / QQ Client Logs
 
-- 模块归属：出错现场图、保存的识别图、界面截图。
+- 模块归属：QQ 客户端截图、Bison 管理后台截图、QQ 客户端日志（lagrange/napcat/...）。
 - 最适合看：
-  - 当时停留画面
-  - 是否被弹窗、遮罩、加载态、分辨率、缩放、主题或权限影响
-  - 日志和用户描述冲突时，画面证据是否支持其中一方
+  - 用户看到的实际推送样式
+  - 后台管理界面报错
+  - QQ 客户端是否正常接收消息
+  - 风控提示截图
+  - `connect open` 等 QQ 适配器连接日志
 
 ### Dumps / Crash Reports
 
-- 模块归属：崩溃现场、转储、调用栈、诊断报告。
+- 模块归属：Python 异常堆栈、playwright 崩溃信息、数据库损坏报告。
 - 最适合看：
-  - 闪退、崩溃、进程退出
-  - 是否需要进一步用符号表、调试器或上游信息分析
+  - `TypeError: 'type' object is not subscriptable`（Python 版本不兼容）
+  - `TypeError: __init__() got an unexpected keyword argument 'proxies'`（httpx 版本问题）
+  - `ActionFailed` 等发送层异常
 
-### Exported Resources / Cached Definitions
+### Database / Subscription Exports
 
-- 模块归属：缓存资源、导出的任务定义、运行时生成的元数据。
+- 模块归属：订阅数据（`nonebot_plugin_datastore` 管理）、迁移脚本（`bootstrap.py`、`db_migration.py`）。
 - 最适合看：
-  - issue 当时到底使用了哪一版资源或配置定义
-  - 当前主线和用户当时环境是否不一致
+  - 订阅是否在数据库中正确存储
+  - 数据库版本与代码版本是否匹配
+  - 数据迁移是否成功执行
+- 典型日志特征：`当前数据库版本：{t}，不是插件的版本，已跳过`、`未发现默认版本数据库，开始初始化`
 
 ## How To Filter Evidence
 
 1. 先从 issue 文本拿到这些锚点：
 
-   - 版本、分支、提交、发布日期
-   - 平台、设备、环境、控制方式
-   - 任务名、入口名、操作路径
-   - 用户说“出问题”的具体时间、阶段或界面
+   - Bison 版本、NoneBot 版本、Python 版本、部署方式
+   - 平台（微博/B站/RSS/明日方舟等）
+   - 订阅目标（uid、mid、用户 ID）
+   - 用户说“出问题”的具体时间、发送的消息、期望收到但没收到的内容
 
 2. 再从日志里找高价值信号：
 
-   - `Error`、`Warn`、`Fatal`
+   - `ERROR`、`WARNING`、`CRITICAL`
+   - `Failed`、`Exception`、`ActionFailed`
    - `timeout`、`retry`
-   - `failed`、`exception`
-   - `task_id`、`session_id`、请求 ID
-   - 保存截图、导出现场、崩溃恢复、资源加载失败
+   - `bison_` 开头的配置项相关日志
+   - `playwright`、`browser`、`cookie`
+   - `queue`、`send`、`refresh_bots`
+   - `sub_id`、`platform`、`target`、`group_id`、`user_id`
 
 3. 先锁定“这一次复现”再下钻。
 
@@ -144,8 +178,9 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 4. 区分表象和根因。
 
-   - 高层日志、UI 提示或机器人评论经常只是表象。
-   - 如果更靠近执行层的日志已经给出更直接的错误链路，应优先以那层为准，再回头解释用户看到的现象。
+   - 用户看到的“Bot 不理我”可能是命令前缀配置问题（`COMMAND_START`）。
+   - 更高层的平台爬取失败可能是 Cookie 过期或平台风控。
+   - 如果 send.py 层已经给出 `ActionFailed` 异常，应优先以该层为准，再回头解释用户看到的现象。
 
 5. 回答时只保留关键片段。
 
@@ -154,67 +189,81 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 ## Common Patterns
 
-- 维护者评论已经给出判断，但日志和代码证据并不支持：
-  - 以可验证证据为准，把维护者评论当成补强而不是唯一依据。
+- **Python 版本问题**：报错 `TypeError: 'type' object is not subscriptable` → Python 3.10 以下不支持语法，检查用户 Python 版本，建议升级到 3.10 或使用 Docker。
 
-- issue 文本说“失败 / 卡死 / 误点”，但对应复现日志最终成功：
-  - 先明确“本次日志没有复现出用户描述的问题”。
-  - 再区分是用户补错了日志，还是代码里确实存在脆弱点但这次没触发。
+- **httpx 版本不兼容**：`TypeError: __init__() got an unexpected keyword argument 'proxies'` → httpx 0.28.0 之后不再支持 `proxies` 参数，需锁定 httpx 版本或修改代理配置代码。
 
-- 用户日志里的流程与当前主线代码明显不一致：
-  - 先确认 issue 当时的版本、tag 或 release。
-  - 不要用当前主线直接否定旧版本问题。
+- **Bot 不理我**：
+  - 检查 `COMMAND_START` 环境变量是否设为 `[""]` 或正确前缀
+  - 确认用户是群主或管理员
+  - 检查 `bison_to_me` 配置决定是否需要 at bot
 
-- 配置快照和实际运行日志不一致：
-  - 不要立刻认定是用户表述错误。
-  - 先确认配置是否在复现后又被修改、是否有多个配置文件、是否存在缓存或导出时机差异。
+- **微博漏订阅**：微博平台风控更新，某些含特定关键词的微博获取不到 → 建议用户确认平台状态或使用其他平台。
 
-- 日志显示现场图、诊断包或转储已保存，但附件里没有对应文件：
-  - 把“缺失的关键证据”单独写出来。
-  - 不要假装已经验证过那部分现场。
+- **无法使用后台管理页面**：
+  - 确认 `HOST=0.0.0.0`（远程访问时）
+  - 检查云服务器防火墙配置
+  - 确认安装方式支持后台管理（使用 pypi 版本或 docker 版本）
 
-- 多层架构项目里某一层日志只暴露表象：
-  - 先在最接近问题根因的那层日志定性，再回到上层解释用户看到的现象。
+- **playwright 浏览器相关**：`bison_use_browser=True` 但浏览器未安装或崩溃 → 检查 playwright 是否正确安装，Docker 镜像中是否包含浏览器。
 
-- 证据更接近“场景不支持”而不是“实现缺陷”：
-  - 必须给出代码、配置白名单、文档限制或运行时分支依据，而不是只给主观判断。
+- **数据库迁移问题**：日志显示“当前数据库版本：xxx，不是插件的版本，已跳过” → 数据库版本与插件版本不匹配，需要按文档执行迁移或清理重建。
+
+- **维护者评论已经给出判断，但日志和代码证据并不支持**：以可验证证据为准，把维护者评论当成补强而不是唯一依据。
+
+- **issue 文本说“失败 / 卡死”，但对应复现日志最终成功**：先明确“本次日志没有复现出用户描述的问题”，再区分是用户补错了日志，还是代码里确实存在脆弱点但这次没触发。
+
+- **用户日志里的流程与当前主线代码明显不一致**：先确认 issue 当时的版本、tag 或 release，不要用当前主线直接否定旧版本问题。
+
+- **配置快照和实际运行日志不一致**：不要立刻认定是用户表述错误，先确认配置是否在复现后又被修改、是否有多个配置文件、是否存在缓存或导出时机差异。
+
+- **日志显示截图、诊断包或转储已保存，但附件里没有对应文件**：把“缺失的关键证据”单独写出来，不要假装已经验证过那部分现场。
 
 ## Correlating With Code
 
-- 先看 issue 模板、README、开发文档、排障文档。
-- 再看任务入口、配置定义、流水线或调度定义。
-- 然后看运行时、服务层、桥接层、前端或 GUI 实现。
-- 只有当证据已经明显指向上游依赖时，才继续看外部仓库、SDK、框架或绑定层。
+- 先看 Bison 文档：README、FAQ、[文档网站](https://nonebot-bison.netlify.app/)
+- 再看核心模块（按优先级）：
+  1. `nonebot_bison/__init__.py` - 插件元数据、依赖加载
+  2. `nonebot_bison/plugin_config.py` - 配置项定义
+  3. `nonebot_bison/bootstrap.py` - 启动初始化、数据库迁移
+  4. `nonebot_bison/scheduler/` - 调度器逻辑
+  5. `nonebot_bison/platform/` - 各平台爬取实现
+  6. `nonebot_bison/send.py` - 推送队列和重试
+  7. `nonebot_bison/sub_manager.py` - 订阅增删改查
+  8. `nonebot_bison/admin_page/` - 后台管理网页
+- 如果问题指向 NoneBot2 框架，查看 NoneBot2 文档和 `nonebot2` 仓库
+- 如果问题指向 `nonebot-plugin-saa`，查看 SAA 的发送逻辑和适配器兼容性
+- 如果问题指向 QQ 适配器（go-cqhttp/napcat），查看对应适配器日志和文档
 
 ## Localized Copy
 
+- Bison 项目主要是中文用户，用户可见文案包括“添加订阅”“查询订阅”“删除订阅”等内置命令响应，以及各平台的推送消息格式。
 - 总结任务、入口、设置项、按钮、错误提示、日志前缀等用户可见文案时，先在仓库里主动搜索翻译 / 本地化文件。
 - 优先搜索这些常见目录、文件名和关键词：
-  - `locale`、`locales`、`i18n`、`lang`、`langs`、`translations`、`messages`
-  - `zh-cn`、`zh_cn`、`zh-hans`、`zhHans`、`zh`
-  - `*.json`、`*.yaml`、`*.yml`、`*.toml`、`*.resx`、`*.xaml`、`*.ts`、`*.js`
-- 再从实际代码调用反查 key：
-  - `t("...")`、`i18n.t("...")`、`intl.formatMessage(...)`
-  - `LocalizationHelper.GetString("...")`、`GetString("...")`
-  - `DynamicResource SomeKey`、`StaticResource SomeKey`
-  - 其他项目自定义的资源读取函数
+  - `nonebot_bison/` 目录下的 Python 文件中的中文字符串
+  - `admin-frontend/` 中的中文界面文案
+- 再从实际代码调用反查：
+  - `__usage__` 变量（定义在 `__init__.py`）
+  - 命令处理器中的返回消息字符串
+  - 各平台格式化消息的模板
 - 查找顺序建议：
-  - 先从报错日志、配置字段、界面代码里提取疑似 key / id / 枚举名
-  - 再在本地化文件中找对应中文文案
-  - 如果同时存在多语言，优先使用简体中文；若没有简体中文，则退回 issue 正文更接近的语言或仓库主语言，并说明未找到中文文案
-- 如果配置或日志里带有用户自定义名称，输出时优先保留用户自定义名称；必要时再括号补默认任务 / 入口文案或原始 key。
-- 如果仓库里确实找不到翻译 / 本地化文件，要明确说明“未发现可用的翻译文件 / 本地化资源”，再退回原始 key、英文字符串或内部 ID。
+  - 先从 issue 中的报错日志、截图里的 UI 文案提取关键词
+  - 再在代码中搜索对应字符串
+  - 如果配置或日志里带有用户自定义名称（订阅 ID、自定义平台名），输出时优先保留用户自定义名称
+  - 如果仓库里确实找不到对应文案，要明确说明“未找到对应文案定义”，再退回原始 key、英文字符串或内部 ID
 
 ## Linking Code Evidence
 
 - 如果要指向具体代码行，不要写本地路径加行号，也不要写绝对路径。
 - 统一给出对应仓库的远端 GitHub `blob` 行号链接，用尖括号包裹。
 - 链接格式：
-  - `https://github.com/<owner>/<repo>/blob/<commit>/<path>#L14-L20`
-- `<owner>/<repo>` 应使用本次实际分析的代码仓库；如果引用的是上游依赖或外部仓库，就用那个仓库自己的链接。
+  - `https://github.com/MountainDash/nonebot-bison/blob/<commit>/<path>#L14-L20`
 - `<commit>` 必须是本次分析实际依据的代码版本：
-  - 默认使用当前检出的 `HEAD`
+  - 默认使用当前检出的 `HEAD`（主分支 main）
   - 如果为了复核旧 issue 切到了某个 tag / commit，就使用那个版本解析后的 SHA
+- 如果引用的是 NoneBot2 或上游依赖，使用对应仓库的链接：
+  - NoneBot2：`https://github.com/nonebot/nonebot2/blob/<commit>/<path>#L...`
+  - nonebot-plugin-saa：`https://github.com/nonebot/plugin-saa/blob/<commit>/<path>#L...`
 - 如果引用的是文档、配置样例或资源定义，也尽量给对应远端链接，而不是本地路径。
 
 ## Output Format
@@ -225,9 +274,10 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 ## Issue 概要
 
 - issue：`#1234`
-- 版本 / 分支 / 环境：
-- 任务 / 入口 / 相关设置：优先写翻译文件里的用户可见文案；必要时再补 key / id / 枚举名
-- 关键提示 / 报错文案：优先写翻译文件中的实际显示文本
+- Bison 版本 / NoneBot 版本 / Python 版本 / 部署方式：
+- 平台 / 订阅目标：
+- 关键配置项：重点关注 `bison_use_browser`、`bison_proxy`、`bison_use_queue`、`bison_resend_times`、`COMMAND_START` 等
+- 关键提示 / 报错文案：
 - 用户现象：
 
 ## 附件概览
@@ -240,10 +290,12 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 <details><summary>点击此处展开</summary>
 
 - issue 正文 / 评论：
-- 运行时日志：
-- UI / 服务日志：
+- Bison / NoneBot 日志：
+- 平台爬取日志：
+- 调度器日志：
+- 推送队列日志：
 - 配置快照：
-- 现场图 / 转储：
+- 现场图 / QQ 客户端截图：
 - 代码依据：如需指向具体实现，直接附远端 GitHub 行号链接
 
 </details>
@@ -256,15 +308,16 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 ## 修复方案
 
-1. 代码 / 配置 / 资源层修复
+1. 代码 / 配置 / 环境层修复
 2. 需要补充的测试、日志或截图
-3. 如问题属于不支持场景，应如何限制入口或改进提示
+3. 如问题属于不支持场景或平台风控，应如何调整预期或改进提示
 
 ## 给用户的建议
 
-- 用户现在可以直接尝试的动作：
-- 是否建议升级 / 重下完整包 / 重置配置 / 更换环境：
-- 是否有临时绕过方案：
+- 用户现在可以直接尝试的动作（检查配置、更新版本、更换部署方式、检查 Cookie）
+- 是否建议升级 Bison 版本 / NoneBot 版本 / Python 版本
+- 是否有临时绕过方案（关闭某些配置、切换平台、使用代理）
+- 是否参考官方文档中的已知 [FAQ](https://nonebot-bison.netlify.app/usage/)
 
 ## 给修复 AI 的建议（可复制）
 
@@ -297,6 +350,7 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 - 日志和截图冲突时，优先解释冲突，再决定更可信的证据链。
 - 如果问题本身没有在当前日志中复现，要明确写“证据未复现”，不要硬凑结论。
 - 如果 issue 版本较旧，要明确区分“当时的根因”和“当前主线是否已修复”。
-- 如果回答里出现任务名、入口名、设置项、按钮名、提示文案，优先先搜索项目里的翻译 / 本地化文件，再使用实际用户可见文案；必要时才补原始 key / id。
+- 如果回答里出现命令名（如“添加订阅”）、设置项名（`bison_use_browser`）、按钮名，优先先在代码中确认对应文案和配置项。
 - 如果回答里引用了具体代码行，直接给远端 GitHub `blob` 行号链接，用尖括号包裹，不要给本地路径加行号。
 - 如果证据表明问题已在新版本修复，明确建议升级；如果怀疑安装包、资源文件或配置损坏，明确建议重建；如果判断为真实代码缺陷且暂无 workaround，明确建议等待修复。
+- 特别关注 Bison 已知的常见问题模式：Python 版本兼容、httpx 版本、命令前缀配置、微博风控、playwright 浏览器、数据库迁移、代理配置。

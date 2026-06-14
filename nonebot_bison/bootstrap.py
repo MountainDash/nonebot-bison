@@ -1,6 +1,9 @@
+from nonebot import get_driver
 from nonebot.log import logger
 from nonebot_plugin_datastore.db import get_engine, post_db_init, pre_db_init
 from sqlalchemy import inspect, text
+
+from nonebot_bison.send import background_run_send_msgs_receiver
 
 from .config.config_legacy import start_up as legacy_db_startup
 from .config.db_migration import data_migrate
@@ -46,4 +49,9 @@ async def post():
     await data_migrate()
     # init scheduler
     await init_scheduler()
+
+    driver = get_driver()
+    send_closer = await background_run_send_msgs_receiver(driver.task_group)
+    driver.on_shutdown(send_closer)
+
     logger.info("nonebot-bison bootstrap done")

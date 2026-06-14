@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import nonebot
 from nonebot import get_plugin_config
 from nonebot.compat import PYDANTIC_V2, ConfigDict
@@ -42,6 +44,8 @@ class PlugConfig(BaseModel):
     )
     bison_show_network_warning: bool = True
     bison_platform_theme: dict[PlatformName, ThemeName] = {}
+    bison_send_message_max_buffer_size: int = 100
+    bison_send_message_interval: timedelta = timedelta(seconds=1.5)
 
     @property
     def outer_url(self) -> URL:

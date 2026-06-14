@@ -1,0 +1,53 @@
+name: AI Issue Analysis
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to analyze"
+        required: true
+        type: number
+
+jobs:
+  codex-analysis:
+    if: |
+      (github.event_name == 'issues' && github.event.action == 'opened') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.action == 'created' &&
+       contains(github.event.comment.body, '@github-actions') &&
+       github.event.comment.user.type != 'Bot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      # 推荐配套：
+      # - .claude/skills/generic-issue-log-analysis/SKILL.md
+      - name: Analyze issue with Codex
+        id: codex
+        continue-on-error: true
+        uses: MistEO/ai-issue-analysis@codex
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          codex-api-key: ${{ secrets.CODEX_API_KEY }}
+          codex-base-url: ${{ secrets.CODEX_BASE_URL }}
+          codex-model: ${{ secrets.CODEX_MODEL }}
+          bot-name: "@github-actions"
+
+      - name: 查看完整输入输出
+        if: always()
+        env:
+          ISSUE_NUMBER: ${{ steps.codex.outputs.issue-number }}
+          COMMENT_ID: ${{ steps.codex.outputs.comment-id }}
+          COMMENT_URL: ${{ steps.codex.outputs.comment-url }}
+        run: |
+          echo "issue_number=$ISSUE_NUMBER"
+          echo "comment_id=$COMMENT_ID"
+          echo "comment_url=$COMMENT_URL"
+          echo "(Full codex-output and final-conclusion are available in the uploaded artifacts)"

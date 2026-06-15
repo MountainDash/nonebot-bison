@@ -221,19 +221,99 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 ## Correlating With Code
 
-- 先看 Bison 文档：README、FAQ、[文档网站](https://nonebot-bison.netlify.app/)
-- 再看核心模块（按优先级）：
-  1. `nonebot_bison/__init__.py` - 插件元数据、依赖加载
-  2. `nonebot_bison/plugin_config.py` - 配置项定义
-  3. `nonebot_bison/bootstrap.py` - 启动初始化、数据库迁移
-  4. `nonebot_bison/scheduler/` - 调度器逻辑
-  5. `nonebot_bison/platform/` - 各平台爬取实现
-  6. `nonebot_bison/send.py` - 推送队列和重试
-  7. `nonebot_bison/sub_manager.py` - 订阅增删改查
-  8. `nonebot_bison/admin_page/` - 后台管理网页
-- 如果问题指向 NoneBot2 框架，查看 NoneBot2 文档和 `nonebot2` 仓库
-- 如果问题指向 `nonebot-plugin-saa`，查看 SAA 的发送逻辑和适配器兼容性
-- 如果问题指向 QQ 适配器（go-cqhttp/napcat），查看对应适配器日志和文档
+**核心原则：先用日志证据定位到具体模块和操作，再阅读对应代码。严禁未看证据直接猜测代码问题。**
+
+### Phase 1: 确认证据指向
+
+在阅读任何代码之前，先用证据回答以下问题：
+
+1. **错误发生在哪个层级？**
+   - NoneBot2 框架层（启动失败、命令不响应、适配器报错）
+   - Bison 调度层（定时任务未触发、权重调度异常）
+   - 平台爬取层（某个平台的所有订阅都失败）
+   - 推送层（消息发送失败、队列积压）
+   - 数据库层（迁移失败、读写错误）
+
+2. **错误的直接表现是什么？**
+   - 从日志中提取精确的错误信息（`ERROR`、`Exception`、`ActionFailed`）
+   - 从 issue 描述中提取用户看到的现象（"Bot 没反应"、"收不到某条微博"）
+
+3. **问题是否可稳定复现？**
+   - 日志中是否包含同一次复现的完整流程？
+   - 如果日志中未复现用户描述的问题，**先明确说明证据不足，不要强行关联代码**
+
+### Phase 2: 定位到具体代码模块
+
+根据 Phase 1 的结论，按以下优先级阅读文档和代码：
+
+1. **必读文档（优先于代码）**
+   - [Bison 文档](https://nonebot-bison.netlify.app/)：了解整体架构和配置说明
+   - README 和 FAQ：常见问题可能已有标准答案
+
+2. **按错误类型定位代码**
+
+   | 证据指向          | 优先阅读模块                              | 入口文件/关键函数                           |
+   | ----------------- | ----------------------------------------- | ------------------------------------------- |
+   | 插件启动/数据库问题 | `bootstrap.py`, `db_migration.py`         | 检查 alembic 版本、datastore 初始化          |
+   | 命令不响应         | `__init__.py`, `matcher/`                 | 检查 `__usage__`、命令前缀匹配逻辑           |
+   | 平台爬取失败       | `platform/<平台名>.py`                    | 定位 `fetch` 方法、cookie 处理、浏览器调用    |
+   | 调度未触发         | `scheduler/`                              | 检查 `nonebot-plugin-apscheduler` 的 job 定义 |
+   | 推送失败           | `send.py`                                 | 定位 `send_msg`、`refresh_bots`、队列逻辑      |
+   | 配置不生效         | `plugin_config.py` + 用户的 `.env` 快照    | 对比配置项默认值和用户实际值                 |
+   | 数据库读写异常     | `sub_manager.py` + datastore 模型定义      | 检查订阅 CRUD 操作的 SQL 和错误处理           |
+
+### Phase 3: 深度分析（证据链驱动）
+
+如果 Phase 2 初步定位后仍未找到根因，按以下步骤深入：
+
+1. **建立症状到代码的追溯链**
+   - 从用户看到的错误信息或异常堆栈的**最底层**开始
+   - 向上追溯调用链，直到找到**数据/状态的原始来源**
+   - 示例流程：`用户看到"发送失败"` → `send.py 中的 ActionFailed` → `适配器返回的错误码` → `SAA 的 send 方法` → `调用时的参数（bot_id, group_id）`
+
+2. **逐层验证，不要跳跃**
+   - 在每层边界确认：**输入是什么？输出是什么？哪个环节产生了偏差？**
+   - 可以假想添加日志来验证中间状态（如"如果在这里加一行日志打印 xxx，应该能看到 yyy"）
+
+3. **对比正常场景**
+   - 找到同一个模块中**正常工作**的订阅或操作
+   - 对比正常和异常场景的差异：参数不同？配置不同？数据状态不同？
+
+4. **当需要回溯多组件调用链时**
+   - 使用 `root-cause-tracing.md` 中描述的回溯方法
+   - 明确记录每一步的证据，形成可验证的链条
+
+### Phase 4: 代码证据的输出格式
+
+当需要引用具体代码行时，必须满足以下要求：
+
+- **统一使用远端 GitHub blob 行号链接**，格式：
+  `https://github.com/MountainDash/nonebot-bison/blob/<commit>/<path>#L14-L20`
+- `<commit>` 必须是本次分析实际依据的代码版本：
+  - 默认使用当前检出的 `HEAD`（主分支 main）
+  - 如果为了复核旧 issue 切到了某个 tag/commit，就使用那个版本解析后的 SHA
+- **禁止**使用本地路径加行号（如 `src/platform/weibo.py:127`）
+- **禁止**使用不带行号的模糊引用（如"参考 send.py 中的发送逻辑"）
+
+### 依赖组件的代码查阅
+
+如果问题指向 NoneBot2 框架或上游依赖，遵循同样原则：
+
+- NoneBot2：[https://github.com/nonebot/nonebot2](https://github.com/nonebot/nonebot2)
+- nonebot-plugin-saa：[https://github.com/nonebot/plugin-saa](https://github.com/nonebot/plugin-saa)
+- nonebot-plugin-apscheduler、nonebot-plugin-datastore 等
+
+引用时同样使用远端 GitHub blob 链接，并标注对应 commit SHA。
+
+### 常见错误模式（避免）
+
+| ❌ 错误做法                                      | ✅ 正确做法                                      |
+| ----------------------------------------------- | ----------------------------------------------- |
+| 看到 issue 描述后直接猜测"可能是 xxx 模块的问题" | 先用日志证据确认错误发生在哪个模块               |
+| 引用代码时写"参考 send.py 第 120 行"              | 给出完整的 GitHub blob 链接                      |
+| 只看一个模块的代码就下结论                       | 追溯完整调用链，验证每层的输入输出               |
+| 用当前分支代码分析旧 issue                       | 确认 issue 当时的版本，使用对应 commit 的代码     |
+| 跳跃式归因："可能是代理配置问题"（未验证）        | 逐层排除：先确认请求是否发出 → 确认响应内容 → 定位 |
 
 ## Localized Copy
 

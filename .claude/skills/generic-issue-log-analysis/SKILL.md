@@ -47,7 +47,7 @@ description: 分析当前仓库或用户明确指定的公开 GitHub issue（完
 
 6. 回溯到代码和文档。
 
-   - 先看 [Bison 文档](https://nonebot-bison.netlify.app/)、README、FAQ。
+   - 先看仓库里的 docs 目录下的文档、README、FAQ。
    - 再看相关模块：`platform/`（各平台爬取逻辑）、`scheduler/`（调度器）、`send.py`（推送队列）、`sub_manager.py`（订阅管理）、`plugin_config.py`（配置项）。
    - 如果问题明显落在 NoneBot2 框架、`nonebot-plugin-saa`、`nonebot-plugin-apscheduler`、`nonebot-plugin-datastore` 或下游 QQ 客户端，再按需查看相关仓库或文档。
    - 只看真正相关的模块，不要为了“完整”而把整个依赖栈都扫一遍。

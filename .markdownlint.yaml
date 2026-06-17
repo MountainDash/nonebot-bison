@@ -3,3 +3,4 @@ MD024: # 重复标题
   siblings_only: true
 MD026: false # 允许标题以符号结尾
 MD033: false # 允许 html
+MD060: false # 允许表格分割符不相互平齐

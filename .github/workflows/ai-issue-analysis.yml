@@ -13,7 +13,7 @@ on:
         type: number
 
 jobs:
-  codex-analysis:
+  ai-analysis:
     if: |
       (github.event_name == 'issues' && github.event.action == 'opened') ||
       github.event_name == 'workflow_dispatch' ||
@@ -22,32 +22,41 @@ jobs:
        contains(github.event.comment.body, '@github-actions') &&
        github.event.comment.user.type != 'Bot')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     permissions:
       contents: read
       issues: write
     steps:
-      # 推荐配套：
-      # - .claude/skills/generic-issue-log-analysis/SKILL.md
-      - name: Analyze issue with Codex
-        id: codex
-        continue-on-error: true
-        uses: MistEO/ai-issue-analysis@codex
+      - name: Analyze issue with AI
+        id: analysis
+        uses: MistEO/ai-issue-analysis@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          codex-api-key: ${{ secrets.CODEX_API_KEY }}
-          codex-base-url: ${{ secrets.CODEX_BASE_URL }}
-          codex-model: ${{ secrets.CODEX_MODEL }}
-          bot-name: "@github-actions"
+          # --- 选择 agent（三选一：claude / codex / copilot）---
+          agent: ${{ vars.API_AGENT }}
 
-      - name: 查看完整输入输出
+          # --- 统一认证 ---
+          api-key: ${{ secrets.API_KEY }}
+          api-base-url: ${{ secrets.API_BASE_URL }}
+          model: ${{ vars.API_MODEL }}
+
+          # --- 通用配置 ---
+          prompt-template: "分析 GitHub 仓库 {{repository}} 的 Issue {{issue_number}}。把最终结论写到 {{answer_file}}。"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          bot-name: "@github-actions"
+          # agent-extra-args: "--reasoning-effort xhigh"  # 可选，传递给 agent CLI 的额外参数
+
+      - name: Show outputs
         if: always()
         env:
-          ISSUE_NUMBER: ${{ steps.codex.outputs.issue-number }}
-          COMMENT_ID: ${{ steps.codex.outputs.comment-id }}
-          COMMENT_URL: ${{ steps.codex.outputs.comment-url }}
+          ANALYSIS_PROMPT: ${{ steps.analysis.outputs.analysis-prompt }}
+          ISSUE_NUMBER: ${{ steps.analysis.outputs.issue-number }}
+          COMMENT_ID: ${{ steps.analysis.outputs.comment-id }}
+          COMMENT_URL: ${{ steps.analysis.outputs.comment-url }}
+          AGENT_OUTPUT: ${{ steps.analysis.outputs.agent-output }}
+          FINAL_CONCLUSION: ${{ steps.analysis.outputs.final-conclusion }}
         run: |
+          printf '%s\n' "$ANALYSIS_PROMPT"
           echo "issue_number=$ISSUE_NUMBER"
           echo "comment_id=$COMMENT_ID"
           echo "comment_url=$COMMENT_URL"
-          echo "(Full codex-output and final-conclusion are available in the uploaded artifacts)"
+          printf '%s\n' "$AGENT_OUTPUT"
+          printf '%s\n' "$FINAL_CONCLUSION"

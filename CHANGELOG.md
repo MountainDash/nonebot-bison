@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- :bug: 更新 issue analysis 工作流，使用 MountainDash 定制版本 [@AzideCupric](https://github.com/AzideCupric) ([#767](https://github.com/MountainDash/nonebot-bison/pull/767))
 - :construction_worker: employ review bot [@felinae98](https://github.com/felinae98) ([#766](https://github.com/MountainDash/nonebot-bison/pull/766))
 
 ### Bug 修复

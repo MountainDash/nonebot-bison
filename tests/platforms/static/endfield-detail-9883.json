@@ -1,0 +1,25 @@
+{
+  "code": 0,
+  "data": {
+    "cid": "9883",
+    "type": 0,
+    "tab": "news",
+    "orderType": 1,
+    "orderWeight": 1,
+    "displayType": "picture",
+    "focus": 0,
+    "startAt": 1769040000,
+    "title": "预抽卡活动",
+    "header": "",
+    "jumpButton": null,
+    "data": {
+      "url": "https://web.hycdn.cn/upload/image/20260121/e1e0452b684b22b0379bb7f9881fb6cb.jpg",
+      "link": "https://endfield.hypergryph.com/activity/final-prep-orders?source_from=game",
+      "linkType": 1
+    },
+    "needRedDot": true,
+    "needPopup": false,
+    "version": 1768982231
+  },
+  "msg": ""
+}

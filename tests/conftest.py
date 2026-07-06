@@ -14,11 +14,11 @@ from .utils import AppReq
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
-        "sqlalchemy_database_url": "sqlite+aiosqlite:///:memory:",
         "superusers": {"10001"},
         "command_start": {""},
         "log_level": "TRACE",
         "bison_use_browser": True,
+        "render_backend": "playwright",
         "htmlrender_ci_mode": True,
         "alembic_startup_check": False,
     }
@@ -46,7 +46,9 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
 
     nonebot.require("nonebot_bison")
-    mocker.patch("nonebot_plugin_orm._data_dir", tmp_path / "orm")
+    orm_data_dir = tmp_path / "orm"
+    orm_data_dir.mkdir()
+    mocker.patch("nonebot_plugin_orm._data_dir", orm_data_dir)
     from nonebot_plugin_htmlrender.browser import shutdown_htmlrender, startup_htmlrender
     from nonebot_plugin_orm import get_session, init_orm
 

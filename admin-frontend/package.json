@@ -6,7 +6,7 @@
   "proxy": "http://127.0.0.1:8080",
   "dependencies": {
     "@arco-design/web-react": "^2.64.0",
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^7.29.6",
     "@babel/plugin-syntax-flow": "^7.24.7",
     "@babel/plugin-transform-react-jsx": "^7.25.2",
     "@reduxjs/toolkit": "^1.9.7",

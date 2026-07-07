@@ -2,6 +2,7 @@
 
 ## 最近更新
 
+- :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)) ([#775](https://github.com/MountainDash/nonebot-bison/pull/775))
 - 修复 Docker 镜像缺少 arm64 架构 [@suyiiyii](https://github.com/suyiiyii) ([#757](https://github.com/MountainDash/nonebot-bison/pull/757))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)) ([#743](https://github.com/MountainDash/nonebot-bison/pull/743))
 - :bug: 更新 issue analysis 工作流，使用 MountainDash 定制版本 [@AzideCupric](https://github.com/AzideCupric) ([#767](https://github.com/MountainDash/nonebot-bison/pull/767))

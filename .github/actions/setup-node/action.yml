@@ -6,12 +6,12 @@ runs:
   steps:
     - uses: actions/setup-node@v6
       with:
-        node-version: "20"
+        node-version: "20.20.2"
 
     - name: Set Up Pnpm
       uses: pnpm/action-setup@v4
       with:
-        version: 9
+        version: 9.15.9
 
     - id: pnpm-cache-dir-path
       run: echo "::set-output name=dir::$(pnpm store path)"

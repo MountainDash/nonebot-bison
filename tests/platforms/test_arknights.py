@@ -168,7 +168,7 @@ async def test_fetch_new(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    from nonebot_bison.platform.arknights import ArknightsPost
+    from nonebot_bison.platform.arknights import HGAnnouncePost
     from nonebot_bison.post import Post
     from nonebot_bison.types import SubUnit, Target
 
@@ -202,7 +202,7 @@ async def test_fetch_new(
     res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     assert detail_router.called
-    post2: ArknightsPost = res2[0][1][0]
+    post2: HGAnnouncePost = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
     assert post2.content
     assert post2.title == "2023「夏日嘉年华」限时活动即将开启"
@@ -239,7 +239,7 @@ async def test_send_with_render(
     monster_siren_list_0,
     monster_siren_list_1,
 ):
-    from nonebot_bison.platform.arknights import ArknightsPost
+    from nonebot_bison.platform.arknights import HGAnnouncePost
     from nonebot_bison.types import SubUnit, Target
 
     ak_list_router = respx.get("https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS")
@@ -270,7 +270,7 @@ async def test_send_with_render(
     res2 = await arknights.fetch_new_post(SubUnit(target, [dummy_user_subinfo]))
     assert len(res2[0][1]) == 1
     assert detail_router.called
-    post2: ArknightsPost = res2[0][1][0]
+    post2: HGAnnouncePost = res2[0][1][0]
     assert post2.platform.platform_name == "arknights"
     assert post2.content
     post2_plain_content = await post2.get_plain_content()

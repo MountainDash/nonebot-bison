@@ -10,7 +10,7 @@ from nonebot_bison.theme.utils import web_embed_image
 from nonebot_bison.utils import text_fletten
 
 if TYPE_CHECKING:
-    from nonebot_bison.platform.arknights import ArknightsPost
+    from nonebot_bison.platform.arknights import HGAnnouncePost
 
 
 @dataclass
@@ -32,7 +32,7 @@ class ArknightsTheme(Theme):
     template_path: Path = Path(__file__).parent / "templates"
     template_name: str = "announce.html.jinja"
 
-    async def render(self, post: "ArknightsPost"):
+    async def render(self, post: "HGAnnouncePost"):
         from nonebot_bison.theme.render_helper import template_to_pic
 
         if not post.title:

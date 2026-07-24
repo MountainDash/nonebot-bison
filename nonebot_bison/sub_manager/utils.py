@@ -75,6 +75,8 @@ async def generate_sub_list_text(
     is_index=False,
     is_show_cookie=False,
     is_hide_no_cookie_platfrom=False,
+    platform_filter: str | None = None,
+    show_all_option: bool = False,
 ):
     """根据配置参数，生产订阅列表文本，同时将订阅信息存入state["sub_table"]"""
     if user_info:
@@ -91,6 +93,8 @@ async def generate_sub_list_text(
             for sub in sub_list
             if is_cookie_client_manager(platform_manager[sub.target.platform_name].site.client_mgr)
         ]
+    if platform_filter:
+        sub_list = [sub for sub in sub_list if sub.target.platform_name == platform_filter]
     if not sub_list:
         await matcher.finish("暂无已订阅账号\n请使用“添加订阅”命令添加订阅")
     res = "订阅的帐号为：\n"
@@ -101,7 +105,11 @@ async def generate_sub_list_text(
             "target": sub.target.target,
         }
         res += f"{index} " if is_index else ""
-        res += f"{sub.target.platform_name} {sub.target.target_name} {sub.target.target}\n"
+        # 如果已经按平台过滤，就不显示平台名称
+        if platform_filter:
+            res += f"{sub.target.target_name} {sub.target.target}\n"
+        else:
+            res += f"{sub.target.platform_name} {sub.target.target_name} {sub.target.target}\n"
         if platform := platform_manager.get(sub.target.platform_name):
             if platform.categories:
                 res += " [{}]".format(", ".join(platform.categories[Category(x)] for x in sub.categories)) + "\n"
@@ -120,6 +128,105 @@ async def generate_sub_list_text(
         else:
             res += f" （平台 {sub.target.platform_name} 已失效，请删除此订阅）"
 
+    # 添加"全部"选项（仅在指定条件下）
+    if show_all_option and len(sub_list) >= 2 and platform_filter:
+        next_index = len(sub_list) + 1
+        state["sub_table"]["all"] = {
+            "platform_name": platform_filter,
+            "target": "all",
+            "all_targets": [
+                {"platform_name": sub.target.platform_name, "target": sub.target.target} for sub in sub_list
+            ],
+        }
+        res += f"{next_index} 全部 (关联该平台下的所有订阅)\n"
+
+    return res
+
+
+async def get_cookie_supported_platforms() -> dict[str, str]:
+    """获取所有支持cookie的平台列表，返回 {platform_name: platform_name} 格式"""
+    supported_platforms = {}
+    for platform_name, platform in platform_manager.items():
+        if platform.enabled and is_cookie_client_manager(platform.site.client_mgr):
+            supported_platforms[platform_name] = platform_name
+    return supported_platforms
+
+
+async def generate_platform_list_text(
+    matcher: type[Matcher],
+    state: T_State,
+) -> str:
+    """生成支持cookie的平台选择列表文本"""
+    platforms = await get_cookie_supported_platforms()
+    if not platforms:
+        await matcher.finish("暂无支持 Cookie 的平台")
+
+    res = "请输入想要关联 Cookie 的平台，目前支持，请输入冒号左边的名称：\n"
+    state["platform_table"] = {}
+    for platform_name in platforms:
+        state["platform_table"][platform_name] = platform_name
+        platform = platform_manager[platform_name]
+        res += f"{platform_name}: {platform.name}\n"
+    res += '中止关联过程请输入："取消"'
+    return res
+
+
+async def get_cookie_target_platforms() -> set[str]:
+    """获取有cookie关联的平台列表"""
+    cookie_targets = await config.get_cookie_target()
+    return {ct.target.platform_name for ct in cookie_targets}
+
+
+async def get_platform_cookie_targets(platform_name: str):
+    """获取指定平台的所有cookie关联"""
+    all_cookie_targets = await config.get_cookie_target()
+    return [ct for ct in all_cookie_targets if ct.target.platform_name == platform_name]
+
+
+async def generate_cookie_target_platform_list_text(
+    matcher: type[Matcher],
+    state: T_State,
+) -> str:
+    """生成有cookie关联的平台选择列表文本"""
+    platforms = await get_cookie_target_platforms()
+    if not platforms:
+        await matcher.finish('暂无已关联 Cookie\n请使用"关联cookie"命令添加关联')
+
+    res = "请输入想要取消关联 Cookie 的平台，目前有关联的平台：\n"
+    state["platform_table"] = {}
+    for platform_name in sorted(platforms):
+        state["platform_table"][platform_name] = platform_name
+        platform = platform_manager[platform_name]
+        res += f"{platform_name}: {platform.name}\n"
+    res += '中止取消关联过程请输入："取消"'
+    return res
+
+
+async def generate_cookie_target_list_by_platform(
+    matcher: type[Matcher],
+    state: T_State,
+    platform_name: str,
+) -> str:
+    """根据平台过滤显示已关联的cookie列表"""
+    cookie_targets = await config.get_cookie_target()
+    platform_cookie_targets = [ct for ct in cookie_targets if ct.target.platform_name == platform_name]
+
+    if not platform_cookie_targets:
+        await matcher.finish(f"{platform_name} 平台暂无已关联的 Cookie")
+
+    platform = platform_manager[platform_name]
+    res = f"{platform.name}平台已关联的 Cookie：\n"
+    state["cookie_target_table"] = {}
+    for index, cookie_target in enumerate(platform_cookie_targets, 1):
+        friendly_name = cookie_target.cookie.cookie_name
+        state["cookie_target_table"][index] = {
+            "platform_name": cookie_target.target.platform_name,
+            "target": cookie_target.target,
+            "friendly_name": friendly_name,
+            "cookie_target": cookie_target,
+        }
+        res += f"{index}. {cookie_target.target.target_name} {friendly_name}\n"
+    res += "请输入要取消关联的序号（多个序号用空格分隔）\n输入'取消'中止"
     return res
 
 

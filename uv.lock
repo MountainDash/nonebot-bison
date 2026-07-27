@@ -2519,15 +2519,15 @@ wheels = [
 
 [[package]]
 name = "pymdown-extensions"
-version = "10.13"
+version = "11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/87/4998d1aac5afea5b081238a609d9814f4c33cd5c7123503276d1105fb6a9/pymdown_extensions-10.13.tar.gz", hash = "sha256:e0b351494dc0d8d14a1f52b39b1499a00ef1566b4ba23dc74f1eba75c736f5dd", size = 843302, upload-time = "2024-12-23T16:09:05.332Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/67/f1e79672a5f91985577c7984c9709ca110e4fd37fe7fd167b60422e6ccc2/pymdown_extensions-11.0.tar.gz", hash = "sha256:8269cef0247f9e2d0a62fcea10860aba05c1cbab5470fd4b63230b96434dc589", size = 857049, upload-time = "2026-06-23T02:27:45.146Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/86/7f/46c7122186759350cf523c71d29712be534f769f073a1d980ce8f095072c/pymdown_extensions-10.13-py3-none-any.whl", hash = "sha256:80bc33d715eec68e683e04298946d47d78c7739e79d808203df278ee8ef89428", size = 264108, upload-time = "2024-12-23T16:09:03.68Z" },
+    { url = "https://files.pythonhosted.org/packages/af/b6/1ae53367e28b9cffa3be7574e13fbe4589694272fd47710fbdbafd3d63c6/pymdown_extensions-11.0-py3-none-any.whl", hash = "sha256:fbc4acb641814fa9d17521bbd21a5240ef739a662f11c06330c4b78c93e954d6", size = 269415, upload-time = "2026-06-23T02:27:43.826Z" },
 ]
 
 [[package]]

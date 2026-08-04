@@ -28,7 +28,8 @@ next: /usage/
    - `BISON_TO_ME=false`  
      `/help`
 3. `BISON_USE_PIC`  
-   将文字渲染成图片后进行发送，多用于规避风控，默认为`false`
+   将文字渲染成图片后进行发送，多用于规避风控，默认为`false`  
+   启用后需要安装 `nonebot-plugin-htmlrender[playwright]>=0.8.0,<0.9` 并配置 `RENDER__PROVIDER=playwright`（浏览器渲染后端），否则渲染会失败
 4. `BISON_USE_PIC_MERGE`: 是否启用多图片时合并转发（仅限群）
    - `0`: 不启用 (默认)
    - `1`: 首条消息单独发送，剩余图片合并转发

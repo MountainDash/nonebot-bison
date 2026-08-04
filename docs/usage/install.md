@@ -120,6 +120,10 @@ next: /usage/easy-use
          #取消上行注释，并将<your server ip>改为你的服务器 ip，bison 不会自动获取 ip
          BISON_FILTER_LOG: 'true'
          BISON_USE_PIC: 'false' # 如果需要将文字转为图片发送请改为 true
+         # nonebot-plugin-htmlrender 0.8：镜像内已预装 chromium，
+         # 需要浏览器渲染（如 ht2i/arknights 主题）时取消注释
+         # RENDER__PROVIDER: 'playwright'
+         # RENDER__STARTUP: 'probe'
        ports:
          - 8080:8080 # 容器映射的端口，如果需要修改请同时修改上面的 BISON_OUTER_URL
        ...

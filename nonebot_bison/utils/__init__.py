@@ -37,9 +37,9 @@ async def parse_text(text: str) -> MessageSegmentFactory:
     "return raw text if don't use pic, otherwise return rendered opcode"
     if plugin_config.bison_use_pic:
         require("nonebot_plugin_htmlrender")
-        from nonebot_plugin_htmlrender import text_to_pic as _text_to_pic
+        from nonebot_plugin_htmlrender import render_text as _render_text
 
-        return Image(await _text_to_pic(text))
+        return Image(bytes(await _render_text(text)))
     else:
         return Text(text)
 

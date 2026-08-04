@@ -19,7 +19,18 @@ def pytest_configure(config: pytest.Config) -> None:
         "command_start": {""},
         "log_level": "TRACE",
         "bison_use_browser": True,
-        "htmlrender_ci_mode": True,
+        # nonebot-plugin-htmlrender 0.8：配置统一在 render 命名空间
+        # （init kwargs 不做 __ 嵌套，需直接传嵌套 dict）
+        # startup 由测试 fixture 显式管理，避免 driver 钩子与 fixture 双重启动
+        # skip_browser_install: 测试环境浏览器由 CI（uv run playwright install）
+        # 或远程 playwright 容器提供，禁止运行时自动下载
+        "render": {
+            "provider": "playwright",
+            "startup": "off",
+            "provider_config": {
+                "skip_browser_install": True,
+            },
+        },
     }
 
 
@@ -39,7 +50,6 @@ def patch_refresh_bilibili_anonymous_cookie(mocker: MockerFixture):
         BilibiliClientManager, "_get_cookies", return_value=[{"name": "test anonymous", "content": "test"}]
     )
 
-
 @pytest.fixture
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))
@@ -47,7 +57,7 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     nonebot.require("nonebot_bison")
     from nonebot_plugin_datastore.config import plugin_config as datastore_config
     from nonebot_plugin_datastore.db import create_session, init_db
-    from nonebot_plugin_htmlrender.browser import shutdown_htmlrender, startup_htmlrender
+    from nonebot_plugin_htmlrender import get_default_application, set_default_application
 
     from nonebot_bison import plugin_config
     from nonebot_bison.config.db_model import ScheduleTimeWeight, Subscribe, Target, User
@@ -60,7 +70,8 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
     datastore_config.datastore_cache_dir = tmp_path / "cache"
     datastore_config.datastore_data_dir = tmp_path / "data"
 
-    await startup_htmlrender()
+    application = get_default_application()
+    await application.startup()
 
     param: AppReq = getattr(request, "param", AppReq())
 
@@ -84,8 +95,9 @@ async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixt
         await session.execute(delete(Target))
         await session.execute(delete(ScheduleTimeWeight))
 
-    # 关闭渲染图片时打开的浏览器
-    await shutdown_htmlrender()
+    await application.aclose()
+    # Drop the closed instance so later tests rebuild from the factory.
+    set_default_application(None)
     # 清除缓存文件
     cache_dir = Path.cwd() / ".cache" / "hishel"
     if cache_dir.exists():

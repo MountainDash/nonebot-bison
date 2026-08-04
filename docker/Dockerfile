@@ -82,14 +82,23 @@ RUN echo "🏗️ Starting frontend build..." && \
 
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS playwright-stage
 
-WORKDIR /tmp
+WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
     TZ=Asia/Shanghai
 
-RUN echo "📦 Installing playwright..." && \
-    uvx playwright install --with-deps chromium && \
+# 使用项目 lockfile 中锁定的 playwright 版本安装浏览器，
+# 保证 client 与浏览器 revision 强一致（nonebot-plugin-htmlrender 0.8 要求）
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    echo "📦 Installing project dependencies..." && \
+    uv sync --no-install-project --no-dev --extra docker && \
+    echo "📦 Installing playwright..." && \
+    uv run playwright install --with-deps chromium && \
     echo "✅ Playwright installed successfully"
 
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv-stage

@@ -123,7 +123,7 @@ async def capture_html(
     type: Literal["jpeg", "png"] = "png",
     quality: int | None = None,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,
-    viewport = {"width": 1024, "height": 990},
+    viewport={"width": 1024, "height": 990},
     device_scale_factor: int = 2,
     **page_kwargs,
 ) -> bytes | None:
@@ -137,9 +137,7 @@ async def capture_html(
 
     assert url
     playwright = get_default_application().extensions.playwright
-    async with playwright.page(
-        device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs
-    ) as page:
+    async with playwright.page(device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs) as page:
         await page.goto(url, timeout=timeout, wait_until=wait_until)
         pic_data = await page.locator(selector).screenshot(
             type=type,

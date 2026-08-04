@@ -50,6 +50,7 @@ def patch_refresh_bilibili_anonymous_cookie(mocker: MockerFixture):
         BilibiliClientManager, "_get_cookies", return_value=[{"name": "test anonymous", "content": "test"}]
     )
 
+
 @pytest.fixture
 async def app(tmp_path: Path, request: pytest.FixtureRequest, mocker: MockerFixture):
     sys.path.append(str(Path(__file__).parent.parent / "src" / "plugins"))

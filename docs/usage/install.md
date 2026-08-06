@@ -120,13 +120,26 @@ next: /usage/easy-use
          #取消上行注释，并将<your server ip>改为你的服务器 ip，bison 不会自动获取 ip
          BISON_FILTER_LOG: 'true'
          BISON_USE_PIC: 'false' # 如果需要将文字转为图片发送请改为 true
-         # nonebot-plugin-htmlrender 0.8：镜像内已预装 chromium，
+         # nonebot-plugin-htmlrender 0.8：镜像不内置浏览器，
          # 需要浏览器渲染（如 ht2i/arknights 主题）时取消注释
          # RENDER__PROVIDER: 'playwright'
          # RENDER__STARTUP: 'probe'
        ports:
          - 8080:8080 # 容器映射的端口，如果需要修改请同时修改上面的 BISON_OUTER_URL
+       depends_on:
+         playwright:
+           condition: service_healthy
        ...
+     # 远程 playwright 服务：提供浏览器渲染能力（nonebot-plugin-htmlrender 0.8）
+     # 版本需与 bison 锁定的 playwright 版本一致（可查看 uv.lock 中的 playwright 版本）
+     playwright:
+       image: mcr.microsoft.com/playwright:v1.62.0-noble
+       init: true
+       user: pwuser
+       working_dir: /home/pwuser
+       command: /bin/sh -c "npx -y playwright@1.62.0 run-server --port 3000 --host 0.0.0.0"
+       ports:
+         - 3000:3000
    ```
 
    ::: tip

@@ -28,7 +28,7 @@ next: /usage/cookie
 - `BISON_USE_BROWSER`: 环境（或其渲染容器）中是否存在浏览器，某些主题或平台（如 `ht2i`、`arknights`、`ceobecanteen`）需要浏览器，默认为`false`
   - Bison 使用 [nonebot-plugin-htmlrender](https://github.com/kexue-z/nonebot-plugin-htmlrender) 进行浏览器渲染，需要安装 `nonebot-plugin-htmlrender[playwright]>=0.8.0,<0.9` 并配置 `RENDER__PROVIDER=playwright`
   - 浏览器的运行方式（本地 / 远程 WS / CDP）由 htmlrender 的 `RENDER__PROVIDER_CONFIG__*` 配置决定，详见 [htmlrender 文档](https://kexue-z.github.io/nonebot-plugin-htmlrender/)
-  - 官方 docker 镜像已在构建阶段预装 chromium，无需额外配置
+  - 官方 docker 镜像不内置浏览器，需要配套启动远程 playwright 容器（`docker-compose.yml` 中的 `playwright` 服务），`RENDER__PROVIDER_CONFIG__CONNECT_WS__ENDPOINT` 已默认指向该服务
 - `BISON_SKIP_BROWSER_CHECK`: 是否在启动时检查并加载 `nonebot-plugin-htmlrender` 插件，默认为`false`（即启动时加载）
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，不设置或为空时默认值为 `http://localhost:<Bot运行在的端口>/bison/`
   ::: warning

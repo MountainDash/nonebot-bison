@@ -96,16 +96,3 @@ jobs:
             felinae98/nonebot-bison:${{ env.TAG_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Build Sentry and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./docker/Dockerfile_without_browser
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            felinae98/nonebot-bison:${{ env.TAG_NAME }}-nobrowser
-            felinae98/nonebot-bison:nobrowser
-          cache-from: type=gha
-          cache-to: type=gha,mode=max

@@ -13,6 +13,34 @@ services:
       BISON_USE_PIC: "false" # 如果需要将文字转为图片发送请改为true
     ports:
       - 8080:8080
+    depends_on:
+      playwright:
+        condition: service_healthy
+
+  # 远程 playwright 服务：提供浏览器渲染能力（nonebot-plugin-htmlrender 0.8）
+  # PLAYWRIGHT_VERSION 需与 bison 锁定的 playwright 版本一致（可查看 uv.lock 中的 playwright 版本）
+  # 本文件不映射 3000 到宿主机（grafana 占用），容器间通过 expose 通信即可
+  playwright:
+    image: mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION:-1.62.0}-noble
+    init: true
+    ipc: host
+    user: pwuser
+    working_dir: /home/pwuser
+    command: /bin/sh -c "npx -y playwright@${PLAYWRIGHT_VERSION:-1.62.0} run-server --port 3000 --host 0.0.0.0"
+    expose:
+      - "3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:3000/', r => process.exit(0)).on('error', () => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
 
   prometheus:
     image: prom/prometheus

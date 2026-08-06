@@ -80,27 +80,6 @@ RUN echo "🏗️ Starting frontend build..." && \
     pnpm run build && \
     echo "✅ Frontend build completed"
 
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS playwright-stage
-
-WORKDIR /app
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    TZ=Asia/Shanghai
-
-# 使用项目 lockfile 中锁定的 playwright 版本安装浏览器，
-# 保证 client 与浏览器 revision 强一致（nonebot-plugin-htmlrender 0.8 要求）
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    echo "📦 Installing project dependencies..." && \
-    uv sync --no-install-project --no-dev --extra docker && \
-    echo "📦 Installing playwright..." && \
-    uv run playwright install --with-deps chromium && \
-    echo "✅ Playwright installed successfully"
-
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv-stage
 
 WORKDIR /app
@@ -143,7 +122,6 @@ RUN echo "📦 Installing system dependencies..." && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
-        xvfb \
         fonts-noto-color-emoji \
         fonts-unifont \
         libfontconfig1 \
@@ -153,36 +131,7 @@ RUN echo "📦 Installing system dependencies..." && \
         fonts-ipafont-gothic \
         fonts-wqy-zenhei \
         fonts-tlwg-loma-otf \
-        at-spi2-common \
-        fonts-freefont-ttf \
-        libasound2 \
-        libasound2-data \
-        libatk-bridge2.0-0 \
-        libatk1.0-0 \
-        libatspi2.0-0 \
-        libavahi-client3 \
-        libavahi-common-data \
-        libavahi-common3 \
-        libcairo2 \
-        libcups2 \
-        libdatrie1 \
-        libdbus-1-3 \
-        libfribidi0 \
-        libgbm1 \
-        libglib2.0-0 \
-        libgraphite2-3 \
-        libharfbuzz0b \
-        libnspr4 \
-        libnss3 \
-        libpango-1.0-0 \
-        libthai-data \
-        libthai0 \
-        libwayland-server0 \
-        libxcb-render0 \
-        libxcomposite1 \
-        libxdamage1 \
-        libxi6 \
-        libxkbcommon0 && \
+        fonts-freefont-ttf && \
     fc-cache -fv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \

@@ -57,8 +57,16 @@ jobs:
       - name: Install prerequisites
         run: uv add pydantic==1.10 && uv sync --frozen
 
-      - name: Install Playwright
-        run: uv run playwright install --with-deps && uv run playwright install
+      - name: Start Playwright server
+        uses: ./.github/actions/setup-playwright
+        with:
+          action: start
 
       - name: Run Pytest
-        run: uv run pytest -k 'not compare and not render' -n auto
+        run: uv run pytest -k 'not compare' -n auto
+
+      - name: Stop Playwright server
+        if: always()
+        uses: ./.github/actions/setup-playwright
+        with:
+          action: stop

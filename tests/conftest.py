@@ -22,13 +22,15 @@ def pytest_configure(config: pytest.Config) -> None:
         # nonebot-plugin-htmlrender 0.8：配置统一在 render 命名空间
         # （init kwargs 不做 __ 嵌套，需直接传嵌套 dict）
         # startup 由测试 fixture 显式管理，避免 driver 钩子与 fixture 双重启动
-        # skip_browser_install: 测试环境浏览器由 CI（uv run playwright install）
-        # 或远程 playwright 容器提供，禁止运行时自动下载
+        # skip_browser_install: 测试环境浏览器由 CI 启动的远程 playwright 容器
+        # （mcr.microsoft.com/playwright，ws://localhost:3000/）提供，禁止运行时自动下载
         "render": {
             "provider": "playwright",
             "startup": "off",
             "provider_config": {
-                "skip_browser_install": True,
+                "engine": "chromium",
+                "connect_ws": {"endpoint": "ws://localhost:3000/"},
+                "remote_local_resource_policy": "memory",
             },
         },
     }

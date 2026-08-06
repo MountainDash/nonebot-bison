@@ -1,0 +1,60 @@
+name: Setup Playwright Server
+description: Start or stop a remote Playwright server container matching the installed playwright version
+
+inputs:
+  action:
+    description: "start or stop the Playwright server container"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Start Docker Desktop (macOS only)
+      if: ${{ inputs.action == 'start' && runner.os == 'macOS' }}
+      uses: docker/setup-docker-action@v3
+
+    - name: Resolve Playwright version
+      if: ${{ inputs.action == 'start' }}
+      id: playwright-version
+      shell: bash
+      run: |
+        PLAYWRIGHT_VERSION=$(uv run python -c "from importlib.metadata import version; print(version('playwright'))")
+        echo "version=${PLAYWRIGHT_VERSION}" >> "${GITHUB_OUTPUT}"
+        echo "Resolved Playwright version: ${PLAYWRIGHT_VERSION}"
+
+    - name: Start Playwright server container
+      if: ${{ inputs.action == 'start' }}
+      shell: bash
+      run: |
+        docker run -d --rm --init --ipc=host \
+          --name playwright \
+          -p 3000:3000 \
+          --workdir /home/pwuser \
+          --user pwuser \
+          "mcr.microsoft.com/playwright:v${{ steps.playwright-version.outputs.version }}-noble" \
+          /bin/sh -c "npx -y playwright@${{ steps.playwright-version.outputs.version }} run-server --port 3000 --host 0.0.0.0"
+
+    - name: Wait for Playwright server to be ready
+      if: ${{ inputs.action == 'start' }}
+      shell: bash
+      run: |
+        uv run python - <<'EOF'
+        import socket
+        import time
+
+        for _ in range(120):
+            try:
+                with socket.create_connection(("127.0.0.1", 3000), timeout=1):
+                    print("Playwright server is ready on ws://localhost:3000/")
+                    break
+            except OSError:
+                time.sleep(1)
+        else:
+            raise SystemExit("Playwright server did not become ready on port 3000")
+        EOF
+
+    - name: Stop Playwright server container
+      if: ${{ inputs.action == 'stop' }}
+      shell: bash
+      run: |
+        docker stop playwright || true

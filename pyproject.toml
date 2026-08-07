@@ -8,7 +8,7 @@ dependencies = [
   "httpx>=0.27.2",
   "nonebot2[fastapi]<3.0.0,>=2.3.3",
   "nonebot-adapter-onebot<3.0.0,>=2.4.5",
-  "nonebot-plugin-htmlrender>=0.7.0a1",
+  "nonebot-plugin-htmlrender>=0.7.1",
   "nonebot-plugin-datastore<2.0.0,>=1.3.0",
   "nonebot-plugin-apscheduler>=0.5.0",
   "nonebot-plugin-send-anything-anywhere<0.7.2,>=0.7.1",
@@ -24,6 +24,7 @@ dependencies = [
   "expiringdictx<2.0.0,>=1.1.0",
   "rapidfuzz<4.0.0,>=3.9.7",
   "nonebot-plugin-prometheus>=0.4.1",
+  "nonebot-plugin-orm>=0.7.6",
 ]
 name = "nonebot-bison"
 version = "0.9.14"
@@ -57,6 +58,7 @@ dev = [
   "ruff<1.0.0,>=0.8.2",
 ]
 test = [
+  "aiofiles>=24.1.0",
   "flaky<4.0.0,>=3.8.1",
   "nonebug<1.0.0,>=0.3.7",
   "nonebug-saa<1.0.0,>=0.4.1",

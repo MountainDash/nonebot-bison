@@ -31,12 +31,14 @@ def opus_major_raw_content():
 
 
 @pytest.fixture
-def bilibili(app: App) -> "Bilibili":
+async def bilibili(app: App) -> "Bilibili":
     from nonebot_bison.platform import platform_manager
     from nonebot_bison.platform.bilibili import BilibiliClientManager
     from nonebot_bison.utils import ProcessContext
 
-    return platform_manager["bilibili"](ProcessContext(BilibiliClientManager()))  # type: ignore
+    client = BilibiliClientManager()
+    await client.refresh_client()
+    return platform_manager["bilibili"](ProcessContext(client))  # type: ignore
 
 
 @pytest.fixture

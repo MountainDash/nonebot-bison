@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 
 if plugin_config.bison_use_browser:
     require("nonebot_plugin_htmlrender")
-    from nonebot_plugin_htmlrender.browser import get_browser
 
 B = TypeVar("B", bound="Bilibili")
 
@@ -32,13 +31,18 @@ class BilibiliClientManager(CookieClientManager):
     _site_name = "bilibili.com"
 
     async def _get_cookies(self) -> list[Cookie]:
-        browser = await get_browser()
-        async with await browser.new_page() as page:
-            await page.goto(f"https://space.bilibili.com/{random.randint(1, 1000)}/dynamic")
-            await page.wait_for_load_state("load")  # 等待基本加载完成
-            await page.wait_for_function('document.cookie.includes("bili_ticket")')  # 期望保证 GenWebTicket 请求完成
-            await page.wait_for_load_state("networkidle")  # 期望保证 ExClimbWuzhi 请求完成
-            cookies = await page.context.cookies()
+        from nonebot_plugin_htmlrender import get_default_application
+
+        playwright = get_default_application().extensions.playwright
+        async with playwright.browser() as browser:
+            async with await browser.new_page() as page:
+                await page.goto(f"https://space.bilibili.com/{random.randint(1, 1000)}/dynamic")
+                await page.wait_for_load_state("load")  # 等待基本加载完成
+                # 期望保证 GenWebTicket 请求完成
+                await page.wait_for_function('document.cookie.includes("bili_ticket")')
+                # 期望保证 ExClimbWuzhi 请求完成
+                await page.wait_for_load_state("networkidle")
+                cookies = await page.context.cookies()
 
         return cookies
 

@@ -24,10 +24,10 @@ class Ht2iTheme(Theme):
     need_browser: bool = True
 
     async def _text_render(self, text: str):
-        from nonebot_plugin_htmlrender import md_to_pic
+        from nonebot_plugin_htmlrender import render_markdown
 
         try:
-            return Image(await md_to_pic(text, width=400))
+            return Image(bytes(await render_markdown(text, width=400)))
         except Exception as e:
             raise ThemeRenderError(f"渲染文本失败: {e}")
 

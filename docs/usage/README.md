@@ -25,17 +25,11 @@ next: /usage/cookie
 - `BISON_TO_ME`: 是否需要 @Bot 或使用 Bot 的 Nickname 来触发 Bison 的命令，默认为`true`
 - `BISON_CONFIG_PATH`<Badge text="弃用" type="warning" vertical="top"/>: 插件存放配置文件的位置，如果不设定默认为项目目录下的`data`目录，现用于从低版本迁移
 - `BISON_USE_PIC`: 将几乎所有文字渲染成图片后进行发送，多用于规避风控
-- `BISON_BROWSER`: 本插件使用 Chrome 来渲染图片
-  - 如果不进行配置，那么会在启动时候自动进行安装，在官方的 docker 镜像中已经安装了浏览器
-  - 使用本地安装的 Chrome，设置为`local:<chrome path>`，例如`local:/usr/bin/google-chrome-stable`
-  - 使用 cdp 连接相关服务，设置为`wsc://xxxxxxxxx`
-  - 使用 browserless 提供的 Chrome 管理服务，设置为`ws://xxxxxxxx`，值为 Chrome Endpoint
-    ::: warning
-    截止发布时，本项目尚不能完全与 browserless 兼容，目前建议使用镜像内自带的浏览器
-    即 **不要配置这个变量**
-    :::
-- `BISON_SKIP_BROWSER_CHECK`: 是否在启动时自动下载浏览器，如果选择`false`会在用到浏览器时自动下载，
-  默认`true`
+- `BISON_USE_BROWSER`: 环境（或其渲染容器）中是否存在浏览器，某些主题或平台（如 `ht2i`、`arknights`、`ceobecanteen`）需要浏览器，默认为`false`
+  - Bison 使用 [nonebot-plugin-htmlrender](https://github.com/kexue-z/nonebot-plugin-htmlrender) 进行浏览器渲染，需要安装 `nonebot-plugin-htmlrender[playwright]>=0.8.0,<0.9` 并配置 `RENDER__PROVIDER=playwright`
+  - 浏览器的运行方式（本地 / 远程 WS / CDP）由 htmlrender 的 `RENDER__PROVIDER_CONFIG__*` 配置决定，详见 [htmlrender 文档](https://kexue-z.github.io/nonebot-plugin-htmlrender/)
+  - 官方 docker 镜像不内置浏览器，需要配套启动远程 playwright 容器（`docker-compose.yml` 中的 `playwright` 服务），`RENDER__PROVIDER_CONFIG__CONNECT_WS__ENDPOINT` 已默认指向该服务
+- `BISON_SKIP_BROWSER_CHECK`: 是否在启动时检查并加载 `nonebot-plugin-htmlrender` 插件，默认为`false`（即启动时加载）
 - `BISON_OUTER_URL`: 从外部访问服务器的地址，不设置或为空时默认值为 `http://localhost:<Bot运行在的端口>/bison/`
   ::: warning
   请注意，该网址**并不能直接访问** Bison 的后台管理网页，正确的访问方法请参见[私聊机器人获取后台地址](#私聊机器人获取后台地址)

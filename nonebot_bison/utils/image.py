@@ -110,9 +110,9 @@ async def text_to_image(saa_text: SaaText) -> SaaImage:
     if not plugin_config.bison_use_pic:
         raise ValueError("请启用 bison_use_pic")
     require("nonebot_plugin_htmlrender")
-    from nonebot_plugin_htmlrender import text_to_pic
+    from nonebot_plugin_htmlrender import render_text
 
-    render_data = await text_to_pic(str(saa_text))
+    render_data = bytes(await render_text(str(saa_text)))
     return SaaImage(render_data)
 
 
@@ -123,7 +123,7 @@ async def capture_html(
     type: Literal["jpeg", "png"] = "png",
     quality: int | None = None,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,
-    viewport: dict = {"width": 1024, "height": 990},
+    viewport={"width": 1024, "height": 990},
     device_scale_factor: int = 2,
     **page_kwargs,
 ) -> bytes | None:
@@ -133,10 +133,11 @@ async def capture_html(
     timeout: 超时时间，单位毫秒
     """
     require("nonebot_plugin_htmlrender")
-    from nonebot_plugin_htmlrender import get_new_page
+    from nonebot_plugin_htmlrender import get_default_application
 
     assert url
-    async with get_new_page(device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs) as page:
+    playwright = get_default_application().extensions.playwright
+    async with playwright.page(device_scale_factor=device_scale_factor, viewport=viewport, **page_kwargs) as page:
         await page.goto(url, timeout=timeout, wait_until=wait_until)
         pic_data = await page.locator(selector).screenshot(
             type=type,

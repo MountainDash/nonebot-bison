@@ -53,6 +53,42 @@ next: /dev/cookie
 本项目使用了 pre-commit 来进行代码美化和格式化。在`uv venv`状态下执行`pre-commit install`来安装 git hook，可自动在 commit 时
 格式化代码。
 
+## 运行测试
+
+项目的测试使用 `pytest` 与 `nonebug`。**所有测试**（无论是否标记 `render`）的 `app` fixture 都会在 setup 阶段连接远程 playwright 容器（`ws://localhost:3000/`），因此**运行任何测试前都必须先启动 playwright 容器**，否则整个测试会全部 setup 失败。
+
+1. 安装依赖
+
+   ```bash
+   uv sync
+   ```
+
+2. 启动远程 playwright 容器（镜像版本需与 `uv.lock` 中锁定的 playwright 版本一致，例如当前为 `1.62.0`）
+
+   ```bash
+   docker run -p 3000:3000 --rm --init -it --workdir /home/pwuser --user pwuser \
+     --name playwright mcr.microsoft.com/playwright:v1.62.0-noble \
+     /bin/sh -c "npx -y playwright@1.62.0 run-server --port 3000 --host 0.0.0.0"
+   ```
+
+   ::: tip
+   也可去掉 `-it` 并追加 `-d` 让容器在后台运行，测试结束后执行 `docker stop playwright` 停止。
+   :::
+
+3. 运行测试
+
+   ```bash
+   uv run pytest -n auto
+   ```
+
+   ::: tip
+   由于 `app` fixture 在 setup 阶段就会连接远程 playwright 容器，因此**不能**通过 `-k 'not render'` 跳过对容器的依赖——没有容器时这些测试也会 setup 失败。
+   :::
+
+::: tip
+`tests/conftest.py` 中渲染后端固定连接 `ws://localhost:3000/`，请确保 playwright 容器的 3000 端口已映射到宿主机。
+:::
+
 ## 适配新网站
 
 本插件需要你的帮助！只需要会写简单的爬虫，就能给本插件适配新的网站。

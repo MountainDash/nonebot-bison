@@ -207,16 +207,16 @@ class CeobeCanteen(NewMessage):
     async def snapshot_official_website(self, url: str) -> bytes:
         """截取小刻官网的截图"""
         require("nonebot_plugin_htmlrender")
-        from nonebot_plugin_htmlrender import get_new_page
+        from nonebot_plugin_htmlrender import get_default_application
 
         logger.debug(f"snapshot official website url: {url}")
 
         snapshot_selector = "//html/body/div[1]/div[1]/div/div[1]/div[1]/div"
         calculate_selector = "//html/body/div[1]/div[1]/div/div[1]/div[1]/div/div[4]/div/div/div"
-        viewport = {"width": 1024, "height": 19990}
 
         try:
-            async with get_new_page(viewport=viewport) as page:
+            playwright = get_default_application().extensions.playwright
+            async with playwright.page(viewport={"width": 1024, "height": 19990}) as page:
                 await page.goto(url, wait_until="networkidle")
                 locator = page.locator(calculate_selector)
 
@@ -243,7 +243,6 @@ class CeobeCanteen(NewMessage):
     async def snapshot_bulletin_list(self, url: str) -> bytes:
         """截取小刻公告列表的截图"""
         selector = "body > div.main > div.container"
-        viewport = {"width": 1024, "height": 19990}
 
         try:
             pic_data = await capture_html(
@@ -251,7 +250,7 @@ class CeobeCanteen(NewMessage):
                 selector,
                 timeout=30000,
                 wait_until="networkidle",
-                viewport=viewport,
+                viewport={"width": 1024, "height": 19990},
             )
             assert pic_data
         except Exception:

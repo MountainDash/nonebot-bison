@@ -205,7 +205,7 @@ class CeobeCanteenTheme(Theme):
                 case _:
                     raise ThemeRenderError(f"Unknown image type: {type(merged_images[0])}")
 
-        from nonebot_plugin_htmlrender import get_new_page
+        from nonebot_plugin_htmlrender import get_default_application
 
         template_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.template_path),
@@ -224,7 +224,8 @@ class CeobeCanteenTheme(Theme):
             "base_url": self.template_path.as_uri(),
         }
         try:
-            async with get_new_page(**pages) as page:
+            playwright = get_default_application().extensions.playwright
+            async with playwright.page(**pages) as page:
                 await page.goto("about:blank")
                 await page.set_content(html)
                 await page.wait_for_timeout(1)

@@ -35,7 +35,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://127.0.0.1:3000/', r => process.exit(0)).on('error', () => process.exit(1))",
+          "require('net').connect(3000, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))",
         ]
       interval: 5s
       timeout: 3s

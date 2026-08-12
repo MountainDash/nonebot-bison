@@ -74,8 +74,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
           install-deps: "true"
 
+      - name: Start Playwright server
+        uses: ./.github/actions/setup-playwright
+        with:
+          action: start
+
       - name: Run Pytest
         run: uv run pytest --cov-report xml --cov=./nonebot_bison -k 'not compare and not render' -n auto
+
+      - name: Stop Playwright server
+        if: always()
+        uses: ./.github/actions/setup-playwright
+        with:
+          action: stop
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5

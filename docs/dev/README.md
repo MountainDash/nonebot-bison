@@ -55,7 +55,7 @@ next: /dev/cookie
 
 ## 运行测试
 
-项目的测试使用 `pytest` 与 `nonebug`，浏览器渲染相关的测试（标记为 `render`）需要连接远程 playwright 容器。
+项目的测试使用 `pytest` 与 `nonebug`。**所有测试**（无论是否标记 `render`）的 `app` fixture 都会在 setup 阶段连接远程 playwright 容器（`ws://localhost:3000/`），因此**运行任何测试前都必须先启动 playwright 容器**，否则整个测试会全部 setup 失败。
 
 1. 安装依赖
 
@@ -75,17 +75,15 @@ next: /dev/cookie
    也可去掉 `-it` 并追加 `-d` 让容器在后台运行，测试结束后执行 `docker stop playwright` 停止。
    :::
 
-3. 运行全部测试（包含渲染测试）
+3. 运行测试
 
    ```bash
    uv run pytest -n auto
    ```
 
-   如果本地没有 docker 环境，可以跳过浏览器渲染测试：
-
-   ```bash
-   uv run pytest -k 'not render' -n auto
-   ```
+   ::: tip
+   由于 `app` fixture 在 setup 阶段就会连接远程 playwright 容器，因此**不能**通过 `-k 'not render'` 跳过对容器的依赖——没有容器时这些测试也会 setup 失败。
+   :::
 
 ::: tip
 `tests/conftest.py` 中渲染后端固定连接 `ws://localhost:3000/`，请确保 playwright 容器的 3000 端口已映射到宿主机。

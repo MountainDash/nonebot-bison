@@ -18,7 +18,16 @@ runs:
       id: playwright-version
       shell: bash
       run: |
-        PLAYWRIGHT_VERSION=$(uv run python -c "from importlib.metadata import version; print(version('playwright'))")
+        # 从 uv.lock 解析 playwright 版本（参考 nonebot-plugin-htmlrender），
+        # 保证 Python client 与 Node server 版本 lockstep，且不依赖已安装环境
+        PLAYWRIGHT_VERSION=$(awk '
+          /^name = "playwright"$/ { found = 1; next }
+          found && /^version = / { gsub(/"/, "", $3); print $3; exit }
+        ' uv.lock)
+        if [ -z "${PLAYWRIGHT_VERSION}" ]; then
+          echo "::error::playwright package not found in uv.lock"
+          exit 1
+        fi
         echo "version=${PLAYWRIGHT_VERSION}" >> "${GITHUB_OUTPUT}"
         echo "Resolved Playwright version: ${PLAYWRIGHT_VERSION}"
 
@@ -26,13 +35,22 @@ runs:
       if: ${{ inputs.action == 'start' }}
       shell: bash
       run: |
+        # 清理可能残留的同名容器，避免 name conflict
+        docker rm -f playwright >/dev/null 2>&1 || true
+        # --host 0.0.0.0 必须显式指定：省略时 Node 可能只绑定 [::1]，
+        # 容器外通过 IPv4 访问会 ECONNREFUSED（参考 htmlrender 的 dockerfile.playwright-server 注释）
         docker run -d --rm --init --ipc=host \
           --name playwright \
           -p 3000:3000 \
           --workdir /home/pwuser \
           --user pwuser \
           "mcr.microsoft.com/playwright:v${{ steps.playwright-version.outputs.version }}-noble" \
-          /bin/sh -c "npx -y playwright@${{ steps.playwright-version.outputs.version }} run-server --port 3000 --host 0.0.0.0"
+          /bin/sh -c "npx -y playwright@${{ steps.playwright-version.outputs.version }} run-server --port 3000 --host 0.0.0.0" \
+          || {
+            echo "::error::Failed to start Playwright container"
+            docker logs playwright 2>&1 || true
+            exit 1
+          }
 
     - name: Wait for Playwright server to be ready
       if: ${{ inputs.action == 'start' }}
@@ -40,9 +58,27 @@ runs:
       run: |
         uv run python - <<'EOF'
         import socket
+        import subprocess
         import time
 
+
+        def container_running() -> bool:
+            # 容器退出（如 npx 下载失败/server 崩溃）时立即失败，避免空等
+            result = subprocess.run(
+                ["docker", "inspect", "-f", "{{.State.Running}}", "playwright"],
+                capture_output=True,
+                text=True,
+            )
+            return result.stdout.strip() == "true"
+
+        def dump_container_logs() -> None:
+            subprocess.run(["docker", "logs", "--tail", "50", "playwright"])
+
         for _ in range(120):
+            if not container_running():
+                print("::error::Playwright container exited unexpectedly")
+                dump_container_logs()
+                raise SystemExit("Playwright container exited before the server became ready")
             try:
                 with socket.create_connection(("127.0.0.1", 3000), timeout=1):
                     print("Playwright server is ready on ws://localhost:3000/")
@@ -50,6 +86,9 @@ runs:
             except OSError:
                 time.sleep(1)
         else:
+            print("::error::Playwright server did not become ready on port 3000")
+            dump_container_logs()
+            subprocess.run(["docker", "ps", "-a", "--filter", "name=playwright"])
             raise SystemExit("Playwright server did not become ready on port 3000")
         EOF
 

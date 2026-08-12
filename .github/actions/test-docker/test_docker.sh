@@ -32,10 +32,18 @@ docker run -d --rm --init --ipc=host \
     --workdir /home/pwuser \
     --user pwuser \
     "mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble" \
-    /bin/sh -c "npx -y playwright@${PLAYWRIGHT_VERSION} run-server --port 3000 --host 0.0.0.0" > /dev/null
+    /bin/sh -c "npx -y playwright@${PLAYWRIGHT_VERSION} run-server --port 3000 --host 0.0.0.0" \
+    || { echo "failed to start playwright container"; docker logs playwright 2>&1 || true; exit 1; }
 
-# 等待 playwright server 就绪
+# 等待 playwright server 就绪（容器退出则立即失败）
 for i in $(seq 1 60); do
+    if ! docker inspect -f '{{.State.Running}}' playwright 2>/dev/null | grep -q true; then
+        echo "playwright container exited unexpectedly"
+        docker logs playwright 2>&1 || true
+        docker rm -f playwright > /dev/null 2>&1 || true
+        docker network rm $NETWORK_NAME > /dev/null 2>&1 || true
+        exit 1
+    fi
     if python3 -c "import socket; s = socket.create_connection(('127.0.0.1', 3000), 1); s.close()" 2>/dev/null; then
         echo "Playwright server is ready on ws://playwright:3000/"
         break

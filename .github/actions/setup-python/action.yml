@@ -24,7 +24,7 @@ runs:
         python-version: ${{ inputs.python-version }}
 
     - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v9.0.0
+      uses: astral-sh/setup-uv@v10.0.1
       with:
         version: "latest"
         enable-cache: true

@@ -56,9 +56,9 @@ class DBConfig:
             db_target: Target | None = await session.scalar(db_target_stmt)
             if not db_target:
                 db_target = Target(target=target, platform_name=platform_name, target_name=target_name)
-                await asyncio.gather(*[hook(platform_name, target) for hook in self.add_target_hook])
             else:
                 db_target.target_name = target_name
+
             subscribe = Subscribe(
                 categories=cats,
                 tags=tags,
@@ -66,6 +66,9 @@ class DBConfig:
                 target=db_target,
             )
             session.add(subscribe)
+
+            await asyncio.gather(*[hook(platform_name, target) for hook in self.add_target_hook])
+
             try:
                 await session.commit()
             except IntegrityError as e:

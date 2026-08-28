@@ -96,17 +96,33 @@ class DBConfig:
 
     async def del_subscribe(self, user: PlatformTarget, target: str, platform_name: str):
         async with create_session() as session:
-            user_obj = await session.scalar(select(User).where(User.user_target == model_dump(user)))
-            target_obj = await session.scalar(
-                select(Target).where(Target.platform_name == platform_name, Target.target == target)
+            # Delete the subscribe using JOINs
+            subs = await session.scalars(
+                select(Subscribe)
+                .join(User)
+                .join(Target)
+                .where(
+                    User.user_target == model_dump(user),
+                    Target.platform_name == platform_name,
+                    Target.target == target,
+                )
             )
-            await session.execute(delete(Subscribe).where(Subscribe.user == user_obj, Subscribe.target == target_obj))
+
+            for sub in subs:
+                await session.delete(sub)
+
+            # Check if target has any remaining subscriptions
             target_count = await session.scalar(
-                select(func.count()).select_from(Subscribe).where(Subscribe.target == target_obj)
+                select(func.count())
+                .select_from(Subscribe)
+                .join(Target)
+                .where(Target.platform_name == platform_name, Target.target == target)
             )
+
             if target_count == 0:
                 # delete empty target
                 await asyncio.gather(*[hook(platform_name, T_Target(target)) for hook in self.delete_target_hook])
+
             await session.commit()
 
     async def update_subscribe(
@@ -334,7 +350,10 @@ class DBConfig:
             )
             # check if relation exists
             cookie_target = await sess.scalar(
-                select(CookieTarget).where(CookieTarget.target == target_obj, CookieTarget.cookie_id == cookie_id)
+                select(CookieTarget).where(
+                    CookieTarget.target == target_obj,
+                    CookieTarget.cookie_id == cookie_id,
+                )
             )
             if cookie_target:
                 raise DuplicateCookieTargetException()

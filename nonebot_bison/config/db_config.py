@@ -47,12 +47,17 @@ class DBConfig:
         tags: list[Tag],
     ):
         async with create_session() as session:
-            db_user_stmt = select(User).where(User.user_target == model_dump(user))
+            db_user_stmt = select(User).where(User.user_target == model_dump(user)).with_for_update()
             db_user: User | None = await session.scalar(db_user_stmt)
             if not db_user:
                 db_user = User(user_target=model_dump(user))
                 session.add(db_user)
-            db_target_stmt = select(Target).where(Target.platform_name == platform_name).where(Target.target == target)
+            db_target_stmt = (
+                select(Target)
+                .where(Target.platform_name == platform_name)
+                .where(Target.target == target)
+                .with_for_update()
+            )
             db_target: Target | None = await session.scalar(db_target_stmt)
             if not db_target:
                 db_target = Target(target=target, platform_name=platform_name, target_name=target_name)

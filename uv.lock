@@ -2,8 +2,8 @@ version = 1
 revision = 3
 requires-python = ">=3.10, <4.0.0"
 resolution-markers = [
-    "python_full_version < '3.11'",
     "python_full_version >= '3.11'",
+    "python_full_version < '3.11'",
 ]
 
 [[package]]
@@ -941,14 +941,15 @@ wheels = [
 
 [[package]]
 name = "hishel"
-version = "0.1.1"
+version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "httpx" },
+    { name = "msgpack" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/b9/d7328c8507e45e27784e9c1f440c2b900ae1e60a980480d869b6c0b2553c/hishel-0.1.1.tar.gz", hash = "sha256:1f6421b78cc23fc43c610f651b7848c9b8eee2d29551d64a2ab0d45b319b6559", size = 35615, upload-time = "2024-11-02T09:04:22.801Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/83/51/1e3b9653283223c56b6d03ef26532efa6dfe6e6859652667c2daac8510f4/hishel-1.3.1.tar.gz", hash = "sha256:0a79c3d9c33b1d79ed4897610d25843ed448d830d5f977c9c629e607ee207fa9", size = 810011, upload-time = "2026-08-10T20:17:04.34Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/e9/93174034316943513a372e1b92d9ee2394973a63d2a99d6ca6432511eca3/hishel-0.1.1-py3-none-any.whl", hash = "sha256:5b51acc340303faeef2f5cfc1658acb1db1fdc3e3ad76406265a485f9707c5d6", size = 41852, upload-time = "2024-11-02T09:04:21.265Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/2a/b1fb43ed799714335ef442dfebb35644aa3678b7a765c99d55d51a3bc011/hishel-1.3.1-py3-none-any.whl", hash = "sha256:59977c1b14615dfdcf52ade530fb50d5a4fc3500f03b7bdbcd3a2564e0558f31", size = 73718, upload-time = "2026-08-10T20:17:02.799Z" },
 ]
 
 [[package]]
@@ -1694,7 +1695,7 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
     { name = "expiringdictx", specifier = ">=1.1.0,<2.0.0" },
     { name = "feedparser", specifier = ">=6.0.11,<7.0.0" },
-    { name = "hishel", specifier = ">=0.0.30,<1.0.0" },
+    { name = "hishel", specifier = ">=1.3.1,<1.3.2" },
     { name = "httpx", specifier = ">=0.27.2" },
     { name = "lxml", specifier = ">=5.3.0" },
     { name = "nb-cli", marker = "extra == 'docker'", specifier = ">=1.4.2,<2.0.0" },
@@ -3153,11 +3154,11 @@ wheels = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.12.2"
+version = "4.16.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/df/db/f35a00659bc03fec321ba8bce9420de607a1d37f8342eee1863174c69557/typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8", size = 85321, upload-time = "2024-06-07T18:52:15.995Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/cc/6253133b5bb138fc3306cebfbda2c520f545d36b5be2c7255cc528bb45d6/typing_extensions-4.16.0.tar.gz", hash = "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5", size = 113555, upload-time = "2026-07-02T08:40:05.92Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d", size = 37438, upload-time = "2024-06-07T18:52:13.582Z" },
+    { url = "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl", hash = "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8", size = 45571, upload-time = "2026-07-02T08:40:04.659Z" },
 ]
 
 [[package]]

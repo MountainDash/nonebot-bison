@@ -25,9 +25,9 @@ prev: /usage/
 
 ```python
 class WeiboSite(Site):
-  name = "weibo.com"
-  schedule_type = "interval"
-  schedule_setting = {"seconds": 3}
+    name = "weibo.com"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 3}
 ```
 
 简而言之，要让站点获得 Cookie 能力，只需要：
@@ -36,10 +36,10 @@ class WeiboSite(Site):
 
 ```python {5}
 class WeiboSite(Site):
-  name = "weibo.com"
-  schedule_type = "interval"
-  schedule_setting = {"seconds": 3}
-  client_mgr = CookieClientManager.from_name(name)
+    name = "weibo.com"
+    schedule_type = "interval"
+    schedule_setting = {"seconds": 3}
+    client_mgr = CookieClientManager.from_name(name)
 ```
 
 至此，站点就可以使用 Cookie 了！

@@ -200,7 +200,6 @@ Nonebot 项目使用了全异步的处理方式，所以你需要对异步，Pyt
 
 ```python
 class Weibo(NewMessage):
-
     categories = {
         1: "转发",
         2: "视频",
@@ -217,26 +216,32 @@ class Weibo(NewMessage):
     has_target = True
 
     async def get_target_name(self, target: Target) -> Optional[str]:
-      #获取 Target 对应的用户名
-      ...
+        # 获取 Target 对应的用户名
+        ...
+
     async def get_sub_list(self, target: Target) -> list[RawPost]:
-      #获取对应 Target 的 RawPost 列表，会与上一次 get_sub_list 获取的列表比较，过滤出新的 RawPost
-      ...
+        # 获取对应 Target 的 RawPost 列表，会与上一次 get_sub_list 获取的列表比较，过滤出新的 RawPost
+        ...
+
     def get_id(self, post: RawPost) -> Any:
-      #获取可以标识每个 Rawpost 的，不与之前 RawPost 重复的 id，用于过滤出新的 RawPost
-      ...
+        # 获取可以标识每个 Rawpost 的，不与之前 RawPost 重复的 id，用于过滤出新的 RawPost
+        ...
+
     def get_date(self, raw_post: RawPost) -> float:
-      #获取 RawPost 的发布时间，若 bot 过滤出的新 RawPost 发布时间与当前时间差超过 2 小时，该 RawPost 将被忽略，可以返回 None
-      ...
+        # 获取 RawPost 的发布时间，若 bot 过滤出的新 RawPost 发布时间与当前时间差超过 2 小时，该 RawPost 将被忽略，可以返回 None
+        ...
+
     def get_tags(self, raw_post: RawPost) -> Optional[list[Tag]]:
-      #获取RawPost中包含的微博话题（#xxx#中的内容）
-      ...
+        # 获取RawPost中包含的微博话题（#xxx#中的内容）
+        ...
+
     def get_category(self, raw_post: RawPost) -> Category:
-      #获取该 RawPost 在该类定义 categories 的具体分类 (转发？视频？图文？...？)
-      ...
+        # 获取该 RawPost 在该类定义 categories 的具体分类 (转发？视频？图文？...？)
+        ...
+
     async def parse(self, raw_post: RawPost) -> Post:
-      #将需要 bot 推送的 RawPost 处理成正式推送的 Post
-      ...
+        # 将需要 bot 推送的 RawPost 处理成正式推送的 Post
+        ...
 ```
 
 ## 生成 bison 的推送文本
@@ -360,8 +365,10 @@ def get_priority_themes(self) -> list[str]:
 from typing import TYPE_CHECKING, Literal
 
 from nonebot_bison.theme import Theme
+
 if TYPE_CHECKING:
     from nonebot_bison.post import Post
+
 
 class MyTheme(Theme):
     name: Literal["mytheme"] = "mytheme"
@@ -369,8 +376,7 @@ class MyTheme(Theme):
     # 可选，该主题渲染是否需要浏览器
     # need_browser: bool = ...
 
-    async def render(self, post: "Post") -> list[MessageSegmentFactory]:
-        ...
+    async def render(self, post: "Post") -> list[MessageSegmentFactory]: ...
 ```
 
 在`render`函数中，将传入的 post 中的数据用你所希望的方式渲染成 MessageSegmentFactory，就完成了一个主题的制作

@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: ["rebuild/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: 安装依赖
+        run: uv sync --all-packages
+
+      - name: 静态检查
+        run: uv run ruff check .
+
+      - name: 格式检查
+        run: uv run ruff format --check .
+
+      - name: 测试
+        run: uv run pytest

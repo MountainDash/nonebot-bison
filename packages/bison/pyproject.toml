@@ -1,0 +1,16 @@
+[project]
+name = "bison"
+version = "0.1.0"
+description = "业务应用：抓取器、解析器、渲染器、发送器。"
+requires-python = ">=3.12"
+dependencies = [
+    "courier",
+    "nonebot2>=2.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bison"]

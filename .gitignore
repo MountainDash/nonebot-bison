@@ -325,3 +325,11 @@ data*/*
 .vim/*
 !dist/.gitkeep
 .vscode
+
+### MountainDash Logistics ###
+# 运行产物
+.delta/
+
+# 调研时抓取的原始网页与纯文本抽取，可由脚本重新生成，不入库
+docs/research/prior-art/raw/
+docs/research/prior-art/txt/

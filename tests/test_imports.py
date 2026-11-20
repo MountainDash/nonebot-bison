@@ -1,6 +1,3 @@
-"""workspace 的烟雾测试：两个包都能被导入。"""
-
-
 def test_courier_imports() -> None:
     import courier
 

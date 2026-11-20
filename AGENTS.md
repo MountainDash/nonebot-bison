@@ -27,6 +27,7 @@
 7. **站点注册只能在 `run()` 之前。** `run()` 之后调用 `register()` 必须抛错，不得静默生效。
 8. **测试与实现在同一个 PR 里。** 不允许「先实现后补测」，也不允许「最后来个测试 PR 收口」（唯一例外是里程碑验收 PR，见 PLAN）。
 9. **决策变了就在同一个 PR 里改 ADR / GLOSSARY。** 落后的 ADR 比没有 ADR 更糟。
+10. **代码必须过三道门：`ruff check`、`ruff format --check`、`basedpyright`（0 error 0 warning）。** 不许用「关了这条规则」代替修代码；要关某条规则，得在 `pyproject.toml` 里写明理由。
 
 ## 工作方式：链式 PR 栈
 
@@ -95,6 +96,8 @@ GLOSSARY.md            术语（权威）
 ## 验证
 
 ```bash
-uv run pytest          # 全部测试
-uv run ruff check .    # 静态检查
+uv run pytest                    # 全部测试
+uv run ruff check .              # 静态检查
+uv run ruff format --check .     # 格式
+uv run basedpyright              # 类型检查
 ```

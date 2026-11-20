@@ -24,5 +24,8 @@ jobs:
       - name: 格式检查
         run: uv run ruff format --check .
 
+      - name: 类型检查
+        run: uv run basedpyright
+
       - name: 测试
         run: uv run pytest

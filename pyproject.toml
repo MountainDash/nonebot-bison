@@ -2,7 +2,7 @@
 name = "mountaindash-logistics"
 version = "0.0.0"
 description = "把社交媒体上的动态搬运到聊天平台"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = []
 
 [tool.uv]
@@ -17,6 +17,7 @@ bison = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.40.2",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "ruff>=0.6",
@@ -30,7 +31,7 @@ addopts = "-q"
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py314"
 src = ["packages/courier/src", "packages/bison/src", "tests"]
 extend-exclude = ["docs"]
 
@@ -44,3 +45,9 @@ known-first-party = ["courier", "bison"]
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.basedpyright]
+include = ["packages", "tests"]
+exclude = ["docs"]
+typeCheckingMode = "recommended"
+pythonVersion = "3.14"

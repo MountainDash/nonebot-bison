@@ -1,0 +1,541 @@
+from __future__ import annotations
+
+import inspect
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from functools import wraps
+from typing import Annotated, cast, final, get_args, get_type_hints, overload, override
+
+from anyio import Lock
+from arclet.letoderea import Contexts, Depend, Force, Param, Provider, ProviderFactory, Subscriber
+
+from .binding import BindingBackend, ExactKeyBindingBackend, bind_plan, bind_providers
+from .errors import (
+    DependencyValidationError,
+    DispatcherFrozenError,
+    DispatcherNotFrozenError,
+    DuplicateProviderError,
+    ResolutionError,
+    SignatureError,
+)
+from .model import (
+    BindingPlan,
+    DependencyKey,
+    Factory,
+    ProviderSpec,
+    RegistrySnapshot,
+    ValidationIssue,
+    ValidationReport,
+    compile_plan,
+)
+from .validation import StrictGraphValidationBackend, ValidationBackend
+
+
+@dataclass(slots=True)
+class _Compiled:
+    snapshot: RegistrySnapshot
+    plans: dict[int, BindingPlan]
+
+
+@final
+class _OverrideProvider(Provider[object]):
+    def __init__(self, context_key: str, parameter: str) -> None:
+        super().__init__()
+        self.context_key = context_key
+        self.parameter = parameter
+
+    @override
+    def validate(self, param: Param) -> bool:
+        return any(marker is self for marker in cast("tuple[object, ...]", param.meta))
+
+    @override
+    async def __call__(self, context: Contexts) -> Force | None:
+        overrides = cast("Mapping[str, object]", context.get(self.context_key, {}))
+        return Force(overrides[self.parameter]) if self.parameter in overrides else None
+
+
+@final
+class _ExactProvider(Provider[object]):
+    def __init__(self, dispatcher: DependencyDispatcher, spec: ProviderSpec, owner: str, parameter: str) -> None:
+        super().__init__()
+        self.dispatcher = dispatcher
+        self.spec = spec
+        self.owner = owner
+        self.parameter = parameter
+
+    @override
+    def validate(self, param: Param) -> bool:
+        # The adapter is an explicit annotation marker. Never widen this to subclass/Optional matching.
+        return (
+            any(marker is self for marker in cast("tuple[object, ...]", param.meta))
+            and cast("object", param.annotation) == cast("DependencyKey", self.spec.key).base
+        )
+
+    @override
+    async def __call__(self, context: Contexts) -> Force:
+        key = cast("DependencyKey", self.spec.key)
+        overrides = cast("Mapping[str, object]", context.get(self.dispatcher.overrides_key, {}))
+        if self.parameter in overrides:
+            return Force(overrides[self.parameter])
+        try:
+            value = await self.dispatcher.resolve_exact(self.spec, context)
+        except ResolutionError as error:
+            raise ResolutionError(
+                "dependency resolution failed",
+                owner=self.owner,
+                parameter=self.parameter,
+                keys=error.keys if error.keys[:1] == (key,) else (key, *error.keys),
+            ) from error
+        return Force(value)
+
+
+class _NativeProvider(Provider[object]):
+    native: Provider[object]
+    token: object
+    key: DependencyKey
+    owner: str
+    parameter: str
+    overrides_key: str
+
+    def __init__(
+        self,
+        native: Provider[object],
+        token: object,
+        key: DependencyKey,
+        owner: str,
+        parameter: str,
+        overrides_key: str,
+    ) -> None:
+        super().__init__()
+        self.native = native
+        self.token = token
+        self.key = key
+        self.owner = owner
+        self.parameter = parameter
+        self.overrides_key = overrides_key
+
+    @override
+    def validate(self, param: Param) -> bool:
+        return (
+            any(marker is self.token for marker in cast("tuple[object, ...]", param.meta))
+            and cast("object", param.annotation) == self.key.base
+        )
+
+    @override
+    async def __call__(self, context: Contexts) -> object | None:
+        overrides = cast("Mapping[str, object]", context.get(self.overrides_key, {}))
+        if self.parameter in overrides:
+            return Force(overrides[self.parameter])
+        try:
+            return await self.native(Contexts(context))
+        except Exception as error:
+            raise ResolutionError(
+                "native provider failed", owner=self.owner, parameter=self.parameter, keys=(self.key,)
+            ) from error
+
+
+def _native_adapter(
+    native: Provider[object], token: object, key: DependencyKey, owner: str, parameter: str, overrides_key: str
+) -> Provider[object]:
+    priority = native.priority
+
+    class Adapter(_NativeProvider):
+        pass
+
+    Adapter.priority = priority
+    return Adapter(native, token, key, owner, parameter, overrides_key)
+
+
+@final
+class _DeclineProvider(Provider[object]):
+    def __init__(self, token: object, key: DependencyKey, owner: str, parameter: str, priority: int) -> None:
+        super().__init__()
+        self.token = token
+        self.key = key
+        self.owner = owner
+        self.parameter = parameter
+        object.__setattr__(self, "priority", priority)
+
+    @override
+    def validate(self, param: Param) -> bool:
+        return (
+            any(marker is self.token for marker in cast("tuple[object, ...]", param.meta))
+            and cast("object", param.annotation) == self.key.base
+        )
+
+    @override
+    async def __call__(self, context: Contexts) -> object:
+        del context
+        raise ResolutionError(
+            "all native providers declined",
+            owner=self.owner,
+            parameter=self.parameter,
+            keys=(self.key,),
+        )
+
+
+@final
+class _OverrideDepend(Depend):
+    def __init__(self, target: Factory, cache: bool, context_key: str, parameter: str) -> None:
+        super().__init__(target, cache)
+        self.context_key = context_key
+        self.parameter = parameter
+
+    @override
+    def fork(self, provider: list[Provider[object] | ProviderFactory]) -> _OverrideDepend:
+        forked = _OverrideDepend(self.target, self.cache, self.context_key, self.parameter)
+        forked.sub = Subscriber(self.target, providers=provider)
+        return forked
+
+    @override
+    async def __call__(self, context: Contexts) -> object:
+        overrides = cast("Mapping[str, object]", context.get(self.context_key, {}))
+        if self.parameter in overrides:
+            return overrides[self.parameter]
+        return cast("object", await super().__call__(context))
+
+
+@final
+class PreparedStation:
+    def __init__(self, dispatcher: DependencyDispatcher, plan: BindingPlan) -> None:
+        self._dispatcher = dispatcher
+        self.raw_plan = plan
+
+    @property
+    def owner(self) -> str:
+        return self.raw_plan.owner
+
+    @property
+    def needs(self) -> tuple[DependencyKey, ...]:
+        return self.raw_plan.needs
+
+    @property
+    def plan(self) -> BindingPlan:
+        compiled = self._dispatcher.compiled_plans()
+        return compiled.plans.get(id(self), self.raw_plan)
+
+    async def __call__(
+        self,
+        *,
+        overrides: Mapping[str, object] | None = None,
+        context: Mapping[str, object] | None = None,
+    ) -> object:
+        selected = self._dispatcher.station_subscriber(self)
+        explicit = dict(overrides or {})
+        known = {parameter.name for plan in (self.plan, *self.plan.dependencies) for parameter in plan.parameters}
+        unknown = explicit.keys() - known
+        if unknown:
+            names = ", ".join(sorted(unknown))
+            raise ResolutionError(f"unknown overrides: {names}", owner=self.owner)
+        call_context = self._dispatcher.call_context(self.plan, explicit, context)
+        try:
+            return await selected.handle(call_context)
+        except ResolutionError:
+            raise
+        except Exception as error:
+            raise ResolutionError("station execution failed", owner=self.owner) from error
+
+
+@final
+class DependencyDispatcher:
+    def __init__(
+        self,
+        *,
+        binding_backends: Sequence[BindingBackend] | None = None,
+        validation_backend: ValidationBackend | None = None,
+    ) -> None:
+        self._binding_backends = (
+            tuple(binding_backends) if binding_backends is not None else (ExactKeyBindingBackend(),)
+        )
+        self._validation_backend = validation_backend or StrictGraphValidationBackend()
+        self._providers: list[ProviderSpec] = []
+        self._stations: list[PreparedStation] = []
+        self._compiled: _Compiled | None = None
+        self._subscribers: dict[int, Subscriber[object]] = {}
+        self._provider_subscribers: dict[DependencyKey, Subscriber[object]] = {}
+        self._specs: dict[DependencyKey, ProviderSpec] = {}
+        self._values: dict[DependencyKey, object] = {}
+        self._locks: dict[DependencyKey, Lock] = {}
+        self._frozen = False
+        self.overrides_key = f"courier.overrides.{id(self):x}"
+
+    def _ensure_mutable(self) -> None:
+        if self._frozen:
+            raise DispatcherFrozenError("dependency dispatcher is frozen")
+
+    def set_binding_backends(self, backends: Sequence[BindingBackend]) -> None:
+        self._ensure_mutable()
+        self._binding_backends = tuple(backends)
+        self._compiled = None
+
+    def set_validation_backend(self, backend: ValidationBackend) -> None:
+        self._ensure_mutable()
+        self._validation_backend = backend
+
+    def register(self, key: object, factory: Factory, *, singleton: bool = True) -> None:
+        self._ensure_mutable()
+        normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
+        if any(provider.key == normalized for provider in self._providers):
+            raise DuplicateProviderError(f"duplicate exact provider: {normalized}")
+        spec = ProviderSpec.exact(normalized, factory, singleton=singleton)
+        self._providers.append(spec)
+        self._compiled = None
+
+    @overload
+    def provider(self, factory: Factory, *, singleton: bool = True) -> Factory: ...
+
+    @overload
+    def provider(self, *, singleton: bool = True) -> Callable[[Factory], Factory]: ...
+
+    def provider(
+        self, factory: Factory | None = None, *, singleton: bool = True
+    ) -> Factory | Callable[[Factory], Factory]:
+        def decorate(target: Factory) -> Factory:
+            hints = cast("dict[str, object]", get_type_hints(target, include_extras=True))
+            if "return" not in hints:
+                raise SignatureError(f"provider {target!r} has no return annotation")
+            self.register(hints["return"], target, singleton=singleton)
+            return target
+
+        return decorate if factory is None else decorate(factory)
+
+    def register_native[T](self, candidate: Provider[T] | ProviderFactory) -> None:
+        self._ensure_mutable()
+        self._providers.append(ProviderSpec.from_native(candidate))
+        self._compiled = None
+
+    def prepare(self, target: Factory) -> PreparedStation:
+        self._ensure_mutable()
+        compiled = self.compiled_plans()
+        station = PreparedStation(self, compile_plan(target))
+        self._stations.append(station)
+        compiled.plans[id(station)] = bind_plan(station.raw_plan, compiled.snapshot, self._binding_backends)
+        return station
+
+    def compiled_plans(self) -> _Compiled:
+        if self._compiled is None:
+            snapshot = bind_providers(RegistrySnapshot(tuple(self._providers)), self._binding_backends)
+            plans = {
+                id(station): bind_plan(station.raw_plan, snapshot, self._binding_backends) for station in self._stations
+            }
+            self._compiled = _Compiled(snapshot, plans)
+            self._specs = {spec.key: spec for spec in snapshot.providers if spec.key is not None}
+        return self._compiled
+
+    def validate(self) -> ValidationReport:
+        compiled = self.compiled_plans()
+        return self._validation_backend.validate(compiled.snapshot, tuple(compiled.plans.values()))
+
+    def freeze(self) -> ValidationReport:
+        self._ensure_mutable()
+        report = self.validate()
+        if not report.ok:
+            raise DependencyValidationError(report)
+        compiled = self.compiled_plans()
+        provider_subscribers = {
+            spec.key: self._make_subscriber(spec.plan)
+            for spec in compiled.snapshot.providers
+            if spec.key is not None and spec.plan is not None
+        }
+        station_subscribers = {identity: self._make_subscriber(plan) for identity, plan in compiled.plans.items()}
+        self._provider_subscribers = provider_subscribers
+        self._subscribers = station_subscribers
+        self._frozen = True
+        return report
+
+    def _make_subscriber(self, plan: BindingPlan) -> Subscriber[object]:
+        graph = {id(item.target): item for item in (plan, *plan.dependencies)}
+        providers: list[Provider[object] | ProviderFactory] = []
+        annotations: dict[int, dict[str, object]] = {}
+        allowed: dict[tuple[int, str], frozenset[int]] = {}
+
+        for item in graph.values():
+            hints = cast("dict[str, object]", get_type_hints(item.target, include_extras=True))
+            transformed: dict[str, object] = {}
+            for index, parameter in enumerate(item.parameters):
+                metadata: list[object] = []
+                planned: set[int] = set()
+                if parameter.depends is not None:
+                    dependency = graph[id(parameter.depends.target)]
+                    dependency_target = dependency.target
+                    marker = _OverrideDepend(
+                        dependency_target, parameter.depends.cache, self.overrides_key, parameter.name
+                    )
+                    metadata.append(marker)
+                else:
+                    bindings = item.bindings[index]
+                    override_provider = _OverrideProvider(self.overrides_key, parameter.name)
+                    providers.append(override_provider)
+                    planned.add(id(override_provider))
+                    metadata.append(override_provider)
+                    for binding in bindings:
+                        if binding.priority is None:
+                            adapter = _ExactProvider(self, binding.provider, item.owner, parameter.name)
+                            providers.append(adapter)
+                            planned.add(id(adapter))
+                            metadata.append(adapter)
+                        elif binding.native_provider is not None:
+                            native_token = object()
+                            native_adapter = _native_adapter(
+                                binding.native_provider,
+                                native_token,
+                                parameter.key,
+                                item.owner,
+                                parameter.name,
+                                self.overrides_key,
+                            )
+                            providers.append(native_adapter)
+                            planned.add(id(native_adapter))
+                            metadata.append(native_token)
+                    token = object()
+                    last_priority = (
+                        max((binding.priority or 0 for binding in bindings if binding.priority is not None), default=19)
+                        + 1
+                    )
+                    decline = _DeclineProvider(token, parameter.key, item.owner, parameter.name, last_priority)
+                    providers.append(decline)
+                    planned.add(id(decline))
+                    metadata.append(token)
+                allowed[(id(item.target), parameter.name)] = frozenset(planned)
+                base = parameter.key.base
+                transformed[parameter.name] = Annotated[base, *metadata] if metadata else base
+            for name, hint in hints.items():
+                if name not in transformed:
+                    transformed[name] = hint
+            annotations[id(item.target)] = transformed
+
+        wrapped: dict[int, Factory] = {}
+
+        def wrap_plan(item: BindingPlan) -> Factory:
+            identity = id(item.target)
+            if identity in wrapped:
+                return wrapped[identity]
+
+            @wraps(item.target)
+            def invoke(*args: object, **kwargs: object) -> object:
+                return item.target(*args, **kwargs)
+
+            transformed = annotations[identity]
+            for parameter in item.parameters:
+                if parameter.depends is None:
+                    continue
+                dependency = graph[id(parameter.depends.target)]
+                dependency_wrapper = wrap_plan(dependency)
+                marker = next(
+                    marker
+                    for marker in cast("tuple[object, ...]", get_args(transformed[parameter.name]))[1:]
+                    if isinstance(marker, _OverrideDepend)
+                )
+                marker.target = dependency_wrapper
+            invoke.__annotations__ = transformed
+            signature = inspect.signature(item.target)
+            parameters = [
+                parameter.replace(annotation=transformed.get(name, cast("object", parameter.annotation)))
+                for name, parameter in signature.parameters.items()
+            ]
+            invoke.__dict__["__signature__"] = signature.replace(parameters=parameters)
+            wrapped[identity] = invoke
+            return invoke
+
+        root = wrap_plan(plan)
+        subscriber = Subscriber(root, providers=providers)
+        wrapped_allowed = {(id(wrapped[target]), name): candidates for (target, name), candidates in allowed.items()}
+        self._audit_candidates(subscriber, wrapped_allowed, plan.owner)
+        return subscriber
+
+    def _audit_candidates(
+        self,
+        subscriber: Subscriber[object],
+        allowed: Mapping[tuple[int, str], frozenset[int]],
+        owner: str,
+        seen: set[int] | None = None,
+    ) -> None:
+        visited: set[int] = set() if seen is None else seen
+        if id(subscriber) in visited:
+            return
+        visited.add(id(subscriber))
+        issues: list[ValidationIssue] = []
+        for parameter in subscriber.params:
+            candidates = cast("list[Provider[object]]", parameter.providers)
+            expected = allowed.get((id(subscriber.callable_target), parameter.name), frozenset())
+            unexpected = [provider for provider in candidates if id(provider) not in expected]
+            if unexpected:
+                message = f"{owner} parameter {parameter.name!r} received unplanned providers: {unexpected!r}"
+                issues.append(ValidationIssue("unexpected_provider", message, owner, parameter.name))
+            if parameter.depend is not None:
+                self._audit_candidates(parameter.depend.sub, allowed, owner, visited)
+        if issues:
+            raise DependencyValidationError(ValidationReport(tuple(issues)))
+
+    def station_subscriber(self, station: PreparedStation) -> Subscriber[object]:
+        if not self._frozen:
+            raise DispatcherNotFrozenError("freeze the dispatcher before executing a station")
+        return self._subscribers[id(station)]
+
+    def call_context(
+        self,
+        plan: BindingPlan,
+        overrides: Mapping[str, object],
+        context: Mapping[str, object] | None,
+    ) -> Contexts:
+        result = Contexts(context or {})
+        parameter_names = {
+            parameter.name
+            for item in (plan, *plan.dependencies, *(spec.plan for spec in self._specs.values() if spec.plan))
+            for parameter in item.parameters
+        }
+        for name in parameter_names:
+            _ = result.pop(name, None)
+        result[self.overrides_key] = dict(overrides)
+        return result
+
+    async def resolve[T](self, key: type[T] | DependencyKey | object) -> T:
+        if not self._frozen:
+            raise DispatcherNotFrozenError("freeze the dispatcher before resolving dependencies")
+        normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
+        spec = self._specs.get(normalized)
+        if spec is None:
+            raise ResolutionError("no exact provider", owner="DependencyDispatcher.resolve", keys=(normalized,))
+        try:
+            value = await self.resolve_exact(spec, Contexts())
+        except ResolutionError as error:
+            if normalized in error.keys:
+                raise
+            raise ResolutionError(
+                "dependency resolution failed",
+                owner="DependencyDispatcher.resolve",
+                keys=(normalized, *error.keys),
+            ) from error
+        return cast("T", value)
+
+    async def resolve_exact(self, spec: ProviderSpec, context: Contexts) -> object:
+        key = cast("DependencyKey", spec.key)
+        if not spec.singleton:
+            return await self._construct(spec, context)
+        if key in self._values:
+            return self._values[key]
+        lock = self._locks.setdefault(key, Lock())
+        async with lock:
+            if key in self._values:
+                return self._values[key]
+            # A process-wide singleton must never retain a call's overrides or native context.
+            value = await self._construct(spec, Contexts())
+            self._values[key] = value
+            return value
+
+    async def _construct(self, spec: ProviderSpec, context: Contexts) -> object:
+        key = cast("DependencyKey", spec.key)
+        try:
+            return await self._provider_subscribers[key].handle(Contexts(context))
+        except ResolutionError:
+            raise
+        except Exception as error:
+            raise ResolutionError("provider factory failed", owner=spec.name, keys=(key,)) from error
+
+    def snapshot(self) -> dict[str, dict[str, object]]:
+        result: dict[str, dict[str, object]] = {}
+        for index, spec in enumerate(self._providers):
+            name = str(spec.key) if spec.key is not None else f"native:{index}:{spec.name}"
+            needs = [] if spec.plan is None else [str(key) for key in spec.plan.needs]
+            result[name] = {"singleton": spec.singleton, "needs": needs}
+        return result

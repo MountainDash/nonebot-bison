@@ -7,6 +7,8 @@ from .binding import (
     bind_plan,
     bind_providers,
 )
+from .dispatcher import DependencyDispatcher, PreparedStation
+from .errors import DependencyValidationError, DispatcherFrozenError, DispatcherNotFrozenError, ResolutionError
 from .model import (
     Binding,
     BindingPlan,
@@ -29,14 +31,20 @@ __all__ = [
     "BindingPlan",
     "DIError",
     "Depend",
+    "DependencyDispatcher",
     "DependencyKey",
+    "DependencyValidationError",
     "Depends",
+    "DispatcherFrozenError",
+    "DispatcherNotFrozenError",
     "DuplicateProviderError",
     "EntariBindingBackend",
     "ExactKeyBindingBackend",
     "ParameterSpec",
+    "PreparedStation",
     "ProviderSpec",
     "RegistrySnapshot",
+    "ResolutionError",
     "SignatureError",
     "StrictGraphValidationBackend",
     "ValidationBackend",

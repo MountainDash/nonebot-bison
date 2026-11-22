@@ -7,9 +7,6 @@ from typing import Annotated, cast, get_args, get_origin, get_type_hints, overri
 
 from arclet.letoderea import Depend, Provider, ProviderFactory
 
-type Factory = Callable[..., object]
-type Native = Provider[object] | ProviderFactory
-
 
 class DIError(Exception): ...
 
@@ -18,6 +15,10 @@ class SignatureError(DIError): ...
 
 
 class DuplicateProviderError(DIError): ...
+
+
+type Factory = Callable[..., object]
+type Native = Provider[object] | ProviderFactory
 
 
 def callable_name(target: object) -> str:
@@ -77,15 +78,17 @@ class ProviderSpec:
     plan: BindingPlan | None
     native: Native | None
     name: str
+    singleton: bool | None = True
 
     @classmethod
-    def exact(cls, key: object, factory: Factory) -> ProviderSpec:
+    def exact(cls, key: object, factory: Factory, *, singleton: bool = True) -> ProviderSpec:
         plan = compile_plan(factory, provider=True)
-        return cls(key if isinstance(key, DependencyKey) else DependencyKey.of(key), factory, plan, None, plan.owner)
+        normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
+        return cls(normalized, factory, plan, None, plan.owner, singleton)
 
     @classmethod
     def from_native[T](cls, candidate: Provider[T] | ProviderFactory) -> ProviderSpec:
-        return cls(None, None, None, cast("Native", candidate), callable_name(type(candidate)))
+        return cls(None, None, None, cast("Native", candidate), callable_name(type(candidate)), None)
 
 
 @dataclass(frozen=True, slots=True)

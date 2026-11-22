@@ -2,8 +2,8 @@ from arclet.letoderea import Depend, Depends
 
 from .binding import (
     BindingBackend,
-    EntariBindingBackend,
     ExactKeyBindingBackend,
+    LetodereaPredicateBindingBackend,
     bind_plan,
     bind_providers,
 )
@@ -38,8 +38,8 @@ __all__ = [
     "DispatcherFrozenError",
     "DispatcherNotFrozenError",
     "DuplicateProviderError",
-    "EntariBindingBackend",
     "ExactKeyBindingBackend",
+    "LetodereaPredicateBindingBackend",
     "ParameterSpec",
     "PreparedStation",
     "ProviderSpec",

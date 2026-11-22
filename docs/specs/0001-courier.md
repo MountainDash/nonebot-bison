@@ -21,6 +21,8 @@
 | 站点 | 地址对应的处理函数 |
 | 回收站 | 地址 `dead-letter` 上的内建终态处理；持久死信记录不依赖可替换的通知逻辑 |
 
+地址的粒度仍然是设计地基：`fetch:bilibili` 处理所有 B 站源，源是包裹里的参数。新增订阅产生新对象，不产生新处理类型，因此注册表可以在启动后冻结。
+
 ## 3. 包裹与投递凭据
 
 ```python
@@ -91,7 +93,9 @@ register(address, station, *, channel, resource, kind, side_effecting=False)
 3. 每个站点的依赖都能被注入器满足。
 4. 配置中的组件名都已注册，且每个源的抓取器 + 解析器配对成立。
 5. 声明共享同一资源画像的站点必须使用一致的资源级 pacing；不同画像应拆站点，不能用源轮询间隔冒充资源限流。
-6. `dead-letter` 的内建持久终态处理存在；通知观察者可替换，但不能替换耐久记录。DI 见 [ADR 0003](../adr/0003-di-open-vocabulary-closed-mechanism.md)，可满足性在注册或准备期校验，运行期注册表只读。
+6. `dead-letter` 的内建持久终态处理存在；通知观察者可替换，但不能替换耐久记录。
+
+DI 见 [ADR 0003](../adr/0003-di-open-vocabulary-closed-mechanism.md)。公开面只有 `@provider` / `register()` / `resolve()` / `prepare()` / `Depends`；可满足性在注册或准备期校验，运行期注册表只读。
 
 ## 6. 信道与执行模型
 
@@ -139,7 +143,14 @@ courier 可独立运行，也必须向宿主暴露单步调度、到期时间与
 - **业务校验拒绝**：无效地址/kind、同 id 不同内容、循环或额度超限在写入子包裹前确定。丢弃全部输出，然后在**一个事务中提交**父 `DEAD`、耐久死信与 head 推进；不能随机保留前 N 个输出，也不能因拒绝输出而回滚父死信。
 - **存储/系统失败**：写子行、父行、死信或调度状态的任一存储操作失败，整个事务回滚，head 不推进。若连父死信也无法写入，就保持原未结算状态，由有界退避和重启重入处理，不能伪造已经死信。
 
-事务提交前崩溃会重入站点；提交后崩溃不重入。外部副作用与数据库提交不可能组成一个本地事务。
+事务提交前崩溃会重入站点；提交后崩溃不重入。外部副作用与数据库提交不可能组成一个本地事务，其重复窗口见 §14。
+
+管理动作与执行竞态必须保守处理：
+
+- `CANCELLED` 与 `DROPPED` 只能作用于未在执行、且不存在不可知外部结果的包裹。正在执行的 head 先等待本次结算，不能直接把可能已经发送的内容改写成未发送。
+- `side_effecting` 站点发生超时、断连或进程崩溃时，持久化 `outcome_unknown=True`；这类包裹继续按 at-least-once 处理，不得直接 `CANCELLED` 或 `DROPPED`。后续明确成功也不能抹去曾经不可知的审计事实。
+- 溢出只淘汰尚未执行的合格排队项；若最老项正在执行或结果不可知，允许暂时超过容量一个执行中的位置，等其结算后再淘汰。不得为了严格凑够 200 条而伪造终态。
+- 设置或解除 `held` 与 lane 重建在同一事务完成并唤醒调度器。执行中的包裹先结算，再根据最新暂停意图决定是否 held。
 
 ## 8. 重试、错误与 pacing
 
@@ -168,7 +179,7 @@ pacing 分三类，不得互相覆盖：
 
 额度在写入新子包裹时原子预留；幂等重放不重复扣减。超限整批回滚，父包裹以 `fanout_exceeded` 进死信。预算根计数在可能重放的整个期间持久保存，不能随单个 head 推进而消失。
 
-## 10. 回收站
+## 10. 回收站与人工重投
 
 进入回收站是一个数据库状态迁移：原包裹 `DEAD`、耐久死信记录与 head 推进必须同事务完成。每条死信至少携带：
 
@@ -178,6 +189,10 @@ pacing 分三类，不得互相覆盖：
 
 可替换的回收站观察者负责通知或额外投影，不能删除内建耐久记录。观察者失败只记日志和指标，不再生成新死信，也不改变原包裹已经持久化的 `DEAD`。若数据库本身不可用，结算不提交、head 不推进；调度器使用有界本地退避避免热循环并主动告警。
 
+**人工操作叫重投，不叫复活：** 原包裹与原死信保持不变。重投通过条件更新把原死信标记为 `requeued_to`，同时创建一个 `retry_of = 原包裹 id`、`generation + 1`、`root_id = 新包裹 id` 的新包裹；新根使新代预算真正独立，`retry_of` 保留完整血缘。重复请求返回同一个新包裹，原死信不能再次重投。
+
+重投不是机械复制原地址。bison 根据死亡阶段、必要快照和当前有效计划选择 `requeue_from = fetch | parse | render | send`，再创建对应地址的新 Parcel；规则见 [bison §8](./0002-bison.md)。只有继续复用原 artifact 的 send 重投才在重投事务中复制 artifact_ref，退回 render 的路径按正常文件发布协议后建引用。
+
 ## 11. 存储与事务组合
 
 见 [ADR 0004](../adr/0004-store-sqlalchemy-core.md)。
@@ -186,7 +201,10 @@ pacing 分三类，不得互相覆盖：
 
 courier 拥有自己的表与迁移，bison 拥有自己的表与迁移；双方共用 engine，**绝不跨 schema join**。但 bison 可以开启一个 SQLAlchemy 事务，把 connection 显式传给 Store，使以下业务写入与运输写入共享提交点：
 
-- 推后 `next_poll_at` + 入队抓取包裹；内容去重/游标推进 + 内容子包裹入队 + 父结算；artifact 引用 + 发送包裹入队 + 父结算。
+- 推后 `next_poll_at` + 入队抓取包裹；
+- 内容去重/游标推进 + 内容子包裹入队 + 父结算；
+- artifact 引用 + 发送包裹入队 + 父结算；
+- 死信重投标记 + 新投递代入队 + **仅当直接复用旧 artifact 时**的新 artifact 引用。
 
 connection 只作为方法参数存在，绝不进入 Parcel。事务由 bison 开启与提交，courier 不在嵌套边界偷偷提交。
 
@@ -201,10 +219,13 @@ connection 只作为方法参数存在，绝不进入 Parcel。事务由 bison �
 ```python
 {
   "stations": [{"address", "kind", "channel", "needs"}],
-  "channels": [{"resource", "head_age_seconds", "attempt_count", "held_count", "resource_available_at",
-                "next_attempt_at", "last_error_kind", "outcome_unknown"}],
-  "dead_letters": {"count_by_reason_kind", "recent"}, "terminal_counts": {"delivered", "cancelled", "dropped"},
-  "scheduler": {"last_progress_at", "worker_state"}, "config": {"..."},
+  "channels": [{"resource", "head_age_seconds", "attempt_count", "held_count",
+                "resource_available_at", "next_attempt_at", "last_error_kind",
+                "outcome_unknown"}],
+  "dead_letters": {"count_by_reason_kind", "recent"},
+  "terminal_counts": {"delivered", "cancelled", "dropped"},
+  "scheduler": {"last_progress_at", "worker_state"},
+  "config": {"..."},
 }
 ```
 
@@ -218,21 +239,34 @@ connection 只作为方法参数存在，绝不进入 Parcel。事务由 bison �
 
 恢复事务必须处理所有遗留 `attempt_in_progress=True`：
 
-- `side_effecting=True` 的站点写入 `outcome_unknown=True`；其他站点只记录中断执行，不伪造外部未知结果。
+- 对应 `side_effecting=True` 的站点，原子写入 `outcome_unknown=True`，因为无法排除平台已经接受结果。
+- 非 side-effecting 站点只记录一次中断执行，不伪造外部未知结果。
 - 随后清除 `attempt_in_progress`，保留原 Receipt 计数、head、路由与退避，让包裹重新参与调度。
 
 恢复事务提交前不得调用任何站点。进程无法在崩溃当时主动写 `outcome_unknown`，所以启动恢复是该状态迁移的必要组成部分，不是可选清理。
 
 `close()`：
 
-1. 标记 closing，拒绝新的 `post()` 与重投，停止取新 head 并唤醒调度器。
-2. 给在途站点有限排干时间；超时则 cancel-and-await。
-3. 等 worker 真正退出后才返回，由 bison 继续关闭组件资源和 engine。
+1. 标记 closing，拒绝新的 `post()` 与重投。
+2. 停止取新 head，唤醒调度器。
+3. 给在途站点有限排干时间；超时则 cancel-and-await。
+4. 等 worker 真正退出后才返回，由 bison 继续关闭组件资源和 engine。
 
 重复 `close()` 幂等。未结算包裹留在表中，重启继续；不能留下 detached 站点任务。
 
-## 14. 非目标
+## 14. 交付边界
 
-- 多进程 / 远程运输器、当前开放多 worker、多资源门控与运行时注册。
-- 传输级全序、序列号、Resequencer 与乱序窗口。
+采用 [ADR 0008](../adr/0008-at-least-once-with-explicit-losses.md) 的**带显式例外的 at-least-once**：
+
+- 已提交运输状态不得出现未报告丢失。
+- 「外部平台可能已接受，但本地没有确定结果」允许重发，包括响应超时、断连，以及发送后本地结算前崩溃；所有有外部副作用的站点必须容忍重入，并保留 `outcome_unknown` 审计。
+- `DROPPED`、`CANCELLED`、迁移截断和补抓缺口必须分别记录，不能被算作静默成功。
+- 正常关闭、结算提交前崩溃、结算提交后崩溃、发送超时/断连与发送后崩溃必须分别验收，不用一句「重启不重复」混为一谈。
+
+## 15. 非目标
+
+- 多进程 / 远程运输器，以及当前开放多 worker。
+- 传输级全序、序列号、Resequencer、乱序窗口。
+- 多资源门控。
+- 运行时注册。
 - 认识浏览器、Cookie、社交动态或聊天平台等宿主概念。

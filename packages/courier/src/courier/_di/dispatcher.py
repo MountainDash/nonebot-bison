@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import inspect
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass

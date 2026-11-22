@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import final
 
 from .model import DependencyKey, DIError, DuplicateProviderError, SignatureError, ValidationReport

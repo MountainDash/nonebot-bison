@@ -43,7 +43,7 @@
 |---|---|---|
 | 0001 | courier 零 NoneBot 依赖 | [ADR](../adr/0001-courier-has-no-nonebot-dependency.md) |
 | 0002 | 信道是逻辑车道，顺序由「单在途」保证；不引入序列号与 Resequencer | [ADR](../adr/0002-channel-is-a-logical-lane.md) |
-| 0003 | 依赖注入：开放词汇，封闭机制 | [ADR](../adr/0003-di-open-vocabulary-closed-mechanism.md) |
+| 0003 | 依赖注入：letoderea 执行器，分发与验证解耦 | [ADR](../adr/0003-di-open-vocabulary-closed-mechanism.md) |
 | 0004 | 存储用 SQLAlchemy Core，engine 由宿主注入，不共享 schema | [ADR](../adr/0004-store-sqlalchemy-core.md) |
 | 0005 | 信道按资源划分，资源粒度等于站点粒度 | [ADR](../adr/0005-resource-key-equals-station-granularity.md) |
 | 0006 | 配置由组件声明 schema，配置系统不单独成包 | [ADR](../adr/0006-config-declared-by-components.md) |

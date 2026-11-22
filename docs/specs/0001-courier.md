@@ -1,6 +1,6 @@
 # courier — 运输内核
 
-零 NoneBot 依赖（[ADR 0001](../adr/0001-courier-has-no-nonebot-dependency.md)）。只依赖 `anyio`、`sqlalchemy`（Core）。
+零 NoneBot 依赖（[ADR 0001](../adr/0001-courier-has-no-nonebot-dependency.md)）。只依赖 `anyio`、`sqlalchemy`（Core）与锁定在 0.22.x 的 `arclet-letoderea`；不引入 Entari、launart 或 Satori。
 
 ## 1. 职责与非职责
 
@@ -95,7 +95,7 @@ register(address, station, *, channel, resource, kind, side_effecting=False)
 5. 声明共享同一资源画像的站点必须使用一致的资源级 pacing；不同画像应拆站点，不能用源轮询间隔冒充资源限流。
 6. `dead-letter` 的内建持久终态处理存在；通知观察者可替换，但不能替换耐久记录。
 
-DI 见 [ADR 0003](../adr/0003-di-open-vocabulary-closed-mechanism.md)。公开面只有 `@provider` / `register()` / `resolve()` / `prepare()` / `Depends`；可满足性在注册或准备期校验，运行期注册表只读。
+DI 见 [ADR 0003](../adr/0003-di-open-vocabulary-closed-mechanism.md)。实例化 `DependencyDispatcher` 先生成不可变 `BindingPlan`，再由可插拔 `ValidationBackend` 聚合校验，成功后构造 letoderea `Subscriber` 并冻结。`BindingBackend` 负责参数匹配，`ValidationBackend` 负责全图可满足性；二者与执行器消费同一计划，不保留旧模块级 DI 或兼容入口。
 
 ## 6. 信道与执行模型
 

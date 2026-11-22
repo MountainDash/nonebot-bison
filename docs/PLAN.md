@@ -11,11 +11,11 @@
 1. **每个里程碑结束时系统必须是能跑的。** 没有「中间态不可运行」的里程碑。
 2. **每个里程碑结束时必须 commit + tag + 可运行 + 测试通过。** 里程碑之间的工作区不留给下一个人。
 3. **任一里程碑不超过 1.5 周。** 超过就说明它该拆，不是说明它难。
-4. **不引入未被规格要求的依赖。** 规格里写了 `anyio` + `sqlalchemy`(Core) + `pydantic`，就这些。
+4. **不引入未被规格要求的依赖。** 规格允许 `anyio` + `sqlalchemy`(Core) + `pydantic` + `arclet-letoderea`（0.22.x 及其锁定传递依赖），其它依赖仍须先改规格与 ADR。
 5. **里程碑顺序是依赖顺序，不是优先级。** 后续网页与迁移不能反过来迫使内核补语义。
-6. **每个里程碑拆成一个链式 PR 栈**。栈内一个 PR 只做一件事，≤ 400 行（不含测试、fixture 与生成物），合并后主干测试全绿。
+6. **每个里程碑拆成一个链式 PR 栈**。栈内一个 PR 只做一件事，默认约 400 行实质变更（不含测试、fixture、生成物/锁文件、纯 import/export 与纯格式调整），合并后主干测试全绿。
 7. **测试与实现在同一个 PR 里。** 不允许「先实现、后补测」，也不允许「最后来一个测试 PR 收口」；唯一的测试集中补充点是里程碑验收 PR，它不得夹带实现。
-8. **表中 PR 若超过 400 行就继续拆。** 不得把两个理由合并成一个「大而全」PR，也不得用排除测试的方式规避行为审查。
+8. **行数只提醒 review 成本，不是机械闸门。** 一个理由且可独立 review 的 PR 超预算时在描述中说明；含两个理由才必须拆。不得用排除测试、挪动逻辑到 import/export、删除必要说明或牺牲可读性来凑数。
 
 ## 统一交付与验收口径
 
@@ -46,7 +46,7 @@
 一个改动够格成为一个 PR，当且仅当它能在**不读其他 PR 的情况下被单独 review**，且满足：
 
 - **一个理由**：标题能写成一句「为了 X 而 Y」，不需要「顺便」。
-- **≤ 400 行**（不含测试、fixture、生成物）。超了就继续拆。
+- **默认约 400 行实质变更**。纯 import/export、空行、纯格式调整与不承载新语义的注释/docstring 不计；超预算仍可独立 review 时在描述中说明，含两个理由才必须拆。
 - **主干保持可运行**：合并后 `uv run pytest` 全绿；M3 之后还要求 bison 能启动。
 - **行为变化必带测试**：courier 的每个 PR 至少新增或修改一个行为测试。
 - **决策变化必带文档**：若 PR 改变已记录的决策，ADR / GLOSSARY 在同一个 PR 更新。
@@ -61,10 +61,11 @@ M3 之前「可运行」只要求 workspace 测试全绿；M3 之后要求 bot �
 | **M0 — 工程地基** | | |
 | 0 | 为建立文档基线清空 `main` 旧文件，只保留 `AGENTS.md`、`GLOSSARY.md` 与 `docs/` | — |
 | 1 | 为统一验证入口建立 uv workspace 与 CI（pytest / ruff / format / basedpyright） | 0 |
-| 2 | 为启动期发现依赖错误实现 DI 与四个行为测试 | 1 |
+| 2a | 为解耦匹配与启动校验建立不可变 BindingPlan、BindingBackend、ValidationBackend、严格图校验及契约测试 | 1 |
+| 2b | 为复用公开执行机制实现实例化 DependencyDispatcher、letoderea Subscriber 适配、singleton 与冻结测试 | 2a |
 | 3 | 为固定存储边界定义 `Store` Protocol、外部事务参与接口、`settle` / `parcel_status` 签名及零 NoneBot 依赖测试 | 1 |
 | **M1 — courier 内存语义闭环** | | |
-| 4 | 为可恢复追踪定义 `Parcel` / `Receipt`、业务 `content_hash`、lineage、路由历史、`held / attempt_in_progress / outcome_unknown`、五种状态与 JSON 往返 | 2,3 |
+| 4 | 为可恢复追踪定义 `Parcel` / `Receipt`、业务 `content_hash`、lineage、路由历史、`held / attempt_in_progress / outcome_unknown`、五种状态与 JSON 往返 | 2b,3 |
 | 5 | 为按包裹冻结资源实现内存 Store、resource selector、入队幂等及同 ID 冲突检测 | 4 |
 | 6 | 为消除父子状态分叉实现统一内存 `settle`、lane 调度投影及业务拒绝提交父 DEAD/存储故障全回滚分路 | 5 |
 | 7 | 为有界进度实现单 worker、`attempt_in_progress` 短事务、调度/执行分离、公平选择、站点超时、跨 head 的 `resource_available_at` 与可注入时钟 | 6 |
@@ -125,7 +126,7 @@ M3 之前「可运行」只要求 workspace 测试全绿；M3 之后要求 bot �
 - [ ] 一行「怎么验证」：跑哪个测试 / 点哪个界面
 - [ ] 是否改变已发布的接口？（改了就说明有兼容问题）
 - [ ] 是否改变已记录的决策？（改了就在同一 PR 更新 ADR / GLOSSARY）
-- [ ] diff 是否 ≤ 400 行（不含测试、fixture、生成物）
+- [ ] 实质 diff 是否约 400 行以内；超出是否仍为一个理由、可独立 review 且已说明
 - [ ] 行为测试是否与实现同 PR，且没有借用后续 PR 才能通过的语义
 
 ## 里程碑
@@ -135,14 +136,14 @@ M3 之前「可运行」只要求 workspace 测试全绿；M3 之后要求 bot �
 **产出**
 
 - uv workspace：`packages/courier`、`packages/bison`。
-- 最小 DI、Store Protocol 与事务组合边界。
+- 实例化 DependencyDispatcher、letoderea adapter、可插拔 BindingBackend / ValidationBackend 与 Store Protocol。
 - 四道验证门：测试、ruff、format、basedpyright。
 
 **验收**
 
 - `uv run pytest` 全绿，三道静态门全绿。
-- `import courier` 后 `sys.modules` 不含 `nonebot`。
-- DI 覆盖 singleton、marker 键、重复注册、缺 provider 启动期报错。
+- 干净子进程 import DI 后不含 `nonebot`、Entari、launart 或 Satori。
+- DI 覆盖 singleton/transient、精确 marker、重复键、乱序注册、全量缺项、直接/间接环、后端替换、校验零 factory 调用及冻结后拒绝写入。
 - Store 签名能表达统一 settle、宿主事务参与和批量状态对账，不含 SQLite 专属参数。
 
 ---
@@ -345,7 +346,7 @@ M0 ──> M1 ──> M2 ──> M3 ──> M4 ──> M5
 | 组件形状不够用（M4） | 第二 Fetcher 改核心、external 续跑需重抓、降级破坏顺序 → 停并重审边界 |
 | 迁移数据或切流窗口不明（M5） | 映射、checkpoint、`cutover_watermark`、`observed / migration_skipped`、迟到动态歧义或缺口任一项无法解释 → 不发布 |
 | 网页只验功能不验权限（M6） | 任一跨群反例成功或任一出口泄漏 secret → 不上线 |
-| 又开始大爆炸 | 任一里程碑超过 1.5 周或 PR 超过 400 行 → 强制拆分，不例外 |
+| 又开始大爆炸 | 任一里程碑超过 1.5 周，或 PR 含两个理由/无法独立 review → 强制拆分；物理行数不单独作为拆分理由 |
 
 ## 完成定义
 

@@ -5,6 +5,7 @@ description = "运输内核：包裹、信道、站点。零 NoneBot 依赖。"
 requires-python = ">=3.14"
 dependencies = [
     "anyio>=4.4",
+    "arclet-letoderea>=0.22.1,<0.23",
 ]
 
 [build-system]

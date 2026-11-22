@@ -32,6 +32,19 @@ wheels = [
 ]
 
 [[package]]
+name = "arclet-letoderea"
+version = "0.22.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tarina" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/36/9a/9f42507a89269c4aeb45fafd08bbdb24b62f7dab04ffc7a8c0de6b8a81da/arclet_letoderea-0.22.1.tar.gz", hash = "sha256:575482e575ba0807d65bf38e756c1270ba94fa5f2e68fbcc57b3ccd3d754f9b8", size = 45780, upload-time = "2026-10-15T04:22:40.411Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8a/5b/0e88265b54794e64c340b4176807eb979359a253f214081d73abb0029b44/arclet_letoderea-0.22.1-py3-none-any.whl", hash = "sha256:22c6310146c537430ab62a0d6bd89a434737133d7f1c0724fdea77a83fd3e376", size = 38289, upload-time = "2026-10-15T04:22:38.943Z" },
+]
+
+[[package]]
 name = "basedpyright"
 version = "1.40.2"
 source = { registry = "https://pypi.org/simple" }
@@ -73,10 +86,14 @@ version = "0.1.0"
 source = { editable = "packages/courier" }
 dependencies = [
     { name = "anyio" },
+    { name = "arclet-letoderea" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "anyio", specifier = ">=4.4" }]
+requires-dist = [
+    { name = "anyio", specifier = ">=4.4" },
+    { name = "arclet-letoderea", specifier = ">=0.22.1,<0.23" },
+]
 
 [[package]]
 name = "exceptiongroup"
@@ -531,6 +548,34 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/2e/09/28329441dfa2c463e2d377a69d4ebbe4d51665e9dbd49fb421f3bc80d775/ruff-0.17.6-py3-none-win32.whl", hash = "sha256:c2f4af6670b7a0501904e881bb3f1f24bd0d964dec1eedbd85f0eb73786e1128", size = 9966266, upload-time = "2026-11-19T15:56:21.581Z" },
     { url = "https://files.pythonhosted.org/packages/4b/9d/18ba9730addfc7554c70d6f171fb8dc2c08e774d9fb2b98e7946ef845c59/ruff-0.17.6-py3-none-win_amd64.whl", hash = "sha256:9cd2fd9923e9806b8b6b67a3469e2258e84bd4d21e45d5a1a690afdfb9c8e57d", size = 10365847, upload-time = "2026-11-19T15:56:23.582Z" },
     { url = "https://files.pythonhosted.org/packages/70/8a/59c33e2a64a4f9672f7f842a0dc522915cfbbaffd13d37d0cec57d1c5c5d/ruff-0.17.6-py3-none-win_arm64.whl", hash = "sha256:d8b14e1473dc86ab9069cf7a2ba5041dc012f59110201844ed04cfddf07055a0", size = 9926224, upload-time = "2026-11-19T15:56:25.269Z" },
+]
+
+[[package]]
+name = "tarina"
+version = "0.7.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b3/a8/213153fea451175642173d4fad95d8c347b2510a5c7a3a6c74489547fed8/tarina-0.7.5.tar.gz", hash = "sha256:581a1a7c0f60a54aa2b93a4989bbb333fb9d26ffda96b0addf9309b736a7c831", size = 128699, upload-time = "2026-05-18T09:14:33.787Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/56/95/e8828a9086ef14b1fafc36f794e4142baeeddb0e8b44bc7d8b4a6c9389f8/tarina-0.7.5-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:74f8668da4eebbcd49910f8a88546a0b86389c948598e01570bea992e8a8af30", size = 98643, upload-time = "2026-05-18T09:13:48.956Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/12/0e1ec7fd19533105fb0429fb4aae65ad90e14623ee4bd4221f7efd47ba8d/tarina-0.7.5-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:895301d752708909ec06d266633c212dc43a08a7ce699b6506b48ee1efb9d0ec", size = 376071, upload-time = "2026-05-18T09:13:50.147Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/d5/8bca7977b6bf45a477f68ce2f5792040a2329b291ad96bb4641f749b1f65/tarina-0.7.5-cp314-cp314-manylinux2014_armv7l.manylinux_2_17_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:189079fb636c42ad9dfac37ee71b1b867f4993bc5d95ee6da441a2150e410248", size = 348429, upload-time = "2026-05-18T09:13:51.612Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/da/817c0e37179049ccca03b8f8799ecc6b3bf83a612eb9854546b8dcce0d99/tarina-0.7.5-cp314-cp314-manylinux2014_ppc64le.manylinux_2_17_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:c138371b5452e11f5b26d0a2a1fd1fb85ebcbd3d3546b5b8bd6170aefa298eee", size = 392156, upload-time = "2026-05-18T09:13:53.544Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/e7/1e9b21467bd0d0f18d0c0e5a7f2f0775e67e13b0366ed08ec6e84479932b/tarina-0.7.5-cp314-cp314-manylinux2014_s390x.manylinux_2_17_s390x.manylinux_2_28_s390x.whl", hash = "sha256:514c555943b0fc955e4ab7705540604d08838cd1e6197736b871dd8943ee3a1d", size = 401455, upload-time = "2026-05-18T09:13:54.764Z" },
+    { url = "https://files.pythonhosted.org/packages/59/14/74510c9f5fa9a35859e818bc2e9451f0592d44c00db8b70e54e4006faf8f/tarina-0.7.5-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:89fe43399590c244aa3971446690ca31a7107e3cfce983e47049837ce45111f6", size = 378148, upload-time = "2026-05-18T09:13:56.651Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/35/5479d9f539f863617c6161ec2a4d70914331ab4ac3f52a404bc0332de969/tarina-0.7.5-cp314-cp314-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:c5fc1861f42fb36869ae5aca823a29ccf46f258d40335edfe53a5c406daacaf7", size = 348227, upload-time = "2026-05-18T09:13:57.909Z" },
+    { url = "https://files.pythonhosted.org/packages/04/45/0e294320dde4c04901c821d6a92d097330478b23ceb4c579f07a0e2a458f/tarina-0.7.5-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:c1fd975e497465ca28f2214541ca2fd2e7d4104bc6827d75ff94756f383c4e5c", size = 370993, upload-time = "2026-05-18T09:13:59.165Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/1d/001f8143c91aedb92ec117957f542422a823109a49a0b44b2076edca9133/tarina-0.7.5-cp314-cp314-musllinux_1_2_armv7l.whl", hash = "sha256:7e7ceae88d968cc86d4d8069eb8c3c335a3af1c0bfd4d5b0c731da02f44df739", size = 355456, upload-time = "2026-05-18T09:14:00.372Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/12/c6c868dcaa20dd06ae5f049e251cccea2ff6e172612a348f9e52d3b1768f/tarina-0.7.5-cp314-cp314-musllinux_1_2_ppc64le.whl", hash = "sha256:6384e8f994d821c88bed510f178ddb192f9450d170e81f4b2046a328622cf5c1", size = 386985, upload-time = "2026-05-18T09:14:02.261Z" },
+    { url = "https://files.pythonhosted.org/packages/83/a6/1198498ba428f02619a30638740eba90d0a14e4a5e09efb4e74478383147/tarina-0.7.5-cp314-cp314-musllinux_1_2_riscv64.whl", hash = "sha256:ae0c04f982ec223557ff01a6fab9b734fcc472b86b00ed38c795730fe5b129d8", size = 347215, upload-time = "2026-05-18T09:14:03.687Z" },
+    { url = "https://files.pythonhosted.org/packages/85/3f/2dc10559844cd5b2f1e5b831fbc623d868abc4474f2a7d285527df27da35/tarina-0.7.5-cp314-cp314-musllinux_1_2_s390x.whl", hash = "sha256:45d8f6320bf2d40c888abb6a9bc435f35e6e8f667d75f65ea57aafd1ac76a42b", size = 393674, upload-time = "2026-05-18T09:14:05.05Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/ae/6fe77051e7ea4a41831d15b64e764b7f257c24f2979d50ae81bf6f9de5eb/tarina-0.7.5-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:4590697a3a4f9b97d214c2a7de3af370fdf12cad729ba800ef4edbad9467d0a6", size = 381559, upload-time = "2026-05-18T09:14:06.871Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/b2/265f0fec032821934989a3f6d22994d5271a429fa01c2eb972a09c806517/tarina-0.7.5-cp314-cp314-win32.whl", hash = "sha256:23d8e301d599b9b62fbc2663cffb94a4a93cad822b3e1526dcd7428169f87151", size = 93739, upload-time = "2026-05-18T09:14:08.005Z" },
+    { url = "https://files.pythonhosted.org/packages/66/5e/656d52aa389f9e9c97385e3073860b2c177aae3261ff607a7b0d1113b19e/tarina-0.7.5-cp314-cp314-win_amd64.whl", hash = "sha256:fa4344d0172c217ce11fa3318829faa90e09e28a38e3838705e085e200ae2116", size = 99797, upload-time = "2026-05-18T09:14:09.131Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/25/6ef0affe179e09358ca685e2616bdfebf2ca88f5bef1f9e2ca6786eff2bd/tarina-0.7.5-cp314-cp314-win_arm64.whl", hash = "sha256:714d16892d6258cb7e1dddf19ffe954f62e899e9857bfc1a2a4016c24c7eafbe", size = 92417, upload-time = "2026-05-18T09:14:10.15Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/31/8de99c767e77174c2e32ebce81110b2daff5949943835a956c1fc8f36bcd/tarina-0.7.5-py3-none-any.whl", hash = "sha256:f8d25cd4953f5613fac478cd9b5af5d598542033f385a45fe5e88e8ddf566af0", size = 48582, upload-time = "2026-05-18T09:14:32.075Z" },
 ]
 
 [[package]]

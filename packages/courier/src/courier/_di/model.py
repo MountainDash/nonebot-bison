@@ -1,7 +1,7 @@
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Annotated, cast, get_args, get_origin, get_type_hints, override
+from typing import Annotated, Self, cast, get_args, get_origin, get_type_hints, override
 
 from arclet.letoderea import Depend, Provider, ProviderFactory
 
@@ -31,15 +31,18 @@ class DependencyKey:
     base: object
     markers: tuple[object, ...] = ()
 
+    def __post_init__(self):
+        # Precompute the hash to make DependencyKey instances hashable and usable in sets and as dictionary keys.
+        _ = hash(self)
+
     @classmethod
-    def of(cls, annotation: object) -> DependencyKey:
+    def of(cls, annotation: object) -> Self:
         if get_origin(annotation) is Annotated:
             # typing.get_args and get_type_hints are Any-typed signature boundaries.
-            base, *markers = cast("tuple[object, ...]", get_args(annotation))
+            base, *markers = get_args(annotation)
             key = cls(base, tuple(marker for marker in markers if not isinstance(marker, Depend)))
         else:
             key = cls(annotation)
-        _ = hash(key)
         return key
 
     @override
@@ -79,13 +82,13 @@ class ProviderSpec:
     singleton: bool | None = True
 
     @classmethod
-    def exact(cls, key: object, factory: Factory, *, singleton: bool = True) -> ProviderSpec:
+    def exact(cls, key: object, factory: Factory, *, singleton: bool = True) -> Self:
         plan = compile_plan(factory, provider=True)
         normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
         return cls(normalized, factory, plan, None, plan.owner, singleton)
 
     @classmethod
-    def from_native[T](cls, candidate: Provider[T] | ProviderFactory) -> ProviderSpec:
+    def from_native[T](cls, candidate: Provider[T] | ProviderFactory) -> Self:
         return cls(None, None, None, cast("Native", candidate), callable_name(type(candidate)), None)
 
 
@@ -134,18 +137,16 @@ class ValidationReport:
 
 def compile_plan(target: Factory, *, provider: bool = False) -> BindingPlan:
     owner = callable_name(target)
-    hints = cast("dict[str, object]", get_type_hints(target, include_extras=True))
+    hints = get_type_hints(target, include_extras=True)
     parameters: list[ParameterSpec] = []
     for name, signature_parameter in inspect.signature(target).parameters.items():
         if name not in hints:
-            if cast("object", signature_parameter.default) is inspect.Parameter.empty:
+            if signature_parameter.default is inspect.Parameter.empty:
                 raise SignatureError(f"{owner} parameter {name!r} has no type annotation")
             continue
-        markers = cast("tuple[object, ...]", get_args(hints[name]))[1:] if get_origin(hints[name]) is Annotated else ()
+        markers = get_args(hints[name])[1:] if get_origin(hints[name]) is Annotated else ()
         depends = next((marker for marker in markers if isinstance(marker, Depend)), None)
         if depends is not None and provider:
             raise SignatureError(f"provider {owner} must not use Depends")
-        parameters.append(
-            ParameterSpec(name, DependencyKey.of(hints[name]), cast("object", signature_parameter.default), depends)
-        )
+        parameters.append(ParameterSpec(name, DependencyKey.of(hints[name]), signature_parameter.default, depends))
     return BindingPlan(target, tuple(parameters), owner)

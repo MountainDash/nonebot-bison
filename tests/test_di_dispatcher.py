@@ -149,7 +149,7 @@ class TextProvider(Provider[str]):
 
     @override
     def validate(self, param: Param) -> bool:
-        return cast("object", param.annotation) is str
+        return param.annotation is str
 
     @override
     async def __call__(self, context: Contexts) -> str | None:
@@ -174,7 +174,7 @@ class TokenProviderFactory(ProviderFactory):
     @override
     def validate(self, param: Param) -> TokenProvider | None:
         self.calls += 1
-        return TokenProvider() if cast("object", param.annotation) is Token else None
+        return TokenProvider() if param.annotation is Token else None
 
 
 @final

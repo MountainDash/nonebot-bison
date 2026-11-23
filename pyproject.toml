@@ -50,4 +50,8 @@ quote-style = "double"
 include = ["packages", "tests"]
 exclude = ["docs"]
 typeCheckingMode = "recommended"
+# 关闭理由：letoderea 0.22 的 Param/Contexts 与 typing.get_type_hints 在适配层边界只能给出 Any；
+# 类型传导由公开签名（prepare/provider/resolve）与测试锁定，不在边界处堆无信息量的 cast 把检查推迟一层。
+reportAny = false
+reportExplicitAny = false
 pythonVersion = "3.14"

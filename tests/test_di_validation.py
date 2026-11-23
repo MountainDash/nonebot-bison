@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import FrozenInstanceError
-from typing import Annotated, cast, final, override
+from typing import Annotated, final, override
 
 import pytest
 from arclet.letoderea import Contexts, Param, Provider, ProviderFactory, provide
@@ -140,7 +140,7 @@ class TextProvider(Provider[str]):
     @override
     def validate(self, param: Param) -> bool:
         self.validations += 1
-        return cast("object", param.annotation) is str
+        return param.annotation is str
 
     @override
     async def __call__(self, context: Contexts) -> str | None:
@@ -167,7 +167,7 @@ class TokenProviderFactory(ProviderFactory):
     @override
     def validate(self, param: Param) -> TokenProvider | None:
         self.calls += 1
-        if cast("object", param.annotation) is not Token:
+        if param.annotation is not Token:
             return None
         self.generated = TokenProvider()
         return self.generated

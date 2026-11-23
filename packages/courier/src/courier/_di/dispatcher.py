@@ -44,11 +44,11 @@ class _OverrideProvider(Provider[object]):
 
     @override
     def validate(self, param: Param) -> bool:
-        return any(marker is self for marker in cast("tuple[object, ...]", param.meta))
+        return any(marker is self for marker in param.meta)
 
     @override
     async def __call__(self, context: Contexts) -> Force | None:
-        overrides = cast("Mapping[str, object]", context.get(self.context_key, {}))
+        overrides: Mapping[str, object] = context.get(self.context_key, {})
         return Force(overrides[self.parameter]) if self.parameter in overrides else None
 
 
@@ -65,14 +65,14 @@ class _ExactProvider(Provider[object]):
     def validate(self, param: Param) -> bool:
         # The adapter is an explicit annotation marker. Never widen this to subclass/Optional matching.
         return (
-            any(marker is self for marker in cast("tuple[object, ...]", param.meta))
-            and cast("object", param.annotation) == cast("DependencyKey", self.spec.key).base
+            any(marker is self for marker in param.meta)
+            and param.annotation == cast("DependencyKey", self.spec.key).base
         )
 
     @override
     async def __call__(self, context: Contexts) -> Force:
         key = cast("DependencyKey", self.spec.key)
-        overrides = cast("Mapping[str, object]", context.get(self.dispatcher.overrides_key, {}))
+        overrides: Mapping[str, object] = context.get(self.dispatcher.overrides_key, {})
         if self.parameter in overrides:
             return Force(overrides[self.parameter])
         try:
@@ -114,14 +114,11 @@ class _NativeProvider(Provider[object]):
 
     @override
     def validate(self, param: Param) -> bool:
-        return (
-            any(marker is self.token for marker in cast("tuple[object, ...]", param.meta))
-            and cast("object", param.annotation) == self.key.base
-        )
+        return any(marker is self.token for marker in param.meta) and param.annotation == self.key.base
 
     @override
     async def __call__(self, context: Contexts) -> object | None:
-        overrides = cast("Mapping[str, object]", context.get(self.overrides_key, {}))
+        overrides: Mapping[str, object] = context.get(self.overrides_key, {})
         if self.parameter in overrides:
             return Force(overrides[self.parameter])
         try:
@@ -156,10 +153,7 @@ class _DeclineProvider(Provider[object]):
 
     @override
     def validate(self, param: Param) -> bool:
-        return (
-            any(marker is self.token for marker in cast("tuple[object, ...]", param.meta))
-            and cast("object", param.annotation) == self.key.base
-        )
+        return any(marker is self.token for marker in param.meta) and param.annotation == self.key.base
 
     @override
     async def __call__(self, context: Contexts) -> object:
@@ -187,7 +181,7 @@ class _OverrideDepend(Depend):
 
     @override
     async def __call__(self, context: Contexts) -> object:
-        overrides = cast("Mapping[str, object]", context.get(self.context_key, {}))
+        overrides: Mapping[str, object] = context.get(self.context_key, {})
         if self.parameter in overrides:
             return overrides[self.parameter]
         return cast("object", await super().__call__(context))
@@ -289,7 +283,7 @@ class DependencyDispatcher:
         self, factory: Factory | None = None, *, singleton: bool = True
     ) -> Factory | Callable[[Factory], Factory]:
         def decorate(target: Factory) -> Factory:
-            hints = cast("dict[str, object]", get_type_hints(target, include_extras=True))
+            hints = get_type_hints(target, include_extras=True)
             if "return" not in hints:
                 raise SignatureError(f"provider {target!r} has no return annotation")
             self.register(hints["return"], target, singleton=singleton)
@@ -348,7 +342,7 @@ class DependencyDispatcher:
         allowed: dict[tuple[int, str], frozenset[int]] = {}
 
         for item in graph.values():
-            hints = cast("dict[str, object]", get_type_hints(item.target, include_extras=True))
+            hints = get_type_hints(item.target, include_extras=True)
             transformed: dict[str, object] = {}
             for index, parameter in enumerate(item.parameters):
                 metadata: list[object] = []
@@ -421,14 +415,14 @@ class DependencyDispatcher:
                 dependency_wrapper = wrap_plan(dependency)
                 marker = next(
                     marker
-                    for marker in cast("tuple[object, ...]", get_args(transformed[parameter.name]))[1:]
+                    for marker in get_args(transformed[parameter.name])[1:]
                     if isinstance(marker, _OverrideDepend)
                 )
                 marker.target = dependency_wrapper
             invoke.__annotations__ = transformed
             signature = inspect.signature(item.target)
             parameters = [
-                parameter.replace(annotation=transformed.get(name, cast("object", parameter.annotation)))
+                parameter.replace(annotation=transformed.get(name, parameter.annotation))
                 for name, parameter in signature.parameters.items()
             ]
             invoke.__dict__["__signature__"] = signature.replace(parameters=parameters)

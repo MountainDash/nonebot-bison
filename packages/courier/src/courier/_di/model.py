@@ -31,8 +31,9 @@ class DependencyKey:
     base: object
     markers: tuple[object, ...] = ()
 
-    def __post_init__(self):
-        # Precompute the hash to make DependencyKey instances hashable and usable in sets and as dictionary keys.
+    def __post_init__(self) -> None:
+        # Fail fast: keys must be hashable for sets and provider maps (RegistrySnapshot, bindings).
+        # The slots dataclass keeps no cached hash; this only rejects unhashable base/markers at construction.
         _ = hash(self)
 
     @classmethod

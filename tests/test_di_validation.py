@@ -225,6 +225,13 @@ def test_plain_and_marked_keys_never_fall_back_to_each_other(annotation: object)
     assert report.issues[0].key == DependencyKey.of(annotation)
 
 
+def test_dependency_key_rejects_unhashable_parts_at_construction() -> None:
+    with pytest.raises(TypeError):
+        _ = DependencyKey(["unhashable"])
+    with pytest.raises(TypeError):
+        _ = DependencyKey.of(Annotated[int, ["unhashable"]])
+
+
 def test_duplicate_exact_key_is_rejected_and_snapshot_is_frozen() -> None:
     provider = ProviderSpec.exact(Token, Token)
     with pytest.raises(DuplicateProviderError):

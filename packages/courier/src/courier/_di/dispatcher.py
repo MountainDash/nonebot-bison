@@ -492,6 +492,9 @@ class DependencyDispatcher:
         result[self.overrides_key] = dict(overrides)
         return result
 
+    # Deliberate open vocabulary, kept as decided in review: Annotated aliases resolve here
+    # but infer T as Unknown (they are not assignable to type[T]); typed resolution uses a
+    # plain type or an explicit DependencyKey.
     async def resolve[T](self, key: type[T] | DependencyKey | object) -> T:
         if not self._frozen:
             raise DispatcherNotFrozenError("freeze the dispatcher before resolving dependencies")

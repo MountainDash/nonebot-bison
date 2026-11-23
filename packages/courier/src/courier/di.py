@@ -2,7 +2,7 @@
 
 from arclet.letoderea import Depend, Depends, Provider, ProviderFactory
 
-from ._di.binding import BindingBackend, ExactKeyBindingBackend, LetodereaPredicateBindingBackend
+from ._di.binding import BindingBackend, ExactKeyBindingBackend, PredicateBindingBackend
 from ._di.dispatcher import DependencyDispatcher, PreparedStation
 from ._di.errors import (
     DependencyValidationError,
@@ -28,7 +28,7 @@ __all__ = [
     "DispatcherNotFrozenError",
     "DuplicateProviderError",
     "ExactKeyBindingBackend",
-    "LetodereaPredicateBindingBackend",
+    "PredicateBindingBackend",
     "PreparedStation",
     "Provider",
     "ProviderFactory",

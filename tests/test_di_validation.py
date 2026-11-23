@@ -13,8 +13,8 @@ from courier._di import (
     Depends,
     DuplicateProviderError,
     ExactKeyBindingBackend,
-    LetodereaPredicateBindingBackend,
     ParameterSpec,
+    PredicateBindingBackend,
     ProviderSpec,
     RegistrySnapshot,
     SignatureError,
@@ -248,7 +248,7 @@ def test_native_provider_is_validated_once_and_never_called_by_validation() -> N
 
     assert [issue.code for issue in _validate(snapshot, compile_plan(root)).issues] == ["missing"]
     assert native.validations == 0
-    report = _validate(snapshot, compile_plan(root), backends=(LetodereaPredicateBindingBackend(),))
+    report = _validate(snapshot, compile_plan(root), backends=(PredicateBindingBackend(),))
 
     assert report.ok
     assert native.validations == 1
@@ -262,7 +262,7 @@ def test_native_provider_factory_generates_one_saved_provider() -> None:
     def root(_value: Token) -> None:
         pass
 
-    bound, plans = _bind_graph(snapshot, (compile_plan(root),), (LetodereaPredicateBindingBackend(),))
+    bound, plans = _bind_graph(snapshot, (compile_plan(root),), (PredicateBindingBackend(),))
     binding = plans[0].bindings[0][0]
     report = StrictGraphValidationBackend().validate(bound, plans)
 
@@ -273,7 +273,7 @@ def test_native_provider_factory_generates_one_saved_provider() -> None:
 
 def test_string_marker_does_not_create_a_context_key_provider() -> None:
     native = TextProvider()
-    backend = LetodereaPredicateBindingBackend()
+    backend = PredicateBindingBackend()
     snapshot = RegistrySnapshot((ProviderSpec.from_native(native),))
 
     def root(_value: Annotated[str, "tenant"]) -> None:
@@ -293,7 +293,7 @@ def test_same_priority_native_candidates_are_ambiguous() -> None:
     def root(_value: str) -> None:
         pass
 
-    report = _validate(snapshot, compile_plan(root), backends=(LetodereaPredicateBindingBackend(),))
+    report = _validate(snapshot, compile_plan(root), backends=(PredicateBindingBackend(),))
 
     assert [issue.code for issue in report.issues] == ["ambiguous_native"]
 
@@ -307,7 +307,7 @@ def test_equal_priority_fallbacks_are_ambiguous_even_behind_a_unique_winner() ->
     def root(_value: str) -> None:
         pass
 
-    report = _validate(snapshot, compile_plan(root), backends=(LetodereaPredicateBindingBackend(),))
+    report = _validate(snapshot, compile_plan(root), backends=(PredicateBindingBackend(),))
 
     assert [issue.code for issue in report.issues] == ["ambiguous_native"]
 

@@ -4,7 +4,7 @@ courier 直接使用 `arclet-letoderea` 的 `Provider / ProviderFactory / Depend
 
 ## 两种后端，两种问题
 
-**BindingBackend** 回答「哪些 Provider 匹配这个参数」。默认严格键后端只接受类型或 `Annotated[T, marker]` 的精确键；可选 `LetodereaPredicateBindingBackend` 适配 `Provider.validate` / `ProviderFactory`，处理更复杂的注解。ProviderFactory 生成的实例固定在 BindingPlan 中，校验与执行不得生成两次。
+**BindingBackend** 回答「哪些 Provider 匹配这个参数」。默认严格键后端只接受类型或 `Annotated[T, marker]` 的精确键；可选 `PredicateBindingBackend` 适配 `Provider.validate` / `ProviderFactory`，处理更复杂的注解。ProviderFactory 生成的实例固定在 BindingPlan 中，校验与执行不得生成两次。
 
 **ValidationBackend** 回答「整个声明图是否可满足」。它只读 RegistrySnapshot 与 BindingPlan，聚合并返回缺失、同优先级歧义、直接/间接环等问题，不调用 factory、不接触 Parcel。默认严格图实现必须覆盖所有根与所有可达 fallback。替换后端必须通过同一组行为契约，不能静默放宽仓库底线。
 

@@ -3,7 +3,7 @@ from arclet.letoderea import Depend, Depends
 from .binding import (
     BindingBackend,
     ExactKeyBindingBackend,
-    LetodereaPredicateBindingBackend,
+    PredicateBindingBackend,
     bind_plan,
     bind_providers,
 )
@@ -39,8 +39,8 @@ __all__ = [
     "DispatcherNotFrozenError",
     "DuplicateProviderError",
     "ExactKeyBindingBackend",
-    "LetodereaPredicateBindingBackend",
     "ParameterSpec",
+    "PredicateBindingBackend",
     "PreparedStation",
     "ProviderSpec",
     "RegistrySnapshot",

@@ -22,7 +22,7 @@ class ExactKeyBindingBackend:
 
 
 @final
-class LetodereaPredicateBindingBackend:
+class PredicateBindingBackend:
     """Adapt only explicitly registered arclet candidates; metadata never adds context providers."""
 
     def bind(self, parameter: ParameterSpec, snapshot: RegistrySnapshot) -> tuple[Binding, ...]:

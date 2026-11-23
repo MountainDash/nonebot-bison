@@ -17,7 +17,7 @@ from courier.di import (
     DispatcherNotFrozenError,
     DuplicateProviderError,
     ExactKeyBindingBackend,
-    LetodereaPredicateBindingBackend,
+    PredicateBindingBackend,
     ResolutionError,
     ValidationReport,
 )
@@ -205,7 +205,7 @@ class MarkerProviderFactory(ProviderFactory):
 
 
 def native_dispatcher() -> DependencyDispatcher:
-    return DependencyDispatcher(binding_backends=(ExactKeyBindingBackend(), LetodereaPredicateBindingBackend()))
+    return DependencyDispatcher(binding_backends=(ExactKeyBindingBackend(), PredicateBindingBackend()))
 
 
 async def test_native_is_opt_in_exact_wins_and_none_declines() -> None:

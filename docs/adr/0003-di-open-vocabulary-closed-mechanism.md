@@ -21,7 +21,7 @@ courier 直接使用 `arclet-letoderea` 的 `Provider / ProviderFactory / Depend
 → 运行期只通过 Subscriber.handle 与 Dispatcher resolve 调用
 ```
 
-严格键重复注册立即报错。缺项与环在启动校验期一次性报告，不再要求「依赖先于使用方注册」。冻结后禁止注册、替换后端或重绑定。校验失败不得执行 factory、创建资源或部分冻结。
+严格键重复注册立即报错。缺项与环在启动校验期一次性报告，不再要求「依赖先于使用方注册」。缺项以签名注解为准：**声明的默认值不 rescue 缺失绑定**，站点不得靠默认值静默通过注入校验。冻结后禁止注册、替换后端或重绑定。校验失败不得执行 factory、创建资源或部分冻结。
 
 letoderea 的 `record` 只缓存 Provider 选择，不是 singleton。singleton/transient 与并发构造由 Dispatcher 管理；singleton 不得捕获单次调用上下文，factory 异常不得发布半初始化值。资源仍由宿主拥有，除非另有明确生命周期协议。
 

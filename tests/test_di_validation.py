@@ -232,6 +232,17 @@ def test_dependency_key_rejects_unhashable_parts_at_construction() -> None:
         _ = DependencyKey.of(Annotated[int, ["unhashable"]])
 
 
+def test_declared_default_does_not_rescue_a_missing_binding() -> None:
+    def root(_value: MissingOne | None = None) -> None:
+        pass
+
+    report = _validate(RegistrySnapshot(()), compile_plan(root))
+
+    assert [issue.code for issue in report.issues] == ["missing"]
+    assert report.issues[0].key == DependencyKey.of(MissingOne | None)
+    assert "declared default does not rescue" in report.issues[0].message
+
+
 def test_duplicate_exact_key_is_rejected_and_snapshot_is_frozen() -> None:
     provider = ProviderSpec.exact(Token, Token)
     with pytest.raises(DuplicateProviderError):

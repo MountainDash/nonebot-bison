@@ -415,7 +415,7 @@ async def test_singleton_is_shared_transient_is_not_and_override_is_not_captured
     two = dispatcher.prepare(second)
     _ = dispatcher.freeze()
     override = Token()
-    first_value, box = cast("tuple[Token, Box]", await one(overrides={"value": override}))
+    first_value, box = await one(overrides={"value": override})
     assert first_value is override
     assert box.token is registered
     assert await two() is registered

@@ -1,8 +1,8 @@
 import inspect
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Coroutine, Mapping, Sequence
 from dataclasses import dataclass
 from functools import wraps
-from typing import Annotated, cast, final, get_args, get_type_hints, overload, override
+from typing import Annotated, Any, cast, final, get_args, get_type_hints, overload, override
 
 from anyio import Lock
 from arclet.letoderea import Contexts, Depend, Force, Param, Provider, ProviderFactory, Subscriber
@@ -188,7 +188,9 @@ class _OverrideDepend(Depend):
 
 
 @final
-class PreparedStation:
+class PreparedStation[T]:
+    """A prepared call site; T is the station's declared return type, not a runtime guarantee."""
+
     def __init__(self, dispatcher: DependencyDispatcher, plan: BindingPlan) -> None:
         self._dispatcher = dispatcher
         self.raw_plan = plan
@@ -211,7 +213,7 @@ class PreparedStation:
         *,
         overrides: Mapping[str, object] | None = None,
         context: Mapping[str, object] | None = None,
-    ) -> object:
+    ) -> T:
         selected = self._dispatcher.station_subscriber(self)
         explicit = dict(overrides or {})
         known = {parameter.name for plan in (self.plan, *self.plan.dependencies) for parameter in plan.parameters}
@@ -221,7 +223,8 @@ class PreparedStation:
             raise ResolutionError(f"unknown overrides: {names}", owner=self.owner)
         call_context = self._dispatcher.call_context(self.plan, explicit, context)
         try:
-            return await selected.handle(call_context)
+            # A plain station never attaches propagators, so handle cannot yield ExitState here.
+            return cast("T", await selected.handle(call_context))
         except ResolutionError:
             raise
         except Exception as error:
@@ -241,7 +244,7 @@ class DependencyDispatcher:
         )
         self._validation_backend = validation_backend or StrictGraphValidationBackend()
         self._providers: list[ProviderSpec] = []
-        self._stations: list[PreparedStation] = []
+        self._stations: list[PreparedStation[object]] = []
         self._compiled: _Compiled | None = None
         self._subscribers: dict[int, Subscriber[object]] = {}
         self._provider_subscribers: dict[DependencyKey, Subscriber[object]] = {}
@@ -264,6 +267,8 @@ class DependencyDispatcher:
         self._ensure_mutable()
         self._validation_backend = backend
 
+    # The key is open vocabulary: a type, an Annotated alias, or a DependencyKey (ADR 0003).
+    # Annotated aliases are not assignable to type[T], so a narrower union would lie to callers.
     def register(self, key: object, factory: Factory, *, singleton: bool = True) -> None:
         self._ensure_mutable()
         normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
@@ -274,14 +279,13 @@ class DependencyDispatcher:
         self._compiled = None
 
     @overload
-    def provider(self, factory: Factory, *, singleton: bool = True) -> Factory: ...
+    def provider[F: Factory](self, factory: F, *, singleton: bool = True) -> F: ...
 
     @overload
-    def provider(self, *, singleton: bool = True) -> Callable[[Factory], Factory]: ...
+    def provider[F: Factory](self, *, singleton: bool = True) -> Callable[[F], F]: ...
 
-    def provider(
-        self, factory: Factory | None = None, *, singleton: bool = True
-    ) -> Factory | Callable[[Factory], Factory]:
+    def provider(self, factory: Factory | None = None, *, singleton: bool = True) -> Any:
+        # The overloads carry F; the implementation can only state the erased runtime shape.
         def decorate(target: Factory) -> Factory:
             hints = get_type_hints(target, include_extras=True)
             if "return" not in hints:
@@ -296,10 +300,17 @@ class DependencyDispatcher:
         self._providers.append(ProviderSpec.from_native(candidate))
         self._compiled = None
 
-    def prepare(self, target: Factory) -> PreparedStation:
+    @overload
+    def prepare[T](self, target: Callable[..., Coroutine[Any, Any, T]]) -> PreparedStation[T]: ...
+
+    @overload
+    def prepare[T](self, target: Callable[..., T]) -> PreparedStation[T]: ...
+
+    def prepare(self, target: Factory) -> PreparedStation[Any]:
+        # The overloads carry T; the implementation can only state the erased runtime shape.
         self._ensure_mutable()
         compiled = self.compiled_plans()
-        station = PreparedStation(self, compile_plan(target))
+        station: PreparedStation[object] = PreparedStation(self, compile_plan(target))
         self._stations.append(station)
         compiled.plans[id(station)] = bind_plan(station.raw_plan, compiled.snapshot, self._binding_backends)
         return station
@@ -459,7 +470,7 @@ class DependencyDispatcher:
         if issues:
             raise DependencyValidationError(ValidationReport(tuple(issues)))
 
-    def station_subscriber(self, station: PreparedStation) -> Subscriber[object]:
+    def station_subscriber(self, station: PreparedStation[object]) -> Subscriber[object]:
         if not self._frozen:
             raise DispatcherNotFrozenError("freeze the dispatcher before executing a station")
         return self._subscribers[id(station)]

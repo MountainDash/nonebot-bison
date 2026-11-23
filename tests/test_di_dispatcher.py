@@ -439,6 +439,24 @@ async def test_transient_provider_does_not_clear_later_override() -> None:
     assert await prepared(overrides={"second": override}) is override
 
 
+async def test_overrides_bind_only_to_the_station_signature() -> None:
+    dispatcher = DependencyDispatcher()
+    registered = Token()
+    dispatcher.register(Token, lambda: registered)
+    dispatcher.register(Box, make_box, singleton=False)  # make_box(token: Token) -> Box
+
+    def station(box: Box, token: Token) -> tuple[Box, Token]:
+        return box, token
+
+    prepared = dispatcher.prepare(station)
+    _ = dispatcher.freeze()
+    override = Token()
+    box, token = await prepared(overrides={"token": override})
+
+    assert token is override  # the station's own parameter is overridden
+    assert box.token is registered  # the factory's same-named parameter did not see the override
+
+
 async def test_native_context_writes_cannot_steal_later_exact_keys() -> None:
     injected = OtherToken()
 

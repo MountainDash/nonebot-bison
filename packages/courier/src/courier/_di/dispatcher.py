@@ -37,7 +37,7 @@ class _Compiled:
 
 @final
 class _OverrideProvider(Provider[object]):
-    def __init__(self, context_key: str, parameter: str) -> None:
+    def __init__(self, context_key: str | None, parameter: str) -> None:
         super().__init__()
         self.context_key = context_key
         self.parameter = parameter
@@ -48,18 +48,28 @@ class _OverrideProvider(Provider[object]):
 
     @override
     async def __call__(self, context: Contexts) -> Force | None:
+        if self.context_key is None:
+            return None
         overrides: Mapping[str, object] = context.get(self.context_key, {})
         return Force(overrides[self.parameter]) if self.parameter in overrides else None
 
 
 @final
 class _ExactProvider(Provider[object]):
-    def __init__(self, dispatcher: DependencyDispatcher, spec: ProviderSpec, owner: str, parameter: str) -> None:
+    def __init__(
+        self,
+        dispatcher: DependencyDispatcher,
+        spec: ProviderSpec,
+        owner: str,
+        parameter: str,
+        overrides_key: str | None,
+    ) -> None:
         super().__init__()
         self.dispatcher = dispatcher
         self.spec = spec
         self.owner = owner
         self.parameter = parameter
+        self.overrides_key = overrides_key
 
     @override
     def validate(self, param: Param) -> bool:
@@ -72,9 +82,10 @@ class _ExactProvider(Provider[object]):
     @override
     async def __call__(self, context: Contexts) -> Force:
         key = cast("DependencyKey", self.spec.key)
-        overrides: Mapping[str, object] = context.get(self.dispatcher.overrides_key, {})
-        if self.parameter in overrides:
-            return Force(overrides[self.parameter])
+        if self.overrides_key is not None:
+            overrides: Mapping[str, object] = context.get(self.overrides_key, {})
+            if self.parameter in overrides:
+                return Force(overrides[self.parameter])
         try:
             value = await self.dispatcher.resolve_exact(self.spec, context)
         except ResolutionError as error:
@@ -93,7 +104,7 @@ class _NativeProvider(Provider[object]):
     key: DependencyKey
     owner: str
     parameter: str
-    overrides_key: str
+    overrides_key: str | None
 
     def __init__(
         self,
@@ -102,7 +113,7 @@ class _NativeProvider(Provider[object]):
         key: DependencyKey,
         owner: str,
         parameter: str,
-        overrides_key: str,
+        overrides_key: str | None,
     ) -> None:
         super().__init__()
         self.native = native
@@ -118,9 +129,10 @@ class _NativeProvider(Provider[object]):
 
     @override
     async def __call__(self, context: Contexts) -> object | None:
-        overrides: Mapping[str, object] = context.get(self.overrides_key, {})
-        if self.parameter in overrides:
-            return Force(overrides[self.parameter])
+        if self.overrides_key is not None:
+            overrides: Mapping[str, object] = context.get(self.overrides_key, {})
+            if self.parameter in overrides:
+                return Force(overrides[self.parameter])
         try:
             return await self.native(Contexts(context))
         except Exception as error:
@@ -130,7 +142,12 @@ class _NativeProvider(Provider[object]):
 
 
 def _native_adapter(
-    native: Provider[object], token: object, key: DependencyKey, owner: str, parameter: str, overrides_key: str
+    native: Provider[object],
+    token: object,
+    key: DependencyKey,
+    owner: str,
+    parameter: str,
+    overrides_key: str | None,
 ) -> Provider[object]:
     priority = native.priority
 
@@ -181,6 +198,7 @@ class _OverrideDepend(Depend):
 
     @override
     async def __call__(self, context: Contexts) -> object:
+        # A Depend marker always lives inside a station-signature scope, so the channel is never absent.
         overrides: Mapping[str, object] = context.get(self.context_key, {})
         if self.parameter in overrides:
             return overrides[self.parameter]
@@ -335,18 +353,23 @@ class DependencyDispatcher:
         if not report.ok:
             raise DependencyValidationError(report)
         compiled = self.compiled_plans()
+        # Overrides bind to the station's declared signature only: provider factories never
+        # consume the caller's overrides, so same-named parameters cannot flow implicitly (ADR 0003).
         provider_subscribers = {
-            spec.key: self._make_subscriber(spec.plan)
+            spec.key: self._make_subscriber(spec.plan, overrides_key=None)
             for spec in compiled.snapshot.providers
             if spec.key is not None and spec.plan is not None
         }
-        station_subscribers = {identity: self._make_subscriber(plan) for identity, plan in compiled.plans.items()}
+        station_subscribers = {
+            identity: self._make_subscriber(plan, overrides_key=self.overrides_key)
+            for identity, plan in compiled.plans.items()
+        }
         self._provider_subscribers = provider_subscribers
         self._subscribers = station_subscribers
         self._frozen = True
         return report
 
-    def _make_subscriber(self, plan: BindingPlan) -> Subscriber[object]:
+    def _make_subscriber(self, plan: BindingPlan, *, overrides_key: str | None) -> Subscriber[object]:
         graph = {id(item.target): item for item in (plan, *plan.dependencies)}
         providers: list[Provider[object] | ProviderFactory] = []
         annotations: dict[int, dict[str, object]] = {}
@@ -359,21 +382,25 @@ class DependencyDispatcher:
                 metadata: list[object] = []
                 planned: set[int] = set()
                 if parameter.depends is not None:
+                    if overrides_key is None:
+                        # Unreachable: compile_plan(provider=True) rejects Depends in provider factories
+                        # (locked by test_signature_errors_and_provider_depends_are_eager), so a
+                        # provider-plan graph never reaches this branch. Fail loudly if that erodes
+                        # instead of silently letting provider-side Depends see caller overrides.
+                        raise RuntimeError("provider plan parameters cannot carry Depends")
                     dependency = graph[id(parameter.depends.target)]
                     dependency_target = dependency.target
-                    marker = _OverrideDepend(
-                        dependency_target, parameter.depends.cache, self.overrides_key, parameter.name
-                    )
+                    marker = _OverrideDepend(dependency_target, parameter.depends.cache, overrides_key, parameter.name)
                     metadata.append(marker)
                 else:
                     bindings = item.bindings[index]
-                    override_provider = _OverrideProvider(self.overrides_key, parameter.name)
+                    override_provider = _OverrideProvider(overrides_key, parameter.name)
                     providers.append(override_provider)
                     planned.add(id(override_provider))
                     metadata.append(override_provider)
                     for binding in bindings:
                         if binding.priority is None:
-                            adapter = _ExactProvider(self, binding.provider, item.owner, parameter.name)
+                            adapter = _ExactProvider(self, binding.provider, item.owner, parameter.name, overrides_key)
                             providers.append(adapter)
                             planned.add(id(adapter))
                             metadata.append(adapter)
@@ -385,7 +412,7 @@ class DependencyDispatcher:
                                 parameter.key,
                                 item.owner,
                                 parameter.name,
-                                self.overrides_key,
+                                overrides_key,
                             )
                             providers.append(native_adapter)
                             planned.add(id(native_adapter))

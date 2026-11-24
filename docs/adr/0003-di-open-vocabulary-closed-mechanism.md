@@ -15,7 +15,7 @@ courier 直接使用 `arclet-letoderea` 的 `Provider / ProviderFactory / Depend
 ```text
 创建 DependencyDispatcher
 → 注册全部 Provider（允许 forward declaration）
-→ prepare 全部站点，生成 BindingPlan
+→ prepare_station 登记全部站点，生成 BindingPlan
 → ValidationBackend 一次聚合全部问题
 → 无错误后构造 Subscriber 并冻结
 → 运行期只通过 Subscriber.handle 与 Dispatcher resolve 调用

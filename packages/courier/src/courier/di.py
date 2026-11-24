@@ -1,9 +1,9 @@
 """Public DI facade: instance-owned dependency injection built on arclet-letoderea.
 
 Downstream consumers (bison, dedicated lines) import from here, not from courier._di.
-The lifecycle and its semantics are recorded in ADR 0003: register in any order, prepare
-every station, freeze once with aggregated validation, then run through PreparedStation
-calls and resolve() only.
+The lifecycle and its semantics are recorded in ADR 0003: register in any order, pass every
+station through prepare_station(), freeze once with aggregated validation, then run through
+PreparedStation calls and resolve() only.
 """
 
 from arclet.letoderea import Depend, Depends, Provider, ProviderFactory

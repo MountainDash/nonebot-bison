@@ -27,7 +27,7 @@ class DependencyValidationError(DIError):
 
 @final
 class DispatcherFrozenError(DIError):
-    """A mutation (register/prepare/replace backends/freeze again) was attempted after freeze()."""
+    """A mutation (register/prepare_station/replace backends/freeze again) was attempted after freeze()."""
 
 
 @final

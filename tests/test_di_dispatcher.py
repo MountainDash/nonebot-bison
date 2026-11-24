@@ -72,7 +72,7 @@ async def test_forward_registration_sync_async_and_duplicate() -> None:
     assert box.token is await dispatcher.resolve(Token)
 
 
-async def test_prepare_does_not_validate_and_freeze_aggregates_without_calling_factories() -> None:
+async def test_prepare_station_does_not_validate_and_freeze_aggregates_without_calling_factories() -> None:
     calls: list[str] = []
     dispatcher = DependencyDispatcher()
 
@@ -84,7 +84,7 @@ async def test_prepare_does_not_validate_and_freeze_aggregates_without_calling_f
         pass
 
     dispatcher.register(Token, token_factory)
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     assert prepared.needs == (DependencyKey.of(Token), DependencyKey.of(str))
     report = dispatcher.validate()
     assert {issue.code for issue in report.issues} == {"missing"}
@@ -122,20 +122,20 @@ async def test_exact_annotated_keys_and_none_values() -> None:
     assert await dispatcher.resolve(Annotated[str, "tenant"]) is None
 
 
-async def test_prepare_must_precede_freeze_and_none_reaches_station() -> None:
+async def test_prepare_station_must_precede_freeze_and_none_reaches_station() -> None:
     dispatcher = DependencyDispatcher()
     dispatcher.register(Annotated[str, "tenant"], lambda: None)
 
     async def station(value: Annotated[str, "tenant"]) -> object:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     with pytest.raises(DispatcherNotFrozenError):
         _ = await prepared()
     _ = dispatcher.freeze()
     assert await prepared() is None
     with pytest.raises(DispatcherFrozenError):
-        _ = dispatcher.prepare(station)
+        _ = dispatcher.prepare_station(station)
 
 
 @final
@@ -215,13 +215,13 @@ async def test_native_is_opt_in_exact_wins_and_none_declines() -> None:
     strict = DependencyDispatcher()
     native = TextProvider()
     strict.register_native(native)
-    _ = strict.prepare(station)
+    _ = strict.prepare_station(station)
     assert [issue.code for issue in strict.validate().issues] == ["missing"]
 
     dispatcher = native_dispatcher()
     dispatcher.register_native(native)
     dispatcher.register(str, lambda: "exact")
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     assert await prepared() == "exact"
     assert native.calls == 0
@@ -236,7 +236,7 @@ async def test_native_none_decline_reports_station_parameter() -> None:
     def station(value: str) -> str:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     with pytest.raises(ResolutionError) as caught:
         _ = await prepared()
@@ -252,7 +252,7 @@ async def test_native_factory_is_generated_once_across_validation_and_freeze() -
     def station(value: Token) -> Token:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     assert dispatcher.validate().ok
     assert dispatcher.validate().ok
     _ = dispatcher.freeze()
@@ -271,7 +271,7 @@ async def test_native_marker_bindings_are_exactly_what_execution_uses() -> None:
     def station(tenant: Annotated[Token, "tenant"], other: Annotated[Token, "other"]) -> tuple[Token, Token]:
         return tenant, other
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     assert all(len(binding) == 1 for binding in prepared.plan.bindings)
     assert dispatcher.validate().ok
     _ = dispatcher.freeze()
@@ -286,7 +286,7 @@ async def test_equal_priority_native_candidates_fail_before_execution() -> None:
     def station(value: str) -> str:
         return value
 
-    _ = dispatcher.prepare(station)
+    _ = dispatcher.prepare_station(station)
     with pytest.raises(DependencyValidationError) as caught:
         _ = dispatcher.freeze()
     assert [issue.code for issue in caught.value.report.issues] == ["ambiguous_native"]
@@ -300,7 +300,7 @@ async def test_explicit_overrides_and_no_ambient_name_shadow() -> None:
     def station(value: Token) -> Token:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     override = Token()
     assert await prepared(overrides={"value": override}) is override
@@ -318,7 +318,7 @@ async def test_override_wins_after_cached_resolution_and_does_not_stick() -> Non
     def station(value: Token) -> Token:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     override = Token()
     assert await prepared() is registered
@@ -347,7 +347,7 @@ async def test_override_wins_when_another_call_records_provider_first() -> None:
     async def station(_slow: OtherToken, value: Token) -> Token:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     override = Token()
     pending = asyncio.create_task(prepared(overrides={"value": override}))
@@ -368,7 +368,7 @@ async def test_global_provider_cannot_steal_an_exact_key() -> None:
         def station(value: str) -> str:
             return value
 
-        prepared = dispatcher.prepare(station)
+        prepared = dispatcher.prepare_station(station)
         _ = dispatcher.freeze()
         assert await prepared(context={"other": "context"}) == "registered"
         assert hostile in providers
@@ -385,7 +385,7 @@ async def test_unplanned_callable_provider_fails_candidate_audit() -> None:
     station.__dict__["__providers__"] = [hostile]
     dispatcher = DependencyDispatcher()
     dispatcher.register(str, lambda: "registered")
-    _ = dispatcher.prepare(station)
+    _ = dispatcher.prepare_station(station)
     with pytest.raises(DependencyValidationError) as caught:
         _ = dispatcher.freeze()
     assert [issue.code for issue in caught.value.report.issues] == ["unexpected_provider"]
@@ -411,8 +411,8 @@ async def test_singleton_is_shared_transient_is_not_and_override_is_not_captured
     def second(value: Token) -> Token:
         return value
 
-    one = dispatcher.prepare(first)
-    two = dispatcher.prepare(second)
+    one = dispatcher.prepare_station(first)
+    two = dispatcher.prepare_station(second)
     _ = dispatcher.freeze()
     override = Token()
     first_value, box = await one(overrides={"value": override})
@@ -433,7 +433,7 @@ async def test_transient_provider_does_not_clear_later_override() -> None:
     def station(_first: Token, second: OtherToken) -> OtherToken:
         return second
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     override = OtherToken()
     assert await prepared(overrides={"second": override}) is override
@@ -448,7 +448,7 @@ async def test_overrides_bind_only_to_the_station_signature() -> None:
     def station(box: Box, token: Token) -> tuple[Box, Token]:
         return box, token
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     override = Token()
     box, token = await prepared(overrides={"token": override})
@@ -474,7 +474,7 @@ async def test_native_context_writes_cannot_steal_later_exact_keys() -> None:
     def station(_first: Token, second: OtherToken) -> OtherToken:
         return second
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     assert await prepared() is registered
 
@@ -548,13 +548,13 @@ async def test_depends_local_derivation_override_and_cycle() -> None:
     def station(value: Annotated[Box, Depends(make_box)]) -> Box:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     with pytest.raises(DependencyValidationError):
         _ = dispatcher.freeze()
 
     dispatcher = DependencyDispatcher()
     dispatcher.register(Token, make_token)
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     assert isinstance(await prepared(), Box)
     override = Box(Token())
@@ -567,7 +567,7 @@ async def test_depends_cycle_is_aggregated_before_subscriber_construction() -> N
     def station(value: Annotated[int, Depends(depends_cycle)]) -> int:
         return value
 
-    _ = dispatcher.prepare(station)
+    _ = dispatcher.prepare_station(station)
     with pytest.raises(DependencyValidationError) as caught:
         _ = dispatcher.freeze()
     assert [issue.code for issue in caught.value.report.issues] == ["depends_cycle"]
@@ -590,7 +590,7 @@ async def test_validation_backend_is_not_called_at_runtime_and_mutation_freezes(
     def station(value: Token) -> Token:
         return value
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     assert validator.calls == 0
     _ = dispatcher.freeze()
     assert validator.calls == 1
@@ -615,7 +615,7 @@ async def test_snapshot_needs_and_station_failure_cause() -> None:
     def station(_box: Box) -> None:
         raise ValueError("station failed")
 
-    prepared = dispatcher.prepare(station)
+    prepared = dispatcher.prepare_station(station)
     _ = dispatcher.freeze()
     snapshot = dispatcher.snapshot()
     assert snapshot[str(DependencyKey.of(Token))] == {"singleton": True, "needs": []}

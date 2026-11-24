@@ -261,11 +261,11 @@ class PreparedStation[T]:
 class DependencyDispatcher:
     """Instance-owned DI: registry, immutable plans, aggregated validation, freezing, and calls.
 
-    Lifecycle (ADR 0003): register providers in any order (forward declarations allowed), prepare
-    every station, then freeze() once — validation aggregates all problems before any subscriber is
-    built. After freeze the registry is closed; the runtime surface is PreparedStation calls and
-    resolve() only. Mutations after freeze raise DispatcherFrozenError; execution before freeze
-    raises DispatcherNotFrozenError.
+    Lifecycle (ADR 0003): register providers in any order (forward declarations allowed), pass
+    every station through prepare_station(), then freeze() once — validation aggregates all
+    problems before any subscriber is built. After freeze the registry is closed; the runtime
+    surface is PreparedStation calls and resolve() only. Mutations after freeze raise
+    DispatcherFrozenError; execution before freeze raises DispatcherNotFrozenError.
     """
 
     def __init__(
@@ -351,16 +351,16 @@ class DependencyDispatcher:
         self._compiled = None
 
     @overload
-    def prepare[T](self, target: Callable[..., Coroutine[Any, Any, T]]) -> PreparedStation[T]: ...
+    def prepare_station[T](self, target: Callable[..., Coroutine[Any, Any, T]]) -> PreparedStation[T]: ...
 
     @overload
-    def prepare[T](self, target: Callable[..., T]) -> PreparedStation[T]: ...
+    def prepare_station[T](self, target: Callable[..., T]) -> PreparedStation[T]: ...
 
-    def prepare(self, target: Factory) -> PreparedStation[Any]:
-        """Compile a station plan without validating; must precede freeze().
+    def prepare_station(self, target: Factory) -> PreparedStation[Any]:
+        """Enlist a station: compile its plan without validating; must precede freeze().
 
-        Usable bare as a decorator (@dispatcher.prepare); the returned station keeps owner/needs
-        for inspect and refuses execution until the dispatcher is frozen.
+        Usable bare as a decorator (@dispatcher.prepare_station); the returned station keeps
+        owner/needs for inspect and refuses execution until the dispatcher is frozen.
         """
         # The overloads carry T; the implementation can only state the erased runtime shape.
         self._ensure_mutable()

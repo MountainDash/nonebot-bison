@@ -207,7 +207,12 @@ class _OverrideDepend(Depend):
 
 @final
 class PreparedStation[T]:
-    """A prepared call site; T is the station's declared return type, not a runtime guarantee."""
+    """A frozen call site; T is the station's declared return type, not a runtime guarantee.
+
+    Call it after freeze() to execute with injected dependencies. overrides bind only to the
+    station's declared signature (its own parameters and local Depends subgraph) and never reach
+    provider factories; unknown override names are rejected before execution.
+    """
 
     def __init__(self, dispatcher: DependencyDispatcher, plan: BindingPlan) -> None:
         self._dispatcher = dispatcher
@@ -215,14 +220,17 @@ class PreparedStation[T]:
 
     @property
     def owner(self) -> str:
+        """The station callable's stable name (module.qualname), for errors and inspect."""
         return self.raw_plan.owner
 
     @property
     def needs(self) -> tuple[DependencyKey, ...]:
+        """Keys that must be injectable for this station; Depends parameters are excluded."""
         return self.raw_plan.needs
 
     @property
     def plan(self) -> BindingPlan:
+        """The bound plan this station executes; reflects the registry state at the last compile."""
         compiled = self._dispatcher.compiled_plans()
         return compiled.plans.get(id(self), self.raw_plan)
 
@@ -251,12 +259,22 @@ class PreparedStation[T]:
 
 @final
 class DependencyDispatcher:
+    """Instance-owned DI: registry, immutable plans, aggregated validation, freezing, and calls.
+
+    Lifecycle (ADR 0003): register providers in any order (forward declarations allowed), prepare
+    every station, then freeze() once — validation aggregates all problems before any subscriber is
+    built. After freeze the registry is closed; the runtime surface is PreparedStation calls and
+    resolve() only. Mutations after freeze raise DispatcherFrozenError; execution before freeze
+    raises DispatcherNotFrozenError.
+    """
+
     def __init__(
         self,
         *,
         binding_backends: Sequence[BindingBackend] | None = None,
         validation_backend: ValidationBackend | None = None,
     ) -> None:
+        """binding_backends default to strict exact-key matching only; native matching is an explicit opt-in."""
         self._binding_backends = (
             tuple(binding_backends) if binding_backends is not None else (ExactKeyBindingBackend(),)
         )
@@ -277,17 +295,24 @@ class DependencyDispatcher:
             raise DispatcherFrozenError("dependency dispatcher is frozen")
 
     def set_binding_backends(self, backends: Sequence[BindingBackend]) -> None:
+        """Replace binding backends before freeze(); invalidates compiled plans."""
         self._ensure_mutable()
         self._binding_backends = tuple(backends)
         self._compiled = None
 
     def set_validation_backend(self, backend: ValidationBackend) -> None:
+        """Replace the validation backend before freeze(); replacements keep the same contract."""
         self._ensure_mutable()
         self._validation_backend = backend
 
     # The key is open vocabulary: a type, an Annotated alias, or a DependencyKey (ADR 0003).
     # Annotated aliases are not assignable to type[T], so a narrower union would lie to callers.
     def register(self, key: object, factory: Factory, *, singleton: bool = True) -> None:
+        """Register an exact provider; singletons are constructed once and cached per key.
+
+        The factory plan compiles eagerly: unusable signatures raise SignatureError at registration,
+        and duplicate keys raise DuplicateProviderError immediately.
+        """
         self._ensure_mutable()
         normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
         if any(provider.key == normalized for provider in self._providers):
@@ -303,6 +328,12 @@ class DependencyDispatcher:
     def provider[F: Factory](self, *, singleton: bool = True) -> Callable[[F], F]: ...
 
     def provider(self, factory: Factory | None = None, *, singleton: bool = True) -> Any:
+        """Decorator or direct call: register by the factory's return annotation, type preserved.
+
+        Requires a return annotation (SignatureError otherwise). Equivalent to registering the
+        annotated return key directly; use register() when the key differs from the return annotation.
+        """
+
         # The overloads carry F; the implementation can only state the erased runtime shape.
         def decorate(target: Factory) -> Factory:
             hints = get_type_hints(target, include_extras=True)
@@ -314,6 +345,7 @@ class DependencyDispatcher:
         return decorate if factory is None else decorate(factory)
 
     def register_native[T](self, candidate: Provider[T] | ProviderFactory) -> None:
+        """Register an arclet native; it participates only behind an explicitly enabled PredicateBindingBackend."""
         self._ensure_mutable()
         self._providers.append(ProviderSpec.from_native(candidate))
         self._compiled = None
@@ -325,6 +357,11 @@ class DependencyDispatcher:
     def prepare[T](self, target: Callable[..., T]) -> PreparedStation[T]: ...
 
     def prepare(self, target: Factory) -> PreparedStation[Any]:
+        """Compile a station plan without validating; must precede freeze().
+
+        Usable bare as a decorator (@dispatcher.prepare); the returned station keeps owner/needs
+        for inspect and refuses execution until the dispatcher is frozen.
+        """
         # The overloads carry T; the implementation can only state the erased runtime shape.
         self._ensure_mutable()
         compiled = self.compiled_plans()
@@ -334,6 +371,7 @@ class DependencyDispatcher:
         return station
 
     def compiled_plans(self) -> _Compiled:
+        """Lazily bind the current registry and all stations; invalidated by any mutation."""
         if self._compiled is None:
             snapshot = bind_providers(RegistrySnapshot(tuple(self._providers)), self._binding_backends)
             plans = {
@@ -344,10 +382,16 @@ class DependencyDispatcher:
         return self._compiled
 
     def validate(self) -> ValidationReport:
+        """Aggregate the whole graph's problems in one deterministic report; never calls any factory."""
         compiled = self.compiled_plans()
         return self._validation_backend.validate(compiled.snapshot, tuple(compiled.plans.values()))
 
     def freeze(self) -> ValidationReport:
+        """Validate the whole graph, build all subscribers, then close the registry.
+
+        Single-shot: a second freeze raises DispatcherFrozenError. Raises DependencyValidationError
+        with the aggregated report when anything is unsatisfiable; nothing is partially frozen.
+        """
         self._ensure_mutable()
         report = self.validate()
         if not report.ok:
@@ -498,6 +542,7 @@ class DependencyDispatcher:
             raise DependencyValidationError(ValidationReport(tuple(issues)))
 
     def station_subscriber(self, station: PreparedStation[object]) -> Subscriber[object]:
+        """The execution subscriber of one station; requires freeze()."""
         if not self._frozen:
             raise DispatcherNotFrozenError("freeze the dispatcher before executing a station")
         return self._subscribers[id(station)]
@@ -508,6 +553,7 @@ class DependencyDispatcher:
         overrides: Mapping[str, object],
         context: Mapping[str, object] | None,
     ) -> Contexts:
+        """Build one call's context: strip ambient parameter names, then attach this call's overrides."""
         result = Contexts(context or {})
         parameter_names = {
             parameter.name
@@ -523,6 +569,10 @@ class DependencyDispatcher:
     # but infer T as Unknown (they are not assignable to type[T]); typed resolution uses a
     # plain type or an explicit DependencyKey.
     async def resolve[T](self, key: type[T] | DependencyKey | object) -> T:
+        """Resolve one exact key outside a station call; requires freeze().
+
+        T follows the key for plain types; singletons are shared, transients construct per call.
+        """
         if not self._frozen:
             raise DispatcherNotFrozenError("freeze the dispatcher before resolving dependencies")
         normalized = key if isinstance(key, DependencyKey) else DependencyKey.of(key)
@@ -566,6 +616,7 @@ class DependencyDispatcher:
             raise ResolutionError("provider factory failed", owner=spec.name, keys=(key,)) from error
 
     def snapshot(self) -> dict[str, dict[str, object]]:
+        """Inspect projection of the registry: name -> {singleton, needs}; natives are registration-index-named."""
         result: dict[str, dict[str, object]] = {}
         for index, spec in enumerate(self._providers):
             name = str(spec.key) if spec.key is not None else f"native:{index}:{spec.name}"

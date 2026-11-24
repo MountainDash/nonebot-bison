@@ -15,6 +15,8 @@ __all__ = [
 
 @final
 class DependencyValidationError(DIError):
+    """freeze() refused to start: the aggregated ValidationReport is attached as .report."""
+
     report: ValidationReport
 
     def __init__(self, report: ValidationReport) -> None:
@@ -24,15 +26,19 @@ class DependencyValidationError(DIError):
 
 
 @final
-class DispatcherFrozenError(DIError): ...
+class DispatcherFrozenError(DIError):
+    """A mutation (register/prepare/replace backends/freeze again) was attempted after freeze()."""
 
 
 @final
-class DispatcherNotFrozenError(DIError): ...
+class DispatcherNotFrozenError(DIError):
+    """An execution entry point (station call, resolve) was attempted before freeze()."""
 
 
 @final
 class ResolutionError(DIError):
+    """A runtime dependency could not be produced; carries owner, parameter, and the failing key chain."""
+
     owner: str
     parameter: str | None
     keys: tuple[DependencyKey, ...]

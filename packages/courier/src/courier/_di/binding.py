@@ -8,6 +8,8 @@ from .model import Binding, BindingPlan, ParameterSpec, ProviderSpec, RegistrySn
 
 
 class BindingBackend(Protocol):
+    """Answer "which providers match this parameter". Backends are pure functions of (parameter, snapshot)."""
+
     def bind(self, parameter: ParameterSpec, snapshot: RegistrySnapshot) -> tuple[Binding, ...]: ...
 
 
@@ -17,13 +19,19 @@ class _TypedProviderFactory(Protocol):
 
 @final
 class ExactKeyBindingBackend:
+    """Default strict backend: exact key equality only. No subclass/Optional/native matching, ever."""
+
     def bind(self, parameter: ParameterSpec, snapshot: RegistrySnapshot) -> tuple[Binding, ...]:
         return tuple(Binding(provider) for provider in snapshot.providers if provider.key == parameter.key)
 
 
 @final
 class PredicateBindingBackend:
-    """Adapt only explicitly registered arclet candidates; metadata never adds context providers."""
+    """Adapt only explicitly registered arclet candidates; metadata never adds context providers.
+
+    A native Provider returning None means decline; a ProviderFactory is validated once and the
+    generated instance is saved in the Binding so validation and execution never generate twice.
+    """
 
     def bind(self, parameter: ParameterSpec, snapshot: RegistrySnapshot) -> tuple[Binding, ...]:
         param = Param(parameter.name, parameter.key.base, parameter.default, parameter.key.markers, [])
@@ -81,6 +89,7 @@ def bind_providers(
     snapshot: RegistrySnapshot,
     backends: Sequence[BindingBackend] | None = None,
 ) -> RegistrySnapshot:
+    """Bind every exact provider's own plan against the snapshot, so factories resolve their own needs."""
     selected = (ExactKeyBindingBackend(),) if backends is None else backends
     providers: list[ProviderSpec] = []
     for provider in snapshot.providers:

@@ -1,221 +1,290 @@
 # bison — 业务应用
 
-依赖 NoneBot（[ADR 0001](../adr/0001-courier-has-no-nonebot-dependency.md) 的理由不适用于 bison 的任何部分：渲染器与发送器本质上依赖 NoneBot 插件）。
+依赖 NoneBot（[ADR 0001](../adr/0001-courier-has-no-nonebot-dependency.md)）。bison 负责业务身份、组件装配、抓取补发、订阅生命周期、配置、渲染与发送；courier 只负责通用运输。
 
 ## 1. 组件模型
 
-四类组件，一个通用适配器。组件作者**不写任何 courier 概念**（面单、地址、资源键、`next_attempt_at`）。
+**五类组件，一个通用适配器。** 组件作者不写 courier 的面单、地址、资源键、血缘或 `next_attempt_at`。
 
 ```python
 class Component[In, Out](ABC):
-    kind: ClassVar[str]                  # 声明的产出/接受标签
-    config_model: type[BaseModel]        # 声明的配置 schema
+    kind: ClassVar[str]
+    config_model: type[BaseModel]
     async def run(self, item: In, ctx) -> Out: ...
 ```
 
-依赖用类型标注声明，由 [ADR 0003](../adr/0003-di-open-vocabulary-closed-mechanism.md) 的注入器解析。
+依赖用类型标注声明，由 [ADR 0003](../adr/0003-di-open-vocabulary-closed-mechanism.md) 的注入器解析。组件执行必须可取消；组件拥有并清理自己创建的 client、页面、进程或其他资源，通用流水线不需要知道这些资源的具体类型。
 
-**「新增一个平台 ≈ 100 行」这条心智模型不能退化。** 判据：写一个最简单的抓取器，作者只写一个类 + 一个 `run`。
+「新增一个平台 ≈ 100 行」仍是心智模型：最简单的抓取器只写一个类 + 一个 `run`，默认链路完成其余工作。
 
-## 2. 四类组件
+## 2. 五类组件与报文
 
 | 组件 | 输入 | 输出 |
 |---|---|---|
-| **抓取器 (Fetcher)** | 源 + 抓取参数 | 原始产出 `RawPost` 列表 |
-| **解析器 (Parser)** | `RawPost` | 报文 `Report`（固定核心字段，见 §3） |
-| **富化器 (Enricher)** | `(Report, RawPost)` | `Report`，**只能新增** |
-| **渲染器 (Renderer)** | `Report` + 风格 | 渲染产物（中立内容，[ADR 0007](../adr/0007-rendered-content-is-transport-neutral.md)） |
-| **发送器 (Sender)** | 渲染产物 + 目的地 | 投递结果 |
+| **抓取器 (Fetcher)** | 源 + 抓取参数 + 补抓游标 | 原始产出 `RawPost` 列表与下一轮调度信息 |
+| **解析器 (Parser)** | `RawPost` | `Report` |
+| **富化器 (Enricher)** | `(Report, RawPost)` | `Report`，只能新增 `extra` |
+| **渲染器 (Renderer)** | `Report` + 解析后配置 + 能力变体 | 中立 `RenderedContent` |
+| **发送器 (Sender)** | `RenderedContent` + 目的地 | 投递结果 |
 
-抓取器另外负责**订阅输入解析**（把用户输入变成源）与**源名字查询**——只有它知道该平台的 URL / ID 形态。
-
-### 报文与富化
+`RawPost`、`Report`、执行计划与配置快照全部必须满足 Parcel 的 JSON 往返约束。
 
 ```python
-class Report(BaseModel):        # 核心字段，谁都不能改
-    source_id, post_id, posted_at, url, author, title, text, media
-    extra: dict[str, Any]       # 富化器唯一能写的地方
+class Report(BaseModel):
+    source_id, post_id, content_revision
+    posted_at, url, author, title, text, media
+    extra: dict[str, Any]       # 仅 Enricher 业务扩展可写
+```
 
+系统错误、降级、路由与投递信息使用独立的系统命名空间和结构化事件，不写入 `extra`，也不占用 Enricher 的 `adds`。
+
+```python
 class Enricher(Component[tuple[Report, RawPost], Report]):
-    adds: frozenset[str]        # 它会写哪些 extra 键
-    required: bool = False      # 失败是致命还是可跳过
+    adds: frozenset[str]
+    required: bool = False
 ```
 
-四条启动期校验：`adds` 与核心字段重名 → 报错；同一源上两个富化器的 `adds` 相交 → 报错；运行时写入的键必须 ⊆ `adds`；`required=False` 的富化器失败只记 `extra["_enricher_errors"]` 并继续。
+启动校验：`adds` 不得与核心字段或系统命名空间冲突；同一源上的 `adds` 不得相交；运行时写键必须是 `adds` 子集。多个 Enricher 的执行顺序来自源配置，而非插件加载顺序。
 
-**理由：** 一个可选的富化器（翻译、头像、直链）不应该有能力让整条动态发不出去。旧代码里一条 `JSONDecodeError` 杀掉整个抓取周期，就是缺这条区分。
+## 3. 内容身份、订阅身份与投递身份
 
-### 渲染产物
+三种身份不得混用：
 
-有序块序列，最小集合：文本、图片引用、可选提及/回复/附件。**发送器负责翻译**成 SAA 的 `MessageSegmentFactory` 或 Alconna 的 `UniMessage`，并声明自己的能力集；不支持的内容按 §9 降级。
+1. **轮询身份**：`(source_id, scheduled_slot)`，只对齐一次调度执行及其崩溃重放。
+2. **内容身份**：`(source_id, post_id, content_revision)`，是 Report 的稳定业务身份，不继承轮询 id。
+3. **投递身份**：在内容身份上加入订阅、渲染计划、目的地与投递代，保证重放安全，同时允许同一内容合法发往不同订阅。
 
-## 3. 流水线与站点映射
+Fetcher 优先使用上游编辑版本作为 `content_revision`；上游没有版本时，使用规范化原始内容的摘要。规范化规则必须确定且可版本化，排除抓取时间、请求 id 等易变字段；无法提供稳定内容身份的 Fetcher 不得接入。内容未变时重复轮询得到同一 Report id；内容编辑形成新 revision，而不是同 id 不同 payload。相同内容身份却得到不同摘要是冲突错误。
 
-```
-源调度到期
-  → 站 fetch:<fetcher>   [resource = host#凭证]
-      抓取 → 解析 → 富化 → 按渲染风格分组 → post_many
-  → 站 render:<renderer> [resource = renderer:<id>]
-      渲染一次，产出渲染产物 → post_many，每个目的地一个包裹
-  → 站 send:<sender>     [resource = destination:<id>]
-      翻译成平台消息并发出去
-```
+每个 Report 是新的后代预算根，但保留指向轮询包裹的 `parent_id`。Report 的 `content_hash` 只覆盖稳定业务内容，不包含 `parent_id` 或轮询 id；跨轮询幂等重放保留首次 parent 作为审计。抓取批大小单独受限，不把整次轮询的所有动态塞进一个默认预算。
 
-**解析与富化在抓取站内同步执行，不单独成站。** 它们是纯函数、无外部 IO、失败应连带抓取一起归因；拆成独立站点会让每条动态多一次信道往返，只换来更长的失败链。组件仍然是独立的（作者分开写、注册分开注册）。
+渲染包裹可以按相同渲染计划聚合多个订阅；发送包裹必须显式携带 `subscription_id`、`destination_id` 与统一的 `effective_revision`。新订阅默认不补历史：轮询扇出使用当时的订阅集合快照，崩溃重放不得把后来新增的订阅偷偷加入。
 
-**渲染与发送是独立站点**，因为它们是昂贵或不可逆的步骤：渲染要浏览器，发送一出去就收不回。
+**游标与去重键都不能替代对方：** 去重防止重复，游标决定补抓从哪里继续。运行期游标只在对应内容已经成为耐久运输包裹或耐久死信后推进，并与这些写入共享事务。解析或富化死信已经被显式记录，因此不构成静默跳过。
 
-### 站点边界判据
+迁移是独立例外，不违反这条不变量：`cutover_watermark` 记录真实观察快照，`source_post` 用 `observed / migration_skipped / handed_off` 等观察状态抑制首轮重复；它们不是运行游标，也不是 `DELIVERED` 或 `DEAD` 历史。只有能证明晚于切流高水位的内容才补发；无法判断先后的迟到旧内容形成补抓缺口，不能因“不在快照里”就冒充新内容。
 
-站点边界由两条之一决定：**扇出基数变化**，或**独立的对外资源约束**。两者都不满足的阶段就内联。
+## 4. 流水线与执行计划
 
-| 阶段 | 扇出 | 对外资源 | 归属 |
-|---|---|---|---|
-| 抓取 | 1 源 → N 条动态 | 上游 host + 凭证 | **站点** |
-| 解析 | 1:1 | 默认无；声明 `external` 则有 | 内联（默认）/ 站点（`external`） |
-| 富化 | 1:1 | 默认无；声明 `external` 则有 | 内联（默认）/ 站点（`external`） |
-| 渲染 | 1 条 → N 个风格 | 浏览器 | **站点** |
-| 发送 | 1 → N 个目的地 | 聊天平台 + 目的地 | **站点** |
+默认逻辑链路：
 
-**所以默认是三个站点，但只要有一个解析器或富化器声明 `external = True`，就自动多出一个站点。** 这不是全局开关，是按组件的 —— 大多数解析器是纯的，只有少数（微博长文要二次请求、B 站 OPUS 要额外接口）需要独立的重试与限流。
-
-### 站内失败隔离（规格要求）
-
-1. **per-post try/except。** 一条坏数据不得中断整批。旧代码里一条 `JSONDecodeError` 杀掉整个抓取周期（#632）就是缺这一条。
-2. **确定性失败不重试上游。** 无外部 IO 的解析器/富化器失败是**确定性**失败（同样的输入会同样失败），因此该条直接进死信，**不得重试抓取** —— 重试只会白打上游请求，在风控环境下是真实伤害。这一条消除了内联方案最大的归因问题。
-3. **`external` 组件必须声明资源键**（它的 host）。启动期校验：声明了 `external` 却没有对应的站点地址 → 报错。
-
-**扇出点**（一次抓取 → 一次渲染 → N 次发送）：渲染包裹携带「需要它的目的地列表」，渲染完成后按目的地扇出。这样同一张卡片只渲染一次，而目的地之间互不阻塞。
-
-## 4. 装配规则
-
-默认按类型配对，冲突或需要时显式覆盖：
-
-- 解析器声明它接受的 `RawPost` 类型；一个类型只有一个解析器时自动配对。
-- 一个类型有多个候选 → **启动期报错**，要求在源配置里显式指定。
-- 发送器是 1:N 配对（所有发送器都接受 `rendered`），不能用类型决定，因此走**目的地上的 `sender` 字段**，默认 `saa`。
-- 装配失败一律在启动期报错，列全部缺失项。
-
-## 5. 默认链路
-
-只写一个抓取器就能跑：
-
-```
-抓取器 → 内建直通解析器（标题/正文/链接直接映射）→ 内建 basic 渲染器 → 发送器
+```text
+Source 到期
+  → fetch:<fetcher>       [resource = host#opaque_credential_id]
+  → 每帖执行计划：parse → enrichers
+  → 按有效渲染计划分组
+  → render:<renderer>     [resource = renderer:<id>]
+  → 按订阅与目的地扇出
+  → send:<sender>         [resource = destination:<id>]
 ```
 
-解析器只在需要额外信息时才写。这是「100 行一个平台」的具体保证。
+连续 inline 阶段合并执行；扇出基数变化或存在独立外部资源约束时建立站点。默认仍只有 fetch、render、send 三类站点，但 external Parser/Enricher 会按执行计划增加站点。
 
-## 6. 数据模型（指示性，列名待定）
+启动装配时，每个源生成不可变的有序执行计划：
 
-| 表 | 关键字段 |
+```python
+{
+  plan_id,
+  source_revision,
+  steps: [
+    {kind: "parser" | "enricher", component_id, external, config_snapshot},
+    ...
+  ],
+}
+```
+
+包裹携带 `plan_id + step + source_revision`，下游订阅快照再组合成统一的 `effective_revision`。每个 external 站点成功后推进到下一步；连续 inline 后缀并入当前站点。`RawPost` 与当前 `Report` 随计划一起持久化，因此重启后可以从失败步骤继续，而不是重抓，也为人工重投保留必要接入点。
+
+失败规则：
+
+- 每条 RawPost 独立 try/except，一条坏数据不得中断整批。
+- Parser 确定性失败：当前帖死信，绝不重试抓取。
+- `required=False` 的 inline Enricher 失败：记录系统错误并立即继续。
+- `required=False` 的 external Enricher：先消耗自己的瞬态重试预算，耗尽后记录并继续下一跳。
+- `required=True`：可重试错误消耗预算，耗尽或永久失败后当前帖死信。
+- 任一后续阶段失败不得重新执行 fetch。
+
+站点边界判据不变：扇出基数变化或独立外部资源约束。渲染与发送独立，是因为它们可能昂贵或不可逆；纯解析与富化默认内联，避免无收益的往返。
+
+## 5. 扇出与顺序
+
+- Fetcher 必须返回有确定顺序的批次；通常按 `(posted_at, post_id)` 排序。禁止无序集合决定发送顺序。
+- 一次源只抓取一次；过滤在订阅扇出前按各订阅快照分别求值。
+- 同一有效渲染计划只渲染一次，然后按订阅/目的地扇出；不同计划可以产生不同内容变体。
+- 最终顺序只承诺：**同一 Source、同一 Subscription、同一 `effective_revision` 内的内容保序**。不同源之间只有目的地信道的到达 FIFO，不承诺按 `posted_at` 全序。
+- 渲染降级在原渲染站点内完成并直接产生发送包裹，不另开一条可能让后续内容超车的降级信道。
+
+`effective_revision` 不同的内容不承诺跨代际顺序；配置修改只影响新内容，见 §6。
+
+## 6. 数据模型与生命周期
+
+指示性模型如下，确切列类型与命名属于实现：
+
+| 表 | 关键字段与不变量 |
 |---|---|
-| **source** | `id`、`line`（专线）、`fetcher_id`、`platform_key`、`display_name`、`display_name_at`、`interval`、`enabled` |
-| **destination** | `id`、`adapter`、`native_id`、`sender`（默认 `saa`）、`paused` |
-| **subscription** | `id`、`source_id`、`destination_id`、`renderer_id`、`filters`、`created_at` |
-| **credential** | `id`、`host`、`secret`、`cooldown_until`、`last_ok_at` |
+| **source** | `id`、`line`、`fetcher_id`、`platform_key`、`display_name*`、`interval`、`next_poll_at`、`merge_pending`、`cursor`、`revision`、`enabled` |
+| **destination** | `id`、`adapter`、`native_id`、`sender`、`revision`、`paused` |
+| **subscription** | `id`、`source_id`、`destination_id`、`renderer_id`、`filters`、`config`、`revision`、`paused`、`created_at` |
+| **source_post** | `source_id`、`post_id`、`content_revision`、内容摘要、观察状态、首次见到时间 |
+| **execution_plan** | `plan_id`、源、`source_revision`、有序步骤与配置快照 |
+| **cutover_watermark** | 接管源、真实观察高水位、切流时间、快照内容与缺口状态 |
+| **credential** | 随机不透明 `id`、`host`、`secret`、`cooldown_until`、`last_ok_at` |
+| **artifact / artifact_ref** | 内容摘要、持久位置、Parcel 引用与对账状态，见运行规格 |
 
-**身份规则：**
+自然身份规则：
 
-- 源的身份 = `(专线, 抓取器, 平台侧标识)`。**名字永远不是身份。**
-- 订阅 = 源 × 目的地 × 渲染风格 × 过滤。目的地不重复存（`destination` 独立一张表），否则会出现旧代码里「按序列化 JSON 相等查找用户」那类重复行。
-- 名字是展示缓存：TTL 7 天、可手动刷新、**取不到名字不得阻断订阅**（用平台侧 id 占位）。
+- Source 的 `(line, fetcher_id, platform_key)` 唯一且创建后不可变；换账号必须新建 Source。
+- Destination 的 `(adapter, native_id)` 唯一且创建后不可变；换真实聊天位置必须新建 Destination。
+- 名字是展示缓存：TTL 7 天、可手动刷新；取不到名字不得阻断订阅。
+- 删除后重建使用新对象 id，不继承旧对象的身份、游标或订阅关系。
 
-## 7. 抓取调度
+变更规则：
 
-**一个循环，两类到期项：**
+- `effective_revision` 由 Source 执行计划 revision、Subscription revision、Destination revision，以及相关组件默认配置与能力版本共同计算。执行计划、订阅快照、渲染计划和发送包裹必须引用同一个有效代际。
+- 修改 Subscription 的 filter、renderer 或渲染配置产生新 subscription revision；修改 Source 的 Parser/Enricher 等配置产生新执行计划 revision；修改 Destination.sender 或相关组件默认/能力版本会改变所有受影响订阅的 effective_revision。它们只影响新内容，旧包裹继续按原快照执行。
+- 暂停 Source：不再产生新轮询；尚未开始的 queued fetch 转为 `CANCELLED`，in-flight fetch 及其已经产生的下游继续。`merge_pending` 保留到恢复后至多补一次。
+- 暂停 Subscription：只处理目标成员。共享渲染包裹中的其他成员照常扇出；目标成员的发送包裹以 `held` 保存，不占目的地活动 head，恢复后按原 seq 唤醒。
+- 暂停 Destination：该目的地的未执行发送全部 held，其他目的地不受影响；恢复时统一唤醒。
+- 删除 Source、Subscription 或 Destination：按成员取消未执行且结果可知的后代，共享渲染中的其他成员不得连带取消。`CANCELLED` 不是故障死信，artifact 引用随终态对账释放。
+- 正在执行或 `outcome_unknown` 的发送不得直接取消；先按实际结果结算。已经由平台接受或结果不可知的内容保留相应审计，删除只阻止新的后代，不篡改历史。
 
-| 到期项 | 存在哪 | 到期后做什么 |
+## 7. 组合调度、轮询合并与补抓
+
+**bison 拥有唯一调度循环。** 它通过 courier 的单步调度与到期接口比较两类时间：
+
+| 到期项 | 真相 | 到期后做什么 |
 |---|---|---|
-| 源的 `next_poll_at` | `source` 表 | 生成一个抓取包裹，入该源的**资源信道** |
-| 信道的 `next_attempt_at` | 信道行 | 取 head 投递 |
+| `source.next_poll_at` | bison source 表 | 入队一个抓取包裹 |
+| `Receipt.next_attempt_at` | courier，投影到 lane | 让唯一 worker 执行 head |
 
-两者都是「最早到期先跑」，但不能合并成一张表：源是**周期性生产**（一行一个源），信道是**队列消费**（一行一个资源，多源共享）。合并会让「多源共享一个凭证」时无法表达各自的轮询间隔。
+调度器不直接等待站点；worker 执行期间，调度器仍能接收唤醒和处理数据库调度。源生产与 courier 消费不得各开一个扫描循环。
 
-**这不是妥协，是语义更准确。** 两种时间语义不同：源级覆盖（「这个源已完结，一天后再看」「直播中，5 秒后再看」）只该影响那个源；信道级节流（凭证风控、发送间隔）才该影响整条信道。混在一张表里，源级覆盖会泄漏成信道级覆盖 —— 一个源的「已完结」会把共用同一 cookie 的另一个源一起冻住。
+推后 `next_poll_at` 与入队抓取包裹共享事务。事务内「先入队、再推后」只是固定写法，不提供额外崩溃保证；真正保证来自同一提交点、确定性轮询 id 与提交后唤醒。
 
-**原子性与恢复：** 两张表在同一个库里，所以「推后 `next_poll_at` + 入队抓取包裹」在**一个事务**里完成，不损失原子性。顺序是**先入队、再推后**：崩溃只会导致下一轮重复生成一个抓取包裹（重复抓取，去重键会拦住重复投递），不会导致漏抓 —— 符合「不丢 > 不重」。取出包裹时再校验源仍然存在且启用（源可能已被暂停或删除）。
+**每个 Source 至多一个未开始的抓取包裹。** 到期时发现已有 queued/in-flight，必须在一个事务中设置 `merge_pending=True` 并按源规则推后 `next_poll_at`，不碰内容游标；这样调度器不会反复选择同一个已经到期的 Source。
 
-**必须是一个循环，不是两个。** 两个独立的到期扫描循环（一个跑源、一个跑信道）在 SQLite 单写者下会互相阻塞，且「谁先」不确定。正确形状是一个循环取两处的「最早到期」候选，取最小值。
+当前 fetch 成功结算时，若 Source 仍 enabled 且 `merge_pending=True`，在同一事务中消费标记、入队至多一个合并轮询并写下一轮 `next_poll_at`；资源 `resource_available_at` 仍然生效。fetch 自身 `DEAD` 清除合并标记且不自动紧跟补抓，只按正常 `next_poll_at` 等待；删除导致的 `CANCELLED` 同样清除。暂停导致的 queued fetch `CANCELLED` 不复活该包裹，但 Source 保留并冻结合并标记，恢复后至多补一次。被合并的旧轮询不推进内容游标，也不代表真实抓取；合并只防请求风暴与扫描热循环，不是历史补抓算法。
 
-**抓取间隔：** 默认由源声明的 `interval` 决定，抓取器可在一次抓取后返回覆盖值（`Retry-After`、已完结、直播中）。courier 统一加 jitter 并夹紧到 `[min, max]`。**抓取器不许自己随机**。
+Fetcher 必须声明补抓能力：
 
-**200 个订阅不能变成 200 次抓取：** 抓取侧是扇出点。一个源被 N 个订阅关注，只抓一次，扇出 N 次。
+- **可分页/可游标**：从最后成功游标补到当前位置，或触及明确的补抓上限。
+- **仅最新快照**：恢复后合并抓取一次，以稳定内容身份去重；若最后已见内容已消失、列表达到上限或时间范围不能覆盖，则记录补抓缺口。
 
-## 8. 凭证
+补抓缺口包含 Source、时间区间与可确定的数量；数量无法确定时明确为未知。缺口进入 inspect、日志与指标，不伪装成死信，也不计入成功补发。对仅最新快照的 Fetcher，只能承诺「上游仍可枚举的更新不丢」。
 
-凭证是**数据**，不是配置（[ADR 0006](../adr/0006-config-declared-by-components.md)）。三件事拆开：
+源级间隔、「直播中」「已完结」等只修改 `next_poll_at`；host/凭证风控只修改对应资源持久化的 `resource_available_at`，二者不得互相覆盖。
+
+## 8. 凭证与资源
+
+凭证是数据，不是配置：
 
 | 职责 | 归属 |
 |---|---|
-| 存取、选择、轮换、冷却 | bison 的注入 provider |
-| 请求装饰（cookie / UA / Referer / 签名） | 抓取器自己的 client 工厂 |
-| **凭证级节流** | 信道的资源键（`host#凭证`） |
+| 存取、选择、轮换、冷却 | bison provider |
+| 请求装饰 | Fetcher 自己的 client 工厂 |
+| 凭证级节流 | `host#opaque_credential_id` 资源键 |
 
-资源键必须**从包裹内容算出**，不能是构造函数常量——否则换凭证不会换信道，旧凭证的退避会拖累新凭证。
+凭证 id 是随机不透明标识，不是 secret、Cookie 或可逆指纹。secret 不进入 Parcel、resource、日志、异常、死信、inspect、指标或迁移报告。
 
-## 9. 渲染降级与发送器能力
+资源键在入队时从包裹计算并冻结。轮换默认只影响新根包裹；旧包裹留在原信道。需要让旧内容改用新凭证时，通过人工重投创建新代并重新计算资源，不能原地修改一个已排队包裹的 lane。
 
-降级链：订阅指定的风格 → `basic` → 纯文本。发送器能力不足同样走降级。
+人工重投使用当前有效配置、当前凭证和当前组件实现，保留原内容与自然身份，并根据当前计划选择**最早必要接入点**：
 
-**每一次降级必须可见：** 记 metric、记一条 `extra`、inspect 里能看到「这个订阅过去 24 小时降级了 37 次」。
+| 原死信与当前计划 | `requeue_from` 与 artifact 规则 |
+|---|---|
+| fetch 失败，没有可用内容快照 | 从 fetch 重进，不涉及 artifact |
+| Parser/Enricher 死信 | 计划不变时从持久 RawPost 进入原失败 step；计划变化时进入最早变化 step；必要 RawPost 缺失则可见拒绝 |
+| render 失败，或 send 失败但渲染计划已变化 | 从持久 Report 重进 render；重投时不预建 artifact_ref，正常发布后再建 |
+| send 失败，当前渲染计划仍兼容原 artifact 且文件存在 | 从 send 重进，并在重投事务中建立新 artifact_ref |
 
-静默降级比失败更糟：用户看到的是「怪东西」而不是「没东西」，于是既不会报错也不会改配置。
+Sender 或凭证变化但渲染计划仍兼容时可以复用 artifact；Renderer 配置、实现版本或 Sender 能力变体变化必须退回 render。重投创建新预算根，原死信条件记录 `requeued_to`，重复请求得到同一接入点与同一新代。必要 RawPost、Report 或 artifact 已缺失时明确拒绝，不伪造可恢复性。
+
+共享上游死信按原订阅集合快照逐成员过滤：已删除或无权限的成员排除，其余成员按当前计划重新分组；只有没有任何可重投成员时才整体拒绝。整组采用所有合格成员中**最早的必要接入点**，保证一次重投只有一个新预算根，之后再走正常分组；只有整组都能直接复用旧 artifact 时才从 send 重投。
+
+artifact 兼容性比较实际影响产物的 Renderer 配置、实现版本、内容变体与 Sender 能力，而不是仅比较 revision 字符串是否相等。直接复用旧 artifact 时，新 ref 建立后才能释放旧 ref；退回 render 的新代不再引用旧产物，旧 ref 可在重投提交后对账释放。
+
+## 9. 渲染计划、能力与降级
+
+渲染产物是与传输无关的有序块序列：文本、图片引用、可选提及/回复/附件。Sender 声明能力并翻译成具体平台消息。
+
+每个订阅在渲染前计算有效计划：
+
+```text
+内容身份与 effective_revision
++ renderer_id
++ 完整解析后配置
++ Renderer 声明的实现版本
++ Sender 能力集
++ 目标变体与降级链
+```
+
+只有完整计划相同的订阅才共享渲染。配置、内容或实现版本变化不得复用旧产物；同 id 不同内容必须报冲突。
+
+**核心不识别 Renderer 的内部技术。** 某个 Renderer 是否使用浏览器、Canvas 或模板，不改变通用失败语义：
+
+1. 可重试失败先消耗通用重试预算。
+2. 重试耗尽，或遇到可降级的永久失败，在原渲染站点内进入 `basic`。
+3. `basic` 输出**文字 + 动态原生图片/媒体**，不制作渲染卡片；无原生媒体时自然只有文字。
+4. 原生媒体不可用或 Sender 不支持媒体时，退到内建最终纯文本。
+5. 所有可用变体都失败才进死信。
+
+组件必须响应取消并清理自己的资源。关闭导致的取消不降级，包裹等待重启。Sender 瞬态失败只重试发送，不改变内容；Sender 与 `destination.adapter` 不兼容属于启动期装配错误，不属于内容降级。
+
+每次降级产生结构化事件，携带 `subscription / destination / renderer / sender / from / to / reason`，同时按订阅与目的地投影 24h 统计。静默丢弃内容块禁止。
 
 ## 10. 配置系统
 
-见 [ADR 0006](../adr/0006-config-declared-by-components.md)。
+见 [ADR 0006](../adr/0006-config-declared-by-components.md)。配置不再对所有组件笼统提供三层覆盖：
 
-- 组件声明自己的 pydantic 模型，loader 按组件 id 组装并校验。
-- 三层粒度：**组件默认 / 源级覆盖 / 订阅级覆盖**。不做目的地级。
-- 校验失败报到「哪个组件的哪一段哪一行」；配置里出现未注册的组件名**必须报错**。
-- 配置 schema 进注册中心 → 网页可自动生成表单、inspect 可显示「这个组件接受哪些配置项」。
-- courier 不读配置：`CourierConfig(worker_count, retry_budget, default_pacing, ...)` 由 bison 构造后传入。
+| 组件 | 组件默认 | Source 覆盖 | Subscription 覆盖 | 其他 |
+|---|---:|---:|---:|---|
+| Fetcher | ✓ | ✓ | — | 保证一个源只抓一次 |
+| Parser | ✓ | ✓ | — | 保证一个内容只解析一次 |
+| Enricher | ✓ | ✓ | — | 顺序与配置均属执行计划 |
+| Renderer | ✓ | ✓ | ✓ | 解析后完整配置进入计划、缓存与 revision |
+| Sender | ✓ | — | — | Destination 只选择 sender，不做任意目的地配置 |
+
+凭证是数据。配置只描述使用哪个不透明凭证与轮换策略。
+
+loader 按组件 id 组装 pydantic schema，错误定位到组件、配置段与行；未注册组件名必须报错。配置 schema 进注册中心，但 inspect 输出必须脱敏。
 
 ## 11. 专线与包名
 
-**专线 (Dedicated Line)**：面向某个社交媒体、提供该链路上部分或全部组件的一个发行包。
+**专线 (Dedicated Line)**：面向某个社交媒体、提供该链路上部分或全部组件的发行包。
 
-```
+```text
 nonebot-bison                          核心
 nonebot-bison-<社交媒体>                专线
 nonebot-bison-<社交媒体>-<类别>-<名称>   该社交媒体的单类扩展
 nonebot-bison-<类别>-<名称>             不绑定社交媒体的扩展
-类别 ∈ {fetcher, parser, renderer, sender}
+类别 ∈ {fetcher, parser, enricher, renderer, sender}
 ```
 
-例：`nonebot-bison-instagram`、`nonebot-bison-bilibili-renderer-arma`。
-
-包名里不出现 `platform`（已在词汇表禁用）。专线是**概念**，不进入包名——第三段是什么，就决定了这个包是什么。
-
-**子包契约：** 子包声明 `bison_api_version`，bison 启动时校验，不匹配拒绝加载并给出明确报错；同时用 pip 依赖约束管大版本。两者并用，因为「小版本改了一个抽象方法」这种破坏只会在运行时表现为神秘 TypeError。
-
-**发现机制：** 子包是普通 NoneBot 插件，由 `require()` / 插件列表加载，`nb plugin install` 会自动登记。**不使用 entry points** —— 那会是第二套发现机制，并且绕开 NoneBot 的启用/禁用与元数据。
+子包声明 `bison_api_version`，启动时校验；同时使用 pip 依赖约束管大版本。子包是普通 NoneBot 插件，由 `require()` / 插件列表加载，不使用 entry points 形成第二套发现机制。
 
 ## 12. 对话层
 
 Alconna。命令式为主，交互式引导为辅：
 
-- 命令式：`bison sub add <源> [--style] [--to]`，大部分订阅压成一行。
-- 交互式引导：不带参数时进入最短路径（选源 → 选目的地），其余全用参数。
-- 状态机只为新手引导保留一种场景。旧代码的 abort / 超时 / 分页细节是「所有东西都靠对话问」的代价。
+- `bison sub add <源> [--style] [--to]` 覆盖大部分订阅。
+- 不带参数时进入最短引导；状态机只服务新手场景。
+- 人工从死信创建新投递代的命令统一称为**重投**，与自动重试区分。
 
 ## 13. 注册中心与 inspect
 
-注册中心收集：地址 → 站点（含 `channel` / `resource` / `kind`）、组件的依赖清单、组件的配置 schema、子包的 `bison_api_version`、源的抓取器/解析器配对。
+注册中心收集地址/站点、五类组件、依赖、配置 schema、执行计划、子包 API 版本与源配对。inspect 是注册中心 + courier 状态 + bison 业务状态的数据投影：
 
-**inspect 是注册中心 + courier 状态的数据投影**，同一份数据供网页与对话命令使用：
-
-```
+```python
 {
-  stations: [...],                    # 来自 courier.inspect()
-  channels: [...],                    # 来自 courier.inspect()
-  dead_letters: {...},                # 来自 courier.inspect()
-  components: [{name, kind, needs, config_schema, adds?}],
-  sources: [{id, fetcher, parser, enrichers, report_fields}],
-  subscriptions: [{source, destination, renderer, degradations_24h}],
-  api_versions: {line: version},
+  "stations": [...],
+  "channels": [...],
+  "dead_letters": [...],
+  "components": [{"name", "kind", "needs", "config_schema", "adds"}],
+  "sources": [{"id", "fetcher", "parser", "enrichers", "cursor", "catchup_gaps"}],
+  "subscriptions": [{"id", "effective_revision", "renderer", "degradations_24h", "drops_24h"}],
+  "artifacts": {"live_refs", "bytes", "missing", "backpressure"},
+  "api_versions": {...},
 }
 ```
 
-`report_fields` 由「解析器核心字段 + 所有富化器的 `adds`」合成——用户能查「这个源的报文会有哪些字段、分别由谁加上」，零运行时成本。
+这不是公开 API 的授权声明。网页与对话必须按运行规格的对象级权限矩阵过滤；全局信道、组件、共享死信、资源与配置不能因「有合法 JWT」就向所有群管理员开放。

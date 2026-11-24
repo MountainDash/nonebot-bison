@@ -19,7 +19,7 @@
 ## 硬约束（不可违反）
 
 1. **`courier` 不 import nonebot。** 有测试守着（`import courier` 之后 `sys.modules` 里不能有 `nonebot`）。见 [ADR 0001](docs/adr/0001-courier-has-no-nonebot-dependency.md)。
-2. **依赖白名单：`anyio`、`sqlalchemy`(Core)、`pydantic`。** 加任何其他运行时依赖都要先改规格与 ADR，不能顺手装。
+2. **依赖白名单：`anyio`、`sqlalchemy`(Core)、`pydantic`、`arclet-letoderea`（0.22.x，及其传递依赖 `tarina`、`typing-extensions`）。** 加任何其他运行时依赖都要先改规格与 ADR，不能顺手装。
 3. **`Parcel` / `Receipt` 的全部字段必须能 `json` 往返。** 事件、锁、连接、任何运行时对象都不许进包裹。
 4. **不做以吞吐为理由的优化。** 规模基线是 10 源 / 200 订阅 / 50 目的地 / <500 条每天（见 specs/README 的约束基线）。
 5. **不跨 schema join。** courier 的表归 courier，bison 的表归 bison，共用 engine 但互不查询。
@@ -33,7 +33,7 @@
 
 - **一个里程碑 = 一个栈**，栈内 PR 逐层相接（每层 base 是下一层的分支），栈底指向 `main`。
 - **一个 PR 一个理由**，标题能写成「为了 X 而 Y」，不需要「顺便」。
-- **≤ 400 行**（不含测试、fixture、生成物）。超了就是它有两个理由，拆。
+- **默认约 400 行实质变更**。测试、fixture、生成物/锁文件、纯 import/export、空行与纯格式调整不计；源代码注释和 docstring 只有在不承载新语义时才不计。行数用于提醒 review 成本，不是机械闸门：一个理由且可独立 review 的 PR 超预算可在描述中说明，含两个理由才必须拆。不得靠挪动逻辑到 import/export、删除必要说明或牺牲可读性凑数。
 - **合并后主干必须全绿**；M3 之后还要求 bison 能启动。未接线的代码以「已实现但未注册」进主干。
 - **行为变化必带测试**：courier 的每个 PR 至少新增或修改一个行为测试。
 
@@ -43,7 +43,7 @@ PR 描述里必须有这五行：
 - [ ] 怎么验证（跑哪个测试 / 点哪个界面）
 - [ ] 是否改变已发布接口
 - [ ] 是否改变已记录决策（是则同 PR 更新 ADR / GLOSSARY）
-- [ ] diff ≤ 400 行（不含测试）
+- [ ] 实质 diff 是否约 400 行以内；超出是否仍为一个理由、可独立 review 且已说明
 
 完整 PR 清单见 [PLAN.md](docs/PLAN.md)。
 

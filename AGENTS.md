@@ -27,6 +27,7 @@
 7. **站点注册只能在 `run()` 之前。** `run()` 之后调用 `register()` 必须抛错，不得静默生效。
 8. **测试与实现在同一个 PR 里。** 不允许「先实现后补测」，也不允许「最后来个测试 PR 收口」（唯一例外是里程碑验收 PR，见 PLAN）。
 9. **决策变了就在同一个 PR 里改 ADR / GLOSSARY。** 落后的 ADR 比没有 ADR 更糟。
+10. **代码必须过三道门：`ruff check`、`ruff format --check`、`basedpyright`（0 error 0 warning）。** 不许用「关了这条规则」代替修代码；要关某条规则，得在 `pyproject.toml` 里写明理由。
 
 ## 工作方式：链式 PR 栈
 
@@ -45,6 +46,20 @@ PR 描述里必须有这五行：
 - [ ] diff ≤ 400 行（不含测试）
 
 完整 PR 清单见 [PLAN.md](docs/PLAN.md)。
+
+## 不可自主执行的操作
+
+以下操作**必须先在对话中获得明确同意，且每次单独确认**：
+
+- `git push`（任何分支，**包括更新已开 PR 的分支**）
+- `gh pr create` / `gh pr merge` / 关闭或标记 PR
+- `git push --force` / `--force-with-lease`
+- 删除远端分支、修改远端地址、修改仓库设置
+- 打 tag、发布到 PyPI
+
+**允许自主执行：** 本地提交、本地测试、本地分支与 rebase。
+
+**本地提交不等于可以推送。** 提交是为了让工作可回退、可 bisect；推送是对外可见的动作，由人决定时机。做完一个 PR 该停下来说「这一层已经就绪，要推吗」，而不是推完再汇报。
 
 ## 停损条件（宁可停，不要绕）
 
@@ -81,6 +96,8 @@ GLOSSARY.md            术语（权威）
 ## 验证
 
 ```bash
-uv run pytest          # 全部测试
-uv run ruff check .    # 静态检查
+uv run pytest                    # 全部测试
+uv run ruff check .              # 静态检查
+uv run ruff format --check .     # 格式
+uv run basedpyright              # 类型检查
 ```

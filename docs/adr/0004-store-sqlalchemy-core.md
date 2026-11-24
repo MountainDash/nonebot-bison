@@ -1,15 +1,23 @@
-# courier 用 SQLAlchemy Core，engine 由宿主注入
+# SQLAlchemy Core、共享事务与后端耐久契约
 
-courier 定义 `Store` Protocol（入队、取 head、推进、设 `next_attempt_at`、进回收站、列信道等约十个方法），自带实现基于 SQLAlchemy 2.0 async 的 **Core**（不用 ORM），`AsyncEngine` 由宿主注入。courier 拥有自己的三张表与其迁移，bison 拥有自己的表与迁移，两者共用基础设施但**不共享 schema，也不跨库 join**。
+courier 定义 `Store` Protocol，自带实现基于 SQLAlchemy 2.0 async **Core**（不用 ORM），`AsyncEngine` 由宿主注入。courier 与 bison 各自拥有自己的表和迁移，不共享 schema、互不 join；两者可以在同一个 SQLAlchemy connection/transaction 中完成一次业务原子写入。
+
+**每次站点结果都必须统一原子结算。** 父 Receipt、信道 head 推进、全部子包裹与去重、下一跳或重试时间、终态与死信记录必须在同一事务中提交。业务校验拒绝时丢弃全部输出，但提交父 DEAD 与 head 推进；存储/系统失败才整体回滚并保持 head。网络请求、渲染和聊天发送等外部副作用不得放进这个数据库事务；运行时唤醒只能在提交成功后发出。
+
+bison 的源调度、内容去重、游标推进与 courier 入队需要原子完成时，由 bison 开启事务并传入 connection，courier Store 参与而不接管该事务。共享事务不意味着共享表结构或跨 schema 查询。
 
 ## Considered Options
 
-- **裸 `sqlite3` / `aiosqlite`**：少一个依赖，但会和 bison 的 SQLAlchemy 形成两套连接、两套迁移，且 PG/MySQL 支持要重写。
-- **SQLAlchemy ORM**：队列的查询是十条显式 SQL，ORM 在这里只带来 session 生命周期、身份映射与懒加载的样板。
-- **只做内存实现**：直接丢掉 [#635](https://github.com/MountainDash/nonebot-bison/issues/635)（重启丢消息），而持久化正是信道必须落表的理由。
+- **裸 `sqlite3` / `aiosqlite`**：少一个依赖，但会形成两套连接、事务与迁移基础设施。
+- **SQLAlchemy ORM**：队列操作是少量显式 SQL，ORM 只带来 session 生命周期、身份映射与懒加载的样板。
+- **只做内存实现**：直接丢失重启恢复能力。
+- **各包独立提交**：会在父结算与子入队、游标推进与内容入队之间留下崩溃分叉。
+- **把跨 schema join 当作组合方式**：破坏包边界；这里需要的是共同提交，不是关系查询。
 
 ## Consequences
 
-- 「零 NoneBot 依赖」（[ADR 0001](./0001-courier-has-no-nonebot-dependency.md)）依然成立 —— SQLAlchemy 不是 NoneBot。
-- PostgreSQL / MySQL 几乎免费，但 courier 的 schema 必须能独立于 bison 迁移：bison 可以整体重装，courier 的表不能。
-- `Store` Protocol 存在的意义是「将来可能有第二种实现」（分布式运输器），而不是「现在就要支持多种数据库」。
+- Store 的持久契约是**原子提交与声明的耐久性**，不包含某个数据库的 journal 参数。进程崩溃、提交前后崩溃与外部发送后未结算必须分别验收。
+- 内建 SQLite 部署档案使用 WAL、`synchronous=FULL`、busy timeout 与短事务，并据此定义恢复测试。这些参数属于 SQLite，而不是 `Store` Protocol。
+- 未来替换数据库或 Store 时，必须声明等价的原子性与耐久保证，并替换相应部署档案和崩溃验收；更换后端不自动意味着语义不变。
+- 文件、渲染产物等外部资源不能只靠数据库事务获得一致性，必须有独立的发布与对账协议。
+- 「零 NoneBot 依赖」（[ADR 0001](./0001-courier-has-no-nonebot-dependency.md)）不受影响；courier 的 schema 仍能独立迁移。

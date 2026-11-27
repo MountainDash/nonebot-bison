@@ -261,7 +261,7 @@ class PreparedStation[T]:
 class DependencyDispatcher:
     """Instance-owned DI: registry, immutable plans, aggregated validation, freezing, and calls.
 
-    Lifecycle (ADR 0003): register providers in any order (forward declarations allowed), pass
+    Lifecycle: register providers in any order (forward declarations allowed), pass
     every station through prepare_station(), then freeze() once — validation aggregates all
     problems before any subscriber is built. After freeze the registry is closed; the runtime
     surface is PreparedStation calls and resolve() only. Mutations after freeze raise
@@ -305,7 +305,7 @@ class DependencyDispatcher:
         self._ensure_mutable()
         self._validation_backend = backend
 
-    # The key is open vocabulary: a type, an Annotated alias, or a DependencyKey (ADR 0003).
+    # The key is open vocabulary: a type, an Annotated alias, or a DependencyKey.
     # Annotated aliases are not assignable to type[T], so a narrower union would lie to callers.
     def register(self, key: object, factory: Factory, *, singleton: bool = True) -> None:
         """Register an exact provider; singletons are constructed once and cached per key.
@@ -398,7 +398,7 @@ class DependencyDispatcher:
             raise DependencyValidationError(report)
         compiled = self.compiled_plans()
         # Overrides bind to the station's declared signature only: provider factories never
-        # consume the caller's overrides, so same-named parameters cannot flow implicitly (ADR 0003).
+        # consume the caller's overrides, so same-named parameters cannot flow implicitly.
         provider_subscribers = {
             spec.key: self._make_subscriber(spec.plan, overrides_key=None)
             for spec in compiled.snapshot.providers
@@ -427,10 +427,9 @@ class DependencyDispatcher:
                 planned: set[int] = set()
                 if parameter.depends is not None:
                     if overrides_key is None:
-                        # Unreachable: compile_plan(provider=True) rejects Depends in provider factories
-                        # (locked by test_signature_errors_and_provider_depends_are_eager), so a
-                        # provider-plan graph never reaches this branch. Fail loudly if that erodes
-                        # instead of silently letting provider-side Depends see caller overrides.
+                        # Provider factories cannot declare Depends, so a provider-plan graph never
+                        # reaches this branch. Fail loudly if that invariant erodes: provider-side
+                        # Depends must never see caller overrides.
                         raise RuntimeError("provider plan parameters cannot carry Depends")
                     dependency = graph[id(parameter.depends.target)]
                     dependency_target = dependency.target
@@ -565,7 +564,7 @@ class DependencyDispatcher:
         result[self.overrides_key] = dict(overrides)
         return result
 
-    # Deliberate open vocabulary, kept as decided in review: Annotated aliases resolve here
+    # Deliberate open vocabulary: Annotated aliases resolve here
     # but infer T as Unknown (they are not assignable to type[T]); typed resolution uses a
     # plain type or an explicit DependencyKey.
     async def resolve[T](self, key: type[T] | DependencyKey | object) -> T:

@@ -34,7 +34,7 @@ def callable_name(target: object) -> str:
 class DependencyKey:
     """A normalized dependency key: the base type plus marker objects, excluding Depend markers.
 
-    The open vocabulary (ADR 0003) is a plain type, an ``Annotated[...]`` alias, or a DependencyKey.
+    The open vocabulary is a plain type, an ``Annotated[...]`` alias, or a DependencyKey.
     Base and markers must be hashable: construction rejects unhashable parts eagerly.
     """
 

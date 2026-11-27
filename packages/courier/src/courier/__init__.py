@@ -1,3 +1,3 @@
-"""运输内核。不得 import nonebot（ADR 0001）。"""
+"""运输内核。不得 import nonebot。"""
 
 __all__: list[str] = []

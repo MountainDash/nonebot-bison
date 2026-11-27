@@ -70,7 +70,7 @@ class StrictGraphValidationBackend:
                 if not candidates:
                     message = f"{plan.owner} parameter {parameter.name!r} needs {parameter.key}"
                     if parameter.default is not Parameter.empty:
-                        # Declared defaults never satisfy the dependency graph (ADR 0003).
+                        # Declared defaults never satisfy the dependency graph.
                         message = f"{message} (declared default does not rescue)"
                     issues.append(ValidationIssue("missing", message, plan.owner, parameter.name, parameter.key))
                     continue

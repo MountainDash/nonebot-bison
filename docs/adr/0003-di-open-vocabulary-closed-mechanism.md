@@ -4,7 +4,7 @@ courier 直接使用 `arclet-letoderea` 的 `Provider / ProviderFactory / Depend
 
 ## 两种后端，两种问题
 
-**BindingBackend** 回答「哪些 Provider 匹配这个参数」。默认严格键后端只接受类型或 `Annotated[T, marker]` 的精确键；可选 Entari 后端适配 `Provider.validate` / `ProviderFactory`，处理更复杂的注解。ProviderFactory 生成的实例固定在 BindingPlan 中，校验与执行不得生成两次。
+**BindingBackend** 回答「哪些 Provider 匹配这个参数」。默认严格键后端只接受类型或 `Annotated[T, marker]` 的精确键；可选 `PredicateBindingBackend` 适配 `Provider.validate` / `ProviderFactory`，处理更复杂的注解。ProviderFactory 生成的实例固定在 BindingPlan 中，校验与执行不得生成两次。
 
 **ValidationBackend** 回答「整个声明图是否可满足」。它只读 RegistrySnapshot 与 BindingPlan，聚合并返回缺失、同优先级歧义、直接/间接环等问题，不调用 factory、不接触 Parcel。默认严格图实现必须覆盖所有根与所有可达 fallback。替换后端必须通过同一组行为契约，不能静默放宽仓库底线。
 
@@ -15,13 +15,13 @@ courier 直接使用 `arclet-letoderea` 的 `Provider / ProviderFactory / Depend
 ```text
 创建 DependencyDispatcher
 → 注册全部 Provider（允许 forward declaration）
-→ prepare 全部站点，生成 BindingPlan
+→ prepare_station 登记全部站点，生成 BindingPlan
 → ValidationBackend 一次聚合全部问题
 → 无错误后构造 Subscriber 并冻结
 → 运行期只通过 Subscriber.handle 与 Dispatcher resolve 调用
 ```
 
-严格键重复注册立即报错。缺项与环在启动校验期一次性报告，不再要求「依赖先于使用方注册」。冻结后禁止注册、替换后端或重绑定。校验失败不得执行 factory、创建资源或部分冻结。
+严格键重复注册立即报错。缺项与环在启动校验期一次性报告，不再要求「依赖先于使用方注册」。缺项以签名注解为准：**声明的默认值不 rescue 缺失绑定**，站点不得靠默认值静默通过注入校验。冻结后禁止注册、替换后端或重绑定。校验失败不得执行 factory、创建资源或部分冻结。调用方 overrides 只绑定**站点声明签名（含本地 Depends 子图）**的参数；provider 工厂与原生适配器不消费调用方 overrides，同名参数之间不发生隐式流动。
 
 letoderea 的 `record` 只缓存 Provider 选择，不是 singleton。singleton/transient 与并发构造由 Dispatcher 管理；singleton 不得捕获单次调用上下文，factory 异常不得发布半初始化值。资源仍由宿主拥有，除非另有明确生命周期协议。
 

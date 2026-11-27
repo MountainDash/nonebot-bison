@@ -50,4 +50,7 @@ quote-style = "double"
 include = ["packages", "tests"]
 exclude = ["docs"]
 typeCheckingMode = "recommended"
+# 关闭理由：上游库中天然存在 Any，因此 Any 在项目中被禁用是不合理的。
+reportAny = false
+reportExplicitAny = false
 pythonVersion = "3.14"

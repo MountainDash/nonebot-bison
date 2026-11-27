@@ -1,4 +1,5 @@
 from collections.abc import Callable, Hashable, Sequence
+from inspect import Parameter
 from typing import Protocol, final
 
 from .model import (
@@ -12,6 +13,8 @@ from .model import (
 
 
 class ValidationBackend(Protocol):
+    """Answer "is the whole declared graph satisfiable". Read-only: never call factories, never touch parcels."""
+
     def validate(self, snapshot: RegistrySnapshot, plans: Sequence[BindingPlan]) -> ValidationReport: ...
 
 
@@ -43,7 +46,12 @@ def _cycles[N: Hashable](graph: dict[N, tuple[N, ...]], label: Callable[[N], str
 
 @final
 class StrictGraphValidationBackend:
-    """Structural validation only: a native Provider may still decline at runtime."""
+    """Structural validation only: a native Provider may still decline at runtime.
+
+    Reports missing bindings (declared defaults never rescue), equal-priority native ambiguity,
+    direct/indirect provider cycles, and Depends cycles — aggregated in one deterministic report.
+    Replacement backends must keep the same contract, not silently relax it.
+    """
 
     def validate(self, snapshot: RegistrySnapshot, plans: Sequence[BindingPlan]) -> ValidationReport:
         issues: list[ValidationIssue] = []
@@ -61,6 +69,9 @@ class StrictGraphValidationBackend:
                     continue
                 if not candidates:
                     message = f"{plan.owner} parameter {parameter.name!r} needs {parameter.key}"
+                    if parameter.default is not Parameter.empty:
+                        # Declared defaults never satisfy the dependency graph.
+                        message = f"{message} (declared default does not rescue)"
                     issues.append(ValidationIssue("missing", message, plan.owner, parameter.name, parameter.key))
                     continue
                 priorities = [binding.priority for binding in candidates if binding.priority is not None]

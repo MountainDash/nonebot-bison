@@ -2,11 +2,13 @@ from arclet.letoderea import Depend, Depends
 
 from .binding import (
     BindingBackend,
-    EntariBindingBackend,
     ExactKeyBindingBackend,
+    PredicateBindingBackend,
     bind_plan,
     bind_providers,
 )
+from .dispatcher import DependencyDispatcher, PreparedStation
+from .errors import DependencyValidationError, DispatcherFrozenError, DispatcherNotFrozenError, ResolutionError
 from .model import (
     Binding,
     BindingPlan,
@@ -29,14 +31,20 @@ __all__ = [
     "BindingPlan",
     "DIError",
     "Depend",
+    "DependencyDispatcher",
     "DependencyKey",
+    "DependencyValidationError",
     "Depends",
+    "DispatcherFrozenError",
+    "DispatcherNotFrozenError",
     "DuplicateProviderError",
-    "EntariBindingBackend",
     "ExactKeyBindingBackend",
     "ParameterSpec",
+    "PredicateBindingBackend",
+    "PreparedStation",
     "ProviderSpec",
     "RegistrySnapshot",
+    "ResolutionError",
     "SignatureError",
     "StrictGraphValidationBackend",
     "ValidationBackend",

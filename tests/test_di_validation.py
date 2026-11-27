@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from collections.abc import Sequence
 from dataclasses import FrozenInstanceError
-from typing import Annotated, cast, final, override
+from typing import Annotated, final, override
 
 import pytest
 from arclet.letoderea import Contexts, Param, Provider, ProviderFactory, provide
@@ -14,9 +12,9 @@ from courier._di import (
     DependencyKey,
     Depends,
     DuplicateProviderError,
-    EntariBindingBackend,
     ExactKeyBindingBackend,
     ParameterSpec,
+    PredicateBindingBackend,
     ProviderSpec,
     RegistrySnapshot,
     SignatureError,
@@ -142,7 +140,7 @@ class TextProvider(Provider[str]):
     @override
     def validate(self, param: Param) -> bool:
         self.validations += 1
-        return cast("object", param.annotation) is str
+        return param.annotation is str
 
     @override
     async def __call__(self, context: Contexts) -> str | None:
@@ -169,7 +167,7 @@ class TokenProviderFactory(ProviderFactory):
     @override
     def validate(self, param: Param) -> TokenProvider | None:
         self.calls += 1
-        if cast("object", param.annotation) is not Token:
+        if param.annotation is not Token:
             return None
         self.generated = TokenProvider()
         return self.generated
@@ -227,6 +225,24 @@ def test_plain_and_marked_keys_never_fall_back_to_each_other(annotation: object)
     assert report.issues[0].key == DependencyKey.of(annotation)
 
 
+def test_dependency_key_rejects_unhashable_parts_at_construction() -> None:
+    with pytest.raises(TypeError):
+        _ = DependencyKey(["unhashable"])
+    with pytest.raises(TypeError):
+        _ = DependencyKey.of(Annotated[int, ["unhashable"]])
+
+
+def test_declared_default_does_not_rescue_a_missing_binding() -> None:
+    def root(_value: MissingOne | None = None) -> None:
+        pass
+
+    report = _validate(RegistrySnapshot(()), compile_plan(root))
+
+    assert [issue.code for issue in report.issues] == ["missing"]
+    assert report.issues[0].key == DependencyKey.of(MissingOne | None)
+    assert "declared default does not rescue" in report.issues[0].message
+
+
 def test_duplicate_exact_key_is_rejected_and_snapshot_is_frozen() -> None:
     provider = ProviderSpec.exact(Token, Token)
     with pytest.raises(DuplicateProviderError):
@@ -250,7 +266,7 @@ def test_native_provider_is_validated_once_and_never_called_by_validation() -> N
 
     assert [issue.code for issue in _validate(snapshot, compile_plan(root)).issues] == ["missing"]
     assert native.validations == 0
-    report = _validate(snapshot, compile_plan(root), backends=(EntariBindingBackend(),))
+    report = _validate(snapshot, compile_plan(root), backends=(PredicateBindingBackend(),))
 
     assert report.ok
     assert native.validations == 1
@@ -264,7 +280,7 @@ def test_native_provider_factory_generates_one_saved_provider() -> None:
     def root(_value: Token) -> None:
         pass
 
-    bound, plans = _bind_graph(snapshot, (compile_plan(root),), (EntariBindingBackend(),))
+    bound, plans = _bind_graph(snapshot, (compile_plan(root),), (PredicateBindingBackend(),))
     binding = plans[0].bindings[0][0]
     report = StrictGraphValidationBackend().validate(bound, plans)
 
@@ -275,7 +291,7 @@ def test_native_provider_factory_generates_one_saved_provider() -> None:
 
 def test_string_marker_does_not_create_a_context_key_provider() -> None:
     native = TextProvider()
-    backend = EntariBindingBackend()
+    backend = PredicateBindingBackend()
     snapshot = RegistrySnapshot((ProviderSpec.from_native(native),))
 
     def root(_value: Annotated[str, "tenant"]) -> None:
@@ -295,7 +311,7 @@ def test_same_priority_native_candidates_are_ambiguous() -> None:
     def root(_value: str) -> None:
         pass
 
-    report = _validate(snapshot, compile_plan(root), backends=(EntariBindingBackend(),))
+    report = _validate(snapshot, compile_plan(root), backends=(PredicateBindingBackend(),))
 
     assert [issue.code for issue in report.issues] == ["ambiguous_native"]
 
@@ -309,7 +325,7 @@ def test_equal_priority_fallbacks_are_ambiguous_even_behind_a_unique_winner() ->
     def root(_value: str) -> None:
         pass
 
-    report = _validate(snapshot, compile_plan(root), backends=(EntariBindingBackend(),))
+    report = _validate(snapshot, compile_plan(root), backends=(PredicateBindingBackend(),))
 
     assert [issue.code for issue in report.issues] == ["ambiguous_native"]
 
